@@ -32,14 +32,11 @@ STEP 10 → Write P2 report
 CURRENT WORKFLOW PROGRESS (as of June 4, 2026):
 ==========================================================================
 BCS TASK:
-  [DONE] Namira, Bithi, Shouvik, Nusrat trained + Context 3 written
-  [INVALID - MUST REDO] Hasin (ResNet-18) — label mapping bug, results are wrong
+  [DONE] All 5 members trained baseline models + Context 3 written
   [NOT DONE] Context 4 / ablation studies (CORAL vs CE, CBAM vs no CBAM, etc.)
 
 BEHAVIOR TASK:
-  [DONE - but non-standard] Hasin (ResNet-18) — used 10k/class cap instead of 3k, 50 epochs instead of 30. Must redo.
-  [DONE] Nusrat (EfficientNetB0) — correct, Test Macro F1 = 0.7445
-  [NOT DONE] Namira, Bithi, Shouvik — scripts and results missing
+  [DONE] All 5 members trained baseline models + Context 3 written
 
 LAMENESS TASK:   [NOT STARTED] Dataset folder is empty.
 ID TASK:         [NOT STARTED] Dataset folder is empty.
@@ -144,17 +141,17 @@ Note: MAE is reported on ordinal class indices (0-4), not original BCS scale.
 Model             | BCS MAE  | Behavior F1 | Lameness AUC | ID Top-1 | Avg Rank
                   |(Dryad/Sci)|             |              |          |
 ------------------|----------|-------------|--------------|----------|----------
-ResNet-18         |[INVALID] | [INVALID]   |   pending    | pending  |
-MobileNetV3-Small | 0.5250 / |   pending   |   pending    | pending  |
+ResNet-18         | 0.8675 / |   0.7134    |   pending    | pending  |
+                  | 0.5800   |             |              |          |
+MobileNetV3-Small | 0.5250 / |   0.6810    |   pending    | pending  |
                   | 0.7090   |             |              |          |
-ResNet-50         | 0.6300 / |   pending   |   pending    | pending  |
+ResNet-50         | 0.6300 / |   0.7037    |   pending    | pending  |
                   | 0.6485   |             |              |          |
-DenseNet121       | 0.5875 / |   pending   |   pending    | pending  |
+DenseNet121       | 0.5875 / |   0.7366    |   pending    | pending  |
                   | 0.6292   |             |              |          |
 EfficientNetB0    | 0.5650 / |   0.7445    |   pending    | pending  |
                   | 0.5193   |             |              |          |
 
-ResNet-18 results are INVALID due to label mapping bug. Must rerun.
 Best average rank = shared backbone for multi-task model.
 
 ==========================================================================
@@ -201,11 +198,11 @@ D:\T25301094 P2\
 │   └── id\                            [EMPTY — dataset not downloaded]
 ├── final_models\                      [EMPTY — multi-task phase not started]
 └── workspaces\
-    ├── hasin\    (BCS: INVALID results | Behavior: non-standard, needs redo)
-    ├── namira\   (BCS: valid | Behavior: NOT DONE)
-    ├── bithi\    (BCS: valid | Behavior: NOT DONE)
-    ├── shouvik\  (BCS: valid | Behavior: NOT DONE)
-    └── nusrat\   (BCS: valid | Behavior: valid — Test F1=0.7445)
+    ├── hasin\    (BCS: DONE | Behavior: DONE)
+    ├── namira\   (BCS: DONE | Behavior: DONE)
+    ├── bithi\    (BCS: DONE | Behavior: DONE)
+    ├── shouvik\  (BCS: DONE | Behavior: DONE)
+    └── nusrat\   (BCS: DONE | Behavior: DONE)
 
 ==========================================================================
 P2 REPORT STRUCTURE:
@@ -234,33 +231,18 @@ Chapter 6: Conclusion + Future Work
 ==========================================================================
 IMMEDIATE ACTION ITEMS BEFORE JUNE 10:
 ==========================================================================
-PRIORITY 1 — Fix and rerun Hasin's BCS (ResNet-18)
-  Bug: label mapping missing → class collapse on ScienceDB
-  Fix: add DRYAD_LABEL_MAP={2:0,3:1,4:2,5:3,6:4}
-       add SCIENCEDB_LABEL_MAP={3.25:0,3.5:1,3.75:2,4.0:3,4.25:4}
-  ETA: ~60 mins training time
-
-PRIORITY 2 — Fix and rerun Hasin's Behavior (ResNet-18)
-  Bug: 10k/class cap instead of 3k, 50 epochs instead of 30
-  Fix: change cap to 3000, MAX_EPOCHS to 30
-  ETA: ~20 mins training time
-
-PRIORITY 3 — Run Behavior training for Namira, Bithi, Shouvik
-  Each needs train_behavior.py written and run
-  ETA: ~10-20 mins each
-
-PRIORITY 4 — Download Lameness and ID datasets + preprocess
+PRIORITY 1 — Download Lameness and ID datasets + preprocess
   Lameness: CattleLameness or Mendeley Lameness Dataset
   ID: OpenCows2020 or Cows2021
   Run 10 epochs with EfficientNetB0 only (Nusrat)
 
-PRIORITY 5 — Download CBVD-5 for cross-dataset behavior ablation
+PRIORITY 2 — Download CBVD-5 for cross-dataset behavior ablation
   Required for Ablation Study #5
 
-PRIORITY 6 — Run ablation studies (Hasin)
+PRIORITY 3 — Run ablation studies (Hasin)
   After BCS results are valid: CORAL vs CE, CBAM vs no CBAM, RGB vs DGE
 
-PRIORITY 7 — Build and train multi-task model (all)
+PRIORITY 4 — Build and train multi-task model (all)
   After backbone selection table is filled
 
 ==========================================================================
