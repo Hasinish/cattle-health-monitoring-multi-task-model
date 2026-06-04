@@ -1,0 +1,330 @@
+CONTEXT 2 — BEHAVIOR DATASET + TRAINING INSTRUCTIONS
+=====================================================
+
+=== READ THIS FIRST (FOR AI ONLY) ===
+You are an AI assistant helping a teammate in a cattle health monitoring thesis project.
+The teammate will follow YOUR instructions exactly.
+Your job is to:
+1. Write a complete, clean, runnable Python training script
+2. Tell teammate exactly where to save it
+3. Give the EXACT full-path PowerShell command to run it
+4. Wait for teammate to paste terminal output
+5. Automatically generate their complete Context 3 report from the output
+Do NOT skip any step. Do NOT combine steps. Do one thing at a time and wait.
+
+CRITICAL SCRIPT RULES — READ BEFORE WRITING A SINGLE LINE:
+- Do NOT add any [cite: X] or citation markers anywhere in the script
+- Do NOT add any comments referencing sources or documents
+- Write pure clean Python only — every line must be valid Python syntax
+- Do NOT use torch.cuda.amp — use torch.amp instead (torch.cuda.amp is deprecated and causes warnings)
+- Do NOT use groupby().apply() for sampling — it causes KeyError on 'label' column in newer pandas
+- Use pd.concat with a list comprehension for sampling instead (shown below)
+- Do NOT hardcode feature_dim — always detect it dynamically using a dummy forward pass
+- Do NOT use torch.compile(model) — it crashes on Windows with AdaptiveMaxPool2d
+- ALWAYS import tqdm and wrap BOTH the training loop AND the validation loop with tqdm progress bars:
+    Training loop:   for images, labels in tqdm(train_loader, desc=f"Epoch {epoch}/30"):
+    Validation loop: for images, labels in tqdm(val_loader, desc="Validating"):
+  Without tqdm the script appears completely frozen and teammate cannot monitor progress
+- Test mentally that every line will run without errors before giving the script
+
+=== TEAMMATE INFORMATION ===
+Check Context 1 for this teammate's name and assigned base model.
+Use ONLY their assigned model. No exceptions.
+
+=== DATASET INFORMATION ===
+Dataset: MmCows cropped bounding boxes
+Image type: .jpg (RGB)
+Image size: varies — MUST resize to 224x224
+Classes: 7 behavior classes
+Label encoding (raw label in CSV -> PyTorch class index):
+  1 -> 0 (Walking)
+  2 -> 1 (Standing)
+  3 -> 2 (Feeding head up)
+  4 -> 3 (Feeding head down)
+  5 -> 4 (Licking)
+  6 -> 5 (Drinking)
+  7 -> 6 (Lying)
+In __getitem__: label = int(row['label']) - 1
+
+CSV: D:\T25301094 P2\datasets\behavior\behavior_index.csv
+CSV columns: image_path, label, cow_id, split
+Split values: train / val / test
+Total: 213,686 images, 16 cows (cow-wise split)
+Train: 148,401 images (11 cows)
+Val: 25,134 images (2 cows)
+Test: 40,151 images (3 cows)
+
+Class distribution (SEVERE imbalance):
+  Class 1 (Walking):           4,118
+  Class 2 (Standing):         70,107
+  Class 3 (Feeding head up):  19,080
+  Class 4 (Feeding head down):31,255
+  Class 5 (Licking):           2,009
+  Class 6 (Drinking):          3,311
+  Class 7 (Lying):            83,806
+
+=== DATASET SAMPLING — MANDATORY ===
+To fix class imbalance AND make training fast, cap each class at MAX 3000 images.
+Use EXACTLY this code inside Dataset __init__ — do NOT use groupby().apply():
+
+  df = df[df['split'] == split]
+  df = pd.concat([
+      group.sample(min(len(group), 3000), random_state=42)
+      for _, group in df.groupby('label')
+  ]).reset_index(drop=True)
+  self.data = df
+
+This gives ~21,000 total training images (capped at 3000/class).
+This is MANDATORY. Do not skip or modify this sampling code.
+
+=== ENVIRONMENT INFO ===
+OS: Windows 11
+Python: 3.12.3
+PyTorch: 2.5.1+cu121
+GPU: NVIDIA RTX 4080 16GB VRAM — MUST use CUDA
+RAM: 64GB
+Installed: timm, torchvision, scikit-learn, matplotlib, tqdm, albumentations, Pillow, pandas, opencv-python
+
+=== GPU OPTIMIZATION — ALL MANDATORY ===
+Every single one of these MUST be in the script:
+1. torch.backends.cudnn.benchmark = True — place before training loop
+2. batch_size = 128
+3. num_workers = 8
+4. pin_memory = True
+5. persistent_workers = True
+6. prefetch_factor = 2
+7. non_blocking=True on ALL .to(device) calls
+8. optimizer.zero_grad(set_to_none=True)
+9. AMP using torch.amp (NOT torch.cuda.amp):
+   scaler = torch.amp.GradScaler('cuda')
+   wrap forward pass: with torch.amp.autocast('cuda'):
+   backward: scaler.scale(loss).backward()
+   step: scaler.step(optimizer)
+   update: scaler.update()
+DO NOT use torch.compile(model) — it crashes on Windows with AdaptiveMaxPool2d
+
+=== FILE STRUCTURE ===
+Base directory: D:\T25301094 P2\
+Workspaces:
+D:\T25301094 P2\workspaces\hasin\
+D:\T25301094 P2\workspaces\namira\
+D:\T25301094 P2\workspaces\bithi\
+D:\T25301094 P2\workspaces\shouvik\
+D:\T25301094 P2\workspaces\nusrat\
+Save ALL output files to teammate's own workspace folder ONLY.
+
+=== MODEL ARCHITECTURE ===
+Backbone: assigned model from timm
+  timm.create_model(MODEL_NAME, pretrained=True, num_classes=0, global_pool='')
+
+Always detect feature_dim dynamically — NEVER hardcode it:
+  backbone = backbone.to(device)
+  with torch.no_grad():
+      dummy = backbone(torch.zeros(1, 3, 224, 224).to(device))
+      feature_dim = dummy.shape[1]
+
+After backbone: CBAM attention module
+After CBAM: AdaptiveAvgPool2d(1)
+After pool: flatten then Linear(feature_dim, 7)
+
+CBAM (copy exactly, no modifications):
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels, reduction=16):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(in_channels, in_channels // reduction),
+            nn.ReLU(),
+            nn.Linear(in_channels // reduction, in_channels)
+        )
+        self.sigmoid = nn.Sigmoid()
+    def forward(self, x):
+        avg = self.fc(self.avg_pool(x).squeeze(-1).squeeze(-1))
+        max_ = self.fc(self.max_pool(x).squeeze(-1).squeeze(-1))
+        return x * self.sigmoid(avg + max_).unsqueeze(-1).unsqueeze(-1)
+
+class SpatialAttention(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv2d(2, 1, kernel_size=7, padding=3)
+        self.sigmoid = nn.Sigmoid()
+    def forward(self, x):
+        avg = torch.mean(x, dim=1, keepdim=True)
+        max_, _ = torch.max(x, dim=1, keepdim=True)
+        return x * self.sigmoid(self.conv(torch.cat([avg, max_], dim=1)))
+
+class CBAM(nn.Module):
+    def __init__(self, in_channels):
+        super().__init__()
+        self.ca = ChannelAttention(in_channels)
+        self.sa = SpatialAttention()
+    def forward(self, x):
+        return self.sa(self.ca(x))
+
+=== LOSS FUNCTION: FOCAL LOSS (copy exactly) ===
+class FocalLoss(nn.Module):
+    def __init__(self, gamma=2, alpha=0.25):
+        super().__init__()
+        self.gamma = gamma
+        self.alpha = alpha
+    def forward(self, inputs, targets):
+        ce_loss = F.cross_entropy(inputs, targets, reduction='none')
+        pt = torch.exp(-ce_loss)
+        focal_loss = self.alpha * (1 - pt) ** self.gamma * ce_loss
+        return focal_loss.mean()
+
+=== PREPROCESSING ===
+Use albumentations (NOT torchvision transforms).
+Load images with: image = cv2.imread(img_path) then cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+Training transforms:
+  A.Resize(224, 224)
+  A.HorizontalFlip(p=0.5)
+  A.Rotate(limit=15, p=0.5)
+  A.Normalize(mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225])
+  ToTensorV2()
+
+Val and Test transforms (NO augmentation):
+  A.Resize(224, 224)
+  A.Normalize(mean=[0.485,0.456,0.406], std=[0.229,0.224,0.225])
+  ToTensorV2()
+
+=== HYPERPARAMETERS ===
+optimizer: Adam, lr=1e-3
+scheduler: StepLR(step_size=10, gamma=0.5)
+batch_size: 128
+MAX_EPOCHS: 30
+PATIENCE: 10
+random_seed: 42
+Set seeds at start: random.seed(42), np.random.seed(42), torch.manual_seed(42), torch.cuda.manual_seed_all(42)
+
+=== EARLY STOPPING — MANDATORY ===
+Stop training if val Macro F1 does not improve for 10 consecutive epochs.
+Implement EXACTLY like this inside the training loop:
+
+  PATIENCE = 10
+  epochs_no_improve = 0
+  best_val_f1 = -1.0
+
+  for epoch in range(1, MAX_EPOCHS + 1):
+      # ... training and validation code ...
+
+      if val_f1 > best_val_f1:
+          best_val_f1 = val_f1
+          epochs_no_improve = 0
+          torch.save(model.state_dict(), checkpoint_path)
+      else:
+          epochs_no_improve += 1
+          if epochs_no_improve >= PATIENCE:
+              print(f"Early stopping triggered at epoch {epoch}. No improvement for {PATIENCE} epochs.")
+              break
+
+Track actual_epochs_trained = epoch when loop ends.
+Use actual_epochs_trained in Context 3 EPOCHS TRAINED field.
+
+=== METRICS ===
+Primary: Macro F1-score (higher is better)
+Secondary: Per-class accuracy (as percentage %)
+Compute using sklearn.metrics f1_score and confusion_matrix
+Track val Macro F1 every epoch.
+Save best checkpoint when val Macro F1 improves.
+After training, load best checkpoint and evaluate on both val and test sets.
+Also print epoch summary after each epoch: "Epoch X/30 | Loss: X | Val Macro F1: X"
+
+=== OUTPUT FILES — ALL MANDATORY ===
+All saved to: D:\T25301094 P2\workspaces\[name]\
+  behavior_best.pth       <- best checkpoint
+  behavior_results.txt    <- auto-generated Context 3 with real numbers
+  behavior_loss_curve.png <- training loss plot
+
+behavior_results.txt MUST be written automatically by the script at the end.
+Fill every single field with real numbers from training.
+Do NOT leave any field blank.
+
+=== WHAT TO DO STEP BY STEP ===
+STEP A:
+Write the complete training script with no errors.
+End with exactly: "Save this as D:\T25301094 P2\workspaces\[NAME]\train_behavior.py — tell me when saved."
+
+STEP B:
+After teammate confirms saved, give this exact command:
+python "D:\T25301094 P2\workspaces\[NAME]\train_behavior.py"
+Say: "Run in PowerShell. Do not close PowerShell. Paste the full terminal output here when done."
+
+STEP C:
+After teammate pastes terminal output, fill and return the complete Context 3 below with real numbers.
+
+=== CONTEXT 3 TEMPLATE ===
+---CONTEXT 3 BEHAVIOR---
+PERSON NAME:
+BASE MODEL:
+DATASET: MmCows (capped 3000/class)
+EPOCHS TRAINED:
+LOSS AT EPOCH 10:
+LOSS AT EPOCH 20:
+LOSS AT EPOCH 30:
+FINAL TRAIN LOSS:
+VAL MACRO F1:
+VAL PER-CLASS ACCURACY:
+  Class 1 (Walking):
+  Class 2 (Standing):
+  Class 3 (Feeding head up):
+  Class 4 (Feeding head down):
+  Class 5 (Licking):
+  Class 6 (Drinking):
+  Class 7 (Lying):
+TEST MACRO F1:
+TEST PER-CLASS ACCURACY:
+  Class 1 (Walking):
+  Class 2 (Standing):
+  Class 3 (Feeding head up):
+  Class 4 (Feeding head down):
+  Class 5 (Licking):
+  Class 6 (Drinking):
+  Class 7 (Lying):
+CHECKPOINT PATH:
+TRAINING TIME (mins):
+EARLY STOPPING TRIGGERED AT EPOCH: (write N/A if completed all 30 epochs)
+ANY ISSUES ENCOUNTERED:
+---END CONTEXT 3---
+
+=== KNOWN ERRORS AND EXACT FIXES ===
+ERROR 1: KeyError: 'label'
+CAUSE: Used groupby().apply() for sampling
+FIX: Use pd.concat with list comprehension as shown in DATASET SAMPLING section above
+
+ERROR 2: FutureWarning about torch.cuda.amp
+CAUSE: Used torch.cuda.amp instead of torch.amp
+FIX: Use torch.amp.GradScaler('cuda') and torch.amp.autocast('cuda')
+
+ERROR 3: [cite: X] SyntaxError
+CAUSE: AI added citation markers inside the script
+FIX: Remove every single [cite: X] tag from the script
+
+ERROR 4: CUDA out of memory
+FIX: Change batch_size from 128 to 64 and rerun
+
+ERROR 5: Training slow (below 5 it/s after epoch 1)
+FIX: Verify all GPU optimizations are applied — cudnn.benchmark, AMP, batch_size=128, num_workers=8
+
+ERROR 6: ModuleNotFoundError
+FIX: pip install [missing module name] then restart PowerShell and rerun
+
+ERROR 7: BackendCompilerFailed / LoweringException with AdaptiveMaxPool2d
+CAUSE: torch.compile incompatible with AdaptiveMaxPool2d on Windows
+FIX: Remove torch.compile(model) entirely — other GPU optimizations are sufficient
+
+ERROR 8: No progress bar visible — terminal appears frozen during training
+CAUSE: tqdm not used in training or validation loops
+FIX: Import tqdm and wrap both loops:
+  Training:   for images, labels in tqdm(train_loader, desc=f"Epoch {epoch}/30"):
+  Validation: for images, labels in tqdm(val_loader, desc="Validating"):
+
+ERROR 9: torch.load FutureWarning about weights_only
+CAUSE: Loading checkpoint without weights_only parameter
+FIX: Change torch.load(path) to torch.load(path, weights_only=True)
+
+ERROR 10: Training runs all 30 epochs even when results plateau
+CAUSE: Early stopping not implemented
+FIX: Implement PATIENCE=10 exactly as shown in EARLY STOPPING section above

@@ -1,0 +1,32 @@
+---CONTEXT 3 BEHAVIOR---
+PERSON NAME: Nusrat
+BASE MODEL: EfficientNetB0
+DATASET: MmCows (capped 3000/class)
+EPOCHS TRAINED: 24
+LOSS AT EPOCH 10: 0.013290
+LOSS AT EPOCH 20: 0.003363
+LOSS AT EPOCH 30: N/A
+FINAL TRAIN LOSS: 0.000979
+VAL MACRO F1: 0.763051
+VAL PER-CLASS ACCURACY:
+  Class 1 (Walking): 70.72%
+  Class 2 (Standing): 71.60%
+  Class 3 (Feeding head up): 76.23%
+  Class 4 (Feeding head down): 63.00%
+  Class 5 (Licking): 96.30%
+  Class 6 (Drinking): 82.55%
+  Class 7 (Lying): 98.53%
+TEST MACRO F1: 0.744548
+TEST PER-CLASS ACCURACY:
+  Class 1 (Walking): 59.78%
+  Class 2 (Standing): 70.00%
+  Class 3 (Feeding head up): 71.97%
+  Class 4 (Feeding head down): 66.07%
+  Class 5 (Licking): 83.96%
+  Class 6 (Drinking): 83.01%
+  Class 7 (Lying): 98.77%
+CHECKPOINT PATH: D:\T25301094 P2\workspaces\nusrat\behavior_best.pth
+TRAINING TIME (mins): 8.95
+EARLY STOPPING TRIGGERED AT EPOCH: 24
+ANY ISSUES ENCOUNTERED: None
+---END CONTEXT 3---

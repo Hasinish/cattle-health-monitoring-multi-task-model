@@ -1,0 +1,333 @@
+CONTEXT 2 — BCS DATASET + TRAINING INSTRUCTIONS (CORRECTED)
+=============================================================
+Last updated: June 4, 2026
+
+=== READ THIS FIRST (FOR AI ONLY) ===
+You are an AI assistant helping a teammate in a cattle health monitoring thesis project.
+The teammate will follow YOUR instructions exactly.
+Your job is to:
+1. Write a complete training script and tell teammate exactly where to save it
+2. Give teammate the EXACT full-path command to run it
+3. Wait for teammate to paste terminal output
+4. Automatically generate their complete Context 3 report from the output
+Do NOT skip any step. Do NOT combine steps. Do one thing at a time and wait.
+
+CRITICAL SCRIPT RULES — READ BEFORE WRITING A SINGLE LINE:
+- Do NOT add any [cite: X] or citation markers anywhere in the script
+- Write pure clean Python only — every line must be valid Python syntax
+- Do NOT use torch.compile(model) — it crashes on Windows with AdaptiveMaxPool2d
+- Do NOT hardcode feature_dim — always detect it dynamically using a dummy forward pass
+- ALWAYS use write mode open(path, 'w') for bcs_results.txt — never append mode 'a'
+- ALWAYS use weights_only=True when loading checkpoints: torch.load(path, weights_only=True)
+- ALWAYS apply the label mapping inside __getitem__ using a dict lookup (see code below)
+  DO NOT use int(label) or float(label) directly — this causes class collapse
+- Test mentally that every line will run without errors before giving the script
+
+=== TEAMMATE INFORMATION ===
+Check Context 1 for this teammate's name and assigned base model.
+Use ONLY their assigned model. No exceptions.
+
+=== WHAT YOU MUST DO — STEP BY STEP ===
+
+STEP A: Write the complete training script.
+- Include CBAM attention module (copy exactly from section below)
+- Include CORAL loss function (copy exactly from section below)
+- Include tqdm progress bar for every epoch showing batch progress
+- Train on Dryad dataset first, then ScienceDB dataset automatically in same script
+- Save best checkpoint based on val MAE
+- At the end automatically save bcs_results.txt in WRITE mode 'w' with all metrics
+- At the end automatically save bcs_loss_curve.png
+- Set random seed 42 at the start
+- Use device = torch.device('cuda') — do not use cpu fallback
+- Apply label mapping inside __getitem__ using dict lookup (see DATASET section)
+After writing the script tell teammate:
+"Save this script EXACTLY here: D:\T25301094 P2\workspaces\[THEIR NAME]\train_bcs.py"
+Then say: "Tell me when you have saved the file."
+
+STEP B: After teammate confirms file is saved, give them this exact command:
+python "D:\T25301094 P2\workspaces\[THEIR NAME]\train_bcs.py"
+Tell them: "Run this command in PowerShell. Training will take 30-60 minutes.
+Do not close PowerShell. Paste the ENTIRE terminal output here when it finishes."
+
+STEP C: After teammate pastes terminal output, generate their complete Context 3 report.
+Fill every field from the terminal output. Do not leave anything blank.
+Format it exactly like the Context 3 template below.
+
+=== ENVIRONMENT INFO ===
+PC: Research PC at BRAC University
+OS: Windows 11
+Python: 3.12.3
+PyTorch: 2.5.1+cu121
+GPU: NVIDIA RTX 4080 16GB VRAM
+CUDA: Available
+RAM: 64GB
+Installed packages: timm, torchvision, scikit-learn, matplotlib,
+tqdm, albumentations, Pillow, pandas, opencv-python
+
+=== FILE STRUCTURE ===
+Base directory: D:\T25301094 P2\
+Workspace folders:
+D:\T25301094 P2\workspaces\hasin\
+D:\T25301094 P2\workspaces\namira\
+D:\T25301094 P2\workspaces\bithi\
+D:\T25301094 P2\workspaces\shouvik\
+D:\T25301094 P2\workspaces\nusrat\
+Save ALL files to the teammate's own workspace folder only.
+
+=== DATASET INFORMATION ===
+
+DATASET 1: Dryad BCS
+Image type: .tif (3-channel DGE: Depth+Grayscale+Edge — compatible with ImageNet pretrained models)
+Size: already 224x224
+BCS Scale: integers 2, 3, 4, 5, 6 (5 classes)
+Label encoding (CRITICAL — must map raw label to class index):
+  DRYAD_LABEL_MAP = {2: 0, 3: 1, 4: 2, 5: 3, 6: 4}
+CSV: D:\T25301094 P2\datasets\bcs\bcs_index.csv
+CSV columns: image_path, label, cow_id, split
+Split values: train / val / test
+Total: 5923 images, 147 cows (cow-wise split — same cow never in train and test)
+Train: 4163 images | Val: 1360 | Test: 400
+
+DATASET 2: ScienceDB BCS
+Image type: .jpg (normal RGB)
+BCS Scale: 3.25, 3.5, 3.75, 4.0, 4.25 (5 classes — float values in CSV)
+Label encoding (CRITICAL — must map raw label to class index):
+  SCIENCEDB_LABEL_MAP = {3.25: 0, 3.5: 1, 3.75: 2, 4.0: 3, 4.25: 4}
+CSV: D:\T25301094 P2\datasets\bcs\sciencedb_bcs_index.csv
+CSV columns: image_path, label, cow_id, split
+Split values: train / val / test
+Total: 53566 images, 10898 cows (cow-wise split)
+Train: 37688 | Val: 7580 | Test: 8298
+
+NOTE on ScienceDB labels: The CSV stores labels as floats (e.g., 3.25, 3.5).
+When reading with pandas, use float(row['label']) as the dict key, not int().
+Using int() will collapse 3.25, 3.5, 3.75 all to 3 — this destroys the task.
+
+Train SEPARATELY on each dataset.
+Two training runs total in one script:
+Run 1 -> Dryad CSV   -> save checkpoint as dryad_bcs_best.pth
+Run 2 -> ScienceDB CSV -> save checkpoint as sciencedb_bcs_best.pth
+
+=== PREPROCESSING ===
+Training split:
+- Resize to 224x224
+- Random horizontal flip (p=0.5)
+- Random rotation +-15 degrees
+- Convert to tensor
+- Normalize: mean=[0.485,0.456,0.406] std=[0.229,0.224,0.225]
+
+Val and Test splits:
+- Resize to 224x224
+- Convert to tensor
+- Normalize: mean=[0.485,0.456,0.406] std=[0.229,0.224,0.225]
+- NO augmentation
+
+=== DATASET CLASS — COPY THIS EXACTLY ===
+Write the Dataset class EXACTLY like this. Do not deviate from the __getitem__ label logic:
+
+class BCSDataset(Dataset):
+    def __init__(self, csv_path, split, label_map, transform=None):
+        self.df = pd.read_csv(csv_path)
+        self.df = self.df[self.df['split'] == split].reset_index(drop=True)
+        self.label_map = label_map
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        row = self.df.iloc[idx]
+        img_path = row['image_path']
+        img = Image.open(img_path).convert('RGB')
+
+        # CRITICAL: apply label mapping via dict lookup — do NOT use int() or float() directly
+        raw_label = row['label']
+        try:
+            key = int(raw_label)       # works for Dryad (2, 3, 4, 5, 6)
+        except (ValueError, TypeError):
+            key = float(raw_label)
+        if key not in self.label_map:
+            key = float(raw_label)     # fallback for ScienceDB float labels
+        label = self.label_map[key]
+
+        if self.transform:
+            img = self.transform(img)
+        return img, torch.tensor(label, dtype=torch.long)
+
+=== MODEL ARCHITECTURE ===
+Backbone: assigned base model from timm (pretrained=True, ImageNet weights)
+
+Create backbone EXACTLY like this (global_pool='' is mandatory for CBAM):
+  backbone = timm.create_model(MODEL_NAME, pretrained=True, num_classes=0, global_pool='')
+  backbone = backbone.to(device)
+
+Detect feature_dim dynamically via dummy forward pass — NEVER hardcode it:
+  with torch.no_grad():
+      dummy = backbone(torch.zeros(1, 3, 224, 224).to(device))
+      feature_dim = dummy.shape[1]
+
+Full model forward pass:
+  features = backbone(x)          # shape: (B, feature_dim, H, W)
+  features = cbam(features)       # shape: (B, feature_dim, H, W)
+  features = pool(features)       # shape: (B, feature_dim, 1, 1)
+  features = features.flatten(1)  # shape: (B, feature_dim)
+  logits   = fc(features)         # shape: (B, 4)  — 4 = num_classes - 1 for CORAL
+
+=== CBAM MODULE — COPY EXACTLY ===
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels, reduction=16):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+        hidden = max(in_channels // reduction, 1)
+        self.fc = nn.Sequential(
+            nn.Linear(in_channels, hidden),
+            nn.ReLU(),
+            nn.Linear(hidden, in_channels)
+        )
+        self.sigmoid = nn.Sigmoid()
+    def forward(self, x):
+        avg = self.fc(self.avg_pool(x).squeeze(-1).squeeze(-1))
+        max_ = self.fc(self.max_pool(x).squeeze(-1).squeeze(-1))
+        return x * self.sigmoid(avg + max_).unsqueeze(-1).unsqueeze(-1)
+
+class SpatialAttention(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv2d(2, 1, kernel_size=7, padding=3)
+        self.sigmoid = nn.Sigmoid()
+    def forward(self, x):
+        avg = torch.mean(x, dim=1, keepdim=True)
+        max_, _ = torch.max(x, dim=1, keepdim=True)
+        return x * self.sigmoid(self.conv(torch.cat([avg, max_], dim=1)))
+
+class CBAM(nn.Module):
+    def __init__(self, in_channels):
+        super().__init__()
+        self.ca = ChannelAttention(in_channels)
+        self.sa = SpatialAttention()
+    def forward(self, x):
+        return self.sa(self.ca(x))
+
+=== LOSS FUNCTION: CORAL — COPY EXACTLY ===
+def coral_loss(logits, labels, num_classes):
+    sets = []
+    for i in range(num_classes - 1):
+        label_i = (labels > i).float()
+        sets.append(label_i)
+    labels_stacked = torch.stack(sets, dim=1)
+    loss = F.binary_cross_entropy_with_logits(logits, labels_stacked)
+    return loss
+
+Prediction from CORAL output:
+predicted_class = (torch.sigmoid(logits) > 0.5).sum(dim=1)
+
+=== HYPERPARAMETERS ===
+optimizer: Adam, lr=1e-3
+scheduler: StepLR(step_size=10, gamma=0.5)
+batch_size: 32
+num_workers: 4
+epochs: 30
+device: torch.device('cuda')
+random_seed: 42
+
+Set seeds at start:
+  import random, numpy as np
+  random.seed(42)
+  np.random.seed(42)
+  torch.manual_seed(42)
+  torch.cuda.manual_seed_all(42)
+
+BATCH SIZE NOTE:
+Default batch_size is 32. This works on the research PC (RTX 4080 16GB).
+If CUDA out of memory error appears ONLY THEN reduce to 16.
+Do NOT change batch size unless that error appears.
+
+=== METRICS ===
+Primary:   MAE = mean(|predicted_class - true_class|)
+           where predicted_class and true_class are ordinal indices 0-4
+Secondary: Accuracy +-0 (exact match %)
+Secondary: Accuracy +-1 (within 1 ordinal class %)
+Track on validation set every epoch. Save best checkpoint when val MAE improves.
+Final evaluation on test set using best checkpoint.
+
+=== CHECKPOINT LOADING ===
+ALWAYS use weights_only=True to avoid FutureWarning and security issues:
+  model.load_state_dict(torch.load(checkpoint_path, weights_only=True))
+
+=== OUTPUT FILES TO GENERATE ===
+D:\T25301094 P2\workspaces\[name]\train_bcs.py
+D:\T25301094 P2\workspaces\[name]\dryad_bcs_best.pth
+D:\T25301094 P2\workspaces\[name]\sciencedb_bcs_best.pth
+D:\T25301094 P2\workspaces\[name]\bcs_results.txt
+D:\T25301094 P2\workspaces\[name]\bcs_loss_curve.png
+
+bcs_results.txt rules:
+- Must be auto-generated by the script at the end of both training runs
+- Open in WRITE mode: open(results_path, 'w') — NEVER append mode 'a'
+- Must contain the complete Context 3 template filled with real numbers from training
+- Do not leave any field blank
+
+=== CONTEXT 3 TEMPLATE (fill from terminal output) ===
+---CONTEXT 3 BCS---
+PERSON NAME:
+BASE MODEL:
+
+DATASET: Dryad
+EPOCHS TRAINED:
+LOSS AT EPOCH 10:
+LOSS AT EPOCH 20:
+LOSS AT EPOCH 30:
+FINAL TRAIN LOSS:
+VAL MAE:
+VAL ACCURACY +-0 (exact match):
+VAL ACCURACY +-1 (within 1 class):
+TEST MAE:
+TEST ACCURACY +-0:
+TEST ACCURACY +-1:
+CHECKPOINT PATH:
+TRAINING TIME (mins):
+ANY ISSUES ENCOUNTERED:
+
+DATASET: ScienceDB
+EPOCHS TRAINED:
+LOSS AT EPOCH 10:
+LOSS AT EPOCH 20:
+LOSS AT EPOCH 30:
+FINAL TRAIN LOSS:
+VAL MAE:
+VAL ACCURACY +-0 (exact match):
+VAL ACCURACY +-1 (within 1 class):
+TEST MAE:
+TEST ACCURACY +-0:
+TEST ACCURACY +-1:
+CHECKPOINT PATH:
+TRAINING TIME (mins):
+ANY ISSUES ENCOUNTERED:
+---END CONTEXT 3---
+
+=== COMMON ERRORS AND FIXES ===
+Error: CUDA out of memory
+Fix: Change batch_size from 32 to 16. Rerun.
+
+Error: FileNotFoundError on CSV path
+Fix: Check CSV path matches exactly as written above.
+
+Error: PIL cannot open .tif file
+Fix: Run in PowerShell: pip install imageio
+Then restart PowerShell and rerun.
+
+Error: ModuleNotFoundError: No module named X
+Fix: Run: pip install X then restart PowerShell and rerun.
+
+Error: FutureWarning on torch.load about weights_only
+Fix: Change torch.load(path) to torch.load(path, weights_only=True)
+
+Error: Results look suspiciously good on ScienceDB (MAE < 0.3, accuracy > 90%)
+Cause: Label mapping was not applied — int() collapsed float labels to 2 classes
+Fix: Check __getitem__ — raw ScienceDB labels are floats (3.25, 3.5, etc.)
+     Must use dict lookup with float key, not int() conversion
+
+Error: Training stuck at epoch 1 for more than 10 minutes
+Fix: Run nvidia-smi in new PowerShell window.
+If GPU-Util shows 0% — message Hasin immediately.

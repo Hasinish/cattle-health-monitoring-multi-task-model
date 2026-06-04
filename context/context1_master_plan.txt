@@ -1,0 +1,266 @@
+CONTEXT 1 — MASTER PLAN (CORRECTED)
+======================================
+Last updated: June 4, 2026
+
+THESIS: Multi-Task Deep Learning Framework for Unified Cattle Health and Behavior Monitoring
+UNIVERSITY: BRAC University | SUPERVISOR: Dr. Md. Khalilur Rahman
+DEADLINE: June 10, 2026 (P2 Submission) | TEAM: 5 members
+
+BASE MODELS (fixed, used for ALL tasks):
+- Hasin   → ResNet-18
+- Namira  → MobileNetV3-Small
+- Bithi   → ResNet-50
+- Shouvik → DenseNet121
+- Nusrat  → EfficientNetB0
+
+==========================================================================
+CORE WORKFLOW (repeat for every task):
+==========================================================================
+STEP 1 → Hasin downloads + preprocesses datasets
+STEP 2 → Hasin writes Context 2
+STEP 3 → All 5 train simultaneously on their base model
+STEP 4 → Each person writes Context 3
+STEP 5 → Hasin compares results, runs ablations, writes Context 4
+STEP 6 → Next task
+After all tasks:
+STEP 7 → Select winning backbone
+STEP 8 → Build multi-task model
+STEP 9 → Sequential training
+STEP 10 → Write P2 report
+
+==========================================================================
+CURRENT WORKFLOW PROGRESS (as of June 4, 2026):
+==========================================================================
+BCS TASK:
+  [DONE] Namira, Bithi, Shouvik, Nusrat trained + Context 3 written
+  [INVALID - MUST REDO] Hasin (ResNet-18) — label mapping bug, results are wrong
+  [NOT DONE] Context 4 / ablation studies (CORAL vs CE, CBAM vs no CBAM, etc.)
+
+BEHAVIOR TASK:
+  [DONE - but non-standard] Hasin (ResNet-18) — used 10k/class cap instead of 3k, 50 epochs instead of 30. Must redo.
+  [DONE] Nusrat (EfficientNetB0) — correct, Test Macro F1 = 0.7445
+  [NOT DONE] Namira, Bithi, Shouvik — scripts and results missing
+
+LAMENESS TASK:   [NOT STARTED] Dataset folder is empty.
+ID TASK:         [NOT STARTED] Dataset folder is empty.
+
+==========================================================================
+ARCHITECTURE:
+==========================================================================
+Input: 224x224, 3-channel
+  - Dryad BCS: DGE channels (Depth + Grayscale + Edge) — NOT standard RGB
+  - ScienceDB BCS: standard RGB (.jpg)
+  - MmCows Behavior: standard RGB (.jpg)
+  NOTE: Primary modality is RGB. Depth (Dryad DGE) is used as a secondary
+  BCS-specific input. The 3-channel format is compatible with ImageNet-pretrained
+  backbones in all cases since DGE produces 3 channels like RGB.
+
+→ Shared Backbone (winning model from comparison)
+→ CBAM Attention Module
+  - Channel Attention: AdaptiveAvgPool + AdaptiveMaxPool → FC → Sigmoid
+  - Spatial Attention: Mean+Max channel concat → Conv2d(2,1,k=7) → Sigmoid
+→ AdaptiveAvgPool2d(1) → Flatten
+→ 4 Task Heads:
+   - BCS Head      (CORAL loss, ordinal regression, 4 outputs = num_classes-1)
+   - Behavior Head (Focal Loss gamma=2 alpha=0.25, 7 classes)
+   - Lameness Head (BCE, binary: lame / not lame)
+   - ID Head       (Softmax or Triplet Loss, N cattle classes)
+
+==========================================================================
+MULTI-TASK LOSS:
+==========================================================================
+L_total = w1*L_BCS + w2*L_behavior + w3*L_lameness + w4*L_ID
+
+Default weights: w1=0.35, w2=0.35, w3=0.15, w4=0.15
+Rationale: BCS and Behavior have full training runs and public datasets.
+Lameness and ID are preliminary with limited data. Weights reflect this.
+NOTE: Weights may be fine-tuned based on validation performance. Equal
+weighting (0.25 each) can be used as a baseline for comparison.
+
+==========================================================================
+SEQUENTIAL TRAINING ORDER:
+==========================================================================
+Phase 1 → Load ImageNet weights into backbone
+Phase 2 → Frozen backbone → Train BCS head (CORAL loss)
+Phase 3 → Frozen backbone → Train Behavior head (Focal loss)
+Phase 4 → Frozen backbone → Train Lameness head (BCE)
+Phase 5 → Frozen backbone → Train ID head (Softmax/Triplet)
+Phase 6 (optional, time permitting) → Unfreeze backbone → Joint fine-tuning
+
+==========================================================================
+PREPROCESSING STANDARD (all datasets):
+==========================================================================
+- Resize: 224x224
+- Normalize: mean=[0.485,0.456,0.406] std=[0.229,0.224,0.225] (ImageNet stats)
+- Augmentation (training split only):
+    * Random horizontal flip (p=0.5)
+    * Random rotation ±15 degrees
+    NOTE: CLAHE was listed in P1 methodology but was NOT implemented in any
+    BCS or Behavior training script. For consistency and reproducibility, CLAHE
+    is excluded from training. It is listed as a future augmentation option.
+- Augmentation (val/test splits): NONE
+- Split strategy: COW-WISE (same cow NEVER in train and test)
+- Ratio: 70% train / 15% val / 15% test
+- Format: PyTorch Dataset class
+- Behavior dataset: cap each class at max 3000 images to address severe imbalance
+
+==========================================================================
+TASKS SCOPE:
+==========================================================================
+- BCS       → FULL results + ablation studies
+- Behavior  → FULL results
+- Lameness  → Preliminary only (10 epochs, EfficientNetB0 only)
+              [BLOCKED: lameness dataset not yet downloaded]
+- ID        → Preliminary only (10 epochs, EfficientNetB0 only)
+              [BLOCKED: ID dataset not yet downloaded]
+
+==========================================================================
+DATASETS USED:
+==========================================================================
+BCS:
+  Dryad BCS    → 5923 images, 147 cows, 5 classes (BCS 2-6), DGE format
+                 Labels used: {2:0, 3:1, 4:2, 5:3, 6:4}
+  ScienceDB    → 53566 images, 10898 cows, 5 classes (BCS 3.25-4.25), RGB
+                 Labels used: {3.25:0, 3.5:1, 3.75:2, 4.0:3, 4.25:4}
+
+Behavior:
+  MmCows       → 213686 images, 16 cows, 7 classes (1=Walking...7=Lying), RGB
+                 Severely imbalanced (42:1 ratio). Cap at 3000/class for training.
+                 Label encoding: raw label - 1 (so 1→0, 2→1, ..., 7→6)
+
+Lameness:      [NOT YET DOWNLOADED — datasets\lameness\ is empty]
+ID:            [NOT YET DOWNLOADED — datasets\id\ is empty]
+
+Cross-dataset Behavior Evaluation (Ablation #5):
+  CBVD-5       [NOT YET DOWNLOADED — required for cross-dataset evaluation]
+               Download before running ablations.
+
+==========================================================================
+BACKBONE SELECTION TABLE (fill after all training):
+==========================================================================
+Primary metric: BCS Test MAE (lower is better), Behavior Test Macro F1 (higher is better)
+Note: MAE is reported on ordinal class indices (0-4), not original BCS scale.
+
+Model             | BCS MAE  | Behavior F1 | Lameness AUC | ID Top-1 | Avg Rank
+                  |(Dryad/Sci)|             |              |          |
+------------------|----------|-------------|--------------|----------|----------
+ResNet-18         |[INVALID] | [INVALID]   |   pending    | pending  |
+MobileNetV3-Small | 0.5250 / |   pending   |   pending    | pending  |
+                  | 0.7090   |             |              |          |
+ResNet-50         | 0.6300 / |   pending   |   pending    | pending  |
+                  | 0.6485   |             |              |          |
+DenseNet121       | 0.5875 / |   pending   |   pending    | pending  |
+                  | 0.6292   |             |              |          |
+EfficientNetB0    | 0.5650 / |   0.7445    |   pending    | pending  |
+                  | 0.5193   |             |              |          |
+
+ResNet-18 results are INVALID due to label mapping bug. Must rerun.
+Best average rank = shared backbone for multi-task model.
+
+==========================================================================
+ABLATION STUDIES:
+==========================================================================
+1. CORAL vs Cross-Entropy for BCS
+2. With CBAM vs Without CBAM (BCS)
+3. RGB only vs RGB+Depth (Dryad DGE)
+4. Focal Loss vs Cross-Entropy (Behavior)
+5. Cross-dataset eval: MmCows → CBVD-5 (Behavior)
+   [NOTE: CBVD-5 dataset not yet downloaded. Must download before running.]
+6. Best backbone vs others (all tasks)
+7. Single-task vs Multi-task (BCS + Behavior)
+
+==========================================================================
+BCS METRICS (as reported in training scripts):
+==========================================================================
+Primary:   MAE = mean(|predicted_class - true_class|)
+           where classes are ordinal indices 0-4
+Secondary: Accuracy ±0 (exact class match)
+           Accuracy ±1 (within 1 ordinal class)
+
+NOTE: For P1 report, metrics were described as ±0.25 and ±0.5 BCS accuracy.
+These correspond to:
+  ±1 ordinal class on Dryad  = ±1 step on BCS scale 2-6 (= ±1 unit)
+  ±1 ordinal class on SciDB  = ±1 step on BCS scale 3.25-4.25 (= ±0.25 BCS)
+Map these when writing Chapter 4 to stay consistent with P1 claims.
+
+==========================================================================
+FILE STRUCTURE (verified against actual disk):
+==========================================================================
+D:\T25301094 P2\
+├── context\
+├── datasets\
+│   ├── bcs\
+│   │   ├── bcs_index.csv              (5923 rows, Dryad)
+│   │   ├── sciencedb_bcs_index.csv    (53566 rows, ScienceDB)
+│   │   ├── dryad_bcs\                 (0.83 GB, .tif DGE images)
+│   │   └── sciencedb_bcs\             (26 GB, .jpg RGB images + archive)
+│   ├── behavior\
+│   │   ├── behavior_index.csv         (213686 rows, MmCows)
+│   │   └── mmcows\                    (25 GB, .jpg RGB images + archive)
+│   ├── lameness\                      [EMPTY — dataset not downloaded]
+│   └── id\                            [EMPTY — dataset not downloaded]
+├── final_models\                      [EMPTY — multi-task phase not started]
+└── workspaces\
+    ├── hasin\    (BCS: INVALID results | Behavior: non-standard, needs redo)
+    ├── namira\   (BCS: valid | Behavior: NOT DONE)
+    ├── bithi\    (BCS: valid | Behavior: NOT DONE)
+    ├── shouvik\  (BCS: valid | Behavior: NOT DONE)
+    └── nusrat\   (BCS: valid | Behavior: valid — Test F1=0.7445)
+
+==========================================================================
+P2 REPORT STRUCTURE:
+==========================================================================
+Chapter 1: Introduction (from P1, minor update on scope/progress)
+Chapter 2: Literature Review (from P1, unchanged)
+Chapter 3: Methodology (NEW — full implementation details)
+  3.1 Dataset descriptions and preprocessing
+  3.2 Architecture (backbone, CBAM, task heads)
+  3.3 Loss functions (CORAL, Focal, BCE, Triplet/Softmax)
+  3.4 Sequential training strategy
+  3.5 Evaluation metrics per task
+Chapter 4: Single-Task Results
+  4.1 BCS — full results + ablations
+  4.2 Behavior — full results
+  4.3 Lameness — preliminary
+  4.4 ID — preliminary
+Chapter 5: Multi-Task Results
+  5.1 Backbone selection (from comparison table above)
+  5.2 Sequential training results
+  5.3 Single-task vs Multi-task comparison (BCS + Behavior)
+  5.4 Discussion
+Chapter 6: Conclusion + Future Work
+  (CLAHE, temporal modeling, federated learning, other breeds, thermal)
+
+==========================================================================
+IMMEDIATE ACTION ITEMS BEFORE JUNE 10:
+==========================================================================
+PRIORITY 1 — Fix and rerun Hasin's BCS (ResNet-18)
+  Bug: label mapping missing → class collapse on ScienceDB
+  Fix: add DRYAD_LABEL_MAP={2:0,3:1,4:2,5:3,6:4}
+       add SCIENCEDB_LABEL_MAP={3.25:0,3.5:1,3.75:2,4.0:3,4.25:4}
+  ETA: ~60 mins training time
+
+PRIORITY 2 — Fix and rerun Hasin's Behavior (ResNet-18)
+  Bug: 10k/class cap instead of 3k, 50 epochs instead of 30
+  Fix: change cap to 3000, MAX_EPOCHS to 30
+  ETA: ~20 mins training time
+
+PRIORITY 3 — Run Behavior training for Namira, Bithi, Shouvik
+  Each needs train_behavior.py written and run
+  ETA: ~10-20 mins each
+
+PRIORITY 4 — Download Lameness and ID datasets + preprocess
+  Lameness: CattleLameness or Mendeley Lameness Dataset
+  ID: OpenCows2020 or Cows2021
+  Run 10 epochs with EfficientNetB0 only (Nusrat)
+
+PRIORITY 5 — Download CBVD-5 for cross-dataset behavior ablation
+  Required for Ablation Study #5
+
+PRIORITY 6 — Run ablation studies (Hasin)
+  After BCS results are valid: CORAL vs CE, CBAM vs no CBAM, RGB vs DGE
+
+PRIORITY 7 — Build and train multi-task model (all)
+  After backbone selection table is filled
+
+==========================================================================
