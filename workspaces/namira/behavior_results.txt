@@ -1,0 +1,32 @@
+---CONTEXT 3 BEHAVIOR---
+PERSON NAME: Namira
+BASE MODEL: MobileNetV3-Small
+DATASET: MmCows (capped 3000/class)
+EPOCHS TRAINED: 30
+LOSS AT EPOCH 10: 0.040425
+LOSS AT EPOCH 20: 0.015269
+LOSS AT EPOCH 30: 0.004966
+FINAL TRAIN LOSS: 0.004966
+VAL MACRO F1: 0.7271
+VAL PER-CLASS ACCURACY:
+  Class 1 (Walking): 72.97%
+  Class 2 (Standing): 64.13%
+  Class 3 (Feeding head up): 74.13%
+  Class 4 (Feeding head down): 56.47%
+  Class 5 (Licking): 94.91%
+  Class 6 (Drinking): 81.82%
+  Class 7 (Lying): 96.10%
+TEST MACRO F1: 0.6810
+TEST PER-CLASS ACCURACY:
+  Class 1 (Walking): 61.42%
+  Class 2 (Standing): 60.93%
+  Class 3 (Feeding head up): 65.83%
+  Class 4 (Feeding head down): 66.93%
+  Class 5 (Licking): 59.43%
+  Class 6 (Drinking): 80.82%
+  Class 7 (Lying): 94.77%
+CHECKPOINT PATH: D:\T25301094 P2\workspaces\namira\behavior_best.pth
+TRAINING TIME (mins): 6.97
+EARLY STOPPING TRIGGERED AT EPOCH: N/A
+ANY ISSUES ENCOUNTERED: None
+---END CONTEXT 3---
