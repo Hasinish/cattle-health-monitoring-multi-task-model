@@ -13,7 +13,7 @@ This document serves as the **definitive, exhaustive study guide** for the Thesi
 #### The Problem with Traditional Approaches:
 In a standard computer vision pipeline *(the step-by-step process of feeding an image from a camera into an AI to get a prediction)*, monitoring a dairy farm would require deploying **four completely separate Convolutional Neural Networks (CNNs)** *(deep learning algorithms specifically engineered to recognize shapes, colors, and edges in photos)*:
 1. One network to predict Body Condition Score (BCS) *(a standardized visual grading system from 1 to 5 used to estimate a cow's body fat reserves)*.
-2. One network to classify Behavior *(lying, standing, drinking, licking)*.
+2. One network to classify Behavior *(lying, standing, drinking, licking, etc.)*.
 3. One network to detect Lameness *(limping)*.
 4. One network to identify the specific Cow (ID) *(ear tag/marking recognition)*.
 
@@ -50,14 +50,22 @@ The parameters `w1, w2, w3, w4` are **loss weights** *(multipliers that control 
 ##### Actual Technical Example:
 During training, if the Behavior task has a very high loss of 2.5, and the Lameness task has a low loss of 0.1, the network will focus almost entirely on adjusting its weights to minimize the Behavior loss. This is called task domination or destructive interference *(when one task's large error updates override and erase the progress made on other tasks)*. By scaling the loss weights (e.g., `w1=0.35, w2=0.35, w3=0.15, w4=0.15`), we force the optimization gradients *(the directional math values indicating how to adjust the model's weights to reduce the error)* to have similar magnitudes, ensuring the network learns both tasks simultaneously. This is handled by the optimizer *(the algorithm, like Adam or SGD, that uses gradients to update the model's weights during training)*.
 
-#### Backbone Selection Process
-To find the perfect "shared brain," the 5 group members individually trained single-task baseline models *(simple, single-task models trained to establish a performance benchmark before building the multi-task model)* on 5 different architectures *(the specific structure and arrangement of layers in a neural network)*:
-* **ResNet-18** (Hasin)
-* **MobileNetV3-Small** (Namira)
-* **ResNet-50** (Bithi)
-* **DenseNet121** (Shouvik)
-* **EfficientNetB0** (Nusrat)
-The group evaluated these backbones to select the one with the lowest combined error (lowest BCS error + highest Behavior F1-score) to serve as the foundation of the Multi-Task model.
+#### Backbone Selection Process & Baseline Results
+To find the perfect "shared brain," the 5 group members individually trained single-task baseline models *(simple, single-task models trained to establish a performance benchmark before building the multi-task model)* on 5 different architectures *(the specific structure and arrangement of layers in a neural network)*. The primary metrics tracked are BCS Test MAE *(Mean Absolute Error on the 0-4 scale)*, Behavior Test Macro F1 *(higher is better)*, and Lameness Test AUC *(Area Under the ROC Curve)*.
+
+Here is the baseline performance table showing the results of each base model:
+
+| Model Architecture | BCS Test MAE (Dryad / SciDB) | Behavior Test Macro F1 | Lameness Test AUC (Spatial / Spatiotemporal) | ID Top-1 Accuracy | Average Rank |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **ResNet-18** (Hasin) | 0.8675 / 0.5800 | 0.7134 | 0.8400 (ST) | Pending | 4th |
+| **MobileNetV3-Small** (Namira) | 0.5250 / 0.7090 | 0.6810 | Pending | Pending | 5th |
+| **ResNet-50** (Bithi) | 0.6300 / 0.6485 | 0.7037 | Pending | Pending | 3rd |
+| **DenseNet121** (Shouvik) | 0.5875 / 0.6292 | 0.7366 | Pending | Pending | 2nd |
+| **EfficientNetB0** (Nusrat) | 0.5650 / 0.5193 | 0.7445 | 0.9829 (Spatial) / 0.9600 (ST*) | Pending | **1st (Selected)** |
+
+*\*Note: The 0.9600 Spatiotemporal (ST) AUC was achieved using a ResNet18-LSTM sequence model.*
+
+The backbone with the best average rank is **EfficientNetB0** (Nusrat), which achieves a Test MAE of `0.5650` (Dryad) and `0.5193` (ScienceDB), a Behavior Test F1 of `0.7445`, and a Lameness Test AUC of `0.9829` (Spatial). It serves as the shared backbone for the final Multi-Task model.
 
 #### Architectural Enhancements: CBAM (Convolutional Block Attention Module)
 Between the backbone and the heads, we inject a **CBAM** module *(a visual attention mechanism that guides the network to focus on relevant features and locations)*.
@@ -89,7 +97,7 @@ Imagine a cow walks by and the model outputs the following probabilities for the
 * Node 3 (>3.75): **15%** (below 50% threshold $\rightarrow$ **0**)
 * Node 4 (>4.00): **2%**  (below 50% threshold $\rightarrow$ **0**)
 
-We get the binary array *(a list containing only 0s and 1s representing binary decisions)* `[1, 1, 0, 0]`. We sum these numbers: `1 + 1 + 0 + 0 = 2`. The predicted class index *(the integer position of an class in a list, starting at 0)* is **2**, which corresponds to a score of **3.75**.
+We get the binary array *(a list containing only 0s and 1s representing binary decisions)* `[1, 1, 0, 0]`. We sum these numbers: `1 + 1 + 0 + 0 = 2`. The predicted class index *(the integer position of a class in a list, starting at 0)* is **2**, which corresponds to a score of **3.75**.
 
 ##### Why this is revolutionary for our model:
 CORAL mathematically guarantees that predicting a `3.75` when the truth is `3.5` results in a tiny loss penalty, while predicting `4.25` results in a massive penalty. This dramatically drives down our **MAE (Mean Absolute Error)** *(the average absolute difference between the predicted value and the actual true score)*.
@@ -102,8 +110,20 @@ CORAL mathematically guarantees that predicting a `3.75` when the truth is `3.5`
 #### The Imbalance Problem (MmCows Dataset)
 Cow behavior is naturally skewed. A cow spends 80% of its day just *Lying* or *Standing* (resulting in tens of thousands of images), but spends very little time *Drinking* or *Licking* (resulting in a few hundred images).
 
+##### The 7 Behavior Classes:
+The dataset is classified into the following 7 categories:
+* **Class 1 (Walking)**
+* **Class 2 (Standing)**
+* **Class 3 (Feeding head up)**
+* **Class 4 (Feeding head down)**
+* **Class 5 (Licking)**
+* **Class 6 (Drinking)**
+* **Class 7 (Lying)**
+
+*Note: During data loading, these are mapped to 0-indexed labels `0-6` by subtracting 1 (e.g. Class 1 becomes Label 0).*
+
 ##### Actual Technical Example:
-If the dataset has 40,000 images of "Lying" cows and only 200 images of "Licking" cows, a model using standard Cross-Entropy loss *(the standard loss function used for classification tasks to measure the difference between predicted probability distributions and target classes)* will learn that it can get 99.5% accuracy by always outputting "Lying", even if it gets every single "Licking" image wrong. The AI stops learning how to detect rare behaviors due to class imbalance *(a dataset state where some categories have vastly more samples than others)*.
+If the dataset has 49,848 images of "Standing" cows (Class 2) and only 1,365 images of "Licking" cows (Class 5) in the training split, a model using standard Cross-Entropy loss *(the standard loss function used for classification tasks to measure the difference between predicted probability distributions and target classes)* will learn that it can get a high accuracy score by always outputting "Standing," even if it gets every single "Licking" image wrong. The AI stops learning how to detect rare behaviors due to class imbalance *(a dataset state where some categories have vastly more samples than others)*.
 
 #### The Solution: Focal Loss
 Focal Loss *(an altered loss function that dynamically scales the loss based on prediction confidence to focus training on hard, rare examples)* dynamically alters the penalty the AI receives based on *how confident and correct* it is.
@@ -178,7 +198,7 @@ AUC *(Area Under the Receiver Operating Characteristic Curve, a metric measuring
 Accuracy is dependent on an arbitrary decision threshold *(the probability cutoff value used to assign a sample to a class)*, which defaults to `0.50` (50%).
 
 ##### Actual Technical Example:
-Because the lameness training set was small, the model's probability outputs shifted higher. It was outputting a `0.55` (55%) probability for perfectly healthy cows and `0.85` (85%) for lame cows.
+Because the lameness training set was small (50 videos total), the model's probability outputs shifted higher. It was outputting a `0.55` (55%) probability for perfectly healthy cows and `0.85` (85%) for lame cows.
 * Because `0.55 > 0.50`, the default accuracy metric classified the healthy cows as Lame, generating False Positives *(healthy cases incorrectly flagged by the model as diseased or abnormal)* and dragging the accuracy score down to 60%.
 * Shifting the decision threshold from `0.50` to `0.70` (so only scores > 0.70 are classified as Lame) correctly separates the classes. The test accuracy immediately jumped to 90%+.
 
@@ -201,21 +221,38 @@ Imagine Deployed Video Inference *(running a trained model in a live production 
 
 ---
 
-### Part 8: Codebase & Implementation Deep Dive
-*(Critical data pipeline and hardware optimization strategies)*
+### Part 8: Codebase & Preprocessing Deep Dive
+*(Critical data pipeline, dataset splits, and hardware optimization strategies)*
 
-#### 1. Dataset Anomalies & Handling:
-We resolve dataset anomalies *(inconsistencies, missing values, or format mismatches present in raw data)* during preprocessing:
-* **BCS Datasets:** We train on two completely different datasets:
-  * **Dryad:** 5,923 images using **Depth Grayscale Edge (DGE)** format *(an image format where pixel intensities represent distance from the sensor rather than visible color, combined with edge enhancement)* instead of standard RGB *(Red, Green, Blue, the standard color channel format for digital images)*. It uses a label scale of 2 to 6.
-  * **ScienceDB:** 53,566 images in standard RGB, using a scale of 3.25 to 4.25.
-  * **The Fix:** Both datasets are dynamically mapped to a unified `0-4` ordinal index during data loading so the CORAL framework can process them interchangeably without crashing.
+#### 1. Dataset Sizes, Splits, and Formats:
+We resolve dataset anomalies *(inconsistencies, missing values, or format mismatches present in raw data)* during preprocessing. The split ratio is set to `70% train / 15% val / 15% test` based on the number of unique cows/videos:
+
+* **Dryad BCS:** 5,923 total images from 147 unique cows. Standard format: Depth Grayscale Edge (DGE) *(an image format where pixel intensities represent distance from the sensor rather than visible color, combined with edge enhancement)*. Labels: `2-6`.
+  * **Train split:** 102 cows (4,163 images)
+  * **Validation split:** 22 cows (1,360 images)
+  * **Test split:** 23 cows (400 images)
+* **ScienceDB BCS:** 53,566 total images from 10,898 unique cows. Standard format: RGB. Labels: `3.25-4.25`.
+  * **Train split:** 7,628 cows (37,688 images)
+  * **Validation split:** 1,634 cows (7,580 images)
+  * **Test split:** 1,636 cows (8,298 images)
+* **MmCows Behavior:** 213,686 total images from 16 unique cows. Standard format: RGB. Labels: `1-7`.
+  * **Train split:** 11 cows (148,401 images)
+  * **Validation split:** 2 cows (25,134 images)
+  * **Test split:** 3 cows (40,151 images)
+* **CattleLameness:** 50 total videos (25 Lame, 25 Normal), sub-sampled to 20 frames per video (total 1,000 frames). Standard format: RGB video. Labels: `0 (Normal)` and `1 (Lame)`.
+  * **Train split:** 34 videos (680 frames)
+  * **Validation split:** 6 videos (120 frames)
+  * **Test split:** 10 videos (200 frames)
+
+*Note: Both BCS datasets are dynamically mapped to a unified `0-4` ordinal index during data loading so the CORAL framework can process them interchangeably without crashing.*
+
+#### 2. Class Balancing via Capping:
 * **Behavior Dataset (MmCows):** This dataset has a massive 42:1 class imbalance. While Focal Loss fixes the loss gradients, we implement a **hard data cap** *(setting a strict upper limit on the number of samples processed per class during an epoch)* during loading (`group.sample(min(len(group), 3000), random_state=42)`). This restricts majority classes (like Lying) to a maximum of 3,000 images per epoch *(one complete pass of the entire training dataset through the neural network)*.
 
 ##### Actual Technical Example:
 Instead of processing 40,000 identical frames of lying cows (which adds redundant training time and memory overhead), the model trains on a balanced subset of 3,000 lying images per epoch, allowing faster epochs while retaining the representation of the rare behaviors (200 samples).
 
-#### 2. Hardware & Compute Optimizations:
+#### 3. Hardware & Compute Optimizations:
 * **Automatic Mixed Precision (AMP):** We use Automatic Mixed Precision (AMP) *(a training technique that dynamically uses both 16-bit and 32-bit floating-point numbers to accelerate training and reduce memory)* via PyTorch `torch.amp.autocast` and `GradScaler` *(a PyTorch utility that prevents underflow by scaling gradients when using 16-bit precision)*.
 
 ##### Actual Technical Example:
@@ -281,3 +318,23 @@ Ablation studies *(an experimental investigation where specific components of an
 * **The Study:** We train separate, individual networks for each task versus training a single unified model where all four prediction heads share the same backbone.
 * **Actual Technical Example:** This ablation measures the impact of shared parameter representation. Training all four heads together forces the backbone to learn general visual features (like animal contour lines) that benefit all tasks. This shared learning acts as a regularizer, reducing test errors compared to single-task baselines while slashing VRAM usage by 4x.
 
+---
+
+### Part 11: Data Leakage Prevention via Cow-Wise Group Splitting
+*(Enforcing strict partition boundaries between training and testing subjects to prevent over-optimistic results)*
+
+Data Leakage *(when training data contains information that the model would not have access to in a real-world deployment, leading to overly optimistic training results but poor generalization)* is a major concern when multiple images are captured from the same subject.
+
+#### The Risk: Identity Leakage
+If multiple images or video frames of Cow #1042 are collected under the same camera background, lighting, and weather conditions, a simple random split will place some images of Cow #1042 in the training set and others in the validation set *(a subset of the dataset used to evaluate model performance and tune hyperparameters during training)* or test set *(a subset of the dataset held out until the end of training to provide an unbiased evaluation of the final model)*.
+* **The Result:** The model will experience identity leakage *(a form of data leakage where the model memorizes the visual identity of the subject rather than learning the task-specific features)*. It will memorize Cow #1042's ear tag, skin markings, or shape of horns to output a BCS score, rather than learning general markers of body fat. This leads to 99% validation accuracy but immediate failure in live deployment on new cows.
+
+#### Our Solution: Cow-Wise Group Splitting
+To prevent this, all our dataset preprocessing pipelines use **Cow-Wise Group Splitting** *(partitioning data so that images of a specific cow are strictly contained in either the train, validation, or test split, and never shared across splits)*. 
+
+##### Actual Technical Example:
+1. During dataset creation, we extract the `cow_id` or `video_id` for every image frame (e.g. `Lame_1`, `GS_1035`, etc.).
+2. We compile a list of all unique cow IDs.
+3. We shuffle this list of unique cows and assign them to splits: 70% of unique cow IDs are assigned to `train_cows`, 15% to `val_cows`, and 15% to `test_cows`.
+4. All images belonging to these specific cows are grouped accordingly. This acts as a GroupKFold *(a cross-validation technique where the data is split such that the same group does not appear in both training and validation folds)* split.
+This mathematically guarantees that the validation and test sets only contain out-of-distribution *(data that comes from a different distribution than the training data, such as a different farm, lighting condition, or camera angle)* cows that the backbone network has never processed before, proving the model has learned true biological and kinematic markers.
