@@ -1,0 +1,14 @@
+# Model Checkpoints
+*.pth
+
+# Large Datasets
+datasets/
+
+# Python Cache
+__pycache__/
+*.pyc
+
+# IDE/Jupyter Notebooks
+.ipynb_checkpoints/
+.vscode/
+.idea/
