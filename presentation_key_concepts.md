@@ -21,7 +21,7 @@ In a standard computer vision pipeline *(the step-by-step process of feeding an 
 * **Massive Memory Overhead:** Running four networks simultaneously requires 4x the GPU memory (VRAM) *(the temporary storage space on a graphics card used to hold the AI's math operations)* and RAM. 
 * **High Inference Latency:** Processing a single frame takes 4x longer *(inference latency is the delay between the camera capturing the photo and the AI outputting the final answer)*.
 * **Hardware Constraints:** It is completely impossible to run four separate heavy models on cheap, low-power **edge devices** *(small, affordable computers like a $50 Raspberry Pi that are installed directly on the farm camera, rather than in an expensive cloud server)*.
-* **Missing Synergy:** In reality, predicting BCS and identifying a cow share overlapping visual features (like the shape of the cow's back or its fur pattern). Four separate models waste time relearning the exact same basic edge and shape detection math from scratch.
+* **Missing Synergy:** In reality, predicting BCS and identifying a cow naturally share overlapping visual features (like the shape of the cow's back or its fur pattern). Four separate models waste time relearning the exact same basic edge and shape detection math from scratch.
 
 #### The Solution: Hard Parameter Sharing (Our Approach)
 Instead of four disconnected models, our project utilizes **Hard Parameter Sharing** *(forcing different AI tasks to share the exact same foundational layers)*. 
@@ -112,7 +112,7 @@ We engineered a hybrid architecture that fuses spatial feature extraction *(unde
 2. **The Temporal Component (The LSTM Module):** The sequence of feature vectors is fed sequentially into a **Long Short-Term Memory (LSTM)** *(a specialized recurrent neural network designed to remember long sequences of data)* inside the Lameness/Behavior task heads. 
 
 #### How the LSTM Works (The Memory Gates):
-The LSTM possesses an internal "memory cell" (hidden state) that tracks the cow's movements from frame to frame using three gating mechanisms *(mathematical filters that control the flow of memory)*:
+The LSTM possesses an internal "memory cell" (cell state) along with a hidden state that track the cow's movements from frame to frame using three gating mechanisms *(mathematical filters that control the flow of memory)*:
 * **The Forget Gate:** Looks at the new frame and decides what old information is no longer relevant and should be erased from memory (e.g., a bird flying past in the background).
 * **The Input Gate:** Decides what new features from the current frame are critical to add to the memory (e.g., the exact angle of the cow's hock joint as it steps down).
 * **The Output Gate:** Uses the entire accumulated memory of the 20-frame walking sequence to output the final classification (Lame vs. Normal).
