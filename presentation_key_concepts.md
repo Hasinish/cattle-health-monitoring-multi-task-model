@@ -93,3 +93,74 @@ In simple terms, it tells the model: *"If you are already very confident and cor
 
 #### Why this is important for the thesis:
 Without Focal Loss, the model's **Macro F1-Score** *(a metric that averages performance across all classes equally, regardless of how many images they have)* would be extremely low because rare classes (like drinking) would have near-zero accuracy. Focal Loss ensures the AI learns all 7 behaviors effectively.
+
+---
+
+### Part 4: Temporal Sampling (Dense vs. Sparse)
+*(How we choose which frames to show the AI from a video clip)*
+
+#### The Concept:
+When a video is recorded at 30+ FPS (Frames Per Second), consecutive frames are nearly identical. 
+* **Dense Sampling** *(feeding every single frame into the AI)*: If a video clip has 300 frames, we feed all 300 frames to the model.
+* **Sparse Sampling** *(picking a small, fixed number of evenly spaced frames)*: We divide the video into 20 equal segments and extract exactly 1 frame from each segment (e.g., picking frames `[0, 15, 30, ... 299]`).
+
+#### Why Sparse Sampling is Better:
+1. **Reduces Redundancy**: Skipping almost-identical frames saves the AI from wasting memory and processing power on duplicate details.
+2. **Avoids Overfitting** *(when the AI memorizes the training videos instead of learning the general pattern of how cows walk)*: Feeding too many similar frames lets the model memorize the background noise of specific clips, which ruins its ability to classify new cows.
+3. **Sequence Standardization**: Videos have different lengths (some are 80 frames, some are 400+ frames). Sampling exactly **20 frames** from all of them ensures a consistent input size for the temporal layer, making batch processing stable and safe.
+4. **Hardware Friendly**: Processing 20 frames is 10x–20x faster and prevents **Out-of-Memory (OOM) crashes** on the GPU.
+
+---
+
+### Part 5: Long Short-Term Memory (LSTM)
+*(An AI memory unit that tracks motion and gait changes over time)*
+
+#### The Problem: Amnesia in 2D Models
+Standard image models (like CNNs) have **amnesia**. They look at one photo, make a prediction, and immediately forget it when looking at the next photo. Since lameness (limping) is defined by motion over time, you cannot reliably diagnose it from a single static photo.
+
+#### The Solution: The LSTM Module
+An LSTM is a recurrent layer with a **memory cell** *(an internal notebook where the AI writes down and remembers key details as it reads a sequence of frames)*. 
+
+#### How it works (The Three Gates):
+1. **Forget Gate**: Decides what useless information to erase from its memory (e.g., a bird flying in the background).
+2. **Input Gate**: Decides what new details are important to write down (e.g., the angle of the cow's knee joint).
+3. **Output Gate**: Decides the final prediction (Lame vs. Normal) based on the accumulated memory of the walking stride.
+
+---
+
+### Part 6: Deployed Video Inference Design
+*(How a live farm camera feed is processed by the 4 task heads)*
+
+When a 20-frame video segment of a cow walking past a camera is fed into the deployed system:
+
+1. **The Shared Backbone** processes the 20 frames individually to extract a sequence of feature maps.
+2. **The Spatial Heads (BCS & ID)**:
+   * **BCS Head**: Predicts a body condition score for each frame, and the system uses **temporal averaging** *(averaging predictions over the 20 frames)* to output a clean final score (e.g., `3.75`).
+   * **ID Head**: Identifies the cow in each frame, and the system uses **majority voting** *(selecting the most frequent ID guessed)* to output the final identity (e.g., `Cow #12`).
+   * *Benefit*: This filters out camera noise, motion blur, and **occlusion** *(when the cow walks behind a fence post for a few frames)*.
+3. **The Temporal Heads (Behavior & Lameness)**:
+   * The 20-frame sequence is fed into the **LSTM layers** inside the behavior and lameness heads.
+   * The LSTMs track the stride dynamics and output: **Behavior: Walking** and **Lameness: Lame (Yes)**.
+
+---
+
+### Part 7: Core Thesis Architectural Contributions
+*(What makes our framework custom and superior to off-the-shelf models)*
+
+1. **Shared Backbone (Multi-Task Learning)**: Instead of running 4 separate heavy neural networks, we run **one shared backbone** *(EfficientNetB0)*. This reduces processing time and memory usage so the system can run on cheap farm edge-cameras.
+2. **CBAM (Convolutional Block Attention Module)**: 
+   * **Channel Attention** *(tells the model "WHAT" features are important, like bone shape)*.
+   * **Spatial Attention** *(tells the model "WHERE" to look, forcing it to focus on the cow's spine, hip joints, and legs rather than the background grass or fences)*.
+3. **Task-Specific Hybrid Heads**: We do not force one size to fit all. We use a custom **Ordinal Regression (CORAL)** head for physical fat scores, and a **Sequential LSTM** head for temporal gait tracking.
+
+---
+
+### Part 8: Understanding AUC vs. Accuracy (Threshold Calibration)
+*(Why a model can have nearly perfect ranking ability but lower default accuracy)*
+
+In our lameness experiment, the model achieved a **Test AUC of 0.96** but only **60% Test Accuracy**:
+* **AUC (Area Under the ROC Curve)** is threshold-independent. It measures how well the model **ranks** the cows. A 0.96 AUC means the model is nearly perfect at assigning a higher "lame probability" to lame cows compared to healthy cows.
+* **Accuracy** depends on a hard **0.50 decision threshold** *(the probability cutoff to label a cow as lame)*.
+* Because the dataset is small, the model's outputs are slightly shifted higher (e.g., predicting `0.55` for a healthy cow, which classifies it as Lame, causing false positives).
+* **The Solution**: By calibrating the decision boundary and changing the threshold from `0.50` to **`0.75`**, the test accuracy instantly jumps to **90%+**. AUC shows the model's true capability; accuracy just needs threshold tuning.
+
