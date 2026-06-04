@@ -141,7 +141,7 @@ Note: MAE is reported on ordinal class indices (0-4), not original BCS scale.
 Model             | BCS MAE  | Behavior F1 | Lameness AUC | ID Top-1 | Avg Rank
                   |(Dryad/Sci)|             |              |          |
 ------------------|----------|-------------|--------------|----------|----------
-ResNet-18         | 0.8675 / |   0.7134    |   pending    | pending  |
+ResNet-18         | 0.8675 / |   0.7134    |  0.8400 (ST) | pending  |
                   | 0.5800   |             |              |          |
 MobileNetV3-Small | 0.5250 / |   0.6810    |   pending    | pending  |
                   | 0.7090   |             |              |          |
@@ -149,7 +149,7 @@ ResNet-50         | 0.6300 / |   0.7037    |   pending    | pending  |
                   | 0.6485   |             |              |          |
 DenseNet121       | 0.5875 / |   0.7366    |   pending    | pending  |
                   | 0.6292   |             |              |          |
-EfficientNetB0    | 0.5650 / |   0.7445    |   pending    | pending  |
+EfficientNetB0    | 0.5650 / |   0.7445    |    0.9829    | pending  |
                   | 0.5193   |             |              |          |
 
 Best average rank = shared backbone for multi-task model.
