@@ -245,3 +245,39 @@ The multi-phase sequential training plan *(training individual components of a c
 3. **Advanced Enhancements:**
    * Integrating **CLAHE (Contrast Limited Adaptive Histogram Equalization)** *(a localized image processing technique used to improve contrast and details under uneven lighting)* to equalize extreme lighting differences in barns.
    * Future exploration into integrating depth cameras or thermal imaging for highly granular lameness inflammation detection.
+
+---
+
+### Part 10: Ablation Studies
+*(Systematically removing or replacing parts of our system to prove that each design choice actually improves performance)*
+
+Ablation studies *(an experimental investigation where specific components of an AI model are systematically removed or replaced to measure their individual impact on performance)* were conducted to isolate the value of our key design decisions:
+
+#### 1. CORAL vs. Standard Cross-Entropy (For BCS)
+* **The Study:** We train the exact same Body Condition Scoring (BCS) model architecture using standard Cross-Entropy Loss *(treating categories as independent buckets)* versus the CORAL framework *(Consistent Rank Logits, treating scores as ordered rankings)*.
+* **Actual Technical Example:** Under standard Cross-Entropy, guessing a score of `4.25` for a cow whose true score is `3.5` receives the same loss penalty as guessing `3.75`. By swapping in CORAL, Node 1 and Node 2 check if the score is greater than 3.25 and 3.5. This ordinal framework penalizes the larger error (`4.25`) much more heavily than the minor error (`3.75`), resulting in a lower overall MAE *(Mean Absolute Error)* on the test set.
+
+#### 2. With CBAM vs. Without CBAM (For BCS)
+* **The Study:** We train the BCS network with and without the CBAM *(Convolutional Block Attention Module)* visual attention layer inserted after the backbone.
+* **Actual Technical Example:** Without CBAM, the backbone filters capture features across the entire image frame, including the metal gates and ground shadow textures. Adding CBAM applies Channel and Spatial attention, which highlights the cow's backbone and hips while zeroing out background noise. This results in cleaner feature vectors and a lower test loss.
+
+#### 3. RGB Only vs. RGB+Depth (For Dryad DGE)
+* **The Study:** We evaluate model predictions on the Dryad dataset using standard RGB *(Red, Green, Blue)* color channels only versus utilizing the Depth Grayscale Edge (DGE) format.
+* **Actual Technical Example:** Standard RGB images lose 3D structural details due to lighting variance. The DGE format provides a depth map containing physical coordinates of the cow's spine and pelvic bone curvature. This ablation demonstrates that including physical depth features yields significantly more accurate fat score predictions compared to color features alone.
+
+#### 4. Focal Loss vs. Standard Cross-Entropy (For Behavior)
+* **The Study:** We train the Behavior head using standard Cross-Entropy Loss versus using Focal Loss on the imbalanced MmCows dataset.
+* **Actual Technical Example:** Standard Cross-Entropy achieves 99.5% accuracy by simply predicting the majority class "Lying" for all samples, yielding a poor F1-score for rare behaviors. Focal Loss scales down the gradients for high-confidence predictions (e.g. 95% confident on "Lying") while maintaining high loss penalties for low-confidence ones (e.g. 10% on "Licking"), forcing the model to learn rare behaviors and raising the Macro F1-Score.
+
+#### 5. Cross-Dataset Evaluation (MmCows to CBVD-5)
+* **The Study:** We train the behavior classifier on MmCows and perform cross-dataset inference on the completely unseen CBVD-5 dataset.
+* **Actual Technical Example:** This ablation tests out-of-distribution generalization. If the model only memorized the camera angles and lighting of the MmCows farm, it will fail on CBVD-5. This validation proves whether the network learned robust physical walking/standing behaviors or just overfit to the training dataset.
+
+#### 6. Backbone Selection Comparison
+* **The Study:** We train individual task baselines using 5 different architectures (ResNet-18, MobileNetV3-Small, ResNet-50, DenseNet121, EfficientNetB0).
+* **Actual Technical Example:** We measure the inference latency and parameter size of each architecture against its test error. EfficientNetB0 was chosen because it achieves a low BCS MAE of `0.5193` and a high Behavior F1-score of `0.7445` while remaining under 10 million parameters, outperforming heavier models like ResNet-50.
+
+#### 7. Single-Task vs. Multi-Task Learning
+* **The Study:** We train separate, individual networks for each task versus training a single unified model where all four prediction heads share the same backbone.
+* **Actual Technical Example:** This ablation measures the impact of shared parameter representation. Training all four heads together forces the backbone to learn general visual features (like animal contour lines) that benefit all tasks. This shared learning acts as a regularizer, reducing test errors compared to single-task baselines while slashing VRAM usage by 4x.
+
