@@ -1,0 +1,32 @@
+---CONTEXT 3 BEHAVIOR---
+PERSON NAME: Shouvik
+BASE MODEL: DenseNet121
+DATASET: MmCows (capped 3000/class)
+EPOCHS TRAINED: 27
+LOSS AT EPOCH 10: 0.020973
+LOSS AT EPOCH 20: 0.004873
+LOSS AT EPOCH 30: N/A
+FINAL TRAIN LOSS: 0.001219
+VAL MACRO F1: 0.7371
+VAL PER-CLASS ACCURACY:
+  Class 1 (Walking): 53.83%
+  Class 2 (Standing): 67.00%
+  Class 3 (Feeding head up): 71.53%
+  Class 4 (Feeding head down): 69.47%
+  Class 5 (Licking): 88.66%
+  Class 6 (Drinking): 75.64%
+  Class 7 (Lying): 98.33%
+TEST MACRO F1: 0.7366
+TEST PER-CLASS ACCURACY:
+  Class 1 (Walking): 41.64%
+  Class 2 (Standing): 74.70%
+  Class 3 (Feeding head up): 67.40%
+  Class 4 (Feeding head down): 70.70%
+  Class 5 (Licking): 87.26%
+  Class 6 (Drinking): 73.42%
+  Class 7 (Lying): 99.37%
+CHECKPOINT PATH: D:\T25301094 P2\workspaces\shouvik\behavior_best.pth
+TRAINING TIME (mins): 13.81
+EARLY STOPPING TRIGGERED AT EPOCH: 27
+ANY ISSUES ENCOUNTERED: None
+---END CONTEXT 3---
