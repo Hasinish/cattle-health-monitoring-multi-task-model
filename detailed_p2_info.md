@@ -5163,6 +5163,349 @@ if __name__ == "__main__":
 
 ```
 
+### FILE: workspaces\nusrat\train_id.py
+---
+```python
+import matplotlib
+matplotlib.use('Agg')  # Force non-interactive backend to prevent Tkinter thread crashes
+
+import os
+import csv
+import time
+import random
+import multiprocessing
+import cv2
+cv2.setNumThreads(0)  # Disable OpenCV multithreading to prevent deadlocks in DataLoader
+
+import timm
+import numpy as np
+import matplotlib.pyplot as plt
+import albumentations as A
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from albumentations.pytorch import ToTensorV2
+from sklearn.metrics import accuracy_score
+from torch.utils.data import Dataset, DataLoader
+from tqdm import tqdm
+
+PERSON_NAME = "Nusrat"
+BASE_MODEL_DISPLAY = "EfficientNetB0"
+MODEL_NAME = "efficientnet_b0"
+BASE_DIR = r"D:\T25301094 P2"
+WORKSPACE_DIR = r"D:\T25301094 P2\workspaces\nusrat"
+CSV_PATH = r"D:\T25301094 P2\datasets\id\id_index.csv"
+CHECKPOINT_PATH = r"D:\T25301094 P2\workspaces\nusrat\id_best.pth"
+RESULTS_PATH = r"D:\T25301094 P2\workspaces\nusrat\id_results.txt"
+LOSS_CURVE_PATH = r"D:\T25301094 P2\workspaces\nusrat\id_loss_curve.png"
+
+NUM_CLASSES = 46
+BATCH_SIZE = 64
+NUM_WORKERS = 0  # Set to 0 to prevent Windows multiprocessing deadlocks and worker unexpected exit crashes
+MAX_EPOCHS = 10
+RANDOM_SEED = 42
+
+class CowIDDataset(Dataset):
+    def __init__(self, csv_path, split, transform=None):
+        self.transform = transform
+        self.samples = []
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if row['split'] == split:
+                    self.samples.append({
+                        'image_path': row['image_path'],
+                        'label': int(row['label']),
+                        'cow_id': row['cow_id']
+                    })
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        item = self.samples[idx]
+        img_path = item['image_path']
+        if not os.path.isabs(img_path):
+            img_path = os.path.join(BASE_DIR, img_path)
+        image = cv2.imread(img_path)
+        if image is None:
+            raise FileNotFoundError(f"Could not read image: {img_path}")
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        label = item['label']
+        if self.transform is not None:
+            image = self.transform(image=image)["image"]
+        return image, label
+
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels, reduction=16):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(in_channels, in_channels // reduction),
+            nn.ReLU(),
+            nn.Linear(in_channels // reduction, in_channels)
+        )
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg = self.fc(self.avg_pool(x).squeeze(-1).squeeze(-1))
+        max_ = self.fc(self.max_pool(x).squeeze(-1).squeeze(-1))
+        return x * self.sigmoid(avg + max_).unsqueeze(-1).unsqueeze(-1)
+
+class SpatialAttention(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv2d(2, 1, kernel_size=7, padding=3)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg = torch.mean(x, dim=1, keepdim=True)
+        max_, _ = torch.max(x, dim=1, keepdim=True)
+        return x * self.sigmoid(self.conv(torch.cat([avg, max_], dim=1)))
+
+class CBAM(nn.Module):
+    def __init__(self, in_channels):
+        super().__init__()
+        self.ca = ChannelAttention(in_channels)
+        self.sa = SpatialAttention()
+
+    def forward(self, x):
+        return self.sa(self.ca(x))
+
+class CowIDModel(nn.Module):
+    def __init__(self, model_name, num_classes, device):
+        super().__init__()
+        backbone = timm.create_model(model_name, pretrained=True, num_classes=0, global_pool='')
+        backbone = backbone.to(device, non_blocking=True)
+        with torch.no_grad():
+            dummy = backbone(torch.zeros(1, 3, 224, 224).to(device, non_blocking=True))
+            feature_dim = dummy.shape[1]
+        self.backbone = backbone
+        self.cbam = CBAM(feature_dim)
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.classifier = nn.Linear(feature_dim, num_classes)
+
+    def forward(self, x):
+        x = self.backbone(x)
+        x = self.cbam(x)
+        x = self.pool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
+
+def set_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+def build_transforms():
+    train_transform = A.Compose([
+        A.Resize(224, 224),
+        A.HorizontalFlip(p=0.5),
+        A.Rotate(limit=15, p=0.5),
+        A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ToTensorV2(),
+    ])
+    eval_transform = A.Compose([
+        A.Resize(224, 224),
+        A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ToTensorV2(),
+    ])
+    return train_transform, eval_transform
+
+def build_loader(dataset, shuffle, persistent=True):
+    # If NUM_WORKERS is 0, persistent_workers must be False
+    actual_persistent = persistent if NUM_WORKERS > 0 else False
+    return DataLoader(
+        dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=shuffle,
+        num_workers=NUM_WORKERS,
+        pin_memory=True,
+        persistent_workers=actual_persistent,
+    )
+
+def evaluate(model, loader, device, desc):
+    model.eval()
+    all_labels = []
+    all_preds = []
+    with torch.no_grad():
+        for images, labels in tqdm(loader, desc=desc):
+            images = images.to(device, non_blocking=True)
+            with torch.amp.autocast('cuda'):
+                outputs = model(images)
+            preds = torch.argmax(outputs, dim=1)
+            all_labels.extend(labels.numpy().tolist())
+            all_preds.extend(preds.cpu().numpy().tolist())
+
+    acc = accuracy_score(all_labels, all_preds)
+    return acc
+
+def save_loss_curve(train_losses):
+    plt.figure(figsize=(8, 5))
+    plt.plot(range(1, len(train_losses) + 1), train_losses, marker="o")
+    plt.xlabel("Epoch")
+    plt.ylabel("Training Loss")
+    plt.title("Cow ID Training Loss Curve")
+    plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(LOSS_CURVE_PATH, dpi=300)
+    plt.close()
+
+def format_loss(epoch_losses, epoch):
+    value = epoch_losses.get(epoch)
+    if value is None:
+        return "N/A"
+    return f"{value:.6f}"
+
+def write_results(
+    actual_epochs_trained,
+    epoch_losses,
+    final_train_loss,
+    val_acc,
+    test_acc,
+    training_time_mins,
+):
+    text = f"""---CONTEXT 3 ID---
+PERSON NAME: {PERSON_NAME}
+BASE MODEL: {BASE_MODEL_DISPLAY}
+DATASET: OpenCows2020
+EPOCHS TRAINED: {actual_epochs_trained}
+LOSS AT EPOCH 10: {format_loss(epoch_losses, 10)}
+FINAL TRAIN LOSS: {final_train_loss:.6f}
+VAL TOP-1 ACCURACY: {val_acc * 100:.2f}%
+TEST TOP-1 ACCURACY: {test_acc * 100:.2f}%
+CHECKPOINT PATH: {CHECKPOINT_PATH}
+TRAINING TIME (mins): {training_time_mins:.2f}
+ANY ISSUES ENCOUNTERED: None
+---END CONTEXT 3---"""
+
+    with open(RESULTS_PATH, "w", encoding="utf-8") as f:
+        f.write(text)
+
+    print(text)
+
+def main():
+    start_time = time.time()
+    os.makedirs(WORKSPACE_DIR, exist_ok=True)
+    set_seed(RANDOM_SEED)
+
+    if not os.path.exists(CSV_PATH):
+        raise FileNotFoundError(f"CSV not found: {CSV_PATH}")
+
+    if not torch.cuda.is_available():
+        raise RuntimeError("CUDA is required but not available.")
+
+    device = torch.device("cuda")
+    torch.backends.cudnn.benchmark = True
+
+    train_transform, eval_transform = build_transforms()
+
+    train_dataset = CowIDDataset(CSV_PATH, "train", train_transform)
+    val_dataset = CowIDDataset(CSV_PATH, "val", eval_transform)
+    test_dataset = CowIDDataset(CSV_PATH, "test", eval_transform)
+
+    train_loader = build_loader(train_dataset, shuffle=True, persistent=True)
+    val_loader = build_loader(val_dataset, shuffle=False, persistent=False)
+    test_loader = build_loader(test_dataset, shuffle=False, persistent=False)
+
+    print(f"Person: {PERSON_NAME}")
+    print(f"Base model: {BASE_MODEL_DISPLAY}")
+    print(f"Device: {torch.cuda.get_device_name(0)}")
+    print(f"Train samples: {len(train_dataset)}")
+    print(f"Val samples: {len(val_dataset)}")
+    print(f"Test samples: {len(test_dataset)}")
+
+    model = CowIDModel(MODEL_NAME, NUM_CLASSES, device)
+    model = model.to(device, non_blocking=True)
+
+    # Freeze backbone parameters to prevent overfitting
+    # We will only train CBAM and the classifier head
+    for param in model.backbone.parameters():
+        param.requires_grad = False
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=1e-3)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.5)
+    scaler = torch.amp.GradScaler('cuda')
+
+    best_val_acc = -1.0
+    train_losses = []
+    epoch_losses = {}
+    actual_epochs_trained = 0
+
+    for epoch in range(1, MAX_EPOCHS + 1):
+        model.train()
+        running_loss = 0.0
+        total_samples = 0
+
+        for images, labels in tqdm(train_loader, desc=f"Epoch {epoch}/{MAX_EPOCHS}"):
+            images = images.to(device, non_blocking=True)
+            labels = labels.to(device, non_blocking=True)
+
+            optimizer.zero_grad(set_to_none=True)
+
+            with torch.amp.autocast('cuda'):
+                outputs = model(images)
+                loss = criterion(outputs, labels)
+
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+
+            batch_count = images.size(0)
+            running_loss += loss.item() * batch_count
+            total_samples += batch_count
+
+        train_loss = running_loss / total_samples
+        train_losses.append(train_loss)
+        epoch_losses[epoch] = train_loss
+
+        val_acc = evaluate(model, val_loader, device, "Validating")
+        scheduler.step()
+
+        actual_epochs_trained = epoch
+
+        print(f"Epoch {epoch}/{MAX_EPOCHS} | Loss: {train_loss:.6f} | Val Top-1 Accuracy: {val_acc * 100:.2f}%")
+
+        if val_acc > best_val_acc:
+            best_val_acc = val_acc
+            torch.save(model.state_dict(), CHECKPOINT_PATH)
+
+    if not os.path.exists(CHECKPOINT_PATH):
+        raise FileNotFoundError(f"Best checkpoint was not saved: {CHECKPOINT_PATH}")
+
+    model.load_state_dict(torch.load(CHECKPOINT_PATH, weights_only=True))
+
+    val_acc = evaluate(model, val_loader, device, "Validating Best Val")
+    test_acc = evaluate(model, test_loader, device, "Testing Best Val")
+
+    save_loss_curve(train_losses)
+
+    training_time_mins = (time.time() - start_time) / 60
+    final_train_loss = train_losses[-1]
+
+    write_results(
+        actual_epochs_trained,
+        epoch_losses,
+        final_train_loss,
+        val_acc,
+        test_acc,
+        training_time_mins,
+    )
+
+    print(f"Saved checkpoint: {CHECKPOINT_PATH}")
+    print(f"Saved results: {RESULTS_PATH}")
+    print(f"Saved loss curve: {LOSS_CURVE_PATH}")
+
+if __name__ == "__main__":
+    multiprocessing.freeze_support()
+    main()
+
+```
+
 ### FILE: workspaces\nusrat\train_lameness.py
 ---
 ```python
@@ -6413,8 +6756,10 @@ if __name__ == "__main__":
 ```python
 import os
 import cv2
+import csv
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 import timm
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
@@ -6425,6 +6770,8 @@ from tqdm import tqdm
 BASE_DIR = r"D:\T25301094 P2"
 YOLO_MODEL_PATH = os.path.join(BASE_DIR, "yolov8n.pt")
 LAME_CHECKPOINT_PATH = os.path.join(BASE_DIR, "workspaces", "nusrat", "spatiotemporal_lameness_efficientnet_best.pth")
+ID_CHECKPOINT_PATH = os.path.join(BASE_DIR, "workspaces", "nusrat", "id_best.pth")
+CSV_PATH = os.path.join(BASE_DIR, "datasets", "id", "id_index.csv")
 INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "cut_cow_video.mp4")
 OUTPUT_VIDEO_PATH = os.path.join(BASE_DIR, "cut_cow_realtime_detection.mp4")
 
@@ -6433,7 +6780,73 @@ HIDDEN_DIM = 64
 DECISION_THRESHOLD = 0.50
 TARGET_SIZE = (224, 224)
 SEQ_LEN = 20
+NUM_CLASSES_ID = 46
 
+# Attention Modules for CowIDModel
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels, reduction=16):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(in_channels, in_channels // reduction),
+            nn.ReLU(),
+            nn.Linear(in_channels // reduction, in_channels)
+        )
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg = self.fc(self.avg_pool(x).squeeze(-1).squeeze(-1))
+        max_ = self.fc(self.max_pool(x).squeeze(-1).squeeze(-1))
+        return x * self.sigmoid(avg + max_).unsqueeze(-1).unsqueeze(-1)
+
+class SpatialAttention(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv2d(2, 1, kernel_size=7, padding=3)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg = torch.mean(x, dim=1, keepdim=True)
+        max_, _ = torch.max(x, dim=1, keepdim=True)
+        return x * self.sigmoid(self.conv(torch.cat([avg, max_], dim=1)))
+
+class CBAM(nn.Module):
+    def __init__(self, in_channels):
+        super().__init__()
+        self.ca = ChannelAttention(in_channels)
+        self.sa = SpatialAttention()
+
+    def forward(self, x):
+        return self.sa(self.ca(x))
+
+# CowIDModel definition
+class CowIDModel(nn.Module):
+    def __init__(self, model_name, num_classes, device):
+        super().__init__()
+        backbone = timm.create_model(model_name, pretrained=False, num_classes=0, global_pool='')
+        backbone = backbone.to(device, non_blocking=True)
+        with torch.no_grad():
+            dummy = backbone(torch.zeros(1, 3, 224, 224).to(device, non_blocking=True))
+            feature_dim = dummy.shape[1]
+        self.backbone = backbone
+        self.cbam = CBAM(feature_dim)
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.classifier = nn.Linear(feature_dim, num_classes)
+
+    def extract_features(self, x):
+        x = self.backbone(x)
+        x = self.cbam(x)
+        x = self.pool(x)
+        x = torch.flatten(x, 1)
+        return x
+
+    def forward(self, x):
+        x = self.extract_features(x)
+        x = self.classifier(x)
+        return x
+
+# CNN-LSTM Lameness Model definition
 class CNNLSTMModel(nn.Module):
     def __init__(self, backbone_name, hidden_dim, device):
         super().__init__()
@@ -6456,12 +6869,90 @@ class CNNLSTMModel(nn.Module):
         logits = self.classifier(last_step_out)
         return logits
 
+def draw_premium_overlay(img, text_lines, x, y, colors):
+    font_scale = 0.75
+    thickness = 2
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    
+    box_w = 0
+    line_heights = []
+    
+    for line in text_lines:
+        (w, h), baseline = cv2.getTextSize(line, font, font_scale, thickness)
+        box_w = max(box_w, w)
+        line_heights.append(h + baseline + 6)
+    
+    box_w += 20
+    box_h = sum(line_heights) + 15
+    
+    # Background semi-transparent overlay
+    overlay = img.copy()
+    cv2.rectangle(overlay, (x - 10, y - 25), (x + box_w, y + box_h - 25), (0, 0, 0), -1)
+    
+    alpha = 0.65
+    cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
+    
+    # Draw texts with their individual colors
+    curr_y = y - 5
+    for idx, line in enumerate(text_lines):
+        color = colors[idx] if idx < len(colors) else (255, 255, 255)
+        cv2.putText(img, line, (x, curr_y), font, font_scale, color, thickness)
+        curr_y += line_heights[idx]
+
+def build_embedding_database(model, csv_path, device):
+    print("Building cow embedding database from training images...")
+    
+    # Group image paths by label
+    cow_images = {}
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row['split'] == 'train':
+                lbl = int(row['label'])
+                if lbl not in cow_images:
+                    cow_images[lbl] = []
+                if len(cow_images[lbl]) < 5:
+                    cow_images[lbl].append(row['image_path'])
+                    
+    # Extract features and average them per cow class
+    database = {}
+    model.eval()
+    
+    # Simple transform matching train_id.py eval_transform
+    transform = A.Compose([
+        A.Resize(224, 224),
+        A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ToTensorV2(),
+    ])
+    
+    with torch.no_grad():
+        for lbl, paths in tqdm(cow_images.items(), desc="Registering Cows"):
+            tensors = []
+            for path in paths:
+                img = cv2.imread(path)
+                if img is not None:
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                    tensor = transform(image=img)["image"]
+                    tensors.append(tensor)
+            if tensors:
+                batch = torch.stack(tensors).to(device)
+                with torch.amp.autocast('cuda') if torch.cuda.is_available() else torch.no_grad():
+                    # Get features before final classifier
+                    features = model.extract_features(batch) # shape: (N, 1280)
+                    mean_feature = features.mean(dim=0)
+                    mean_feature = F.normalize(mean_feature, p=2, dim=0) # Normalize to unit sphere
+                database[lbl] = mean_feature
+                
+    print(f"Database built successfully. Registered classes: {len(database)}\n")
+    return database
+
 def main():
     import argparse
-    parser = argparse.ArgumentParser(description="Real-Time Bounding Box & Lameness Visualizer")
+    parser = argparse.ArgumentParser(description="Real-Time Bounding Box, Cow ID & Lameness Visualizer")
     parser.add_argument("--input", type=str, default=INPUT_VIDEO_PATH, help="Path to input video file")
     parser.add_argument("--output", type=str, default=OUTPUT_VIDEO_PATH, help="Path to save annotated video")
     parser.add_argument("--stride", type=int, default=8, help="Temporal stride to sub-sample frames")
+    parser.add_argument("--threshold", type=float, default=0.65, help="Cosine similarity threshold for registration verification")
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -6471,14 +6962,26 @@ def main():
     print("Loading YOLOv8 detector...")
     yolo = YOLO(YOLO_MODEL_PATH)
 
+    # Load Cow ID model
+    print("Loading Cow ID baseline model...")
+    id_model = CowIDModel(MODEL_NAME, NUM_CLASSES_ID, device)
+    id_model = id_model.to(device)
+    if not os.path.exists(ID_CHECKPOINT_PATH):
+        raise FileNotFoundError(f"Cow ID checkpoint not found at: {ID_CHECKPOINT_PATH}")
+    id_model.load_state_dict(torch.load(ID_CHECKPOINT_PATH, map_location=device, weights_only=True))
+    id_model.eval()
+
+    # Build embedding database
+    embedding_db = build_embedding_database(id_model, CSV_PATH, device)
+
     # Load Lameness model
     print("Loading Lameness CNN-LSTM model...")
-    model = CNNLSTMModel(MODEL_NAME, HIDDEN_DIM, device)
-    model = model.to(device)
+    lame_model = CNNLSTMModel(MODEL_NAME, HIDDEN_DIM, device)
+    lame_model = lame_model.to(device)
     if not os.path.exists(LAME_CHECKPOINT_PATH):
         raise FileNotFoundError(f"Lameness checkpoint not found at: {LAME_CHECKPOINT_PATH}")
-    model.load_state_dict(torch.load(LAME_CHECKPOINT_PATH, map_location=device, weights_only=True))
-    model.eval()
+    lame_model.load_state_dict(torch.load(LAME_CHECKPOINT_PATH, map_location=device, weights_only=True))
+    lame_model.eval()
     print("Models loaded successfully.")
 
     # Initialize video capture
@@ -6512,6 +7015,18 @@ def main():
     cropped_buffer = []
     show_window = True
     last_best_box = None
+    
+    # Store running ID results to display stable values
+    last_cow_id_str = "Unknown"
+    last_cow_id_prob = 0.0
+
+    # Auto-registration variables
+    unknown_embeddings_buffer = []
+    next_class_id = NUM_CLASSES_ID  # Starts at 46 (which represents indices 0-45)
+    
+    # Calculate required consecutive frames of observation for 5 seconds
+    required_unknown_frames = int(5.0 * fps / args.stride)
+    print(f"Registration Window: 5.0s of video space ({required_unknown_frames} processed frames at stride {args.stride})")
 
     # Process frame-by-frame
     for i in tqdm(range(total_frames), desc="Running Real-Time Inference"):
@@ -6541,51 +7056,108 @@ def main():
         # Determine crop region
         crop_box = best_box if best_box is not None else last_best_box
 
+        cow_crop = None
         if crop_box is not None:
             cx1, cy1, cx2, cy2 = crop_box
-            cow_crop = frame[cy1:cy2, cx1:cx2]
-        else:
-            cow_crop = frame
+            cx1 = max(0, cx1)
+            cy1 = max(0, cy1)
+            cx2 = min(width, cx2)
+            cy2 = min(height, cy2)
+            if cx2 > cx1 and cy2 > cy1:
+                cow_crop = frame[cy1:cy2, cx1:cx2]
 
-        # Sub-sample frames temporally according to STRIDE to match dataset time span
-        if i % args.stride == 0:
-            if cow_crop is not None and cow_crop.size > 0:
-                rgb_crop = cv2.cvtColor(cow_crop, cv2.COLOR_BGR2RGB)
-                transformed = transform(image=rgb_crop)["image"]
+        # Process crop frame
+        if cow_crop is not None and cow_crop.size > 0:
+            rgb_crop = cv2.cvtColor(cow_crop, cv2.COLOR_BGR2RGB)
+            transformed = transform(image=rgb_crop)["image"]
+
+            # Sub-sample frames temporally according to STRIDE to match dataset time span
+            if i % args.stride == 0:
                 cropped_buffer.append(transformed)
-            
-            # Maintain window size of SEQ_LEN (20)
-            if len(cropped_buffer) > SEQ_LEN:
-                cropped_buffer.pop(0)
+                if len(cropped_buffer) > SEQ_LEN:
+                    cropped_buffer.pop(0)
+
+                # Run Cow ID prediction using vector embedding Cosine Similarity
+                input_crop_tensor = transformed.unsqueeze(0).to(device)
+                with torch.no_grad():
+                    with torch.amp.autocast('cuda') if torch.cuda.is_available() else torch.no_grad():
+                        live_features = id_model.extract_features(input_crop_tensor) # shape: (1, 1280)
+                        live_features = F.normalize(live_features, p=2, dim=1) # normalize to unit sphere
+                        
+                # Compute Cosine Similarity against all registered classes
+                best_similarity = -1.0
+                best_class = -1
+                for lbl, reg_feature in embedding_db.items():
+                    sim = torch.dot(live_features[0], reg_feature).item()
+                    if sim > best_similarity:
+                        best_similarity = sim
+                        best_class = lbl
+                
+                # Check threshold for open-set registration verification
+                if best_similarity >= args.threshold:
+                    last_cow_id_str = f"{(best_class + 1):03d}"
+                    last_cow_id_prob = best_similarity
+                    # Clear the unknown buffer because we successfully recognized a registered cow
+                    unknown_embeddings_buffer.clear()
+                else:
+                    last_cow_id_str = "Unknown Cow"
+                    last_cow_id_prob = best_similarity
+                    
+                    # Store features for auto-registration
+                    unknown_embeddings_buffer.append(live_features[0].cpu())
+                    
+                    # If we collect 5 seconds of consecutive unknown frames, register as a new cow
+                    if len(unknown_embeddings_buffer) >= required_unknown_frames:
+                        new_cow_vector = torch.stack(unknown_embeddings_buffer).mean(dim=0).to(device)
+                        new_cow_vector = F.normalize(new_cow_vector, p=2, dim=0)
+                        
+                        # Register in memory database
+                        embedding_db[next_class_id] = new_cow_vector
+                        print(f"\n>>> [AUTO-REGISTRATION] Registered New Cow in database as ID: {next_class_id + 1:03d} after 5.0 seconds of observation!")
+                        
+                        # Set current outputs to match the new class
+                        last_cow_id_str = f"{next_class_id + 1:03d}"
+                        last_cow_id_prob = 1.0 # Initial similarity is 1.0 since it matches itself
+                        
+                        next_class_id += 1
+                        unknown_embeddings_buffer.clear()
 
         # Draw YOLO box on the frame
+        box_color = (0, 255, 0) # Green bounding box
         if best_box is not None:
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)
+            cv2.rectangle(frame, (best_box[0], best_box[1]), (best_box[2], best_box[3]), box_color, 3)
         elif last_best_box is not None:
             # Draw tracking box if reusing previous box
-            cx1, cy1, cx2, cy2 = last_best_box
-            cv2.rectangle(frame, (cx1, cy1), (cx2, cy2), (255, 128, 0), 1)
+            cv2.rectangle(frame, (last_best_box[0], last_best_box[1]), (last_best_box[2], last_best_box[3]), (255, 128, 0), 1)
 
         # Run spatiotemporal lameness prediction if buffer is full
+        text_lines = []
+        text_colors = []
+
+        # Add Cow ID info to overlay
+        text_lines.append(f"Cow ID: {last_cow_id_str} ({last_cow_id_prob*100:.1f}%)")
+        text_colors.append((255, 255, 255)) # White
+
         if len(cropped_buffer) == SEQ_LEN:
-            input_tensor = torch.stack(cropped_buffer).unsqueeze(0).to(device)
+            input_seq_tensor = torch.stack(cropped_buffer).unsqueeze(0).to(device)
             with torch.no_grad():
                 with torch.amp.autocast('cuda') if torch.cuda.is_available() else torch.no_grad():
-                    logits = model(input_tensor)
-                    prob = torch.sigmoid(logits).view(-1).item()
+                    lame_logits = lame_model(input_seq_tensor)
+                    lame_prob = torch.sigmoid(lame_logits).view(-1).item()
 
-            prediction = "LAME" if prob >= DECISION_THRESHOLD else "NORMAL"
-            color = (0, 0, 255) if prediction == "LAME" else (0, 255, 0)
-            status_text = f"Lameness: {prediction} ({prob*100:.1f}%)"
+            prediction = "LAME" if lame_prob >= DECISION_THRESHOLD else "NORMAL"
+            gait_color = (0, 0, 255) if prediction == "LAME" else (0, 255, 0)
+            text_lines.append(f"Gait: {prediction} ({lame_prob*100:.1f}%)")
+            text_colors.append(gait_color)
         else:
-            status_text = f"Buffering Stride Memory... ({len(cropped_buffer)}/{SEQ_LEN})"
-            color = (255, 255, 0)
+            text_lines.append(f"Gait: Buffering Stride... ({len(cropped_buffer)}/{SEQ_LEN})")
+            text_colors.append((255, 255, 0)) # Cyan/yellow
 
-        # Overlay text on original frame
-        text_x = x1 if best_box is not None else (last_best_box[0] if last_best_box is not None else 30)
-        text_y = max(30, y1 - 15) if best_box is not None else (max(30, last_best_box[1] - 15) if last_best_box is not None else 50)
-        cv2.putText(frame, status_text, (text_x, text_y),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 3)
+        # Draw the premium transparent background overlay
+        text_x = best_box[0] if best_box is not None else (last_best_box[0] if last_best_box is not None else 30)
+        text_y = max(40, (best_box[1] - 40) if best_box is not None else (last_best_box[1] - 40 if last_best_box is not None else 50))
+        
+        draw_premium_overlay(frame, text_lines, text_x, text_y, text_colors)
 
         # Write annotated frame to output video
         out.write(frame)
@@ -6593,7 +7165,7 @@ def main():
         # Display window
         if show_window:
             try:
-                cv2.imshow("Real-Time Cow Detection & Lameness (Press 'q' to Quit)", frame)
+                cv2.imshow("Real-Time Unified Multi-Task Inference (Press 'q' to Quit)", frame)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     print("\nProcessing stopped early by user.")
                     break

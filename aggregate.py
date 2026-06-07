@@ -24,6 +24,7 @@ sections = [
     ("7. TRAINING CODE (NUSRAT - EfficientNetB0 & Lameness)", [
         "workspaces/nusrat/train_bcs.py",
         "workspaces/nusrat/train_behavior.py",
+        "workspaces/nusrat/train_id.py",
         "workspaces/nusrat/train_lameness.py",
         "workspaces/nusrat/train_spatiotemporal_lameness.py",
         "workspaces/nusrat/train_spatiotemporal_lameness_efficientnet.py",
