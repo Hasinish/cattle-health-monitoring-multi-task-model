@@ -211,7 +211,7 @@ D:\T25301094 P2\
 │   ├── lameness\                      (lameness_cropped_index.csv + cropped datasets)
 │   └── id\                            (id_index.csv + opencow2020-DatasetNinja)
 
-├── final_models\                      [EMPTY — multi-task phase not started]
+├── final_models\                      [COMPLETED — contains multitask_temporal_best.pth]
 └── workspaces\
     ├── hasin\    (BCS: DONE | Behavior: DONE)
     ├── namira\   (BCS: DONE | Behavior: DONE)
@@ -257,7 +257,9 @@ PRIORITY 2 — Download CBVD-5 for cross-dataset behavior ablation [COMPLETE]
 PRIORITY 3 — Run ablation studies (Hasin)
   After BCS results are valid: CORAL vs CE, CBAM vs no CBAM, RGB vs DGE
 
-PRIORITY 4 — Build and train multi-task model (all)
-  After backbone selection table is filled
+PRIORITY 4 — Build and train multi-task model (all) [COMPLETE]
+  - Spatiotemporal Multi-Task model trained with EfficientNetB0-LSTM on 20-frame sequences.
+  - Final Results: Lameness Acc: 100.00% (AUC 1.0), ID Acc: 97.18%, BCS MAE: 0.7849, Behavior F1: 0.4775
+  - Real-time rolling sequence visualizer successfully deployed and tested on demo video.
 
 ==========================================================================
