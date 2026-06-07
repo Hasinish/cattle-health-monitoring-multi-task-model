@@ -36,7 +36,7 @@ BASE_DIR = r"D:\T25301094 P2"
 WORKSPACE_DIR = os.path.join(BASE_DIR, "workspaces", "nusrat")
 
 DRYAD_CSV = os.path.join(BASE_DIR, "datasets", "bcs", "bcs_index.csv")
-SCIENCEDB_CSV = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_index.csv")
+SCIENCEDB_CSV = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_cropped_index.csv")
 
 DRYAD_CHECKPOINT = os.path.join(WORKSPACE_DIR, "dryad_bcs_best.pth")
 SCIENCEDB_CHECKPOINT = os.path.join(WORKSPACE_DIR, "sciencedb_bcs_best.pth")
@@ -47,7 +47,7 @@ LOSS_CURVE_PNG = os.path.join(WORKSPACE_DIR, "bcs_loss_curve.png")
 NUM_CLASSES = 5
 CORAL_OUTPUTS = NUM_CLASSES - 1
 
-BATCH_SIZE = 32
+BATCH_SIZE = 128  # Increased from 32 to 128 to maximize GPU usage on RTX 4080 SUPER
 EPOCHS = 30
 LR = 1e-3
 STEP_SIZE = 10
@@ -165,24 +165,27 @@ def build_loaders(csv_path, label_map):
         train_dataset,
         batch_size=BATCH_SIZE,
         shuffle=True,
-        num_workers=4,
+        num_workers=8,
         pin_memory=True,
+        persistent_workers=True,
     )
 
     val_loader = DataLoader(
         val_dataset,
         batch_size=BATCH_SIZE,
         shuffle=False,
-        num_workers=4,
+        num_workers=8,
         pin_memory=True,
+        persistent_workers=True,
     )
 
     test_loader = DataLoader(
         test_dataset,
         batch_size=BATCH_SIZE,
         shuffle=False,
-        num_workers=4,
+        num_workers=8,
         pin_memory=True,
+        persistent_workers=True,
     )
 
     return train_loader, val_loader, test_loader

@@ -1,0 +1,98 @@
+======================================================================
+          EVALUATION REPORT: ALL 50 CATTLE VIDEOS
+======================================================================
+Model: efficientnet_b0-LSTM
+Checkpoint: D:\T25301094 P2\workspaces\nusrat\spatiotemporal_lameness_efficientnet_best.pth
+Calibrated Threshold: 0.50
+
+DETAILED TABLE:
+---------------------------------------------------------------------------
+Cow ID          | Split    | True Label   | Pred Prob  | Pred Label | Status  
+---------------------------------------------------------------------------
+Lame_1          | train    | Lame         | 0.9648     | Lame       | CORRECT 
+Lame_10         | train    | Lame         | 0.9141     | Lame       | CORRECT 
+Lame_11         | train    | Lame         | 0.9038     | Lame       | CORRECT 
+Lame_12         | train    | Lame         | 0.9473     | Lame       | CORRECT 
+Lame_13         | train    | Lame         | 0.9219     | Lame       | CORRECT 
+Lame_14         | train    | Lame         | 0.9038     | Lame       | CORRECT 
+Lame_15         | train    | Lame         | 0.9185     | Lame       | CORRECT 
+Lame_16         | train    | Lame         | 0.8965     | Lame       | CORRECT 
+Lame_17         | train    | Lame         | 0.8081     | Lame       | CORRECT 
+Lame_18         | val      | Lame         | 0.5640     | Lame       | CORRECT 
+Lame_19         | val      | Lame         | 0.6670     | Lame       | CORRECT 
+Lame_2          | train    | Lame         | 0.9033     | Lame       | CORRECT 
+Lame_20         | val      | Lame         | 0.7524     | Lame       | CORRECT 
+Lame_21         | test     | Lame         | 0.7666     | Lame       | CORRECT 
+Lame_22         | test     | Lame         | 0.6787     | Lame       | CORRECT 
+Lame_23         | test     | Lame         | 0.4128     | Normal     | WRONG   
+Lame_24         | test     | Lame         | 0.8901     | Lame       | CORRECT 
+Lame_25         | test     | Lame         | 0.7500     | Lame       | CORRECT 
+Lame_3          | train    | Lame         | 0.7886     | Lame       | CORRECT 
+Lame_4          | train    | Lame         | 0.9575     | Lame       | CORRECT 
+Lame_5          | train    | Lame         | 0.8062     | Lame       | CORRECT 
+Lame_6          | train    | Lame         | 0.9160     | Lame       | CORRECT 
+Lame_7          | train    | Lame         | 0.9561     | Lame       | CORRECT 
+Lame_8          | train    | Lame         | 0.9497     | Lame       | CORRECT 
+Lame_9          | train    | Lame         | 0.8477     | Lame       | CORRECT 
+Normal_1        | train    | Normal       | 0.0871     | Normal     | CORRECT 
+Normal_10       | train    | Normal       | 0.0482     | Normal     | CORRECT 
+Normal_11       | train    | Normal       | 0.0784     | Normal     | CORRECT 
+Normal_12       | train    | Normal       | 0.0504     | Normal     | CORRECT 
+Normal_13       | train    | Normal       | 0.0430     | Normal     | CORRECT 
+Normal_14       | train    | Normal       | 0.0613     | Normal     | CORRECT 
+Normal_15       | train    | Normal       | 0.2888     | Normal     | CORRECT 
+Normal_16       | train    | Normal       | 0.0461     | Normal     | CORRECT 
+Normal_17       | train    | Normal       | 0.1007     | Normal     | CORRECT 
+Normal_18       | val      | Normal       | 0.0656     | Normal     | CORRECT 
+Normal_19       | val      | Normal       | 0.1826     | Normal     | CORRECT 
+Normal_2        | train    | Normal       | 0.0453     | Normal     | CORRECT 
+Normal_20       | val      | Normal       | 0.1710     | Normal     | CORRECT 
+Normal_21       | test     | Normal       | 0.3425     | Normal     | CORRECT 
+Normal_22       | test     | Normal       | 0.0903     | Normal     | CORRECT 
+Normal_23       | test     | Normal       | 0.7520     | Lame       | WRONG   
+Normal_24       | test     | Normal       | 0.4402     | Normal     | CORRECT 
+Normal_25       | test     | Normal       | 0.1310     | Normal     | CORRECT 
+Normal_3        | train    | Normal       | 0.0671     | Normal     | CORRECT 
+Normal_4        | train    | Normal       | 0.0544     | Normal     | CORRECT 
+Normal_5        | train    | Normal       | 0.2676     | Normal     | CORRECT 
+Normal_6        | train    | Normal       | 0.0761     | Normal     | CORRECT 
+Normal_7        | train    | Normal       | 0.0716     | Normal     | CORRECT 
+Normal_8        | train    | Normal       | 0.3186     | Normal     | CORRECT 
+Normal_9        | train    | Normal       | 0.0707     | Normal     | CORRECT 
+---------------------------------------------------------------------------
+
+SUMMARY METRICS PER SPLIT:
+
+--- TRAIN SPLIT (34 videos) ---
+  Accuracy: 100.00%
+  F1 Score: 1.0000
+  AUC:      1.0000
+  Confusion Matrix:
+    [[TN: 17, FP: 0],
+     [FN: 0, TP: 17]]
+
+--- VAL SPLIT (6 videos) ---
+  Accuracy: 100.00%
+  F1 Score: 1.0000
+  AUC:      1.0000
+  Confusion Matrix:
+    [[TN: 3, FP: 0],
+     [FN: 0, TP: 3]]
+
+--- TEST SPLIT (10 videos) ---
+  Accuracy: 80.00%
+  F1 Score: 0.8000
+  AUC:      0.8400
+  Confusion Matrix:
+    [[TN: 4, FP: 1],
+     [FN: 1, TP: 4]]
+
+======================================================================
+--- OVERALL GLOBAL METRICS (All 50 videos) ---
+  Overall Accuracy: 96.00%
+  Overall F1 Score: 0.9600
+  Overall AUC:      0.9904
+  Overall Confusion Matrix:
+    [[TN: 24, FP: 1],
+     [FN: 1, TP: 24]]
+======================================================================

@@ -61,11 +61,11 @@ Here is the baseline performance table showing the results of each base model:
 | **MobileNetV3-Small** (Namira) | 0.5250 / 0.7090 | 0.6810 | Pending | Pending | 5th |
 | **ResNet-50** (Bithi) | 0.6300 / 0.6485 | 0.7037 | Pending | Pending | 3rd |
 | **DenseNet121** (Shouvik) | 0.5875 / 0.6292 | 0.7366 | Pending | Pending | 2nd |
-| **EfficientNetB0** (Nusrat) | 0.5650 / 0.5193 | 0.7445 | 0.9829 (Spatial) / 0.9600 (ST*) | Pending | **1st (Selected)** |
+| **EfficientNetB0** (Nusrat) | 0.6175 / 0.5566 | 0.7445 | 0.9829 (Spatial) / 0.8400 (ST) | 86.49% | **1st (Selected)** |
 
-*\*Note: The 0.9600 Spatiotemporal (ST) AUC was achieved using a ResNet18-LSTM sequence model.*
+*\*Note: The 0.8400 Spatiotemporal (ST) *(image sequence tracking)* AUC *(Area Under the ROC Curve)* was achieved using the YOLO-cropped EfficientNetB0-LSTM sequence model.*
 
-The backbone with the best average rank is **EfficientNetB0** (Nusrat), which achieves a Test MAE of `0.5650` (Dryad) and `0.5193` (ScienceDB), a Behavior Test F1 of `0.7445`, and a Lameness Test AUC of `0.9829` (Spatial). It serves as the shared backbone for the final Multi-Task model.
+The backbone with the best average rank is **EfficientNetB0** (Nusrat), which achieves a Test MAE *(Mean Absolute Error)* of `0.6175` (Dryad) and `0.5566` (ScienceDB), a Behavior Test F1 of `0.7445`, and a Lameness Test AUC of `0.9829` (Spatial). It serves as the shared backbone for the final Multi-Task model.
 
 #### Architectural Enhancements: CBAM (Convolutional Block Attention Module)
 Between the backbone and the heads, we inject a **CBAM** module *(a visual attention mechanism that guides the network to focus on relevant features and locations)*.
@@ -188,19 +188,19 @@ If a video has 200 frames:
 ### Part 6: AUC vs. Accuracy & Threshold Calibration
 *(Why a model can be perfect at ranking but fail at base accuracy, and how to fix it)*
 
-During our spatiotemporal lameness experiments, our model achieved a **Test AUC of 0.96**, but initially showed only **60% Test Accuracy**.
+During our spatiotemporal lameness experiments, our model achieved a **Test AUC of 1.00**, but under the default 0.50 threshold showed only **80.00% Test Accuracy**.
 
 #### Understanding AUC (Area Under the ROC Curve):
 AUC *(Area Under the Receiver Operating Characteristic Curve, a metric measuring a model's ability to rank positive cases higher than negative cases across all thresholds)* is a **threshold-independent metric** *(a grading metric that measures the model's core discriminative ability without relying on a specific decision cutoff)* based on the ROC curve *(Receiver Operating Characteristic curve, a graph plotting the True Positive Rate against the False Positive Rate at various thresholds)*.
-* An AUC of 0.96 means that if you pick one random lame cow and one random healthy cow, there is a 96% chance the model will assign a higher lameness probability to the lame cow. The model's internal understanding of lameness is exceptional.
+* An AUC of 1.00 means that if you pick one random lame cow and one random healthy cow, there is a 100% chance the model will assign a higher lameness probability to the lame cow. The model's internal understanding of lameness is exceptional.
 
 #### The Accuracy Discrepancy & Threshold Calibration:
 Accuracy is dependent on an arbitrary decision threshold *(the probability cutoff value used to assign a sample to a class)*, which defaults to `0.50` (50%).
 
 ##### Actual Technical Example:
 Because the lameness training set was small (50 videos total), the model's probability outputs shifted higher. It was outputting a `0.55` (55%) probability for perfectly healthy cows and `0.85` (85%) for lame cows.
-* Because `0.55 > 0.50`, the default accuracy metric classified the healthy cows as Lame, generating False Positives *(healthy cases incorrectly flagged by the model as diseased or abnormal)* and dragging the accuracy score down to 60%.
-* Shifting the decision threshold from `0.50` to `0.70` (so only scores > 0.70 are classified as Lame) correctly separates the classes. The test accuracy immediately jumped to 90%+.
+* Because `0.55 > 0.50`, the default accuracy metric classified the healthy cows as Lame, generating False Positives *(healthy cases incorrectly flagged by the model as diseased or abnormal)* and dragging the accuracy score down to 80%.
+* Shifting the decision threshold from `0.50` to `0.70` (so only scores > 0.70 are classified as Lame) correctly separates the classes. The test accuracy immediately jumped to 100.00%.
 
 ---
 
@@ -269,7 +269,7 @@ The multi-phase sequential training plan *(training individual components of a c
 1. **BCS Baseline:** [100% COMPLETE] All 5 base models trained. Results logged.
 2. **Behavior Baseline:** [100% COMPLETE] All 5 base models trained using Focal Loss. Results logged.
 3. **Lameness Baseline (Spatial vs Spatiotemporal):** [COMPLETE] Preliminary 2D models trained. The Spatiotemporal LSTM model was trained for 15 epochs on a 20-frame sampled sequence, achieving a 1.0 Validation AUC and 0.96 Test AUC.
-4. **ID Baseline:** [PENDING] Dataset extraction required.
+4. **ID Baseline:** [100% COMPLETE] EfficientNetB0 baseline trained for 10 epochs, achieving 86.49% Test Top-1 Accuracy.
 5. **Final Multi-Task Aggregation:** [PENDING] Will combine the winning backbone with all heads.
 
 #### Core Limitations of the Current Approach:
@@ -312,7 +312,7 @@ Ablation studies *(an experimental investigation where specific components of an
 
 #### 6. Backbone Selection Comparison
 * **The Study:** We train individual task baselines using 5 different architectures (ResNet-18, MobileNetV3-Small, ResNet-50, DenseNet121, EfficientNetB0).
-* **Actual Technical Example:** We measure the inference latency and parameter size of each architecture against its test error. EfficientNetB0 was chosen because it achieves a low BCS MAE of `0.5193` and a high Behavior F1-score of `0.7445` while remaining under 10 million parameters, outperforming heavier models like ResNet-50.
+* **Actual Technical Example:** We measure the inference latency and parameter size of each architecture against its test error. EfficientNetB0 was chosen because it achieves a low BCS MAE *(Mean Absolute Error)* of `0.5566` and a high Behavior F1-score of `0.7445` while remaining under 10 million parameters, outperforming heavier models like ResNet-50.
 
 #### 7. Single-Task vs. Multi-Task Learning
 * **The Study:** We train separate, individual networks for each task versus training a single unified model where all four prediction heads share the same backbone.

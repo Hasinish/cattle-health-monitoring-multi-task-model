@@ -1,5 +1,9 @@
-# Model Checkpoints
+# Model Checkpoints & Weights
 *.pth
+*.pt
+
+# Large Media Files
+*.mp4
 
 # Large Datasets
 datasets/

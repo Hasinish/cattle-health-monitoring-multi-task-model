@@ -2,7 +2,7 @@ import os
 import glob
 
 output_file = "detailed_p2_info.md"
-workspace_dir = r"d:\cattle-health-monitoring-multi-task-model"
+workspace_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Define the order of files to aggregate
 sections = [
@@ -25,7 +25,16 @@ sections = [
         "workspaces/nusrat/train_bcs.py",
         "workspaces/nusrat/train_behavior.py",
         "workspaces/nusrat/train_lameness.py",
-        "workspaces/nusrat/train_spatiotemporal_lameness.py"
+        "workspaces/nusrat/train_spatiotemporal_lameness.py",
+        "workspaces/nusrat/train_spatiotemporal_lameness_efficientnet.py",
+        "workspaces/nusrat/predict_spatiotemporal_lameness.py",
+        "workspaces/nusrat/evaluate_all_50_videos.py",
+        "workspaces/nusrat/visualize_cow_detection.py",
+        "workspaces/nusrat/visualize_lameness_realtime.py",
+        "workspaces/nusrat/cut_video_segment.py",
+        "workspaces/nusrat/crop_cow_detection.py",
+        "workspaces/nusrat/crop_sciencedb_dataset.py",
+        "workspaces/nusrat/visualize_bcs_crops.py"
     ]),
     ("8. TRAINING CODE (NAMIRA - MobileNetV3-Small)", [
         "workspaces/namira/train_bcs.py",
