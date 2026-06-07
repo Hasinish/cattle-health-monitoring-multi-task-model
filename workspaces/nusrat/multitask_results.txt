@@ -1,0 +1,7 @@
+Multi-Task Model Evaluation Results
+========================================
+
+BCS - MAE: 0.6919, Exact Acc: 0.4285
+Behavior - Macro F1: 0.3739
+Lameness - Acc: 0.9432, AUC: 0.9884
+Cow ID - Acc: 0.9597
