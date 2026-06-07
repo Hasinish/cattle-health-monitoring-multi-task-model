@@ -1,0 +1,108 @@
+%*******************************************************************
+%   Pre-Thesis I Report
+%   Multi-Task Deep Learning Framework for Unified Cattle Health 
+%   and Behavior Monitoring Using Public RGB and Depth Datasets
+%   
+%   Department of Computer Science and Engineering
+%   Brac University
+%*******************************************************************
+
+\documentclass[Times,12pt,oneside,openany,print,index]{report}
+\usepackage[a4paper,width=150mm,top=25mm,bottom=25mm]{geometry}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{csquotes}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\pagestyle{plain}
+
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{caption}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{longtable}
+\usepackage{float}
+
+\usepackage[nottoc]{tocbibind}
+\usepackage[normalem]{ulem}
+
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    filecolor=magenta,      
+    urlcolor=black,
+    citecolor=black,
+}
+\urlstyle{same}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+
+\usepackage[backend=biber,style=ieee,sorting=ynt]{biblatex}
+\addbibresource{bibliography/references.bib}
+
+\let\cleardoublepage=\clearpage
+
+\begin{document}
+
+\thispagestyle{empty}
+\input{core/titlepage}
+\cleardoublepage
+
+\pagenumbering{roman}
+
+\phantomsection
+\addcontentsline{toc}{chapter}{Declaration}
+\input{core/declaration}
+
+\phantomsection
+\addcontentsline{toc}{chapter}{Approval}
+\input{core/approval}
+
+\phantomsection
+\addcontentsline{toc}{chapter}{Abstract}
+\input{core/abstract}
+
+\phantomsection
+\addcontentsline{toc}{chapter}{Acknowledgment}
+\input{core/acknowledgement}
+
+\renewcommand{\contentsname}{Table of Contents}
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Table of Contents}
+\begingroup
+\setcounter{tocdepth}{1}
+\setlength{\parskip}{0pt} % This removes the gap
+\tableofcontents
+\listoffigures
+\listoftables
+\endgroup
+
+% NOMENCLATURE ADDED HERE - After List of Tables, Before Chapter 1
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Nomenclature}
+\input{core/nomenclature_manual}
+
+\cleardoublepage
+
+\pagenumbering{arabic}
+
+\chapter{Introduction}
+\input{chapters/chapter_1.tex}
+
+\chapter{Literature Review}
+\input{chapters/chapter_2.tex}
+
+\chapter{Conclusion}
+\input{chapters/chapter_3.tex}
+
+\phantomsection
+\printbibliography
+\addcontentsline{toc}{chapter}{Bibliography}
+
+\end{document}

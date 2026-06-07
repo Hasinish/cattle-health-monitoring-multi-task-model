@@ -1,0 +1,48 @@
+\newcommand*\wildcard[3][6cm]{%
+    \parbox{#1}{%
+        \centering
+        % Adjust 'height' to change signature size
+        \includegraphics[height=1.5cm, keepaspectratio]{#2}\\[-4pt] 
+        \hrulefill\par
+        #3%
+    }%
+}
+
+\section*{Declaration}
+
+It is hereby declared that
+
+\begin{enumerate}
+  \item The thesis submitted is our own original work while completing degree at Brac University.
+  \item The thesis does not contain material previously published or written by a third party, except where this is appropriately cited through full and accurate referencing.
+  \item The thesis does not contain material which has been accepted, or submitted, for any other degree or diploma at a university or other institution.
+  \item We have acknowledged all main sources of help.
+\end{enumerate}
+
+\vspace{0.5cm}
+\textbf{Student's Full Name \& Signature:}
+
+\begingroup
+    \centering
+    
+    % --- ROW 1 ---
+    % Replace filenames like 'sig_hasin.png' with your actual image files
+    \wildcard{sig_hasin.png}{\centerline{Hasin Ishrak} ~\\ \centerline{22201133}} 
+    \hspace{1cm}
+    \wildcard{sig_namira.png}{\centerline{Namira Abrar Haque} ~\\ \centerline{22201191}}
+    
+    \vspace{1.5cm} % Space between rows
+    
+    % --- ROW 2 ---
+    \wildcard{sig_sanjida.png}{\centerline{Sanjida Akter Bithi} ~\\ \centerline{22201180}}
+    \hspace{1cm}
+    \wildcard{sig_shouvik.png}{\centerline{Shouvik Banik} ~\\ \centerline{23101295}}
+    
+    \vspace{1.5cm} % Space between rows
+    
+    % --- ROW 3 ---
+    \wildcard{sig_nusrat.png}{\centerline{Nusrat Lamya Faruk} ~\\ \centerline{24241182}}
+
+\endgroup
+
+\pagebreak

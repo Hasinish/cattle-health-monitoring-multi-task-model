@@ -1,0 +1,53 @@
+% Updated \wildcard to accept image filename
+% #1 = Width (default 6cm)
+% #2 = Image Filename
+% #3 = Text (Name/Designation)
+\renewcommand*\wildcard[3][6cm]{%
+    \parbox{#1}{%
+        \centering
+        \includegraphics[height=2cm, keepaspectratio]{#2}\\[-2pt] 
+        \hrulefill\par
+        #3%
+    }%
+}
+
+\section*{Approval}
+
+The thesis titled ``Multi-Task Deep Learning Framework for Unified Cattle Health and Behavior Monitoring'' submitted by 
+\begin{enumerate}
+\item Hasin Ishrak (22201133)
+\item Namira Abrar Haque (22201191)
+\item Sanjida Akter Bithi (22201180) 
+\item Shouvik Banik (23101295)
+\item Nusrat Lamya Faruk (24241182)
+\end{enumerate}
+
+of Spring, 2026 has been accepted as satisfactory in partial fulfillment of the requirement for the degree of B.Sc. in Computer Science in February, 2026. 
+
+\vspace{0.5cm}
+\textbf{Examining Committee:}
+
+\vspace{0.5cm} % Reduced space here to make room
+
+\noindent
+Supervisor:\\
+(Member)\\
+% Replaced 'center' env with direct spacing to fix vertical layout
+\hspace*{7cm} \wildcard{}{\centerline{Dr. Md. Khalilur Rahman} ~\\ \centerline{Professor}\\ \centerline{Department of Computer Science and Engineering}\\ \centerline{Brac University} }
+
+\vspace{0.3cm} % Small gap between blocks
+
+
+\noindent
+Thesis Coordinator:\\
+(Member)\\
+\hspace*{7cm} \wildcard{sig_gra.jpg}{\centerline{Dr. Md. Golam Rabiul Alam} ~\\ \centerline{Professor}\\ \centerline{Department of Computer Science and Engineering}\\ \centerline{Brac University} }
+
+\vspace{6cm}
+
+\noindent
+Head of Department:\\
+(Chair)\\
+\hspace*{7cm} \wildcard{}{\centerline{Dr. Sadia Hamid Kazi} ~\\ \centerline{Associate Professor}\\ \centerline{Department of Computer Science and Engineering}\\ \centerline{Brac University} }
+
+\pagebreak
