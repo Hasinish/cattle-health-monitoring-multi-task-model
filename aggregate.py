@@ -30,6 +30,7 @@ sections = [
         "workspaces/nusrat/train_spatiotemporal_lameness_efficientnet.py",
         "workspaces/nusrat/predict_spatiotemporal_lameness.py",
         "workspaces/nusrat/evaluate_all_50_videos.py",
+        "workspaces/nusrat/evaluate_cbvd.py",
         "workspaces/nusrat/visualize_cow_detection.py",
         "workspaces/nusrat/visualize_lameness_realtime.py",
         "workspaces/nusrat/cut_video_segment.py",

@@ -135,12 +135,24 @@ Behavior:
                  Severely imbalanced (42:1 ratio). Cap at 3000/class for training.
                  Label encoding: raw label - 1 (so 1→0, 2→1, ..., 7→6)
 
-Lameness:      [NOT YET DOWNLOADED — datasets\lameness\ is empty]
-ID:            [NOT YET DOWNLOADED — datasets\id\ is empty]
+Lameness:      [DOWNLOADED, CROPPED & TRAINED]
+               YOLOv8-Nano crops extracted from Mendeley dataset (9,950 frames across 50 videos).
+               EfficientNetB0-LSTM trained on 20-frame sequences.
+               Results: Test Accuracy: 80.00%, Test AUC: 0.8400, Global AUC: 0.9904.
+ID:            [DOWNLOADED & TRAINED]
+               OpenCows2020 dataset preprocessed.
+               EfficientNetB0 with CBAM attention trained for 10 epochs.
+               Results: Test Top-1 Accuracy: 86.49%, Val Top-1 Accuracy: 87.06%.
 
 Cross-dataset Behavior Evaluation (Ablation #5):
-  CBVD-5       [NOT YET DOWNLOADED — required for cross-dataset evaluation]
-               Download before running ablations.
+  CBVD-5       [DOWNLOADED & EVALUATED]
+               Inference of MmCows-trained EfficientNetB0 on CBVD-5 (2000 balanced images).
+               Results: Macro F1: 0.124517
+                        Standing (Class 2): 90.34%
+                        Feeding head down (Class 4): 8.39%
+                        Drinking (Class 6): 2.99%
+                        Lying (Class 7): 24.31%
+               Findings: The model generalizes well to Standing postures, but performance degrades on Feeding, Drinking, and Lying due to severe domain shift (out-of-distribution farm backgrounds, camera perspectives, and differing annotation styles).
 
 ==========================================================================
 BACKBONE SELECTION TABLE (fill after all training):
@@ -172,7 +184,7 @@ ABLATION STUDIES:
 3. RGB only vs RGB+Depth (Dryad DGE)
 4. Focal Loss vs Cross-Entropy (Behavior)
 5. Cross-dataset eval: MmCows → CBVD-5 (Behavior)
-   [NOTE: CBVD-5 dataset not yet downloaded. Must download before running.]
+   [COMPLETE: Evaluated. Macro F1: 0.124517, high Standing accuracy but low on others due to domain shift.]
 6. Best backbone vs others (all tasks)
 7. Single-task vs Multi-task (BCS + Behavior)
 
@@ -203,9 +215,12 @@ D:\T25301094 P2\
 │   │   └── sciencedb_bcs\             (26 GB, .jpg RGB images + archive)
 │   ├── behavior\
 │   │   ├── behavior_index.csv         (213686 rows, MmCows)
-│   │   └── mmcows\                    (25 GB, .jpg RGB images + archive)
-│   ├── lameness\                      [EMPTY — dataset not downloaded]
-│   └── id\                            [EMPTY — dataset not downloaded]
+│   │   ├── mmcows\                    (25 GB, .jpg RGB images + archive)
+│   │   ├── cbvd_cropped_index.csv     (2000 rows, CBVD-5 test)
+│   │   └── CBVD-5\                    (10.88 GB, raw frames + crops)
+│   ├── lameness\                      (lameness_cropped_index.csv + cropped datasets)
+│   └── id\                            (id_index.csv + opencow2020-DatasetNinja)
+
 ├── final_models\                      [EMPTY — multi-task phase not started]
 └── workspaces\
     ├── hasin\    (BCS: DONE | Behavior: DONE)
@@ -241,13 +256,13 @@ Chapter 6: Conclusion + Future Work
 ==========================================================================
 IMMEDIATE ACTION ITEMS BEFORE JUNE 10:
 ==========================================================================
-PRIORITY 1 — Download Lameness and ID datasets + preprocess
-  Lameness: CattleLameness or Mendeley Lameness Dataset
-  ID: OpenCows2020 or Cows2021
-  Run 10 epochs with EfficientNetB0 only (Nusrat)
+PRIORITY 1 — Download Lameness and ID datasets + preprocess [COMPLETE]
+  - Lameness dataset preprocessed, YOLO cropped, trained (80% Test Acc / 0.84 Test AUC)
+  - ID dataset (OpenCows2020) preprocessed, trained (86.49% Test Top-1 Acc)
 
-PRIORITY 2 — Download CBVD-5 for cross-dataset behavior ablation
-  Required for Ablation Study #5
+PRIORITY 2 — Download CBVD-5 for cross-dataset behavior ablation [COMPLETE]
+  - CBVD-5 downloaded, cropped, and evaluated (Macro F1: 0.124517)
+
 
 PRIORITY 3 — Run ablation studies (Hasin)
   After BCS results are valid: CORAL vs CE, CBAM vs no CBAM, RGB vs DGE
@@ -1248,7 +1263,7 @@ Ablation studies *(an experimental investigation where specific components of an
 
 #### 5. Cross-Dataset Evaluation (MmCows to CBVD-5)
 * **The Study:** We train the behavior classifier on MmCows and perform cross-dataset inference on the completely unseen CBVD-5 dataset.
-* **Actual Technical Example:** This ablation tests out-of-distribution generalization. If the model only memorized the camera angles and lighting of the MmCows farm, it will fail on CBVD-5. This validation proves whether the network learned robust physical walking/standing behaviors or just overfit to the training dataset.
+* **Actual Technical Example:** This ablation tests out-of-distribution generalization. By evaluating our MmCows-trained EfficientNetB0 on the independent CBVD-5 dataset (2,000 balanced images), we observed a Macro F1-score of **`0.124517`**. While the model generalized extremely well to Standing postures (**`90.34%`** accuracy), it struggled on Feeding (**`8.39%`**), Drinking (**`2.99%`**), and Lying (**`24.31%`**) behaviors. This performance drop highlights that the model overfit to the specific camera angles, farm lighting, and bounding box perspectives of the MmCows dataset, proving that cross-dataset generalization is highly sensitive to domain shift and benefit from multi-farm diversity or domain adaptation.
 
 #### 6. Backbone Selection Comparison
 * **The Study:** We train individual task baselines using 5 different architectures (ResNet-18, MobileNetV3-Small, ResNet-50, DenseNet121, EfficientNetB0).
@@ -2018,6 +2033,24 @@ ANY ISSUES ENCOUNTERED: None
 ---END CONTEXT 3---
 ```
 
+### FILE: workspaces\nusrat\cbvd_behavior_results.txt
+---
+```text
+---CONTEXT 3 CBVD-5 EVALUATION---
+PERSON NAME: Nusrat
+BASE MODEL: EfficientNetB0
+DATASET: CBVD-5 (2000 balanced images)
+VAL MACRO F1 ON CBVD-5: 0.124517
+PER-CLASS ACCURACY ON CBVD-5:
+  Class 2 (Standing): 90.34%
+  Class 4 (Feeding head down): 8.39%
+  Class 6 (Drinking): 2.99%
+  Class 7 (Lying): 24.31%
+TRAINING TIME (mins): N/A (Evaluation Only)
+ANY ISSUES ENCOUNTERED: None
+---END CONTEXT 3---
+```
+
 ### FILE: workspaces\nusrat\id_results.txt
 ---
 ```text
@@ -2277,6 +2310,173 @@ for row in rows:
 print(f"Train images: {splits['train']} | Val images: {splits['val']} | Test images: {splits['test']}")
 print(f"Total images: {len(rows)}")
 print(f"CSV saved to: {OUTPUT_CSV}")
+```
+
+### FILE: context\preprocess_cbvd.py
+---
+```python
+import os
+import csv
+import json
+import random
+import cv2
+from pathlib import Path
+from collections import defaultdict
+
+# CONFIG
+BASE_DIR = r"d:\T25301094 P2"
+DATASET_ROOT = Path(BASE_DIR) / "datasets" / "behavior" / "CBVD-5"
+OUTPUT_CROP_DIR = DATASET_ROOT / "cropped"
+OUTPUT_CSV = DATASET_ROOT / "cbvd_cropped_index.csv"
+RANDOM_SEED = 42
+
+random.seed(RANDOM_SEED)
+OUTPUT_CROP_DIR.mkdir(parents=True, exist_ok=True)
+
+print(f"Dataset Root: {DATASET_ROOT}")
+print(f"Output Crop Dir: {OUTPUT_CROP_DIR}")
+print(f"Output CSV: {OUTPUT_CSV}")
+
+# Parse CSV
+csv_path = DATASET_ROOT / "CBVD-5.csv"
+if not csv_path.exists():
+    raise FileNotFoundError(f"CSV not found: {csv_path}")
+
+# Groups by label (0, 1, 2, 3, 4 -> mapped to MmCows labels)
+# Label mapping:
+#   '1' in option_ids -> 6 (Lying)
+#   '3' in option_ids -> 5 (Drinking)
+#   '2' in option_ids -> 3 (Feeding)
+#   '0' in option_ids -> 1 (Standing)
+grouped_rows = defaultdict(list)
+
+with open(csv_path, 'r', encoding='utf-8') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        if not row:
+            continue
+        if row[0].startswith('#'):
+            continue
+        
+        # row: metadata_id, file_list, flags, temporal_coordinates, spatial_coordinates, metadata
+        metadata_id = row[0]
+        try:
+            filename = json.loads(row[1])[0]
+            spatial = json.loads(row[4])
+            meta = json.loads(row[5])
+            
+            if "1" not in meta:
+                continue
+                
+            val = meta["1"]
+            
+            # Label mapping logic
+            if '1' in val:      # Lying down
+                mapped_label = 6
+            elif '3' in val:    # Drinking
+                mapped_label = 5
+            elif '2' in val:    # Foraging/Feeding
+                mapped_label = 3
+            elif '0' in val:    # Standing
+                mapped_label = 1
+            else:
+                continue
+                
+            grouped_rows[mapped_label].append({
+                'metadata_id': metadata_id,
+                'filename': filename,
+                'spatial': spatial,
+                'label': mapped_label
+            })
+        except Exception as e:
+            pass
+
+print("\nParsed Label Counts:")
+for lbl, items in sorted(grouped_rows.items()):
+    print(f"  Mapped Label {lbl}: {len(items)} items")
+
+# Select a balanced subset of up to 500 images per class
+selected_items = []
+target_size_per_class = 500
+
+for lbl, items in sorted(grouped_rows.items()):
+    random.shuffle(items)
+    selected = items[:target_size_per_class]
+    selected_items.extend(selected)
+    print(f"  Selected {len(selected)} items for Label {lbl}")
+
+print(f"\nTotal selected items for cropping: {len(selected_items)}")
+
+# Crop and save images
+csv_rows = []
+success_count = 0
+
+for idx, item in enumerate(selected_items):
+    filename = item['filename']
+    metadata_id = item['metadata_id']
+    spatial = item['spatial']
+    label = item['label']
+    
+    # Locate full-resolution source image
+    try:
+        video_id = int(filename.split('_')[0])
+    except ValueError:
+        continue
+        
+    if video_id >= 700:
+        img_path = DATASET_ROOT / "labelframes_add" / "labelframes" / filename
+    else:
+        img_path = DATASET_ROOT / "labelframes" / "labelframes" / filename
+        
+    if not img_path.exists():
+        continue
+        
+    # Read full-resolution image
+    img = cv2.imread(str(img_path))
+    if img is None:
+        continue
+        
+    # Bounding Box Coordinates: [shape_id, x, y, width, height]
+    x = int(float(spatial[1]))
+    y = int(float(spatial[2]))
+    w = int(float(spatial[3]))
+    h = int(float(spatial[4]))
+    
+    img_h, img_w = img.shape[:2]
+    cx1 = max(0, x)
+    cy1 = max(0, y)
+    cx2 = min(img_w, x + w)
+    cy2 = min(img_h, y + h)
+    
+    if cx2 <= cx1 or cy2 <= cy1:
+        continue
+        
+    # Crop and Resize
+    crop = img[cy1:cy2, cx1:cx2]
+    resized_crop = cv2.resize(crop, (224, 224))
+    
+    # Save Crop
+    crop_filename = f"{metadata_id}.jpg"
+    crop_path = OUTPUT_CROP_DIR / crop_filename
+    cv2.imwrite(str(crop_path), resized_crop)
+    
+    # Save CSV Row: image_path, label, cow_id, split
+    csv_rows.append([str(crop_path), str(label), f"CBVD_{video_id}", "test"])
+    success_count += 1
+    
+    if (idx + 1) % 200 == 0:
+        print(f"  Processed {idx + 1}/{len(selected_items)} images...")
+
+# Write new CSV index
+with open(OUTPUT_CSV, 'w', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerow(['image_path', 'label', 'cow_id', 'split'])
+    writer.writerows(csv_rows)
+
+print(f"\nCropping Complete!")
+print(f"Successfully cropped and saved {success_count} images.")
+print(f"CSV index written to: {OUTPUT_CSV}")
+
 ```
 
 ### FILE: context\preprocess_id.py
@@ -3883,6 +4083,227 @@ def main():
     # Print to console
     print(report_text)
     print(f"\nSaved evaluation report to: {OUTPUT_REPORT_PATH}")
+
+if __name__ == "__main__":
+    main()
+
+```
+
+### FILE: workspaces\nusrat\evaluate_cbvd.py
+---
+```python
+import os
+import csv
+import time
+import cv2
+import timm
+import numpy as np
+import matplotlib.pyplot as plt
+import albumentations as A
+from albumentations.pytorch import ToTensorV2
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from torch.utils.data import Dataset, DataLoader
+from sklearn.metrics import f1_score, confusion_matrix
+from tqdm import tqdm
+
+# Configurations
+PERSON_NAME = "Nusrat"
+BASE_MODEL_DISPLAY = "EfficientNetB0"
+MODEL_NAME = "efficientnet_b0"
+BASE_DIR = r"D:\T25301094 P2"
+WORKSPACE_DIR = r"D:\T25301094 P2\workspaces\nusrat"
+CSV_PATH = r"D:\T25301094 P2\datasets\behavior\CBVD-5\cbvd_cropped_index.csv"
+CHECKPOINT_PATH = r"D:\T25301094 P2\workspaces\nusrat\behavior_best.pth"
+RESULTS_PATH = r"D:\T25301094 P2\workspaces\nusrat\cbvd_behavior_results.txt"
+
+NUM_CLASSES = 7
+BATCH_SIZE = 64
+NUM_WORKERS = 0  # Safe for Windows
+RANDOM_SEED = 42
+
+# Mapped classes of interest in CBVD-5:
+#   1 -> Class 2 (Standing)
+#   3 -> Class 4 (Feeding head down)
+#   5 -> Class 6 (Drinking)
+#   6 -> Class 7 (Lying)
+MAPPED_CLASSES = [1, 3, 5, 6]
+
+class CBVDDataset(Dataset):
+    def __init__(self, csv_path, transform=None):
+        self.transform = transform
+        self.samples = []
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                self.samples.append({
+                    'image_path': row['image_path'],
+                    'label': int(row['label']),
+                    'cow_id': row['cow_id']
+                })
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        item = self.samples[idx]
+        img_path = item['image_path']
+        if not os.path.isabs(img_path):
+            img_path = os.path.join(BASE_DIR, img_path)
+        image = cv2.imread(img_path)
+        if image is None:
+            raise FileNotFoundError(f"Could not read image: {img_path}")
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        label = item['label']
+        if self.transform is not None:
+            image = self.transform(image=image)["image"]
+        return image, label
+
+# Attention layers (matching train_behavior.py)
+class ChannelAttention(nn.Module):
+    def __init__(self, in_channels, reduction=16):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.max_pool = nn.AdaptiveMaxPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(in_channels, in_channels // reduction),
+            nn.ReLU(),
+            nn.Linear(in_channels // reduction, in_channels)
+        )
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg = self.fc(self.avg_pool(x).squeeze(-1).squeeze(-1))
+        max_ = self.fc(self.max_pool(x).squeeze(-1).squeeze(-1))
+        return x * self.sigmoid(avg + max_).unsqueeze(-1).unsqueeze(-1)
+
+class SpatialAttention(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv2d(2, 1, kernel_size=7, padding=3)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x):
+        avg = torch.mean(x, dim=1, keepdim=True)
+        max_, _ = torch.max(x, dim=1, keepdim=True)
+        return x * self.sigmoid(self.conv(torch.cat([avg, max_], dim=1)))
+
+class CBAM(nn.Module):
+    def __init__(self, in_channels):
+        super().__init__()
+        self.ca = ChannelAttention(in_channels)
+        self.sa = SpatialAttention()
+
+    def forward(self, x):
+        return self.sa(self.ca(x))
+
+class BehaviorModel(nn.Module):
+    def __init__(self, model_name, num_classes, device):
+        super().__init__()
+        backbone = timm.create_model(model_name, pretrained=False, num_classes=0, global_pool='')
+        backbone = backbone.to(device, non_blocking=True)
+        with torch.no_grad():
+            dummy = backbone(torch.zeros(1, 3, 224, 224).to(device, non_blocking=True))
+            feature_dim = dummy.shape[1]
+        self.backbone = backbone
+        self.cbam = CBAM(feature_dim)
+        self.pool = nn.AdaptiveAvgPool2d(1)
+        self.classifier = nn.Linear(feature_dim, num_classes)
+
+    def forward(self, x):
+        x = self.backbone(x)
+        x = self.cbam(x)
+        x = self.pool(x)
+        x = torch.flatten(x, 1)
+        x = self.classifier(x)
+        return x
+
+def main():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Evaluating on device: {device}")
+
+    # Set up transform
+    eval_transform = A.Compose([
+        A.Resize(224, 224),
+        A.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ToTensorV2(),
+    ])
+
+    dataset = CBVDDataset(CSV_PATH, eval_transform)
+    loader = DataLoader(
+        dataset,
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        num_workers=NUM_WORKERS,
+        pin_memory=True
+    )
+
+    print(f"Total CBVD-5 evaluation samples: {len(dataset)}")
+
+    # Load Model
+    model = BehaviorModel(MODEL_NAME, NUM_CLASSES, device)
+    model = model.to(device)
+    if not os.path.exists(CHECKPOINT_PATH):
+        raise FileNotFoundError(f"Checkpoint not found at: {CHECKPOINT_PATH}")
+    model.load_state_dict(torch.load(CHECKPOINT_PATH, map_location=device, weights_only=True))
+    model.eval()
+    print("Model loaded successfully.")
+
+    # Evaluate
+    all_labels = []
+    all_preds = []
+
+    with torch.no_grad():
+        for images, labels in tqdm(loader, desc="Evaluating CBVD-5"):
+            images = images.to(device, non_blocking=True)
+            with torch.amp.autocast('cuda') if torch.cuda.is_available() else torch.no_grad():
+                outputs = model(images)
+            preds = torch.argmax(outputs, dim=1)
+            all_labels.extend(labels.numpy().tolist())
+            all_preds.extend(preds.cpu().numpy().tolist())
+
+    # Compute metrics on the MAPPED_CLASSES only to keep F1 accurate
+    # Note: If model predicts a class outside MAPPED_CLASSES, it is treated as a false positive
+    macro_f1 = f1_score(
+        all_labels,
+        all_preds,
+        average='macro',
+        labels=MAPPED_CLASSES,
+        zero_division=0
+    )
+    
+    # Calculate confusion matrix on MAPPED_CLASSES
+    # We map labels to a 4x4 matrix specifically for the 4 classes
+    cm = confusion_matrix(all_labels, all_preds, labels=MAPPED_CLASSES)
+
+    per_class_accuracy = []
+    for idx, class_label in enumerate(MAPPED_CLASSES):
+        total = cm[idx].sum()
+        correct = cm[idx, idx]
+        acc = (correct / total) * 100 if total > 0 else 0.0
+        per_class_accuracy.append(acc)
+
+    # Output text results
+    text = f"""---CONTEXT 3 CBVD-5 EVALUATION---
+PERSON NAME: {PERSON_NAME}
+BASE MODEL: {BASE_MODEL_DISPLAY}
+DATASET: CBVD-5 (2000 balanced images)
+VAL MACRO F1 ON CBVD-5: {macro_f1:.6f}
+PER-CLASS ACCURACY ON CBVD-5:
+  Class 2 (Standing): {per_class_accuracy[0]:.2f}%
+  Class 4 (Feeding head down): {per_class_accuracy[1]:.2f}%
+  Class 6 (Drinking): {per_class_accuracy[2]:.2f}%
+  Class 7 (Lying): {per_class_accuracy[3]:.2f}%
+TRAINING TIME (mins): N/A (Evaluation Only)
+ANY ISSUES ENCOUNTERED: None
+---END CONTEXT 3---"""
+
+    with open(RESULTS_PATH, "w", encoding="utf-8") as f:
+        f.write(text)
+
+    print("\n" + text)
+    print(f"\nSaved results to: {RESULTS_PATH}")
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,13 @@
+---CONTEXT 3 CBVD-5 EVALUATION---
+PERSON NAME: Nusrat
+BASE MODEL: EfficientNetB0
+DATASET: CBVD-5 (2000 balanced images)
+VAL MACRO F1 ON CBVD-5: 0.124517
+PER-CLASS ACCURACY ON CBVD-5:
+  Class 2 (Standing): 90.34%
+  Class 4 (Feeding head down): 8.39%
+  Class 6 (Drinking): 2.99%
+  Class 7 (Lying): 24.31%
+TRAINING TIME (mins): N/A (Evaluation Only)
+ANY ISSUES ENCOUNTERED: None
+---END CONTEXT 3---

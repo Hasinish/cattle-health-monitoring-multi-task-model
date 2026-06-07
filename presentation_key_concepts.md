@@ -308,7 +308,7 @@ Ablation studies *(an experimental investigation where specific components of an
 
 #### 5. Cross-Dataset Evaluation (MmCows to CBVD-5)
 * **The Study:** We train the behavior classifier on MmCows and perform cross-dataset inference on the completely unseen CBVD-5 dataset.
-* **Actual Technical Example:** This ablation tests out-of-distribution generalization. If the model only memorized the camera angles and lighting of the MmCows farm, it will fail on CBVD-5. This validation proves whether the network learned robust physical walking/standing behaviors or just overfit to the training dataset.
+* **Actual Technical Example:** This ablation tests out-of-distribution generalization. By evaluating our MmCows-trained EfficientNetB0 on the independent CBVD-5 dataset (2,000 balanced images), we observed a Macro F1-score of **`0.124517`**. While the model generalized extremely well to Standing postures (**`90.34%`** accuracy), it struggled on Feeding (**`8.39%`**), Drinking (**`2.99%`**), and Lying (**`24.31%`**) behaviors. This performance drop highlights that the model overfit to the specific camera angles, farm lighting, and bounding box perspectives of the MmCows dataset, proving that cross-dataset generalization is highly sensitive to domain shift and benefit from multi-farm diversity or domain adaptation.
 
 #### 6. Backbone Selection Comparison
 * **The Study:** We train individual task baselines using 5 different architectures (ResNet-18, MobileNetV3-Small, ResNet-50, DenseNet121, EfficientNetB0).

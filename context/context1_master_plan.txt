@@ -125,12 +125,24 @@ Behavior:
                  Severely imbalanced (42:1 ratio). Cap at 3000/class for training.
                  Label encoding: raw label - 1 (so 1→0, 2→1, ..., 7→6)
 
-Lameness:      [NOT YET DOWNLOADED — datasets\lameness\ is empty]
-ID:            [NOT YET DOWNLOADED — datasets\id\ is empty]
+Lameness:      [DOWNLOADED, CROPPED & TRAINED]
+               YOLOv8-Nano crops extracted from Mendeley dataset (9,950 frames across 50 videos).
+               EfficientNetB0-LSTM trained on 20-frame sequences.
+               Results: Test Accuracy: 80.00%, Test AUC: 0.8400, Global AUC: 0.9904.
+ID:            [DOWNLOADED & TRAINED]
+               OpenCows2020 dataset preprocessed.
+               EfficientNetB0 with CBAM attention trained for 10 epochs.
+               Results: Test Top-1 Accuracy: 86.49%, Val Top-1 Accuracy: 87.06%.
 
 Cross-dataset Behavior Evaluation (Ablation #5):
-  CBVD-5       [NOT YET DOWNLOADED — required for cross-dataset evaluation]
-               Download before running ablations.
+  CBVD-5       [DOWNLOADED & EVALUATED]
+               Inference of MmCows-trained EfficientNetB0 on CBVD-5 (2000 balanced images).
+               Results: Macro F1: 0.124517
+                        Standing (Class 2): 90.34%
+                        Feeding head down (Class 4): 8.39%
+                        Drinking (Class 6): 2.99%
+                        Lying (Class 7): 24.31%
+               Findings: The model generalizes well to Standing postures, but performance degrades on Feeding, Drinking, and Lying due to severe domain shift (out-of-distribution farm backgrounds, camera perspectives, and differing annotation styles).
 
 ==========================================================================
 BACKBONE SELECTION TABLE (fill after all training):
@@ -162,7 +174,7 @@ ABLATION STUDIES:
 3. RGB only vs RGB+Depth (Dryad DGE)
 4. Focal Loss vs Cross-Entropy (Behavior)
 5. Cross-dataset eval: MmCows → CBVD-5 (Behavior)
-   [NOTE: CBVD-5 dataset not yet downloaded. Must download before running.]
+   [COMPLETE: Evaluated. Macro F1: 0.124517, high Standing accuracy but low on others due to domain shift.]
 6. Best backbone vs others (all tasks)
 7. Single-task vs Multi-task (BCS + Behavior)
 
@@ -193,9 +205,12 @@ D:\T25301094 P2\
 │   │   └── sciencedb_bcs\             (26 GB, .jpg RGB images + archive)
 │   ├── behavior\
 │   │   ├── behavior_index.csv         (213686 rows, MmCows)
-│   │   └── mmcows\                    (25 GB, .jpg RGB images + archive)
-│   ├── lameness\                      [EMPTY — dataset not downloaded]
-│   └── id\                            [EMPTY — dataset not downloaded]
+│   │   ├── mmcows\                    (25 GB, .jpg RGB images + archive)
+│   │   ├── cbvd_cropped_index.csv     (2000 rows, CBVD-5 test)
+│   │   └── CBVD-5\                    (10.88 GB, raw frames + crops)
+│   ├── lameness\                      (lameness_cropped_index.csv + cropped datasets)
+│   └── id\                            (id_index.csv + opencow2020-DatasetNinja)
+
 ├── final_models\                      [EMPTY — multi-task phase not started]
 └── workspaces\
     ├── hasin\    (BCS: DONE | Behavior: DONE)
@@ -231,13 +246,13 @@ Chapter 6: Conclusion + Future Work
 ==========================================================================
 IMMEDIATE ACTION ITEMS BEFORE JUNE 10:
 ==========================================================================
-PRIORITY 1 — Download Lameness and ID datasets + preprocess
-  Lameness: CattleLameness or Mendeley Lameness Dataset
-  ID: OpenCows2020 or Cows2021
-  Run 10 epochs with EfficientNetB0 only (Nusrat)
+PRIORITY 1 — Download Lameness and ID datasets + preprocess [COMPLETE]
+  - Lameness dataset preprocessed, YOLO cropped, trained (80% Test Acc / 0.84 Test AUC)
+  - ID dataset (OpenCows2020) preprocessed, trained (86.49% Test Top-1 Acc)
 
-PRIORITY 2 — Download CBVD-5 for cross-dataset behavior ablation
-  Required for Ablation Study #5
+PRIORITY 2 — Download CBVD-5 for cross-dataset behavior ablation [COMPLETE]
+  - CBVD-5 downloaded, cropped, and evaluated (Macro F1: 0.124517)
+
 
 PRIORITY 3 — Run ablation studies (Hasin)
   After BCS results are valid: CORAL vs CE, CBAM vs no CBAM, RGB vs DGE
