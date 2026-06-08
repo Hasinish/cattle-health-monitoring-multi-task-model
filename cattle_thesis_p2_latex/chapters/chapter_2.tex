@@ -101,7 +101,7 @@ Behavior recognition covers vision-based as well as sensor-based approaches, wit
 \hline
 Petcu 2023 & CNN-LSTM & RGB video & 97.35\% & Private \\
 \hline
-Lee 2023 & YOLOv5+SORT+I3D & RGB video & 95.3\% & Private \\
+Lee 2023 & YOLOv5 + SORT + I3D & RGB video & 95.3\% & Private \\
 \hline
 Dottorini 2025 & XGBoost + DWT & IMU sensor & 91.8\% & MmCows \\
 \hline
@@ -154,14 +154,14 @@ Depth imaging represents substantial research interest with demonstrated value f
 
 Self-supervised learning remains highly underexplored in cattle monitoring compared to transfer learning, representing a potential research opportunity. MmCows provides 2 weeks of continuous unlabeled video ideal for SSL pre-training. SSL represents a potential bonus contribution if time permits, offering opportunities to leverage abundant unlabeled surveillance footage.
 
-Comprehensive search reveals there are no publicly available thermal/infrared datasets for cattle. The only thermal cattle research (Carraro 2026) used privately collected data. Thermal modality is excluded from current scope and documented as future work requiring data collection partnerships.
+Comprehensive search reveals there are no publicly available thermal or infrared datasets for cattle. The only thermal cattle research (Carraro 2026) used privately collected data. Thermal modality is excluded from current scope and documented as future work requiring data collection partnerships.
 
 \begin{table}[ht]
 \centering
 \caption{Summary of Key Cattle Monitoring Techniques from Literature}
 \label{tab:summary}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{2cm}|>{\raggedright\arraybackslash}p{1.8cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{2.8cm}|}
+\begin{tabular}{|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{2cm}|>{\raggedright\arraybackslash}p{2.0cm}|>{\raggedright\arraybackslash}p{3.2cm}|>{\raggedright\arraybackslash}p{2.6cm}|}
 \hline
 \textbf{Technique} & \textbf{Platform} & \textbf{Accuracy} & \textbf{Strength} & \textbf{Weakness} \\
 \hline
@@ -169,7 +169,7 @@ EfficientNet+SE & RGB BCS & 93.77\% & High accuracy, attention & Single task \\
 \hline
 BCS-YOLO+KD & RGB BCS & 92.7\% & Edge-ready, distilled & Single task \\
 \hline
-Detectron2+SORT & Depth Lameness & 99.94\% & Excellent detection & Requires depth \\
+Detectron2 + SORT & Depth Lameness & 99.94\% & Excellent detection & Requires depth \\
 \hline
 CNN-LSTM & RGB Behavior & 97.35\% & Temporal modeling & Private data \\
 \hline

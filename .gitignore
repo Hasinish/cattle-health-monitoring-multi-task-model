@@ -9,3 +9,15 @@ __pycache__/
 .ipynb_checkpoints/
 .vscode/
 .idea/
+
+# LaTeX auxiliary files
+*.aux
+*.bcf
+*.blg
+*.lof
+*.log
+*.lot
+*.run.xml
+*.synctex.gz
+*.toc
+*.out

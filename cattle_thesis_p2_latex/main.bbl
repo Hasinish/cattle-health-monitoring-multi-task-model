@@ -213,7 +213,7 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Biosystems Engineering}
-      \field{title}{Deep Learning Approaches for Beef Cattle Weight and Body Condition Score Prediction Using RGB-D Cameras}
+      \field{title}{Deep Learning Approaches for Beef Cattle Weight and Body Condition Score Prediction Using RGB\allowbreak-D Cameras}
       \field{volume}{223}
       \field{year}{2022}
       \field{pages}{62\bibrangedash 74}
