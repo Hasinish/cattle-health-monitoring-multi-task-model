@@ -20,10 +20,10 @@ Before constructing the unified multi-task model, a systematic backbone architec
 \textbf{Model Architecture} & \textbf{BCS Test MAE} & \textbf{Behavior Test} & \textbf{Lameness Test} & \textbf{ID Top-1} \\
 & (Dryad / ScienceDB) & \textbf{Macro F1} & \textbf{AUC} & \textbf{Accuracy} \\
 \midrule
-ResNet-18 (Hasin) & 0.8675 / 0.5800 & 0.7134 & 0.8400 (ST) & Pending \\
-MobileNetV3-Small (Namira) & 0.5250 / 0.7090 & 0.6810 & Pending & Pending \\
-ResNet-50 (Bithi) & 0.6300 / 0.6485 & 0.7037 & Pending & Pending \\
-DenseNet121 (Shouvik) & 0.5875 / 0.6292 & 0.7366 & Pending & Pending \\
+ResNet-18 (Hasin) & 0.8675 / 0.5800 & 0.7134 & 0.9600 (ST) & -- \\
+MobileNetV3-Small (Namira) & 0.5250 / 0.7090 & 0.6810 & -- & -- \\
+ResNet-50 (Bithi) & 0.6300 / 0.6485 & 0.7037 & -- & -- \\
+DenseNet121 (Shouvik) & 0.5875 / 0.6292 & 0.7366 & -- & -- \\
 \textbf{EfficientNetB0 (Nusrat)} & \textbf{0.6175} / \textbf{0.5566} & \textbf{0.7445} & \textbf{0.9829 (Spatial)} & \textbf{86.49\%} \\
 \bottomrule
 \end{tabular}%
@@ -44,7 +44,7 @@ The selected EfficientNet-B0 backbone was trained in two multi-task configuratio
 \toprule
 \textbf{Training Setup} & \textbf{BCS MAE} & \textbf{Behavior F1} & \textbf{Lameness AUC} & \textbf{ID Accuracy} \\
 \midrule
-Single-Task Baselines & 0.5566 (SciDB) & 0.7445 & 0.9829 (Spatial) & 86.49\% \\
+Single-Task Baselines & 0.5566 (SciDB) & 0.7445 & 0.9829 (Spatial) / 0.8400 (Seq) & 86.49\% \\
 Frame-Level Multi-Task & 0.6919 & 0.3739 & 0.9884 (Spatial) & 95.97\% \\
 \textbf{Spatiotemporal Multi-Task} & \textbf{0.7849} & \textbf{0.4775} & \textbf{1.0000 (Sequence)} & \textbf{97.18\%} \\
 \bottomrule
@@ -60,7 +60,7 @@ The experimental results demonstrate a clear trade-off between task complexity a
 \end{itemize}
 
 \subsection{Threshold Calibration for Lameness}
-During spatiotemporal testing on the CattleLameness sequence dataset, a discrepancy was observed: the model achieved a threshold-independent AUC of 1.0000, but under the default classification threshold of 0.50, the binary accuracy was only 80.00\%. 
+During spatiotemporal testing in the unified multi-task evaluation on the CattleLameness sequence dataset, a discrepancy was observed: the model achieved a threshold-independent AUC of 1.0000, but under the default classification threshold of 0.50, the binary accuracy was only 80.00\%. 
 
 Upon calibration, it was found that the small dataset size (50 videos) shifted the model's confidence scores upward, resulting in a probability output of 0.55 for normal cows and 0.85 for lame cows. Because the default threshold (0.50) was lower than the normal cow score, the model generated false positives. By calibrating the decision threshold to 0.70 (classifying as Lame only if probability $>$ 0.70), the classes were separated, and the accuracy rose to 100.00\%.
 
@@ -74,10 +74,10 @@ Standard Cross-Entropy Loss treats BCS classes as independent categories. Ordina
 To verify the visual attention mechanism, the BCS backbone was evaluated with and without CBAM. Without CBAM, the model yielded a Dryad test MAE of 0.7240. The addition of CBAM (focusing channel attention on structural contours and spatial attention on the spine, hooks, and pins) reduced the test MAE to 0.6175, confirming that spatial spotlights filter out background farm noise.
 
 \subsection{Ablation 3: Modality Analysis (RGB vs. DGE)}
-Using the Dryad dataset, the model was evaluated on RGB pixels vs. Depth Grayscale Edge (DGE) maps. The depth-infused DGE format resulted in a test MAE of 0.6175, whereas RGB-only models yielded 0.8675. This indicates that physical depth contours are highly descriptive for estimating subcutaneous fat reserves.
+Using the Dryad dataset, the model was evaluated using different backbones on the Depth Grayscale Edge (DGE) maps. The depth-infused DGE format achieved an EfficientNet-B0 test MAE of 0.6175, whereas a shallower backbone (ResNet-18) on the same DGE input yielded a higher error rate of 0.8675, confirming that backbone capacity is critical for modeling structured depth shapes. Furthermore, comparing EfficientNet-B0's performance on standard RGB-only data (ScienceDB test MAE of 0.5566) and DGE-infused data (Dryad test MAE of 0.6175) shows that the model generalizes well across both modalities, with depth contours in Dryad helping to offset the significantly smaller training sample size (5,923 images on Dryad vs. 53,566 images on ScienceDB).
 
 \subsection{Ablation 4: Focal Loss vs. Cross-Entropy Loss (Behavior)}
-Due to the 42:1 class imbalance in the MmCows dataset, standard Cross-Entropy training resulted in majority-class bias (always predicting Lying or Standing, yielding a Macro F1-score of 0.4120). Integrating Focal Loss ($\gamma = 2$, $\alpha = 0.25$) scaled down the influence of easy majority classes and forced the model to learn rare classes (licking, drinking), raising the Test Macro F1-score to 0.7445.
+Due to the 42:1 class imbalance in the MmCows dataset, standard Cross-Entropy training resulted in majority-class bias (always predicting Lying or Standing), yielding a severely degraded Macro F1-score. Integrating Focal Loss ($\gamma = 2$, $\alpha = 0.25$) scaled down the influence of easy majority classes and forced the model to learn rare classes (licking, drinking), raising the Test Macro F1-score to 0.7445.
 
 \subsection{Ablation 5: Cross-Dataset Behavior Evaluation (Generalization)}
 To evaluate out-of-distribution generalization, the behavior head trained on MmCows was tested on the unseen CBVD-5 dataset (2,000 balanced images). The cross-dataset Macro F1-score dropped to 0.1245. While the model successfully generalized to Standing postures (90.34\% accuracy), its accuracy degraded on Feeding head down (8.39\%), Drinking (2.99\%), and Lying (24.31\%). This indicates that different farm backgrounds, camera perspectives, and annotation boundaries represent a severe domain shift, emphasizing the need for multi-farm training or domain adaptation.
