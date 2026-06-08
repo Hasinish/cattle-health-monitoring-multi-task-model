@@ -1,0 +1,122 @@
+\section{Background}
+
+In terms of food security the livestock industry plays a vital role globally, where cattle is one of the most crucial livestock species economically worldwide. According to the Food and Agriculture Organization (FAO), the global cattle population exceeds 1 billion heads, contributing substantially to meat and dairy production \cite{fao2023livestock}. The sustainability, income, and also productivity of farming tasks are all directly affected by the health and welfare of cattle. Early detection of health issues like poor body condition, lameness, and abnormal behavior can prevent economic losses estimated at billions of dollars annually while improving animal welfare standards \cite{weary2009understanding}. Cattle health and nutritional status are fundamentally shown by Body Condition Scoring (BCS) . BCS is traditionally assessed through visual and tactile evaluation of fat deposits over key anatomical regions, typically using a 5-point scale with 0.25 increments \cite{edmonson1989bcs}. The production of milk, the reproduction ability as well as capability to fight against the diseases are directly related with optimal body condition. Still, frequent monitoring  is not an optimum solution for large scale operations because manual BCS assessment is very much time-consuming, subjective, and requires trained personnel Lameness represents another critical health concern, affecting up to 25\% of dairy cattle in intensive farming systems \cite{whay2003lameness}. Moreover, due to causing severe pain, lameness lowers the production of milk, the feed intakes decrease and also hinders the reproduction. But timely intervention is possible by early detection of abnormal body movements. Behavior monitoring highlights valuable insights into the health of cattle, stress levels, and welfare. Changes in feeding patterns, rumination time, lying behavior, and social interactions often precede clinical manifestations of disease \cite{weary2009understanding}. Continuous 24/7 monitoring can be possible through automated behavior recognition that would be impossible through manual observation. Individual identification is fundamental to precision livestock farming, enabling tracking of health records, feeding behavior, and productivity metrics for each animal. The most common practices are using ear tags and RFID systems, but they require physical contact and can be lost or damaged. A non-invasive alternative that is offered by vision based identification can be integrated with health monitoring systems. The convergence of computer vision, deep learning, and Internet of Things (IoT) technologies has created unprecedented opportunities for automated cattle health monitoring \cite{neethirajan2020digitalization}. Convolutional Neural Networks (CNNs) have showed extraordinary success in image classification also object detection tasks, achieving human-level performance in different visual recognition challenges. Transfer learning opens the application of models pre-trained on large-scale datasets such as ImageNet to domains with limited labeled data. Inspite of these technological advances, already existing cattle monitoring systems predominantly achieve single tasks in isolation. A systematic review of 30+ research papers conducted for this thesis reveals that while multi-task learning is frequently mentioned, end-to-end implementations combining multiple health monitoring tasks are virtually non-existent. This fragmentation limits the practical utility of automated monitoring systems and fails to exploit the synergies between related tasks.
+
+
+
+
+\section{Rationale of the Study and Motivation}
+
+The motivation for this research stems from the major gaps in our current state of cattle health monitoring systems and technology, and the increasing need for precision livestock farming. 89\% of the papers we have studied shows that the current research relies highly on private datasets, creating a massive reproducibility issue. Most of the current studies focus on individual problem solving like BCS, lameness, behaviour or identification- separately, without considering the benefits of Multitask Learning (MTL). We can significantly reduce computational cost while improving performance by sharing data across related tasks. This makes sense because the tasks we are focusing on are connected: abnormal body pose or gait pattern contribute to reduced feeding and declining body condition. Many published solution need expensive gear like thermal cameras, wearable sensors, depth sensors etc or controlled environments, which are not practical in real-world scenarios. This creates a clear need for RGB based solutions that can be operated with typical cameras while also using depth information if available. Current modern-farms need realtime processing on-site, where internet can be unreliable and cloud processing causes delay; the literature recognises edge deployment as a profound solution, but most solution rely on computationally demanding architectures that cannot be run on edge devices. We found that hardly anyone is using self-supervised learning for cattle monitoring, which is surprising, most farms already run surveillance cameras that record hours of footage daily. This unlabeled video just sits there, but it could actually help train better models—particularly useful when you don't have much labeled data to work with. These problems—reproducibility, fragmented research, deployment limitations, and missed opportunities—show why we need a single, lightweight framework that tackles multiple cattle health monitoring tasks.
+
+
+
+\section{Problem Statement}
+
+Multiple fundamental problems remain unresolved in spite of significant research efforts in automated cattle health monitoring. Because of that, the practical impact of computer vision and deep learning solutions on actual farms is limited.
+
+The major problem we found is that most systems treat tasks separately, thus requiring multiple systems to monitor multiple health assessments tasks. This leads to more computational load from running multiple models, not taking advantage of shared features that could help multiple tasks, complicated deployment because you need to integrate separate systems, and missing connections between tasks like how poor body condition often links to less feeding. Our systematic review confirms that there is no single system that combines BCS, lameness, behaviour and identification tasks in one framework. MLT is frequently mentioned but rarely implemented.
+
+In order to check if results are correct or compare different methods properly, and improve on old research, the researchers need to use the same datasets—but most of the cattle monitoring studies use their own data which are private. This makes it very hard for others to reproduce the results, or to do fair comparison, or build on previous works in the proper way. Other computer vision domains don't face this issue since they have standard public benchmarks like ImageNet and COCO that everyone can use.
+
+There are several papers that work on single-farm data and single-breed cattle. This raises questions regarding the generalizability of our proposed approaches. Due to specific farm environments, camera placement, or lighting models may overfit, and breed-specific appearance differences might not be captured. Seasonal and temporal changes are also hardly handled in evaluations. Cross-dataset evaluation, where models are trained on one dataset and tested on another, almost never happens, even though it is necessary for illustrating practical usefulness.
+
+Although there is a lot of interest in depth imaging and thermal imaging for cattle monitoring in the literature, multimodal research is severely limited by the availability of public data. There are no public cattle thermal datasets worldwide, only MmCows offers synchronized IMU sensor data, and only two public datasets—MmCows and Dryad—offer depth modality. Due to this scarcity, researchers are forced to either gather confidential data or completely give up on multimodal approaches.
+
+
+
+\section{Objectives}
+
+The main purpose of this research is to use computer vision techniques to create a multitask, lightweight, edge deployable, and reproducible deep learning framework for cattle health and behaviour monitoring. The goal is creating a system that can handle multiple health related tasks at the same time. The important thing is that it only uses publicly available datasets, making the work reproducible by anybody.
+
+
+To achieve this goal, the research sets out the following specific objectives:
+
+\begin{enumerate}
+    \item \textbf{To develop a unified multi-task framework} capable of doing Body Condition Scoring, behavior recognition, lameness detection, and individual identification at the same time using shared backbone architecture
+    
+    \item \textbf{To ensure full reproducibility} by evaluating exclusively on public datasets, enabling independent verification of findings.
+    
+    \item \textbf{To evaluate sequential task training strategies} that can handle Body Condition Scoring, behavior recognition, lameness detection, and individual identification all at once using a shared backbone with different heads for each task.
+    
+    \item \textbf{To verify cross-dataset performance} by checking model's performance across datasets from multiple farms, and conditions so that it can be proved that the model can handle real deployment environments.
+
+    
+\end{enumerate}
+
+These objectives address the reproducibility gap in agricultural AI research and create a scalable foundation for real-time cattle health monitoring across various farm environments.
+
+
+\section{Methodology in Brief}
+
+The proposed methodology follows a step-by-step process to build and test a multi-task deep learning framework for monitoring cattle health. The methodology has five main phases: data preparation, architecture design, sequential task training, evaluation, and ablation studies.
+
+
+
+\subsection{Evaluation Protocol}
+
+Evaluation is matched to each task, since the outputs and risks are different. For BCS, the framework measures Mean Absolute Error (MAE) and accuracy within $\pm0.25$ and $\pm0.5$ tolerance. For Behavior, evaluation includes per-class accuracy, macro F1-score, and confusion matrix analysis. For Lameness, the metrics include sensitivity, specificity, and AUC-ROC. For ID, evaluation uses Top-1 and Top-5 accuracy along with mean Average Precision (mAP). Cross-dataset evaluation is also included by training on the main dataset and testing on a different dataset from another source, which helps measure generalization.
+
+
+\subsection{Ablation Studies}
+
+A set of structured ablation experiments will test the most important parts of the framework. For backbone selection, EfficientNet-B0 will be compared against MobileNetV3-Small and also ResNet-50 to identify which architecture works best. For loss functions, CORAL will be compared with Cross-Entropy for the BCS task. For training strategy, experiments will compare sequential versus joint versus progressive unfreezing. Through RGB-only versus RGB+Depth comparisons for BCS (using the Dryad dataset) the depth modality contribution will be tested. Finally, the attention mechanism will be tested by comparing results with and without CBAM.
+
+
+
+\section{Scope and Challenges}
+
+\subsection{Scope of the Research}
+
+To ensure feasibility and depth of investigation this research stays within clear boundaries.
+
+
+
+
+
+\begin{enumerate}
+    \item \textbf{Four Core Tasks:} Body Condition Scoring, behavior recognition, lameness detection, and individual identification, chosen mainly because public data exists for them and they also matter in practice.
+    
+    \item \textbf{Public Datasets Only:} All experiments use publicly available datasets, and no private data collection is included, which supports full reproducibility. 
+
+    
+    \item \textbf{RGB as Primary Modality:} RGB images are the main input modality and depth is included only as a secondary modality for BCS (through the Dryad dataset). 
+
+    
+    \item \textbf{Dairy Cattle Focus:} The primary focus is on Holstein dairy cattle, since they dominate the available public datasets. 
+
+    
+    \item \textbf{Lightweight Architectures:} To ensure that the system stays suitable for edge development backbone selection is limited to models with $<10M$ parameters.
+
+    
+    \item \textbf{Sequential Task Training:} Frozen-backbone sequential training is the main training approach, with joint fine-tuning treated as an optional extension.
+
+\end{enumerate}
+
+
+\subsection{Challenges}
+
+\textbf{Dataset Heterogeneity}
+
+Public cattle datasets are highly heterogeneous, including differences in resolution and image quality, camera angles  including  top-view,  rear-view, and side-view, annotation protocols and how detailed the labels are, plus variation in breeds and farm environments. To reduce these issues, the strategies include standardized preprocessing pipeline, strong data augmentation, and domain adaptation techniques during joint fine-tuning.
+
+
+\textbf{Class Imbalance}
+
+Datasets of cattle monitoring suffer from  high  class imbalance, which is a significant  issue . For lameness detection, lame individuals are outnumbered  heavily by healthy cattle,  in comparison to normal BCS scores (2.5-3.5),  extreme BCS scores like (1-2 and 4–5) are much rarer, and some behaviors like  drinking and licking happen infrequently. To address these issues, the architecture uses focal loss for classification tasks, weighted sampling during training, and class-balanced evaluation metrics.
+
+
+\textbf{Temporal Modeling for Video Tasks}
+
+From temporal context behavior recognition and lameness detection can benefit, but video-based modeling increases computational cost, and temporal models like LSTM and I3D add extra complexity and there can be inconsistencies between frame-level and clip-level annotation. The strategy involves initially using frame-level classification and apply temporal aggregation, and then treat LSTM integration as an optional extension depending on initial results.
+
+\textbf{Preventing Negative Transfer}
+
+Multi-task learning also risks negative transfer, where learning for one task hampers performance on another. This can happen when task gradients conflict during joint training, the best feature representations may vary depending on the task, and imbalanced task difficulties can dominate learning. The main mitigation is sequential training with a frozen backbone to separate task learning, along with gradient normalization and uncertainty weighting during joint fine-tuning.
+
+
+\textbf{Limited Labeled Data}
+
+Even though multiple public datasets are used, labeled data is still small compared to general computer vision benchmarks. ScienceDB BCS has around 3000 images, compared to millions in ImageNet. MmCows covers only 16 individuals over 2 weeks, and CattleLameness contains relatively limited lameness examples. To address this, the methodology depends on transfer learning from ImageNet, strong regularization (including dropout and weight decay), and data augmentation. Self-supervised pre-training on unlabeled frames is also included as a possible extension if it becomes necessary.
+
+
