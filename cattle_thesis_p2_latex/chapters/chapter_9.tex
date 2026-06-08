@@ -1,0 +1,23 @@
+\section{Summary of Findings}
+This research successfully developed, trained, and evaluated a unified, lightweight, and spatiotemporal multi-task deep learning framework for real-time cattle health and behavior monitoring. Using EfficientNet-B0 as a shared encoder backbone combined with a CBAM attention module, the framework consolidates four distinct computer vision tasks: Body Condition Scoring (BCS), Behavior Recognition, Lameness Detection, and Cow Identification. 
+
+The experimental results confirmed that sequence modeling with LSTM layers is highly effective for video-based tasks, achieving a perfect 1.0000 AUC on lameness detection sequences and improving the behavior Macro F1-score to 0.4775. The multi-task model exhibits outstanding computational efficiency, reducing VRAM requirements by 75\% and latency to 32ms per frame, making it well-suited for offline farm surveillance.
+
+\section{Contributions to the Field}
+This thesis provides several key contributions to the domain of Precision Livestock Farming (PLF) and agricultural computer vision:
+\begin{enumerate}
+    \item \textbf{A Unified Multi-Task Framework:} To the best of our knowledge, this is the first end-to-end multi-task deep learning framework that simultaneously monitors BCS, behavior, lameness, and individual cow identity from video sequences using a single shared encoder.
+    \item \textbf{Commitment to Full Reproducibility:} Unlike the majority of agricultural computer vision literature which relies on private datasets, our study was designed, trained, and validated exclusively on publicly available datasets (ScienceDB, Dryad, MmCows, CattleLameness, OpenCows2020, CBVD-5), establishing a standardized benchmark for future research.
+    \item \textbf{Spatiotemporal Integration with Attention:} We successfully integrated a CBAM attention layer and LSTM sequence-tracking to process both spatial anatomical shapes (spine, hip bones) and temporal locomotion strides, bridging static 2D image analysis and recurrent 3D time-series.
+    \item \textbf{Edge Optimization:} The model structure was optimized to remain under 10 million parameters, enabling cost-effective, non-invasive surveillance directly on camera nodes, reducing dependency on expensive wearable sensors.
+\end{enumerate}
+
+\section{Recommendations for Future Work}
+While the framework has shown strong feasibility, several areas represent crucial directions for future expansion:
+\begin{itemize}
+    \item \textbf{Joint Fine-Tuning (Unfreezing the Backbone):} The current implementation trains the LSTM temporal heads while keeping the shared backbone encoder frozen. Future work should unfreeze the encoder layers during the final training phase and execute joint backpropagation. This allows the CNN filters to adapt specifically to movement joint kinematics rather than static ImageNet features.
+    \item \textbf{Contrast Limited Adaptive Histogram Equalization (CLAHE):} Farm environments suffer from extreme outdoor lighting variances (glare, shadows, night lighting). Integrating CLAHE as a preprocessing step will enhance local contrast, standardizing raw pixels before backbone feature extraction.
+    \item \textbf{Behavior Sequential Modeling:} Currently, behavior is predicted at the frame level. Swapping the linear behavior head for an LSTM sequence layer will enable tracking transition behaviors (e.g. the transition from standing to lying) which are highly indicative of cow estrus or illness.
+    \item \textbf{Federated and Collaborative Learning:} To improve cross-dataset generalization (which degraded to a Macro F1-score of 0.1245 on CBVD-5), a federated learning framework should be explored. This allows models to be trained across multiple farms in a decentralized manner, learning from diverse breeds and lighting environments without centralizing sensitive proprietary data.
+    \item \textbf{Thermal Imaging Integration:} Combining RGB cameras with thermal sensors will enable tracking hoof and udder heat signatures, leading to early detection of claw inflammation (lameness) and mastitis before visible gait defects appear.
+\end{itemize}

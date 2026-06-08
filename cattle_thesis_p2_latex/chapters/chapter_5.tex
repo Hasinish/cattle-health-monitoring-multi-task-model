@@ -1,0 +1,124 @@
+\section{Design Process or Methodology Overview}
+The primary objective of this research is to construct a unified, lightweight, and edge-deployable multi-task deep learning framework capable of performing four critical cattle monitoring tasks simultaneously from video inputs: Body Condition Scoring (BCS), Behavior Recognition, Lameness Detection, and Cow Identification (ID). The design process follows a sequential workflow structured to mitigate task interference while maximizing parameter sharing. An overview of the proposed multi-task architecture is illustrated in Figure~\ref{fig:methodology_overview}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.95\textwidth]{mtl_architecture.png}
+    \caption{Conceptual Overview of the Multi-Task Cattle Health and Behavior Monitoring Framework.}
+    \label{fig:methodology_overview}
+\end{figure}
+
+The pipeline is split into three main segments:
+\begin{enumerate}
+    \item \textbf{Cattle Detection and Cropping:} YOLOv8-Nano is applied to locate the cow and extract its bounding box crop, eliminating background farm clutter and normalizing the input.
+    \item \textbf{Feature Extraction:} The cropped images or sequences are processed by a shared EfficientNet-B0 encoder enhanced with a Convolutional Block Attention Module (CBAM) to spotlight key anatomical indicators.
+    \item \textbf{Task Prediction:} The feature vectors are fed into task-specific heads: ordinal regression for BCS, focal-loss classification for Behavior, sequence-based LSTM for Lameness, and classification for Cow ID.
+\end{enumerate}
+
+\section{Data Collection and Preprocessing}
+To establish a fully reproducible framework, only publicly available cattle datasets were utilized. Each dataset corresponds to a specific health task.
+
+\subsection{Dataset Profiles}
+\begin{itemize}
+    \item \textbf{ScienceDB BCS Dataset:} Consists of 53,566 high-resolution RGB images of dairy cows taken from a rear-view angle. The body condition scores are annotated on a 5-point scale with 0.25 increments, representing five classes: $\{3.25, 3.50, 3.75, 4.00, 4.25\}$.
+    \item \textbf{Dryad BCS Dataset:} Contains 5,923 rear-view images captured in a Depth Grayscale Edge (DGE) format (combining depth coordinates, grayscale intensity, and Canny edge maps as three channels). The annotations are integer scores ranging from 2 to 6, corresponding to five distinct ordinal classes.
+    \item \textbf{MmCows Behavior Dataset:} Includes 213,686 crop frames extracted from continuous farm surveillance videos. The dataset is labeled into seven behavior classes: walking, standing, feeding head up, feeding head down, licking, drinking, and lying.
+    \item \textbf{CattleLameness Dataset:} Contains side-view walking video clips of cows. We compiled 50 videos (25 labeled as Lame and 25 as Normal/Sound) for spatiotemporal sequence modeling.
+    \item \textbf{OpenCows2020 Dataset:} Consists of 9,950 images of cows labeled by their unique individual identity, enabling vision-based biometrics.
+    \item \textbf{CBVD-5 Dataset:} Used exclusively as an independent test set for behavior, consisting of 2,000 balanced images of cattle behaviors to evaluate model generalization under domain shift.
+\end{itemize}
+
+\subsection{Preprocessing Standardizations}
+To ensure the deep learning models do not learn artifact features or identity shortcuts, rigorous preprocessing was applied:
+\begin{itemize}
+    \item \textbf{Cow-Wise Group Splitting:} To prevent identity leakage (where the model memorizes specific cow features like skin patches or ear tags instead of general health markers), group-wise splitting was enforced. The unique cow IDs were partitioned into 70\% training, 15\% validation, and 15\% testing splits. Thus, a cow in the validation or test set was never seen during training.
+    \item \textbf{Sparse Temporal Sampling:} Videos vary in frame length. To format sequences for recurrent layers without hidden-state drift or out-of-memory (OOM) GPU crashes, videos were divided into 20 equal temporal segments, and exactly one frame was sampled from the center of each segment. This standardized the input sequence tensor to a fixed shape of $(20, 3, 224, 224)$.
+    \item \textbf{Imbalance Data Capping:} In the MmCows behavior dataset, classes were severely imbalanced (lying and standing had over 70,000 images, while licking had only 2,009). Training on this directly causes majority-class bias. To mitigate this, majority classes were capped at a maximum of 3,000 randomly sampled training images per epoch, yielding a balanced sub-dataset of approximately 21,000 images.
+    \item \textbf{Augmentations:} Training samples were resized to $224 \times 224$ pixels, normalized using ImageNet statistics (mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), and augmented with random horizontal flips ($p=0.5$) and random rotations ($\pm 15^\circ$). Validation and test samples were resized and normalized without augmentations.
+\end{itemize}
+
+\section{Model Architecture and Specification}
+The architecture utilizes a shared parameter structure to maximize computational efficiency on edge devices.
+
+\subsection{Shared Backbone Encoder}
+The encoder backbone is initialized with ImageNet-pretrained weights from timm:
+\begin{equation}
+    F_{\text{raw}} = \text{Encoder}(X) \quad F_{\text{raw}} \in \mathbb{R}^{B \times C \times H \times W}
+\end{equation}
+EfficientNet-B0 (5.3M parameters) and MobileNetV3-Small (2.5M parameters) were evaluated, with EfficientNet-B0 selected as the final backbone due to its superior feature representation.
+
+\subsection{CBAM Attention Module}
+A Convolutional Block Attention Module (CBAM) is inserted immediately after the backbone's final feature map.
+\begin{itemize}
+    \item \textbf{Channel Attention:} Identifies ``what'' channels contain relevant signal using average and max pooling:
+    \begin{equation}
+        M_c(F) = \sigma(\text{MLP}(\text{AvgPool}(F)) + \text{MLP}(\text{MaxPool}(F)))
+    \end{equation}
+    \item \textbf{Spatial Attention:} Highlights ``where'' the relevant anatomy lies (e.g. spine line for BCS, joint positions for lameness) using a $7 \times 7$ convolution over channel-concatenated maps:
+    \begin{equation}
+        M_s(F') = \sigma(f^{7 \times 7}([\text{AvgPool}(F'); \text{MaxPool}(F')]))
+    \end{equation}
+\end{itemize}
+The final attention-weighted feature map is pooled using Adaptive Average Pooling and flattened to a 1,280-dimensional feature vector.
+
+\subsection{Task-Specific Prediction Heads}
+The feature vector is routed to four independent task heads:
+\begin{enumerate}
+    \item \textbf{BCS Head:} A linear layer projecting the 1,280 features to 4 outputs representing the ordinal ranking.
+    \item \textbf{Behavior Head:} A linear classifier projecting features to 7 outputs representing behavior logits.
+    \item \textbf{Lameness Head (Temporal LSTM):} The sequence of 20 feature vectors is processed by a single-layer LSTM (hidden size = 256, dropout = 0.5), followed by a linear classification layer to output a binary logit.
+    \item \textbf{Cow ID Head:} A linear layer projecting features to $N$ cattle identity classes.
+\end{enumerate}
+
+\section{Loss Functions and Optimizations}
+Each task is optimized using a loss function tailored to its specific mathematical properties:
+
+\subsection{Consistent Rank Logits (CORAL) Loss for BCS}
+To preserve the natural ordering of body condition scores, ordinal regression was formulated. For $K$ classes (where $K=5$), the model outputs $K-1=4$ binary logits. The loss is computed as the sum of binary cross-entropies:
+\begin{equation}
+    L_{\text{BCS}} = -\frac{1}{K-1} \sum_{i=1}^{K-1} \left[ y_i \log(\sigma(g_i)) + (1 - y_i) \log(1 - \sigma(g_i)) \right]
+\end{equation}
+where $y_i = \mathbb{I}(y > i)$ is the binary rank representation of the actual score. Predictions are computed by summing the sigmoid outputs:
+\begin{equation}
+    \hat{y} = \sum_{i=1}^{K-1} \mathbb{I}(\sigma(g_i) > 0.5)
+\end{equation}
+
+\subsection{Focal Loss for Behavior Classification}
+To prevent the overwhelming majority classes from dominating training gradients, Focal Loss is applied to the behavior outputs:
+\begin{equation}
+    L_{\text{Behavior}} = -\alpha_t (1 - p_t)^\gamma \log(p_t)
+\end{equation}
+where $p_t$ is the model's estimated probability for the correct class, $\alpha = 0.25$ is the class-balancing multiplier, and $\gamma = 2.0$ is the focusing parameter that down-weights easy, well-classified examples.
+
+\subsection{Lameness and ID Losses}
+Binary Cross-Entropy (BCE) with logits loss is utilized for the binary lameness classification task:
+\begin{equation}
+    L_{\text{Lameness}} = - \left[ y \log(\sigma(x)) + (1-y) \log(1-\sigma(x)) \right]
+\end{equation}
+Standard Cross-Entropy Loss with Softmax normalization is utilized for individual cow identification:
+\begin{equation}
+    L_{\text{ID}} = - \sum_{c=1}^N y_c \log(\text{Softmax}(x_c))
+\end{equation}
+
+\section{Implementation of Selected Design and Training Strategy}
+The training pipeline was executed on PyTorch using a phased sequential training methodology to avoid destructive task interference (where gradient updates for one task corrupt the weights learned for another).
+
+\subsection{Phased Sequential Training}
+\begin{itemize}
+    \item \textbf{Phase 1: Encoder Initialization.} The EfficientNet-B0 backbone is initialized with ImageNet-pretrained weights.
+    \item \textbf{Phase 2: BCS Head Training.} The backbone weights are frozen. The attention layer and BCS head are trained on Dryad and ScienceDB for 30 epochs using the Adam optimizer (lr = $10^{-3}$, scheduler decay = 0.5 every 10 epochs).
+    \item \textbf{Phase 3: Behavior Head Training.} The backbone is kept frozen. The behavior head is trained for 30 epochs using Focal Loss on the capped MmCows dataset. Early stopping is monitored with a patience of 10 epochs.
+    \item \textbf{Phase 4: Lameness Sequence Training.} The backbone remains frozen. Bounding box sequence crops are extracted using YOLOv8-Nano. The LSTM temporal layers and classification head are trained on 20-frame sequences for 15 epochs.
+    \item \textbf{Phase 5: Cow ID Training.} The backbone remains frozen. The ID head is trained on OpenCows2020 for 10 epochs.
+    \item \textbf{Phase 6: Multi-Task Joint Optimization.} All heads are attached. The backbone is unfrozen, and the model is trained end-to-end using the multi-task loss weight configuration:
+    \begin{equation}
+        L_{\text{total}} = 0.35 \cdot L_{\text{BCS}} + 0.35 \cdot L_{\text{Behavior}} + 0.15 \cdot L_{\text{Lameness}} + 0.15 \cdot L_{\text{ID}}
+    \end{equation}
+\end{itemize}
+
+\subsection{Live Video Inference Architecture}
+During live deployment, videos are processed frame-by-frame via a sliding window. The YOLOv8-Nano detector extracts cattle crops, which are normalized and queued. Once 20 crops are accumulated:
+\begin{itemize}
+    \item The sequence is fed into the shared encoder and LSTM to output a single, robust locomotion score (Lameness prediction).
+    \item Spatial heads make 20 independent frame-level predictions. Frame-level BCS scores are averaged (Temporal Averaging) to prevent noise, and Cow ID predictions are resolved using majority voting across the 20 frames. This mitigates transient occlusions (such as background posts or dust) and ensures high deployment reliability.
+\end{itemize}

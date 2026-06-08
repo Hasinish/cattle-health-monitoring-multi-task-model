@@ -1,0 +1,182 @@
+\section{Preliminaries}
+
+This chapter presents a systematic review of the research papers related to cattle health monitoring using computer vision and deep learning. The review covers five primary research areas: Body Condition Scoring (BCS), lameness detection, behavior recognition, individual identification, and cleanliness assessment. The study identifies current state-of-the-art methods, public datasets which are available, the research gaps, and suitable ways for developing a multi-task learning framework.
+
+\subsection{Multi-Task Learning Fundamentals}
+
+Multi-Task Learning (MTL) is a machine learning standard where a model is trained to multiple related tasks simultaneously, leveraging shared representations to improve generalization across all tasks \cite{crawshaw2020mtl}. In deep learning terms, MTL generally uses a shared backbone network that takes out common features, with task-specific heads branching from the shared representation. The benefits of MTL include improved generalization through shared representations that act as regularization to reduce overfitting, computational efficiency via a single forward pass serving multiple tasks, data efficiency where tasks with limited data benefit from related tasks, and enhanced feature learning where auxiliary tasks can improve primary task features. Still, MTL also comes with some challenges like negative transfer when tasks interfere with one another, difficulties while balancing gradients also identifying the most efficient parameter sharing strategies.The Crawshaw 2020 MTL Survey provides a comprehensive taxonomy distinguishing between hard parameter sharing (common backbone) and soft parameter sharing (separate networks with regularization) approaches.
+
+\subsection{Body Condition Scoring Overview}
+
+Body Condition Scoring(BSC) is a standard way for evaluating the fat reserves of cattle through visual and tactile evaluation. The most common scale ranges start from 1 (skeletal) to 5 (fat) with 0.25 increments, giving up 17 possible scores. Key anatomical regions assessed include the tailhead and pin bones, hook bones and loin area, ribs and spine prominence, and hip bone region. Automated BCS using computer vision typically employs rear-view or top-view images capturing the tailhead region. The task can be worked out as classification (individual BCS classes), ordinal regression (preserving class ordering), or regression (continuous scores).
+
+\subsection{Lameness Detection Fundamentals}
+
+Lameness in cattle shows by identifying walking behaviour including reduced step length and walking speed, head movement and back curving, unwillingness to bear weight on the affected leg, and uneven hoof placement. Computer vision approaches for lameness detection typically analyze video sequences captured from side-view or top-view cameras. Key features include pose estimation of limb joints, gait cycle analysis, and motion trajectory patterns. Scoring systems range from binary (lame/sound) to multi-level severity scales (1-5).
+
+\subsection{Behavior Recognition Categories}
+
+Cattle behavior monitoring address numerous activities related to health and welfare, which includes feeding behaviors for example feeding, ruminating, and drinking; body movement activities such as walking, standing, and lying; social behaviors including licking, mounting, and aggression; also health indicators such as estrus behavior and calving signs. Vision-based behavior recognition implements detection (locating cattle in frames), tracking (maintaining identity across frames), and action classification (categorizing behavior). Temporal modeling by using LSTM, 3D CNNs, or attention mechanisms records behavioral changes.
+
+
+
+\section{Review of Existing Research}
+
+This section shows a comprehensive analysis of related research arranged by task category, followed by key multi-task learning and survey papers.
+
+\subsection{Body Condition Scoring Research}
+
+Body condition scoring represents the most highly studied task in cattle computer vision literature, with nine papers that are directly addressing automated BCS assessment. Liang et al. (2025) \cite{liang2025bcs} achieved state-of-the-art performance on the ScienceDB BCS dataset using EfficientNet-B0 with Squeeze-and-Excitation attention blocks, demonstrating 93.77\% accuracy on 5-class BCS prediction and highlighting the effectiveness of attention mechanisms for focusing on relevant anatomical features while using publicly available data that makes this work particularly relevant as a baseline for comparison. Zheng et al. (2024) \cite{zheng2024bcsyolo} proposed BCS-YOLO, combining YOLO-based detection with knowledge distillation for efficient BCS prediction, achieving 92.7\% accuracy on the ScienceDB dataset while maintaining inference speeds suitable for real-time applications through model compression without significant accuracy loss. Li et al. (2025) \cite{li2025yolov5bcs} developed an improved YOLOv5s architecture for BCS, achieving 91.8\% accuracy on a private 5-class dataset, and while the private data limits reproducibility, the architectural modifications including enhanced feature pyramid networks provide valuable design insights. Summerfield et al. (2023) \cite{summerfield2023depth} investigated depth-based BCS using multiple 3D cameras in a late fusion CNN architecture, achieving only 35.77\% accuracy, which highlights the challenges of multi-camera depth fusion and the importance of careful sensor calibration while suggesting that naive depth fusion may not outperform well-designed RGB approaches. O'Mahony et al. (2023) \cite{omahony2023rgbd} explored RGB-D fusion using MobileNet for RGB features and PointNet for depth point clouds, achieving 53\% accuracy on 5-class BCS, demonstrating the complexity of multimodal fusion but validating the potential value of depth information when properly integrated. Rodenburg et al. (2024) \cite{rodenburg2024ordinal} employed EfficientNetV2 with ordinal regression, explicitly modeling the ordered nature of BCS classes and achieving 84.6\% accuracy using a private dataset, demonstrating the advantage of ordinal approaches over standard classification for BCS prediction. Gjergji et al. (2022) \cite{gjergji2022weight} developed a multi-input CNN processing RGB-D data for combined weight and BCS estimation, achieving 91.9\% BCS accuracy (as regression R²) on private data and demonstrating the synergy between weight and body condition assessment. Lewis et al. (2025) \cite{lewis2025yolov8bcs} applied YOLOv8 for BCS detection and classification, achieving 43.9\% mAP on a 3-class problem, with the lower accuracy reflecting the challenging 3-class formulation and object detection framing rather than pure classification. Santos et al. (2025) \cite{santos2025rf} employed traditional Random Forest classifiers on RGB image features, achieving R²=0.40 for BCS regression, providing a baseline that demonstrates deep learning approaches significantly outperform traditional machine learning for BCS assessment.
+
+\begin{table}[ht]
+\centering
+\caption{Summary of Body Condition Scoring Papers}
+\label{tab:bcs_papers}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|p{2.8cm}|p{4cm}|p{1.8cm}|p{2.2cm}|p{2cm}|}
+\hline
+\textbf{Reference} & \textbf{Architecture} & \textbf{Input} & \textbf{Accuracy} & \textbf{Dataset} \\
+\hline
+Liang 2025 & EfficientNet-B0+SE & RGB & 93.77\% & ScienceDB \\
+\hline
+Zheng 2024 & BCS-YOLO + KD & RGB & 92.7\% & ScienceDB \\
+\hline
+Li 2025 & Improved YOLOv5s & RGB & 91.8\% & Private \\
+\hline
+Gjergji 2022 & Multi-input CNN & RGB-D & 91.9\% & Private \\
+\hline
+Rodenburg 2024 & EfficientNetV2 & RGB & 84.6\% & Private \\
+\hline
+O'Mahony 2023 & MobileNet/PointNet & RGB+D & 53\% & Private \\
+\hline
+Lewis 2025 & YOLOv8 & RGB & mAP 43.9\% & Private \\
+\hline
+Santos 2025 & Random Forest & RGB & R²=0.40 & Private \\
+\hline
+Summerfield 2023 & Late Fusion CNN & Depth & 35.77\% & Private \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Lameness Detection Research}
+
+Lameness detection research mostly utilizes video-based analysis with constitutes estimation as well as gait analysis pipelines. Tun et al. (2024) \cite{tun2024depth} achieved remarkable 99.94\% accuracy using top-view depth cameras with Detectron2 for detection and SORT for tracking, with the exceptional performance demonstrating the value of depth imaging for lameness detection when appropriate viewing angles are available. Myint et al. (2024) \cite{myint2024lameness} developed a real-time lameness detection system using Mask R-CNN combined with machine learning classifiers on extracted gait features, achieving 98.98\% accuracy from side-view RGB video and demonstrating that RGB-only solutions can achieve high performance with proper feature engineering. Kang et al. (2020) \cite{kang2020lameness} proposed RFB-NET-SSD for cattle detection followed by gait phase analysis, achieving 96\% lameness classification accuracy, with the supporting phase analysis identifying when each hoof contacts the ground and providing interpretable features for veterinary validation. Barney et al. (2023) \cite{barney2023multipose} employed Mask R-CNN with SORT tracking for multi-cattle pose estimation, achieving 94\% lameness detection accuracy, demonstrating that the ability to simultaneously track and assess multiple animals is crucial for practical farm deployment. Russello et al. (2024) \cite{russello2024zed} combined RGB-D data from ZED cameras with pose estimation and traditional classifiers (Random Forest, SVM), achieving 80.07\% accuracy, with the evaluation of multiple locomotion traits beyond binary lameness providing richer assessment capabilities.
+
+\begin{table}[ht]
+\centering
+\caption{Summary of Lameness Detection Papers}
+\label{tab:lameness_papers}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|p{2.5cm}|p{3.8cm}|p{2cm}|p{2cm}|p{2.5cm}|}
+\hline
+\textbf{Reference} & \textbf{Architecture} & \textbf{Input} & \textbf{Accuracy} & \textbf{Innovation} \\
+\hline
+Tun 2024 & Detectron2 + SORT & Depth & 99.94\% & Top-view depth \\
+\hline
+Myint 2024 & Mask R-CNN + ML & RGB video & 98.98\% & Real-time side-view \\
+\hline
+Kang 2020 & RFB-NET-SSD & RGB video & 96\% & Gait phase analysis \\
+\hline
+Barney 2023 & Mask R-CNN + SORT & RGB video & 94\% & Multi-cattle pose \\
+\hline
+Russello 2024 & Pose + RF/SVM & RGB-D & 80.07\% & Multiple traits \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Behavior Recognition Research}
+
+Behavior recognition covers vision-based as well as sensor-based approaches, with MmCows becoming the only public dataset in this classification. Rohan et al. (2024) \cite{rohan2024review} conducted a systematic review of 44 papers on cattle behavior recognition, identifying key trends including the dominance of YOLO-based detection, increasing use of deep learning, and the challenge of limited public datasets. Petcu et al. (2023) \cite{petcu2023cnnlstm} achieved 97.35\% accuracy using CNN-LSTM architecture on private RGB video data, with the combination of CNN for spatial features and LSTM for temporal modeling representing a standard approach for video-based behavior classification. Lee et al. (2023) \cite{lee2023hanwoo} developed a pipeline combining YOLOv5 detection, SORT tracking, and I3D temporal classification, achieving 95.3\% accuracy on private Hanwoo cattle data, with the I3D (Inflated 3D ConvNet) architecture effectively capturing spatiotemporal patterns in behavior. Giannone et al. (2025) \cite{giannone2025behavior} employed YOLOv8 with region-of-interest extraction for behavior recognition, achieving 72\% accuracy on private data, with the lower accuracy reflecting the complexity of fine-grained behavior discrimination. Dottorini et al. (2025) \cite{dottorini2025imu} achieved 91.8\% accuracy using XGBoost on Discrete Wavelet Transform features extracted from IMU sensor data in the MmCows dataset, demonstrating the value of sensor-based approaches and providing a public benchmark for comparison.
+
+\begin{table}[ht]
+\centering
+\caption{Summary of Behavior Recognition Papers}
+\label{tab:behavior_papers}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|p{2.8cm}|p{4cm}|p{2.2cm}|p{2cm}|p{1.9cm}|}
+\hline
+\textbf{Reference} & \textbf{Architecture} & \textbf{Input} & \textbf{Accuracy} & \textbf{Dataset} \\
+\hline
+Petcu 2023 & CNN-LSTM & RGB video & 97.35\% & Private \\
+\hline
+Lee 2023 & YOLOv5+SORT+I3D & RGB video & 95.3\% & Private \\
+\hline
+Dottorini 2025 & XGBoost + DWT & IMU sensor & 91.8\% & MmCows \\
+\hline
+Giannone 2025 & YOLOv8 + ROI & RGB video & 72\% & Private \\
+\hline
+Rohan 2024 & Systematic Review & Various & N/A & 44 papers \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Multi-Task Learning and Survey Papers}
+
+Numerous papers gives foundational knowledge for multi-task learning approaches also comprehensive surveys of agricultural AI. Crawshaw (2020) \cite{crawshaw2020mtl} published a highly influential MTL survey, establishing a taxonomy of MTL approaches with key findings relevant to this research including that hard parameter sharing (shared backbone) is effective for heterogeneous tasks, sequential task training prevents negative transfer between conflicting tasks, task weighting strategies significantly impact multi-task performance, and frozen backbone approaches reduce computational requirements during training. Shi et al. (2023) \cite{shi2023progressive} proposed progressive parameter sharing for MTL, dynamically adjusting sharing ratios during training, with this approach addressing the limitation of fixed sharing architectures that may not suit all task combinations. Attri et al. (2025) \cite{attri2025saamvetnet} developed SAAM-VetNet, an attention-based multi-task CNN for simultaneous disease classification and severity assessment, demonstrating successful MTL in veterinary applications though focused on general animal disease rather than cattle-specific monitoring. Carraro et al. (2026) \cite{carraro2026cleanliness} investigated cattle cleanliness assessment using RGB and thermal fusion, critically noting that this paper explicitly states that no public cleanliness-annotated cattle datasets exist, requiring private data collection, which directly informs our decision to exclude cleanliness from the current research scope. Tzanidakis et al. (2024) \cite{tzanidakis2024goatcnn} developed Goat-CNN for pose-independent BCS scoring in goats, and while targeting a different species, the lightweight architecture design and pose-invariance strategies are transferable to cattle applications.
+
+\begin{table}[ht]
+\centering
+\caption{Summary of MTL, Survey, and Other Papers}
+\label{tab:mtl_papers}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|p{3.2cm}|p{3.5cm}|p{2.2cm}|p{4.5cm}|}
+\hline
+\textbf{Reference} & \textbf{Focus} & \textbf{Type} & \textbf{Key Contribution} \\
+\hline
+Crawshaw 2020 & Multi-Task Learning & Survey & MTL taxonomy and guidelines \\
+\hline
+Shi 2023 & Progressive Sharing & Method & Dynamic parameter sharing \\
+\hline
+Attri 2025 & Disease + Severity & Multi-task & Attention-based veterinary MTL \\
+\hline
+Carraro 2026 & Cleanliness & Multimodal & RGB+Thermal (private data) \\
+\hline
+Tzanidakis 2024 & Goat BCS & Lightweight & Pose-independent scoring \\
+\hline
+\end{tabular}%
+}
+\end{table}
+
+\section{Summary of Key Findings}
+
+The structured review of 29 papers reveals many critical insights that directly inform our proposed methodology.
+
+The substantial majority of papers (89\%) rely on private datasets which creates a reproducibility crisis. Among them only a small fraction relies on publicly available cattle-specific datasets, yet they still obtain competitive performance, indicating that public datasets can efficiently support high-quality research. Our targeted use of public datasets helps bridge this gap, enabling total reproducibility as well as fair benchmarking.
+
+Despite being consistently raised on multi-task learning in most of the  literature, no existing paper integrates BCS, behavior recognition, lameness detection, and individual identification in a unified framework. Most of the papers address single tasks in isolation. Our unified four task framework represents a true novelty with potential for improved efficiency and cross task learning.
+
+Transfer learning with frozen backbone is highly analysed in the literature, and the Crawshaw 2020 MTL Survey validates that this approach effectively prevents negative transfer between heterogeneous tasks. Our sequential task training strategy is well-supported by existing literature and provides a strong foundation for managing multiple diverse tasks.
+
+Depth imaging represents substantial research interest with demonstrated value for BCS as well as lameness. Still, public data is limited to MmCows and Dryad datasets. Depth modality is relevant for BCS using Dryad but should be treated as secondary to RGB, ensuring the framework remains accessible for standard camera deployments.
+
+Self-supervised learning remains highly underexplored in cattle monitoring compared to transfer learning, representing a potential research opportunity. MmCows provides 2 weeks of continuous unlabeled video ideal for SSL pre-training. SSL represents a potential bonus contribution if time permits, offering opportunities to leverage abundant unlabeled surveillance footage.
+
+Comprehensive search reveals there are no publicly available thermal/infrared datasets for cattle. The only thermal cattle research (Carraro 2026) used privately collected data. Thermal modality is excluded from current scope and documented as future work requiring data collection partnerships.
+
+\begin{table}[ht]
+\centering
+\caption{Summary of Key Cattle Monitoring Techniques from Literature}
+\label{tab:summary}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|p{3.2cm}|p{2cm}|p{1.8cm}|p{3.2cm}|p{2.8cm}|}
+\hline
+\textbf{Technique} & \textbf{Platform} & \textbf{Accuracy} & \textbf{Strength} & \textbf{Weakness} \\
+\hline
+EfficientNet+SE & RGB BCS & 93.77\% & High accuracy, attention & Single task \\
+\hline
+BCS-YOLO+KD & RGB BCS & 92.7\% & Edge-ready, distilled & Single task \\
+\hline
+Detectron2+SORT & Depth Lameness & 99.94\% & Excellent detection & Requires depth \\
+\hline
+CNN-LSTM & RGB Behavior & 97.35\% & Temporal modeling & Private data \\
+\hline
+XGBoost+DWT & IMU Behavior & 91.8\% & Public benchmark & Requires sensors \\
+\hline
+MTL Survey & Cross-platform & N/A & Guidelines & No implementation \\
+\hline
+\end{tabular}%
+}
+\end{table}

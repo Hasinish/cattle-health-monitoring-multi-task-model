@@ -1,0 +1,99 @@
+\section{Final Specifications and Requirements}
+The implementation of the multi-task deep learning framework for cattle health monitoring requires a specific configuration of hardware and software components to ensure real-time inference and model training.
+
+\subsection{Hardware Requirements}
+\begin{itemize}
+    \item \textbf{Development and Training Unit:} The model training was executed on a high-performance research workstation equipped with an NVIDIA GeForce RTX 4080 GPU (16GB VRAM, Ada Lovelace architecture supporting FP8 and FP16 tensor operations), an Intel Core i9-13900K CPU, 64GB of DDR5 RAM, and a 2TB NVMe SSD to handle high-throughput image and video loading.
+    \item \textbf{Edge Deployment Unit:} For live farm surveillance, the system is designed to run on resource-constrained edge computers such as the Jetson Orin Nano (8GB VRAM) or a Raspberry Pi 5. The total model size is optimized to remain under 10 million parameters ($<$ 40MB file size in FP16 format) to fit into edge device memory.
+    \item \textbf{Imaging Sensors:} Standard 1080p surveillance cameras operating at 30 frames per second (FPS) positioned at cattle walkways or feeding troughs. For the Dryad dataset, depth maps were captured using active infrared depth sensors.
+\end{itemize}
+
+\subsection{Software Requirements}
+\begin{itemize}
+    \item \textbf{Operating System:} Windows 11 / Linux (Ubuntu 22.04 LTS).
+    \item \textbf{Programming Language:} Python 3.12.3.
+    \item \textbf{Deep Learning Library:} PyTorch 2.5.1 + CUDA 12.1.
+    \item \textbf{Backbone Repository:} PyTorch Image Models (\texttt{timm}) library for loading pre-trained EfficientNet-B0 and MobileNetV3 architectures.
+    \item \textbf{Computer Vision Tools:} OpenCV 4.9.0 (for real-time video streaming, bounding box visualization, and frame interpolation) and Albumentations 1.4.0 (for spatial and pixel-level data augmentations).
+    \item \textbf{Data Pipelines:} Pandas, NumPy, and Scikit-learn for group-wise dataset splits and metric computations.
+\end{itemize}
+
+\section{Societal Impact}
+The development of automated cattle health monitoring systems has a profound positive impact on the agricultural sector and animal welfare:
+\begin{itemize}
+    \item \textbf{Enhancement of Animal Welfare:} Early detection of lameness and abnormal behaviors (such as reduced eating or drinking) allows farmers to treat sick cows days before clinical symptoms become visible, minimizing animal suffering.
+    \item \textbf{Support for Precision Livestock Farming (PLF):} Transitioning from manual, subjective herd inspections to continuous 24/7 automated monitoring reduces human error and standardizes assessments such as Body Condition Scoring.
+    \item \textbf{Agricultural Labor Relief:} As intensive dairy farming expands, the ratio of cows per stockperson increases. Automated monitoring alleviates labor shortages, allowing farm workers to focus on specialized veterinary interventions rather than manual surveillance.
+\end{itemize}
+
+\section{Environmental Impact}
+Deep learning models are historically compute-intensive, contributing to carbon emissions during training. Our proposed framework addresses this environmental concern through:
+\begin{itemize}
+    \item \textbf{Green Computing via Multi-Task Learning (MTL):} Instead of deploying four separate convolutional neural networks (each consuming GPU power and memory), our hard parameter sharing approach utilizes a single shared EfficientNet-B0 encoder. This consolidation reduces inference energy consumption by approximately 75\%, minimizing the operational carbon footprint of edge surveillance systems deployed on thousands of farms.
+    \item \textbf{Resource Optimization:} By implementing sparse temporal sampling (reducing 300-frame video clips to 20 key frames) and capping dataset classes, we decreased active training GPU runtimes, reducing energy overhead during the development lifecycle.
+\end{itemize}
+
+\section{Ethical Issues}
+Automated visual surveillance systems on farms raise specific ethical considerations:
+\begin{itemize}
+    \item \textbf{Non-Invasive Monitoring:} Traditional identification and health tracking rely on invasive techniques such as branding, ear tags, or surgically implanted RFID transponders, which cause pain and stress to the animals. Our camera-based approach is completely non-invasive, posing zero physical discomfort or psychological stress to the cattle.
+    \item \textbf{Data Privacy:} Farm surveillance footage must be processed locally on edge systems to prevent the leakage of proprietary farm operation details, veterinarian records, or geographic information to public networks. Our offline edge architecture addresses this ethical requirement.
+\end{itemize}
+
+\section{Standards - if applicable}
+The software code and agricultural metrics strictly adhere to the following standards:
+\begin{itemize}
+    \item \textbf{Body Condition Scoring (BCS) Standards:} The target BCS grading scale follows the internationally recognized 5-point Elanco scale (with increments of 0.25 on ScienceDB and integer values on Dryad) which is the standard reference used by professional dairy veterinarians.
+    \item \textbf{Locomotion Scoring Standards:} The lameness target labels are aligned with the Sprecher locomotion scoring system, classifying gait posture on a binary scale (sound vs. lame).
+    \item \textbf{IEEE Software Quality Standards:} The code is written in compliance with the PEP 8 style guide for Python, and evaluation metrics conform to standard definitions (Macro F1-score for classification under imbalance, Mean Absolute Error for ordinal variables, and AUC-ROC for ranking).
+\end{itemize}
+
+\section{Project Management Plan}
+To manage the multi-task and multi-backbone complexity of the project, the workload was distributed across 5 team members based on their base backbone assignments and specific tasks:
+\begin{itemize}
+    \item \textbf{Hasin Ishrak:} Preprocessed the primary datasets, established the baseline training pipelines, evaluated the ResNet-18 baseline, and conducted the primary ablation studies (such as CBAM evaluations and RGB vs. Depth modalities).
+    \item \textbf{Namira Abrar Haque:} Evaluated the MobileNetV3-Small baseline, analyzing the performance of highly compressed networks for resource-constrained edge deployment.
+    \item \textbf{Sanjida Akter Bithi:} Evaluated the ResNet-50 baseline, evaluating the benefits of deeper architectures on spatial feature extraction.
+    \item \textbf{Shouvik Banik:} Evaluated the DenseNet121 baseline, studying dense feature connectivity for multi-class behavior recognition.
+    \item \textbf{Nusrat Lamya Faruk:} Evaluated the winning EfficientNet-B0 baseline, implemented the final spatiotemporal multi-task model, integrated the LSTM sequence-tracking layers, and deployed the real-time visualization interface.
+\end{itemize}
+The timeline was structured in sprints: dataset curation, single-task baseline training, backbone selection, spatiotemporal multi-task model integration, and finally report writing and visualizer deployment.
+
+\section{Risk Management}
+\begin{table}[H]
+\centering
+\caption{Project Risks and Mitigation Strategies}
+\label{tab:risk_management}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l>{\raggedright\arraybackslash}p{5cm}>{\raggedright\arraybackslash}p{6cm}}
+\toprule
+\textbf{Risk Identified} & \textbf{Potential Impact} & \textbf{Mitigation Strategy} \\
+\midrule
+Class Imbalance & Model fails to learn rare behaviors (licking, drinking). & Implemented Focal Loss ($\gamma=2$) and hard data capping (max 3000 images per class). \\
+Data Leakage & Memorization of cow identities leading to overfitting. & Enforced cow-wise split partitioning so same cow is never in train and test sets. \\
+Out of Memory (OOM) & GPU VRAM crash when processing long sequences. & Integrated Automatic Mixed Precision (AMP) in FP16 and sparse temporal sampling of 20 frames. \\
+Domain Shift & Performance drop when deployed on unseen farms. & Performed cross-dataset validation on CBVD-5 to evaluate generalizability and recommend future unfreezed fine-tuning. \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\section{Economic Analysis}
+The financial viability of our multi-task framework is compared against traditional farm monitoring systems in Table~\ref{tab:economic_analysis}.
+\begin{table}[H]
+\centering
+\caption{Economic Cost-Benefit Analysis}
+\label{tab:economic_analysis}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{l>{\raggedright\arraybackslash}p{6cm}>{\raggedright\arraybackslash}p{6cm}}
+\toprule
+\textbf{Component} & \textbf{Traditional Sensor Systems} & \textbf{Proposed MTL Edge System} \\
+\midrule
+\textbf{Sensor Hardware} & Wearable collars, step counters, and RFID tags (\$80 - \$120 per cow). For 500 cows: \$40,000+. & Standard IP CCTV cameras (\$150 each) + edge computing unit (\$300). Total: \$1,500. \\
+\textbf{Maintenance} & Battery replacements, collar damage, and physical tag losses (15\% annual loss). & Minimal hardware contact, camera cleaning and software updates only. \\
+\textbf{Computational Cost} & High cloud subscription fees for running separate analysis pipelines. & Offline local edge inference with zero recurring cloud subscription costs. \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+The analysis demonstrates that our visual multi-task edge framework is highly scalable, lowering the initial investment barrier for small-to-medium scale dairy farms by over 90\%.

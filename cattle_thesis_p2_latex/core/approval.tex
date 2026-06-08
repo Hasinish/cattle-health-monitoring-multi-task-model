@@ -1,0 +1,53 @@
+% Updated \wildcard to accept image filename
+% #1 = Width (default 6cm)
+% #2 = Image Filename
+% #3 = Text (Name/Designation)
+\renewcommand*\wildcard[3][6cm]{%
+    \parbox{#1}{%
+        \centering
+        \ifx\hfuzz#2\hfuzz\else\includegraphics[height=1.2cm, keepaspectratio]{#2}\\[-2pt]\fi 
+        \hrulefill\par
+        {\small #3}%
+    }%
+}
+
+\section*{Approval}
+
+\vspace{-0.2cm}
+The thesis titled ``Multi-Task Deep Learning Framework for Unified Cattle Health and Behavior Monitoring'' submitted by 
+\begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}\setlength{\parsep}{0pt}\setlength{\topsep}{0pt}
+\item Hasin Ishrak (22201133)
+\item Namira Abrar Haque (22201191)
+\item Sanjida Akter Bithi (22201180) 
+\item Shouvik Banik (23101295)
+\item Nusrat Lamya Faruk (24241182)
+\end{enumerate}
+
+of Spring, 2026 has been accepted as satisfactory in partial fulfillment of the requirement for the degree of B.Sc. in Computer Science in February, 2026. 
+
+\vspace{0.1cm}
+\textbf{Examining Committee:}
+
+\vspace{0.1cm}
+
+\noindent
+Supervisor:\\
+(Member)\\
+\hspace*{7cm} \wildcard{}{Dr. Md. Khalilur Rahman \\ Professor \\ Department of Computer Science and Engineering \\ Brac University}
+
+\vspace{0.1cm}
+
+
+\noindent
+Thesis Coordinator:\\
+(Member)\\
+\hspace*{7cm} \wildcard{sig_gra.jpg}{Dr. Md. Golam Rabiul Alam \\ Professor \\ Department of Computer Science and Engineering \\ Brac University}
+
+\vspace{0.1cm}
+
+\noindent
+Head of Department:\\
+(Chair)\\
+\hspace*{7cm} \wildcard{}{Dr. Sadia Hamid Kazi \\ Associate Professor \\ Department of Computer Science and Engineering \\ Brac University}
+
+\pagebreak
