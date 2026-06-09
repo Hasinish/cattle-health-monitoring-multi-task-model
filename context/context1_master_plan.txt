@@ -29,17 +29,36 @@ STEP 9 → Sequential training
 STEP 10 → Write P2 report
 
 ==========================================================================
-CURRENT WORKFLOW PROGRESS (as of June 4, 2026):
+CURRENT WORKFLOW PROGRESS (as of June 9, 2026):
 ==========================================================================
 BCS TASK:
   [DONE] All 5 members trained baseline models + Context 3 written
-  [NOT DONE] Context 4 / ablation studies (CORAL vs CE, CBAM vs no CBAM, etc.)
+  [PENDING] Ablation studies (CORAL vs CE, CBAM vs no CBAM) — scripts exist, not yet run
 
 BEHAVIOR TASK:
   [DONE] All 5 members trained baseline models + Context 3 written
+  [DONE] Cross-dataset eval (MmCows → CBVD-5): Macro F1 = 0.1245 (domain shift confirmed)
 
-LAMENESS TASK:   [NOT STARTED] Dataset folder is empty.
-ID TASK:         [NOT STARTED] Dataset folder is empty.
+LAMENESS TASK:   [DONE — ALL 5 MEMBERS]
+  - Hasin (ResNet-18):        Test Acc: 75.30%, Test AUC: 0.720
+  - Namira (MobileNetV3-S):   Test Acc: 75.66%, Test AUC: 0.723
+  - Bithi (ResNet-50):        Test Acc: 80.97%, Test AUC: 0.744
+  - Shouvik (DenseNet121):    Test Acc: 73.98%, Test AUC: 0.794
+  - Nusrat (EfficientNetB0):  Test Acc: 93.05%, Test AUC: 0.983  ← BEST
+
+ID TASK:         [DONE — ALL 5 MEMBERS]
+  - Hasin (ResNet-18):        Test Top-1 Acc: 45.56%
+  - Namira (MobileNetV3-S):   Test Top-1 Acc: 78.83%
+  - Bithi (ResNet-50):        Test Top-1 Acc: 53.02%
+  - Shouvik (DenseNet121):    Test Top-1 Acc: 82.46%
+  - Nusrat (EfficientNetB0):  Test Top-1 Acc: 86.49%  ← BEST
+
+MULTI-TASK MODEL (Nusrat):
+  [DONE]        train_multitask.py (Results: BCS MAE 0.7266, Behavior F1 0.3771, Lameness Acc 95.28%, ID Acc 94.96%)
+  [DONE]        train_multitask_temporal.py (Results: BCS MAE 0.7827, Behavior F1 0.4948, Lameness Acc 100.00%, ID Acc 97.58%)
+  [DONE]        ablation_bcs_ce.py (ScienceDB CE Test MAE: 0.6940 vs. 0.5566 CORAL; Dryad CE Test MAE: 0.9450 vs. 0.6175 CORAL)
+  [DONE]        ablation_bcs_nocbam.py (Dryad No-CBAM Test MAE: 0.7000 vs. 0.6175 CBAM)
+  [PENDING]     ablation_behavior_ce.py
 
 ==========================================================================
 ARCHITECTURE:
@@ -153,15 +172,15 @@ Note: MAE is reported on ordinal class indices (0-4), not original BCS scale.
 Model             | BCS MAE  | Behavior F1 | Lameness AUC | ID Top-1 | Avg Rank
                   |(Dryad/Sci)|             |              |          |
 ------------------|----------|-------------|--------------|----------|----------
-ResNet-18         | 0.8675 / |   0.7134    |  0.8400 (ST) | pending  |
+ResNet-18         | 0.8675 / |   0.7134    |    0.7200    |  45.56%  |   4th
                   | 0.5800   |             |              |          |
-MobileNetV3-Small | 0.5250 / |   0.6810    |   pending    | pending  |
+MobileNetV3-Small | 0.5250 / |   0.6810    |    0.7230    |  78.83%  |   5th
                   | 0.7090   |             |              |          |
-ResNet-50         | 0.6300 / |   0.7037    |   pending    | pending  |
+ResNet-50         | 0.6300 / |   0.7037    |    0.7440    |  53.02%  |   3rd
                   | 0.6485   |             |              |          |
-DenseNet121       | 0.5875 / |   0.7366    |   pending    | pending  |
+DenseNet121       | 0.5875 / |   0.7366    |    0.7940    |  82.46%  |   2nd
                   | 0.6292   |             |              |          |
-EfficientNetB0    | 0.6175 / |   0.7445    |    0.9829    |  86.49%  |
+EfficientNetB0    | 0.6175 / |   0.7445    |    0.9829    |  86.49%  |   1st
                   | 0.5566   |             |              |          |
 
 Best average rank = shared backbone for multi-task model.
@@ -170,7 +189,9 @@ Best average rank = shared backbone for multi-task model.
 ABLATION STUDIES:
 ==========================================================================
 1. CORAL vs Cross-Entropy for BCS
+   [COMPLETE: Dryad CE Test MAE: 0.9450 vs. 0.6175 CORAL | ScienceDB CE Test MAE: 0.6940 vs. 0.5566 CORAL]
 2. With CBAM vs Without CBAM (BCS)
+   [COMPLETE: Dryad No-CBAM Test MAE: 0.7000 vs. 0.6175 CBAM]
 3. RGB only vs RGB+Depth (Dryad DGE)
 4. Focal Loss vs Cross-Entropy (Behavior)
 5. Cross-dataset eval: MmCows → CBVD-5 (Behavior)
@@ -213,11 +234,11 @@ D:\T25301094 P2\
 
 ├── final_models\                      [COMPLETED — contains multitask_temporal_best.pth]
 └── workspaces\
-    ├── hasin\    (BCS: DONE | Behavior: DONE)
-    ├── namira\   (BCS: DONE | Behavior: DONE)
-    ├── bithi\    (BCS: DONE | Behavior: DONE)
-    ├── shouvik\  (BCS: DONE | Behavior: DONE)
-    └── nusrat\   (BCS: DONE | Behavior: DONE)
+    ├── hasin\    (BCS: DONE | Behavior: DONE | Lameness: DONE | ID: DONE | Spatiotemporal Lameness: DONE)
+    ├── namira\   (BCS: DONE | Behavior: DONE | Lameness: DONE | ID: DONE | Spatiotemporal Lameness: DONE)
+    ├── bithi\    (BCS: DONE | Behavior: DONE | Lameness: DONE | ID: DONE | Spatiotemporal Lameness: DONE)
+    ├── shouvik\  (BCS: DONE | Behavior: DONE | Lameness: DONE | ID: DONE | Spatiotemporal Lameness: DONE)
+    └── nusrat\   (BCS: DONE | Behavior: DONE | Lameness: DONE | ID: DONE | Multitask: DONE | Multitask Temporal: DONE | Ablations: PENDING)
 
 ==========================================================================
 P2 REPORT STRUCTURE:
@@ -259,7 +280,7 @@ PRIORITY 3 — Run ablation studies (Hasin)
 
 PRIORITY 4 — Build and train multi-task model (all) [COMPLETE]
   - Spatiotemporal Multi-Task model trained with EfficientNetB0-LSTM on 20-frame sequences.
-  - Final Results: Lameness Acc: 100.00% (AUC 1.0), ID Acc: 97.18%, BCS MAE: 0.7849, Behavior F1: 0.4775
+  - Final Results: Lameness Acc: 100.00% (AUC 1.0000), ID Acc: 97.58%, BCS MAE: 0.7827 (Exact: 39.31%, +-1: 84.82%), Behavior F1: 0.4948
   - Real-time rolling sequence visualizer successfully deployed and tested on demo video.
 
 ==========================================================================

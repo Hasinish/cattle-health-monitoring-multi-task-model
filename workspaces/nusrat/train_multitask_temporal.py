@@ -5,8 +5,9 @@ import time
 import random
 import warnings
 from collections import defaultdict
-import numpy as np
 from pathlib import Path
+
+import numpy as np
 
 import torch
 import torch.nn as nn
@@ -38,7 +39,7 @@ ID_CSV = os.path.join(BASE_DIR, "datasets", "id", "id_index.csv")
 CHECKPOINT_PATH = os.path.join(WORKSPACE_DIR, "multitask_temporal_best.pth")
 RESULTS_PATH = os.path.join(WORKSPACE_DIR, "multitask_temporal_results.txt")
 
-NUM_WORKERS = 0  # CRITICAL for Windows to avoid deadlocks
+NUM_WORKERS = 0  # Set to 0 on Windows to prevent multiprocessing deadlocks and VRAM/RAM OOM
 BATCH_SIZE = 8   # Sequence models require smaller batch sizes to prevent GPU OOM
 PHASE_EPOCHS = 5  # Epochs for individual head training
 JOINT_EPOCHS = 10 # Epochs for joint fine-tuning
@@ -82,7 +83,7 @@ def get_transforms(split):
     ])
 
 # ============================================================
-# SPATIOTEMPORAL DATASETS
+# SPATIOTEMPORAL DATASETS (LOADED ON-THE-FLY FOR MEMORY SAFETY)
 # ============================================================
 
 class BCSSequenceDataset(Dataset):
@@ -101,11 +102,12 @@ class BCSSequenceDataset(Dataset):
                     label = bcs_map[float(row['label'])]
                     self.samples.append((img_path, label))
                     
-        # To balance speed, we sample a representative subset for joint training
         if split == 'train':
             random.seed(SEED)
             random.shuffle(self.samples)
             self.samples = self.samples[:4000]
+            
+        print(f"Loaded {len(self.samples)} BCS {split} image paths.")
 
     def __len__(self):
         return len(self.samples)
@@ -116,7 +118,7 @@ class BCSSequenceDataset(Dataset):
         if image is None:
             raise FileNotFoundError(f"Missing image: {img_path}")
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        
+        image = cv2.resize(image, (224, 224))
         if self.transform:
             image = self.transform(image=image)["image"]
             
@@ -144,6 +146,8 @@ class IDSequenceDataset(Dataset):
             random.seed(SEED)
             random.shuffle(self.samples)
             self.samples = self.samples[:4000]
+            
+        print(f"Loaded {len(self.samples)} ID {split} image paths.")
 
     def __len__(self):
         return len(self.samples)
@@ -154,7 +158,7 @@ class IDSequenceDataset(Dataset):
         if image is None:
             raise FileNotFoundError(f"Missing image: {img_path}")
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        
+        image = cv2.resize(image, (224, 224))
         if self.transform:
             image = self.transform(image=image)["image"]
             
@@ -187,35 +191,39 @@ class BehaviorSequenceDataset(Dataset):
                     
                     seq_groups[seq_prefix].append((img_path, label, frame_idx))
                     
+        raw_sequences = []
         for seq_prefix, items in seq_groups.items():
             items = sorted(items, key=lambda x: x[2])  # Sort by frame index
-            self.sequences.append(items)
+            raw_sequences.append(items)
             
         if split == 'train':
             random.seed(SEED)
-            random.shuffle(self.sequences)
-            # Cap at 2000 sequence samples for balanced and fast training
-            self.sequences = self.sequences[:2000]
+            random.shuffle(raw_sequences)
+            raw_sequences = raw_sequences[:2000]
+            
+        for items in raw_sequences:
+            total_frames = len(items)
+            indices = [int(i * (total_frames - 1) / (20 - 1)) for i in range(20)] if total_frames > 1 else [0] * 20
+            
+            seq_paths = [items[idx_to_load][0] for idx_to_load in indices]
+            label = items[0][1]
+            self.sequences.append((seq_paths, label))
+            
+        print(f"Loaded {len(self.sequences)} Behavior {split} sequence paths.")
 
     def __len__(self):
         return len(self.sequences)
 
     def __getitem__(self, idx):
-        items = self.sequences[idx]
-        total_frames = len(items)
-        
-        # Sample exactly 20 frames uniformly
-        indices = [int(i * (total_frames - 1) / (20 - 1)) for i in range(20)] if total_frames > 1 else [0] * 20
+        seq_paths, label = self.sequences[idx]
         
         frames = []
-        label = items[0][1]
-        for idx_to_load in indices:
-            img_path = items[idx_to_load][0]
+        for img_path in seq_paths:
             image = cv2.imread(img_path)
             if image is None:
                 raise FileNotFoundError(f"Missing image: {img_path}")
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            
+            image = cv2.resize(image, (224, 224))
             if self.transform:
                 image = self.transform(image=image)["image"]
             frames.append(image)
@@ -226,41 +234,53 @@ class BehaviorSequenceDataset(Dataset):
 class LamenessSequenceDataset(Dataset):
     def __init__(self, csv_path, split, transform=None):
         self.transform = transform
-        self.video_data = []
+        self.sequences = []
+        
+        video_data = []
         with open(csv_path, 'r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 if row['split'] == split:
-                    self.video_data.append({
+                    video_data.append({
                         'image_path': row['image_path'],
                         'label': float(row['label']),
                         'cow_id': row['cow_id']
                     })
-        self.video_ids = sorted(list(set(item['cow_id'] for item in self.video_data)))
+        video_ids = sorted(list(set(item['cow_id'] for item in video_data)))
+        
+        for v_id in video_ids:
+            v_samples = [item for item in video_data if item['cow_id'] == v_id]
+            v_samples = sorted(v_samples, key=lambda x: x['image_path'])
+            
+            label = v_samples[0]['label']
+            total_frames = len(v_samples)
+            
+            indices = [int(i * (total_frames - 1) / (20 - 1)) for i in range(20)] if total_frames > 1 else [0] * 20
+            
+            seq_paths = []
+            for idx_to_load in indices:
+                img_path = v_samples[idx_to_load]['image_path']
+                if not os.path.isabs(img_path):
+                    img_path = os.path.join(BASE_DIR, img_path)
+                seq_paths.append(img_path)
+                
+            self.sequences.append((seq_paths, label))
+            
+        print(f"Loaded {len(self.sequences)} Lameness {split} video sequence paths.")
 
     def __len__(self):
-        return len(self.video_ids)
+        return len(self.sequences)
 
     def __getitem__(self, idx):
-        v_id = self.video_ids[idx]
-        v_samples = [item for item in self.video_data if item['cow_id'] == v_id]
-        v_samples = sorted(v_samples, key=lambda x: x['image_path'])
+        seq_paths, label = self.sequences[idx]
         
         frames = []
-        label = v_samples[0]['label']
-        total_frames = len(v_samples)
-        
-        indices = [int(i * (total_frames - 1) / (20 - 1)) for i in range(20)] if total_frames > 1 else [0] * 20
-        
-        for idx_to_load in indices:
-            img_path = v_samples[idx_to_load]['image_path']
-            if not os.path.isabs(img_path):
-                img_path = os.path.join(BASE_DIR, img_path)
+        for img_path in seq_paths:
             image = cv2.imread(img_path)
             if image is None:
                 raise FileNotFoundError(f"Missing image: {img_path}")
             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            
+            image = cv2.resize(image, (224, 224))
             if self.transform:
                 image = self.transform(image=image)["image"]
             frames.append(image)
@@ -532,7 +552,8 @@ def evaluate_all(model, test_loaders):
             if task_name == 'bcs':
                 mae = mean_absolute_error(all_labels, all_preds)
                 acc = accuracy_score(all_labels, all_preds)
-                res_str = f"BCS - MAE: {mae:.4f}, Exact Acc: {acc:.4f}"
+                pm1 = np.mean(np.abs(np.array(all_preds) - np.array(all_labels)) <= 1)
+                res_str = f"BCS - MAE: {mae:.4f}, Exact Acc: {acc:.4f}, ±1 Acc: {pm1:.4f}"
             elif task_name == 'behavior':
                 f1 = f1_score(all_labels, all_preds, average='macro')
                 res_str = f"Behavior - Macro F1: {f1:.4f}"
@@ -547,7 +568,7 @@ def evaluate_all(model, test_loaders):
             print(res_str)
             f.write(res_str + "\n")
             results[task_name] = res_str
-
+ 
     print(f"\nResults saved to {RESULTS_PATH}")
     return results
 
@@ -573,6 +594,15 @@ def main():
     
     model = MultiTaskTemporalModel().to(DEVICE)
     
+    # Load existing checkpoint if it exists to resume progress
+    if os.path.exists(CHECKPOINT_PATH):
+        print(f"Found existing checkpoint at {CHECKPOINT_PATH}. Loading weights to resume...")
+        try:
+            model.load_state_dict(torch.load(CHECKPOINT_PATH, map_location=DEVICE))
+            print("Successfully loaded checkpoint weights.")
+        except Exception as e:
+            print(f"Warning: Could not load checkpoint weights ({e}). Starting from scratch.")
+    
     # Freeze backbone
     for param in model.backbone.parameters():
         param.requires_grad = False
@@ -580,18 +610,26 @@ def main():
     # Phase 2: BCS
     optimizer = torch.optim.Adam(list(model.bcs_head.parameters()), lr=LR_HEADS)
     train_single_task(model, train_loaders['bcs'], optimizer, 'bcs', PHASE_EPOCHS)
+    torch.save(model.state_dict(), CHECKPOINT_PATH)
+    print(f"Phase 2 (BCS) Complete. Checkpoint saved to {CHECKPOINT_PATH}")
     
     # Phase 3: Behavior
     optimizer = torch.optim.Adam(list(model.behavior_lstm.parameters()) + list(model.behavior_classifier.parameters()), lr=LR_HEADS)
     train_single_task(model, train_loaders['behavior'], optimizer, 'behavior', PHASE_EPOCHS)
+    torch.save(model.state_dict(), CHECKPOINT_PATH)
+    print(f"Phase 3 (Behavior) Complete. Checkpoint saved to {CHECKPOINT_PATH}")
     
     # Phase 4: Lameness
     optimizer = torch.optim.Adam(list(model.lameness_lstm.parameters()) + list(model.lameness_classifier.parameters()), lr=LR_HEADS)
     train_single_task(model, train_loaders['lameness'], optimizer, 'lameness', PHASE_EPOCHS)
+    torch.save(model.state_dict(), CHECKPOINT_PATH)
+    print(f"Phase 4 (Lameness) Complete. Checkpoint saved to {CHECKPOINT_PATH}")
     
     # Phase 5: ID
     optimizer = torch.optim.Adam(list(model.id_head.parameters()), lr=LR_HEADS)
     train_single_task(model, train_loaders['id'], optimizer, 'id', PHASE_EPOCHS)
+    torch.save(model.state_dict(), CHECKPOINT_PATH)
+    print(f"Phase 5 (ID) Complete. Checkpoint saved to {CHECKPOINT_PATH}")
     
     # Phase 6: Joint Fine-Tuning
     # Unfreeze backbone

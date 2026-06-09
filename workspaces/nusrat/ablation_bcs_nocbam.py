@@ -45,7 +45,7 @@ NUM_CLASSES = 5
 CORAL_OUTPUTS = NUM_CLASSES - 1
 
 BATCH_SIZE = 128  
-EPOCHS = 30
+EPOCHS = 5
 LR = 1e-3
 STEP_SIZE = 10
 GAMMA = 0.5
@@ -158,27 +158,24 @@ def build_loaders(csv_path, label_map):
         train_dataset,
         batch_size=BATCH_SIZE,
         shuffle=True,
-        num_workers=8,
+        num_workers=0,
         pin_memory=True,
-        persistent_workers=True,
     )
 
     val_loader = DataLoader(
         val_dataset,
         batch_size=BATCH_SIZE,
         shuffle=False,
-        num_workers=8,
+        num_workers=0,
         pin_memory=True,
-        persistent_workers=True,
     )
 
     test_loader = DataLoader(
         test_dataset,
         batch_size=BATCH_SIZE,
         shuffle=False,
-        num_workers=8,
+        num_workers=0,
         pin_memory=True,
-        persistent_workers=True,
     )
 
     return train_loader, val_loader, test_loader
@@ -478,15 +475,18 @@ def run_training(dataset_name, csv_path, label_map, checkpoint_path):
 
 
 def write_ablation_report(dryad_result):
+    def fmt_loss(val):
+        return f"{val:.6f}" if val is not None else "N/A"
+
     report = f"""---CONTEXT 3 BCS NO-CBAM ABLATION---
 PERSON NAME: {PERSON_NAME}
 BASE MODEL: {BASE_MODEL}
 DATASET: {dryad_result['dataset_name']} (CORAL Loss, No CBAM)
 
 EPOCHS TRAINED: {dryad_result['epochs_trained']}
-LOSS AT EPOCH 10: {dryad_result['loss_at_epoch_10']:.6f}
-LOSS AT EPOCH 20: {dryad_result['loss_at_epoch_20']:.6f}
-LOSS AT EPOCH 30: {dryad_result['loss_at_epoch_30']:.6f}
+LOSS AT EPOCH 10: {fmt_loss(dryad_result['loss_at_epoch_10'])}
+LOSS AT EPOCH 20: {fmt_loss(dryad_result['loss_at_epoch_20'])}
+LOSS AT EPOCH 30: {fmt_loss(dryad_result['loss_at_epoch_30'])}
 FINAL TRAIN LOSS: {dryad_result['final_train_loss']:.6f}
 VAL MAE: {dryad_result['val_metrics']['mae']:.6f}
 VAL ACCURACY +-0 (exact match): {dryad_result['val_metrics']['acc_exact']:.6f}

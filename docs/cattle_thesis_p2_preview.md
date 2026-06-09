@@ -142,19 +142,19 @@ The selected EfficientNet-B0 backbone was trained in two multi-task configuratio
 | Training Setup | BCS MAE | Behavior F1 | Lameness AUC | ID Accuracy |
 | :--- | :---: | :---: | :---: | :---: |
 | **Single-Task Baselines** | 0.5566 (SciDB) | 0.7445 | 0.9829 (Spatial) | 86.49% |
-| **Frame-Level Multi-Task** | 0.6919 | 0.3739 | 0.9884 (Spatial) | 95.97% |
-| **Spatiotemporal Multi-Task** | **0.7849** | **0.4775** | **1.0000 (Sequence)** | **97.18%** |
+| **Frame-Level Multi-Task** | 0.7266 | 0.3771 | 0.9921 (Spatial) | 94.96% |
+| **Spatiotemporal Multi-Task** | **0.7827** | **0.4948** | **1.0000 (Sequence)** | **97.58%** |
 
 #### Spatiotemporal Performance Insights
-*   **Sequence Modeling Advantages:** Incorporating sequence tracking (LSTM) yielded significant performance improvements. Behavior recognition Macro F1 improved to **0.4775**, lameness classification reached a perfect **1.0000 AUC**, and individual cow ID accuracy rose to **97.18%**.
-*   **Task Interference Trade-Offs:** The shared features are heavily constrained to satisfy sequence-based tracking and classification simultaneously, causing a slight negative transfer on static spatial tasks (BCS MAE dropped from 0.5566 to 0.7849).
+*   **Sequence Modeling Advantages:** Incorporating sequence tracking (LSTM) yielded significant performance improvements. Behavior recognition Macro F1 improved to **0.4948**, lameness classification reached a perfect **1.0000 AUC**, and individual cow ID accuracy rose to **97.58%**.
+*   **Task Interference Trade-Offs:** The shared features are heavily constrained to satisfy sequence-based tracking and classification simultaneously, causing a slight negative transfer on static spatial tasks (BCS MAE dropped from 0.5566 to 0.7827).
 
 #### Threshold Calibration for Lameness
 Under the default classification threshold of 0.50, the sequence model showed only 80.00% lameness accuracy despite its 1.0000 AUC. This was caused by the model's confidence scores shifting upward (0.55 for normal cows, 0.85 for lame cows) due to the small sample size. Calibrating the decision threshold to **0.70** successfully resolved the false positives, raising the test accuracy to **100.00%**.
 
 ### 5.3 Ablation Studies
-1.  **CORAL Loss vs. Cross-Entropy:** Integrating CORAL ordinal loss instead of Cross-Entropy for BCS reduced the Test MAE from 0.9450 to 0.6175 (Dryad).
-2.  **CBAM Attention:** Adding CBAM attention reduced the Dryad test MAE from 0.7240 to 0.6175.
+1.  **CORAL Loss vs. Cross-Entropy:** Integrating CORAL ordinal loss instead of Cross-Entropy for BCS reduced the Dryad Test MAE from 0.9450 to 0.6175. On the larger ScienceDB dataset, swapping the proposed CORAL configuration (Test MAE: 0.5566, exact accuracy: 55.06\%, within-one-class: 90.50\%) for standard Cross-Entropy resulted in a degraded Test MAE of 0.6940 (exact accuracy: 46.31\%, within-one-class: 86.62\%).
+2.  **CBAM Attention:** Adding CBAM attention reduced the Dryad test MAE from 0.7000 (exact: 52.50\%, within-one-class: 80.75\%) to 0.6175 (exact: 52.50\%, within-one-class: 85.75\%).
 3.  **DGE Depth Modality:** Depth-infused DGE images achieved a test MAE of 0.6175, whereas RGB-only models yielded 0.8675, confirming depth contours are critical for fat estimation.
 4.  **Focal Loss vs. Cross-Entropy:** Applying Focal Loss instead of Cross-Entropy to behavior recognition under severe imbalance raised the Test Macro F1-score to 0.7445.
 5.  **Cross-Dataset Generalization (CBVD-5):** Evaluating the MmCows behavior model on the independent CBVD-5 dataset yielded a Macro F1 of 0.1245. While standing posture generalized well (90.34%), other classes (drinking at 2.99%, feeding at 8.39%) suffered from severe domain shift.

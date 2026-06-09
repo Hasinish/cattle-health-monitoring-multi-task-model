@@ -1,7 +1,7 @@
 Spatiotemporal Multi-Task Model Evaluation Results
 ========================================
 
-BCS - MAE: 0.7849, Exact Acc: 0.3907
-Behavior - Macro F1: 0.4775
+BCS - MAE: 0.7827, Exact Acc: 0.3931, ±1 Acc: 0.8482
+Behavior - Macro F1: 0.4948
 Lameness - Acc: 1.0000, AUC: 1.0000
-Cow ID - Acc: 0.9718
+Cow ID - Acc: 0.9758

@@ -157,27 +157,24 @@ def build_loaders(csv_path, label_map):
         train_dataset,
         batch_size=BATCH_SIZE,
         shuffle=True,
-        num_workers=8,
+        num_workers=0,
         pin_memory=True,
-        persistent_workers=True,
     )
 
     val_loader = DataLoader(
         val_dataset,
         batch_size=BATCH_SIZE,
         shuffle=False,
-        num_workers=8,
+        num_workers=0,
         pin_memory=True,
-        persistent_workers=True,
     )
 
     test_loader = DataLoader(
         test_dataset,
         batch_size=BATCH_SIZE,
         shuffle=False,
-        num_workers=8,
+        num_workers=0,
         pin_memory=True,
-        persistent_workers=True,
     )
 
     return train_loader, val_loader, test_loader

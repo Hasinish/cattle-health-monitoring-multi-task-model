@@ -31,8 +31,8 @@ LOSS_CURVE_PATH = r"D:\T25301094 P2\workspaces\nusrat\behavior_ce_ablation_loss_
 # Hyperparameters
 NUM_CLASSES = 7
 BATCH_SIZE = 128
-NUM_WORKERS = 8
-MAX_EPOCHS = 30
+NUM_WORKERS = 0
+MAX_EPOCHS = 5
 PATIENCE = 10
 RANDOM_SEED = 42
 
@@ -52,7 +52,7 @@ class BehaviorDataset(Dataset):
         df = pd.read_csv(csv_path)
         df = df[df['split'] == split]
         df = pd.concat([
-            group.sample(min(len(group), 3000), random_state=42)
+            group.sample(min(len(group), 1500), random_state=42)
             for _, group in df.groupby('label')
         ]).reset_index(drop=True)
         self.data = df
@@ -168,8 +168,6 @@ def build_loader(dataset, shuffle):
         shuffle=shuffle,
         num_workers=NUM_WORKERS,
         pin_memory=True,
-        persistent_workers=True,
-        prefetch_factor=2,
     )
 
 

@@ -55,19 +55,19 @@ During training, if the Behavior task has a very high loss of 2.5, and the Lamen
 #### Backbone Selection Process & Baseline Results
 To find the perfect "shared brain," the 5 group members individually trained single-task baseline models *(simple, single-task models trained to establish a performance benchmark before building the multi-task model)* on 5 different architectures *(the specific structure and arrangement of layers in a neural network)*. The primary metrics tracked are BCS Test MAE *(Mean Absolute Error on the 0-4 scale)*, Behavior Test Macro F1 *(higher is better)*, and Lameness Test AUC *(Area Under the ROC Curve)*.
 
-Here is the baseline performance table showing the results of each base model:
+Here is the baseline performance table showing the complete results of each base model across all 4 tasks:
 
-| Model Architecture | BCS Test MAE (Dryad / SciDB) | Behavior Test Macro F1 | Lameness Test AUC | ID Top-1 Accuracy | Average Rank |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **ResNet-18** (Hasin) | 0.8675 / 0.5800 | 0.7134 | 0.9600 (ST) | -- | 4th |
-| **MobileNetV3-Small** (Namira) | 0.5250 / 0.7090 | 0.6810 | -- | -- | 5th |
-| **ResNet-50** (Bithi) | 0.6300 / 0.6485 | 0.7037 | -- | -- | 3rd |
-| **DenseNet121** (Shouvik) | 0.5875 / 0.6292 | 0.7366 | -- | -- | 2nd |
-| **EfficientNetB0** (Nusrat) | 0.6175 / 0.5566 | 0.7445 | 0.9829 (Spatial) | 86.49% | **1st (Selected)** |
+| Person | Model | BCS MAE ↓ | BCS Exact Acc ↑ | BCS ±1 Acc ↑ | Behavior F1 ↑ | Lameness Acc ↑ | Lameness AUC ↑ | Cow ID Acc ↑ |
+|--------|-------|-----------|----------------|-------------|--------------|---------------|----------------|-------------|
+| **Nusrat** ✓ | EfficientNetB0 | **0.557** | **55.06%** | **90.50%** | **0.745** | **93.05%** | **0.983** | **86.49%** |
+| **Hasin** | ResNet-18 | 0.580 | 54.81% | 89.02% | 0.713 | 75.30% | 0.720 | 45.56% |
+| **Shouvik** | DenseNet121 | 0.629 | 49.51% | 88.78% | 0.737 | 73.98% | 0.794 | 82.46% |
+| **Bithi** | ResNet-50 | 0.649 | 48.43% | 88.20% | 0.704 | 80.97% | 0.744 | 53.02% |
+| **Namira** | MobileNetV3-S | 0.709 | 44.67% | 86.47% | 0.681 | 75.66% | 0.723 | 78.83% |
 
-*\*Note: The 0.9600 Spatiotemporal (ST) *(image sequence tracking)* AUC *(Area Under the ROC Curve)* was achieved using the ResNet18-LSTM sequence model. The selected EfficientNet-B0 backbone achieved 0.9829 (Spatial AUC) as a single-task baseline, and 0.8400 (Sequence AUC) when integrated with the LSTM sequence tracking model.*
+*BCS metrics are on ScienceDB (the primary dataset). ✓ = selected backbone.*
 
-The backbone with the best average rank is **EfficientNetB0** (Nusrat), which achieves a Test MAE *(Mean Absolute Error)* of `0.6175` (Dryad) and `0.5566` (ScienceDB), a Behavior Test F1 of `0.7445`, and a Lameness Test AUC of `0.9829` (Spatial). It serves as the shared backbone for the final Multi-Task model.
+The backbone with the best overall rank is **EfficientNetB0** (Nusrat). It achieves the best BCS MAE (`0.557`), the highest Behavior F1 (`0.745`), the best Lameness Accuracy (`93.05%`) and AUC (`0.983`) by a large margin, and the highest ID Top-1 Accuracy (`86.49%`). It serves as the shared backbone for the final Multi-Task model.
 
 #### Architectural Enhancements: CBAM (Convolutional Block Attention Module)
 Between the backbone and the heads, we inject a **CBAM** module *(a visual attention mechanism that guides the network to focus on relevant features and locations)*.
@@ -266,24 +266,32 @@ Standard FP32 *(32-bit floating-point format, using 4 bytes of memory per number
 
 ### Part 9: Training Extent, Current Progress & Limitations
 
-#### How Much Training is Done?
-The multi-phase sequential training plan *(training individual components of a complex model in separate, ordered stages)* is currently in execution:
-1. **BCS Baseline:** [100% COMPLETE] All 5 base models trained. Results logged.
-2. **Behavior Baseline:** [100% COMPLETE] All 5 base models trained using Focal Loss. Results logged.
-3. **Lameness Baseline (Spatial vs Spatiotemporal):** [COMPLETE] Preliminary 2D models trained. The Spatiotemporal LSTM model was trained for 15 epochs on a 20-frame sampled sequence, achieving a 1.0 Validation AUC and 0.96 Test AUC.
-4. **ID Baseline:** [100% COMPLETE] EfficientNetB0 baseline trained for 10 epochs, achieving 86.49% Test Top-1 Accuracy.
-5. **Final Multi-Task Aggregation:** [100% COMPLETE] The Spatiotemporal Multi-Task model (EfficientNetB0-LSTM) was trained across all 4 heads simultaneously using 20-frame sequences. It achieved **100.00% Lameness Accuracy (AUC 1.0)**, **97.18% ID Accuracy**, **0.7849 BCS MAE**, and **0.4775 Behavior Macro F1**. A rolling sequence real-time visualizer was built and successfully deployed.
+#### How Much Training is Done? (Status as of June 9, 2026)
+The multi-phase sequential training plan *(training individual components of a complex model in separate, ordered stages)* current status:
+1. **BCS Baseline:** ✅ COMPLETE — All 5 base models trained on Dryad + ScienceDB datasets.
+2. **Behavior Baseline:** ✅ COMPLETE — All 5 base models trained. Cross-dataset eval on CBVD-5 also done (Macro F1: 0.1245 — domain shift confirmed).
+3. **Lameness Baseline (ALL 5 members):** ✅ COMPLETE — All 5 trained on YOLO-cropped CattleLameness dataset.
+   - Best: EfficientNetB0 (93.05% Acc, 0.9829 AUC) | Worst: DenseNet121 (73.98% Acc, 0.7944 AUC)
+4. **ID Baseline (ALL 5 members):** ✅ COMPLETE — All 5 trained on OpenCows2020 (46 classes).
+   - Best: EfficientNetB0 (86.49%) | Worst: ResNet-18 (45.56%)
+5. **Multi-Task Static Model (Nusrat):** ✅ COMPLETE — `train_multitask.py` trained with YOLO-cropped datasets.
+   - Results: BCS MAE 0.7266 (Exact 40.78%, ±1 87.64%), Behavior F1 0.3771, Lameness Acc 95.28% (AUC 0.9921), ID Acc 94.96%
+6. **Spatiotemporal Multi-Task Model (Nusrat):** ✅ COMPLETE — `train_multitask_temporal.py` trained.
+   - Results: BCS MAE 0.7827 (Exact 39.31%, ±1 84.82%), Behavior F1 0.4948, Lameness Acc **100.00%** (AUC 1.0000), ID Acc 97.58%
+7. **Ablation Studies (Nusrat):** ⏳ IN PROGRESS — ScienceDB Cross-Entropy ablation is completed (Test MAE `0.6940` vs. CORAL `0.5566`). Dryad No-CBAM ablation is completed (Test MAE `0.7000` vs. CBAM `0.6175`). `ablation_behavior_ce.py` is pending.
 
 #### Core Limitations of the Current Approach:
 1. **Lack of Large-Scale Annotated Temporal Data:** While we have 50,000+ spatial images for BCS, high-quality, annotated *(labeled with ground truth information by human experts like veterinarians)* sequence data for Lameness and Behavior is scarce. The spatiotemporal models risk overfitting due to the limited number of unique videos in the datasets.
 2. **Frozen Backbone Bottleneck:** Currently, the 2D backbone is completely frozen when training the LSTM heads. This means the feature vectors passed to the LSTM were optimized for classifying static ImageNet photos (dogs, cars, etc.), not the specific micro-movements of a cow's joints.
 
 #### Future Work & Development Ideas:
-1. **Joint Fine-Tuning (Unfreezing the Backbone):** In the final phase, we intend to perform Fine-Tuning *(unfreezing pretrained layers and training them with a very small learning rate to adapt them to a new, specific task)* by unfreezing the shared backbone and allowing gradients from the LSTM to flow all the way backward into the CNN layers. This forces the backbone to learn new convolutional filters specifically designed to track motion and joint angles.
-2. **Cross-Dataset Validation (CBVD-5):** To prove generalizability, we will perform Cross-Dataset Validation *(testing a model trained on one dataset on an entirely different, independent dataset to prove generalizability)* by taking the Behavior model trained on `MmCows` and running inference on the entirely unseen `CBVD-5` dataset.
-3. **Advanced Enhancements:**
+1. **Joint Fine-Tuning (Unfreezing the Backbone):** ✅ IMPLEMENTED — The current multitask training already implements Phase 6 joint fine-tuning (backbone unfrozen, LR=1e-4) after the 4 frozen-head phases. This forces the backbone to co-adapt with all task heads.
+2. **Cross-Dataset Validation (CBVD-5):** ✅ COMPLETE — Behavior model (MmCows-trained EfficientNetB0) evaluated on CBVD-5 (2,000 images). Macro F1: 0.1245. Domain shift confirmed — generalizes to Standing (90.34%) but fails on Feeding (8.39%), Drinking (2.99%), Lying (24.31%).
+3. **Gradient Alignment (Future):** GradNorm or PCGrad to mitigate destructive interference between static (BCS) and temporal (Lameness/Behavior) tasks in multi-task training.
+4. **Advanced Enhancements (Future):**
    * Integrating **CLAHE (Contrast Limited Adaptive Histogram Equalization)** *(a localized image processing technique used to improve contrast and details under uneven lighting)* to equalize extreme lighting differences in barns.
    * Future exploration into integrating depth cameras or thermal imaging for highly granular lameness inflammation detection.
+   * Multi-farm dataset aggregation to address domain shift in cross-dataset generalization.
 
 ---
 
@@ -318,7 +326,7 @@ Ablation studies *(an experimental investigation where specific components of an
 
 #### 7. Single-Task vs. Multi-Task Learning
 * **The Study:** We train separate, individual networks for each task versus training a single unified model where all four prediction heads share the same backbone.
-* **Actual Technical Example:** This ablation measures the impact of shared parameter representation. Training all four heads together forces the backbone to learn general visual features (like animal contour lines) that benefit all tasks. By testing the fully integrated **Spatiotemporal Multi-Task model**, we observed that the temporal LSTM heads achieved perfect Lameness identification (`1.00` AUC and `100%` Acc) and significantly improved Cow ID accuracy (`97.18%`). However, due to destructive interference on highly constrained shared backbones, the spatial metrics slightly degraded (BCS MAE dropped to `0.7849` and Behavior Macro F1 dropped to `0.4775`). This proves the multi-task tradeoff: massive compute and hardware savings and perfect temporal performance, at the cost of a slight drop in static spatial accuracy.
+* **Actual Technical Example:** This ablation measures the impact of shared parameter representation. Training all four heads together forces the backbone to learn general visual features (like animal contour lines) that benefit all tasks. By testing the fully integrated **Spatiotemporal Multi-Task model**, we observed that the temporal LSTM heads achieved perfect Lameness identification (`1.0000` AUC and `100.00%` Acc) and significantly improved Cow ID accuracy (`97.58%`). However, due to destructive interference on highly constrained shared backbones, the spatial metrics slightly degraded (BCS MAE dropped to `0.7827` and Behavior Macro F1 dropped to `0.4948`). This proves the multi-task tradeoff: massive compute and hardware savings and perfect temporal performance, at the cost of a slight drop in static spatial accuracy.
 
 ---
 

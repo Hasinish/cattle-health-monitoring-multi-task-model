@@ -31,7 +31,7 @@ WORKSPACE_DIR = os.path.join(BASE_DIR, "workspaces", "nusrat")
 
 BCS_CSV = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_cropped_index.csv")
 BEHAVIOR_CSV = os.path.join(BASE_DIR, "datasets", "behavior", "behavior_index.csv")
-LAMENESS_CSV = os.path.join(BASE_DIR, "datasets", "lameness", "lameness_index.csv")
+LAMENESS_CSV = os.path.join(BASE_DIR, "datasets", "lameness", "lameness_cropped_index.csv")
 ID_CSV = os.path.join(BASE_DIR, "datasets", "id", "id_index.csv")
 
 CHECKPOINT_PATH = os.path.join(WORKSPACE_DIR, "multitask_best.pth")
@@ -368,7 +368,8 @@ def evaluate_all(model, test_loaders):
             if task_name == 'bcs':
                 mae = mean_absolute_error(all_labels, all_preds)
                 acc = accuracy_score(all_labels, all_preds)
-                res_str = f"BCS - MAE: {mae:.4f}, Exact Acc: {acc:.4f}"
+                pm1 = np.mean(np.abs(np.array(all_preds) - np.array(all_labels)) <= 1)
+                res_str = f"BCS - MAE: {mae:.4f}, Exact Acc: {acc:.4f}, ±1 Acc: {pm1:.4f}"
             elif task_name == 'behavior':
                 f1 = f1_score(all_labels, all_preds, average='macro')
                 res_str = f"Behavior - Macro F1: {f1:.4f}"
