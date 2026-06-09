@@ -40,7 +40,7 @@ To achieve this goal, the research sets out the following specific objectives:
     
     \item \textbf{To ensure full reproducibility} by conducting all evaluations exclusively on publicly available datasets, enabling direct, independent verification of the framework's findings.
     
-    \item \textbf{To validate generalizability and real-world viability} through comprehensive cross-dataset evaluation across multiple farms, breeds, and environmental conditions.
+    \item \textbf{To conduct preliminary cross-dataset evaluation} to identify domain shift challenges across different farms and environmental conditions, establishing a baseline for comprehensive generalization studies in future work.
 \end{enumerate}
 
 These objectives address the reproducibility gap in agricultural AI research and create a scalable foundation for real-time cattle health monitoring across various farm environments.
@@ -106,4 +106,4 @@ Multi-task learning designs are susceptible to negative transfer, where optimiza
 
 \textbf{Limited Labeled Data}
 
-Despite utilizing multiple public datasets, the total volume of labeled data remains small compared to standard computer vision benchmarks. For example, the ScienceDB BCS dataset contains approximately 3,000 images, in contrast to the millions in ImageNet. The MmCows dataset tracks only 16 individuals over a two-week period, and the CattleLameness dataset contains a relatively small number of lame examples. To mitigate data limitations, the methodology leverages transfer learning from ImageNet, robust regularization (such as dropout and weight decay), and extensive data augmentation, with self-supervised pre-training on unlabeled video frames designated as an optional extension.
+Despite utilizing multiple public datasets, the total volume of labeled data remains small compared to standard computer vision benchmarks. For example, the ScienceDB BCS dataset contains 53,566 images, in contrast to the millions in ImageNet. The MmCows dataset tracks only 16 individuals over a two-week period, and the CattleLameness dataset contains a relatively small number of lame examples. To mitigate data limitations, the methodology leverages transfer learning from ImageNet, robust regularization (such as dropout and weight decay), and extensive data augmentation, with self-supervised pre-training on unlabeled video frames designated as an optional extension.

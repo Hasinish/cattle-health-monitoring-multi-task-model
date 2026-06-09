@@ -106,6 +106,51 @@
       \field{pages}{5323\bibrangedash 5335}
       \range{pages}{13}
     \endentry
+    \entry{andrew2017cattle}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{hash=1b6386ded8be9a1d976745c7076b6bfd}{%
+           family={Andrew},
+           familyi={A\bibinitperiod},
+           given={William},
+           giveni={W\bibinitperiod}}}%
+        {{hash=75586cf3a7d426fb32e5f5b19dd0c70d}{%
+           family={Hannuna},
+           familyi={H\bibinitperiod},
+           given={Sion},
+           giveni={S\bibinitperiod}}}%
+        {{hash=5511060078b1d74052699ce28ed1bf82}{%
+           family={Campbell},
+           familyi={C\bibinitperiod},
+           given={Neill},
+           giveni={N\bibinitperiod}}}%
+        {{hash=b8f8b0871d9979857ebc8d1483ef00b2}{%
+           family={Burghardt},
+           familyi={B\bibinitperiod},
+           given={Tilo},
+           giveni={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{818df0d1563bc593c2dd84fd79586903}
+      \strng{fullhash}{f578edb3b8c89a278e6b17f6cd53479c}
+      \strng{fullhashraw}{f578edb3b8c89a278e6b17f6cd53479c}
+      \strng{bibnamehash}{f578edb3b8c89a278e6b17f6cd53479c}
+      \strng{authorbibnamehash}{f578edb3b8c89a278e6b17f6cd53479c}
+      \strng{authornamehash}{818df0d1563bc593c2dd84fd79586903}
+      \strng{authorfullhash}{f578edb3b8c89a278e6b17f6cd53479c}
+      \strng{authorfullhashraw}{f578edb3b8c89a278e6b17f6cd53479c}
+      \field{extraname}{1}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{IEEE International Conference on Image Processing (ICIP)}
+      \field{title}{Automatic Individual Identification of Holstein Cattle via Selective Local Coat Pattern Matching in RGB-D Imagery}
+      \field{year}{2017}
+      \field{pages}{484\bibrangedash 488}
+      \range{pages}{5}
+      \verb{doi}
+      \verb 10.1109/ICIP.2017.8296327
+      \endverb
+    \endentry
     \entry{chen2018gradnorm}{inproceedings}{}{}
       \name{author}{4}{}{%
         {{hash=76448b761ad64dd0746ba4b504382a50}{%
@@ -375,6 +420,106 @@
       \field{pages}{5824\bibrangedash 5836}
       \range{pages}{13}
     \endentry
+    \entry{andrew2021opencows}{article}{}{}
+      \name{author}{6}{}{%
+        {{hash=1b6386ded8be9a1d976745c7076b6bfd}{%
+           family={Andrew},
+           familyi={A\bibinitperiod},
+           given={William},
+           giveni={W\bibinitperiod}}}%
+        {{hash=8b7cfd8a449c694ae68dfb629a88229e}{%
+           family={Gao},
+           familyi={G\bibinitperiod},
+           given={Jing},
+           giveni={J\bibinitperiod}}}%
+        {{hash=d0e600bc729cd170663f3bbd256d7514}{%
+           family={Mullan},
+           familyi={M\bibinitperiod},
+           given={Siobhan},
+           giveni={S\bibinitperiod}}}%
+        {{hash=5511060078b1d74052699ce28ed1bf82}{%
+           family={Campbell},
+           familyi={C\bibinitperiod},
+           given={Neill},
+           giveni={N\bibinitperiod}}}%
+        {{hash=98b6a62ce15e5e6cd98a6dbfd613e035}{%
+           family={Dowsey},
+           familyi={D\bibinitperiod},
+           given={Andrew\bibnamedelima W.},
+           giveni={A\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=b8f8b0871d9979857ebc8d1483ef00b2}{%
+           family={Burghardt},
+           familyi={B\bibinitperiod},
+           given={Tilo},
+           giveni={T\bibinitperiod}}}%
+      }
+      \strng{namehash}{818df0d1563bc593c2dd84fd79586903}
+      \strng{fullhash}{657adae724868fa3d61192a318205222}
+      \strng{fullhashraw}{657adae724868fa3d61192a318205222}
+      \strng{bibnamehash}{657adae724868fa3d61192a318205222}
+      \strng{authorbibnamehash}{657adae724868fa3d61192a318205222}
+      \strng{authornamehash}{818df0d1563bc593c2dd84fd79586903}
+      \strng{authorfullhash}{657adae724868fa3d61192a318205222}
+      \strng{authorfullhashraw}{657adae724868fa3d61192a318205222}
+      \field{extraname}{2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers and Electronics in Agriculture}
+      \field{title}{Visual Identification of Individual Holstein-Friesian Cattle via Deep Metric Learning}
+      \field{volume}{185}
+      \field{year}{2021}
+      \field{pages}{106133}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1016/j.compag.2021.106133
+      \endverb
+    \endentry
+    \entry{gao2021cows2021}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=8b7cfd8a449c694ae68dfb629a88229e}{%
+           family={Gao},
+           familyi={G\bibinitperiod},
+           given={Jing},
+           giveni={J\bibinitperiod}}}%
+        {{hash=b8f8b0871d9979857ebc8d1483ef00b2}{%
+           family={Burghardt},
+           familyi={B\bibinitperiod},
+           given={Tilo},
+           giveni={T\bibinitperiod}}}%
+        {{hash=1b6386ded8be9a1d976745c7076b6bfd}{%
+           family={Andrew},
+           familyi={A\bibinitperiod},
+           given={William},
+           giveni={W\bibinitperiod}}}%
+        {{hash=98b6a62ce15e5e6cd98a6dbfd613e035}{%
+           family={Dowsey},
+           familyi={D\bibinitperiod},
+           given={Andrew\bibnamedelima W.},
+           giveni={A\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=cbeaa53287fb991c4d928dd4341f600d}{%
+           family={Campbell},
+           familyi={C\bibinitperiod},
+           given={Neill\bibnamedelima W.},
+           giveni={N\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+      }
+      \strng{namehash}{4d92a49de5c7fd9d1c215e07cf788058}
+      \strng{fullhash}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \strng{fullhashraw}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \strng{bibnamehash}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \strng{authorbibnamehash}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \strng{authornamehash}{4d92a49de5c7fd9d1c215e07cf788058}
+      \strng{authorfullhash}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \strng{authorfullhashraw}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{arXiv preprint arXiv:2105.01938}
+      \field{title}{Towards Self-Supervision for Video Identification of Individual Holstein-Friesian Cattle: The Cows2021 Dataset}
+      \field{year}{2021}
+    \endentry
     \entry{gjergji2022weight}{article}{}{}
       \true{moreauthor}
       \true{morelabelname}
@@ -405,6 +550,61 @@
       \range{pages}{13}
       \verb{doi}
       \verb 10.1016/j.biosystemseng.2022.08.009
+      \endverb
+    \endentry
+    \entry{weng2022cattleface}{article}{}{}
+      \name{author}{6}{}{%
+        {{hash=33e294c2838b273c3399a47c93407dc5}{%
+           family={Weng},
+           familyi={W\bibinitperiod},
+           given={Zhiquan},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=e1ada0f64280c84fc6bc090c20dd7b81}{%
+           family={Meng},
+           familyi={M\bibinitperiod},
+           given={Fanbing},
+           giveni={F\bibinitperiod}}}%
+        {{hash=142db51aef485b08c16b54b53da98235}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Shaonan},
+           giveni={S\bibinitperiod}}}%
+        {{hash=fd8216a36735a9f3107aef444551ecb2}{%
+           family={Zhang},
+           familyi={Z\bibinitperiod},
+           given={Yongfeng},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=311e0199fccec3acc3b38bd983527aae}{%
+           family={Zheng},
+           familyi={Z\bibinitperiod},
+           given={Zhuangzhuang},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=2b5790b20737b9aad4cea9d70c220fa0}{%
+           family={Gong},
+           familyi={G\bibinitperiod},
+           given={Caili},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{1b6ddca594583ac603df47cab139a285}
+      \strng{fullhash}{b95c5a09e0f7e4d81cf6ca3b660db2ad}
+      \strng{fullhashraw}{b95c5a09e0f7e4d81cf6ca3b660db2ad}
+      \strng{bibnamehash}{b95c5a09e0f7e4d81cf6ca3b660db2ad}
+      \strng{authorbibnamehash}{b95c5a09e0f7e4d81cf6ca3b660db2ad}
+      \strng{authornamehash}{1b6ddca594583ac603df47cab139a285}
+      \strng{authorfullhash}{b95c5a09e0f7e4d81cf6ca3b660db2ad}
+      \strng{authorfullhashraw}{b95c5a09e0f7e4d81cf6ca3b660db2ad}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computers and Electronics in Agriculture}
+      \field{title}{Cattle Face Recognition Based on a Two-Branch Convolutional Neural Network}
+      \field{volume}{196}
+      \field{year}{2022}
+      \field{pages}{106871}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1016/j.compag.2022.106871
       \endverb
     \endentry
     \entry{barney2023multipose}{article}{}{}

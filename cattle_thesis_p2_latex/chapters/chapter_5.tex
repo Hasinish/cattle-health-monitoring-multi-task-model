@@ -24,7 +24,7 @@ To establish a fully reproducible framework, only publicly available cattle data
     \item \textbf{Dryad BCS Dataset:} Contains 5,923 rear-view images captured in a Depth Grayscale Edge (DGE) format (combining depth coordinates, grayscale intensity, and Canny edge maps as three channels). The annotations are integer scores ranging from 2 to 6, corresponding to five distinct ordinal classes.
     \item \textbf{MmCows Behavior Dataset:} Includes 213,686 crop frames extracted from continuous farm surveillance videos. The dataset is labeled into seven behavior classes: walking, standing, feeding head up, feeding head down, licking, drinking, and lying.
     \item \textbf{CattleLameness Dataset:} Contains side-view walking video clips of cows. We compiled 50 videos (25 labeled as Lame and 25 as Normal/Sound) for spatiotemporal sequence modeling.
-    \item \textbf{OpenCows2020 Dataset:} Consists of 9,950 images of cows labeled by their unique individual identity, enabling vision-based biometrics.
+    \item \textbf{OpenCows2020 Dataset:} Consists of 4,736 images of cows labeled by their unique individual identity across 46 classes, enabling vision-based biometrics.
     \item \textbf{CBVD-5 Dataset:} Used exclusively as an independent test set for behavior, consisting of 2,000 balanced images of cattle behaviors to evaluate model generalization under domain shift.
 \end{itemize}
 
@@ -114,7 +114,7 @@ The training pipeline was executed on PyTorch using a phased sequential training
     \begin{equation}
         L_{\text{total}} = 0.35 \cdot L_{\text{BCS}} + 0.35 \cdot L_{\text{Behavior}} + 0.15 \cdot L_{\text{Lameness}} + 0.15 \cdot L_{\text{ID}}
     \end{equation}
-    The task weights assigned to each loss component ($0.35$ for BCS and Behavior, and $0.15$ for Lameness and ID) are determined by the relative dataset sizes and task complexities. Body Condition Scoring (BCS) and Behavior Recognition represent complex visual classification tasks backed by very large datasets (53,566 images for ScienceDB and over 21,000 capped frames for MmCows). In contrast, Lameness Detection (50 sequence samples) and Cow Identification (9,950 images) have simpler classification scopes or operate on much smaller sample registers. Assigning higher loss weights to the larger and more complex tasks prevents the shared encoder backbone from drifting and over-specializing on the smaller datasets during backpropagation.
+    The task weights assigned to each loss component ($0.35$ for BCS and Behavior, and $0.15$ for Lameness and ID) are determined by the relative dataset sizes and task complexities. Body Condition Scoring (BCS) and Behavior Recognition represent complex visual classification tasks backed by very large datasets (53,566 images for ScienceDB and over 21,000 capped frames for MmCows). In contrast, Lameness Detection (50 sequence samples) and Cow Identification (4,736 images) have simpler classification scopes or operate on much smaller sample registers. Assigning higher loss weights to the larger and more complex tasks prevents the shared encoder backbone from drifting and over-specializing on the smaller datasets during backpropagation. These weights were selected empirically based on relative dataset sizes and task complexities; formal sensitivity analysis comparing alternative weightings is deferred to future work.
 \end{itemize}
 
 \subsection{Live Video Inference Architecture}
