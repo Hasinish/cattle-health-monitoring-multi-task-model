@@ -1,0 +1,32 @@
+---CONTEXT 3 BEHAVIOR CE ABLATION---
+PERSON NAME: Nusrat
+BASE MODEL: EfficientNetB0
+DATASET: MmCows (capped 3000/class) (Cross-Entropy Loss)
+EPOCHS TRAINED: 5
+LOSS AT EPOCH 10: N/A
+LOSS AT EPOCH 20: N/A
+LOSS AT EPOCH 30: N/A
+FINAL TRAIN LOSS: 0.248379
+VAL MACRO F1: 0.757026
+VAL PER-CLASS ACCURACY:
+  Class 1 (Walking): 63.96%
+  Class 2 (Standing): 68.13%
+  Class 3 (Feeding head up): 67.13%
+  Class 4 (Feeding head down): 71.00%
+  Class 5 (Licking): 94.21%
+  Class 6 (Drinking): 74.55%
+  Class 7 (Lying): 98.53%
+TEST MACRO F1: 0.707367
+TEST PER-CLASS ACCURACY:
+  Class 1 (Walking): 42.84%
+  Class 2 (Standing): 75.00%
+  Class 3 (Feeding head up): 61.33%
+  Class 4 (Feeding head down): 68.60%
+  Class 5 (Licking): 75.94%
+  Class 6 (Drinking): 65.75%
+  Class 7 (Lying): 98.47%
+CHECKPOINT PATH: D:\T25301094 P2\workspaces\nusrat\behavior_ce_best.pth
+TRAINING TIME (mins): 9.22
+EARLY STOPPING TRIGGERED AT EPOCH: N/A
+ANY ISSUES ENCOUNTERED: None
+---END CONTEXT 3---

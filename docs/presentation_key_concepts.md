@@ -278,7 +278,7 @@ The multi-phase sequential training plan *(training individual components of a c
    - Results: BCS MAE 0.7266 (Exact 40.78%, ±1 87.64%), Behavior F1 0.3771, Lameness Acc 95.28% (AUC 0.9921), ID Acc 94.96%
 6. **Spatiotemporal Multi-Task Model (Nusrat):** ✅ COMPLETE — `train_multitask_temporal.py` trained.
    - Results: BCS MAE 0.7827 (Exact 39.31%, ±1 84.82%), Behavior F1 0.4948, Lameness Acc **100.00%** (AUC 1.0000), ID Acc 97.58%
-7. **Ablation Studies (Nusrat):** ⏳ IN PROGRESS — ScienceDB Cross-Entropy ablation is completed (Test MAE `0.6940` vs. CORAL `0.5566`). Dryad No-CBAM ablation is completed (Test MAE `0.7000` vs. CBAM `0.6175`). `ablation_behavior_ce.py` is pending.
+7. **Ablation Studies (Nusrat):** ✅ COMPLETE — ScienceDB Cross-Entropy ablation completed (Test MAE `0.6940` vs. CORAL `0.5566`). Dryad No-CBAM ablation completed (Test MAE `0.7000` vs. CBAM `0.6175`). Behavior Cross-Entropy ablation completed (Test F1 `0.7074` vs. Focal Loss `0.7445`).
 
 #### Core Limitations of the Current Approach:
 1. **Lack of Large-Scale Annotated Temporal Data:** While we have 50,000+ spatial images for BCS, high-quality, annotated *(labeled with ground truth information by human experts like veterinarians)* sequence data for Lameness and Behavior is scarce. The spatiotemporal models risk overfitting due to the limited number of unique videos in the datasets.

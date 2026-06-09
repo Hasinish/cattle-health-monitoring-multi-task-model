@@ -68,7 +68,7 @@ MULTI-TASK MODEL (Nusrat):
   [DONE]        train_multitask_temporal.py (Results: BCS MAE 0.7827, Behavior F1 0.4948, Lameness Acc 100.00%, ID Acc 97.58%)
   [DONE]        ablation_bcs_ce.py (ScienceDB CE Test MAE: 0.6940 vs. 0.5566 CORAL; Dryad CE Test MAE: 0.9450 vs. 0.6175 CORAL)
   [DONE]        ablation_bcs_nocbam.py (Dryad No-CBAM Test MAE: 0.7000 vs. 0.6175 CBAM)
-  [PENDING]     ablation_behavior_ce.py
+  [DONE]        ablation_behavior_ce.py (Behavior CE Test F1: 0.7074 vs. 0.7445 Focal Loss)
 
 ==========================================================================
 ARCHITECTURE:
@@ -204,6 +204,7 @@ ABLATION STUDIES:
    [COMPLETE: Dryad No-CBAM Test MAE: 0.7000 vs. 0.6175 CBAM]
 3. RGB only vs RGB+Depth (Dryad DGE)
 4. Focal Loss vs Cross-Entropy (Behavior)
+   [COMPLETE: Behavior CE Test F1: 0.7074 vs. 0.7445 Focal Loss]
 5. Cross-dataset eval: MmCows → CBVD-5 (Behavior)
    [COMPLETE: Evaluated. Macro F1: 0.124517, high Standing accuracy but low on others due to domain shift.]
 6. Best backbone vs others (all tasks)
@@ -1256,7 +1257,7 @@ The multi-phase sequential training plan *(training individual components of a c
    - Results: BCS MAE 0.7266 (Exact 40.78%, ±1 87.64%), Behavior F1 0.3771, Lameness Acc 95.28% (AUC 0.9921), ID Acc 94.96%
 6. **Spatiotemporal Multi-Task Model (Nusrat):** ✅ COMPLETE — `train_multitask_temporal.py` trained.
    - Results: BCS MAE 0.7827 (Exact 39.31%, ±1 84.82%), Behavior F1 0.4948, Lameness Acc **100.00%** (AUC 1.0000), ID Acc 97.58%
-7. **Ablation Studies (Nusrat):** ⏳ IN PROGRESS — ScienceDB Cross-Entropy ablation is completed (Test MAE `0.6940` vs. CORAL `0.5566`). Dryad No-CBAM ablation is completed (Test MAE `0.7000` vs. CBAM `0.6175`). `ablation_behavior_ce.py` is pending.
+7. **Ablation Studies (Nusrat):** ✅ COMPLETE — ScienceDB Cross-Entropy ablation completed (Test MAE `0.6940` vs. CORAL `0.5566`). Dryad No-CBAM ablation completed (Test MAE `0.7000` vs. CBAM `0.6175`). Behavior Cross-Entropy ablation completed (Test F1 `0.7074` vs. Focal Loss `0.7445`).
 
 #### Core Limitations of the Current Approach:
 1. **Lack of Large-Scale Annotated Temporal Data:** While we have 50,000+ spatial images for BCS, high-quality, annotated *(labeled with ground truth information by human experts like veterinarians)* sequence data for Lameness and Behavior is scarce. The spatiotemporal models risk overfitting due to the limited number of unique videos in the datasets.
@@ -2313,6 +2314,43 @@ TRAINING TIME (mins): 26.24
 ANY ISSUES ENCOUNTERED: None
 ---END CONTEXT 3---
 
+```
+
+### FILE: workspaces\nusrat\behavior_ce_ablation_results.txt
+---
+```text
+---CONTEXT 3 BEHAVIOR CE ABLATION---
+PERSON NAME: Nusrat
+BASE MODEL: EfficientNetB0
+DATASET: MmCows (capped 3000/class) (Cross-Entropy Loss)
+EPOCHS TRAINED: 5
+LOSS AT EPOCH 10: N/A
+LOSS AT EPOCH 20: N/A
+LOSS AT EPOCH 30: N/A
+FINAL TRAIN LOSS: 0.248379
+VAL MACRO F1: 0.757026
+VAL PER-CLASS ACCURACY:
+  Class 1 (Walking): 63.96%
+  Class 2 (Standing): 68.13%
+  Class 3 (Feeding head up): 67.13%
+  Class 4 (Feeding head down): 71.00%
+  Class 5 (Licking): 94.21%
+  Class 6 (Drinking): 74.55%
+  Class 7 (Lying): 98.53%
+TEST MACRO F1: 0.707367
+TEST PER-CLASS ACCURACY:
+  Class 1 (Walking): 42.84%
+  Class 2 (Standing): 75.00%
+  Class 3 (Feeding head up): 61.33%
+  Class 4 (Feeding head down): 68.60%
+  Class 5 (Licking): 75.94%
+  Class 6 (Drinking): 65.75%
+  Class 7 (Lying): 98.47%
+CHECKPOINT PATH: D:\T25301094 P2\workspaces\nusrat\behavior_ce_best.pth
+TRAINING TIME (mins): 9.22
+EARLY STOPPING TRIGGERED AT EPOCH: N/A
+ANY ISSUES ENCOUNTERED: None
+---END CONTEXT 3---
 ```
 
 ### FILE: workspaces\nusrat\behavior_results.txt
