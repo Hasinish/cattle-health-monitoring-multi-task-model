@@ -114,6 +114,7 @@ The training pipeline was executed on PyTorch using a phased sequential training
     \begin{equation}
         L_{\text{total}} = 0.35 \cdot L_{\text{BCS}} + 0.35 \cdot L_{\text{Behavior}} + 0.15 \cdot L_{\text{Lameness}} + 0.15 \cdot L_{\text{ID}}
     \end{equation}
+    The task weights assigned to each loss component ($0.35$ for BCS and Behavior, and $0.15$ for Lameness and ID) are determined by the relative dataset sizes and task complexities. Body Condition Scoring (BCS) and Behavior Recognition represent complex visual classification tasks backed by very large datasets (53,566 images for ScienceDB and over 21,000 capped frames for MmCows). In contrast, Lameness Detection (50 sequence samples) and Cow Identification (9,950 images) have simpler classification scopes or operate on much smaller sample registers. Assigning higher loss weights to the larger and more complex tasks prevents the shared encoder backbone from drifting and over-specializing on the smaller datasets during backpropagation.
 \end{itemize}
 
 \subsection{Live Video Inference Architecture}
