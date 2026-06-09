@@ -4,7 +4,7 @@ The implementation of the multi-task deep learning framework for cattle health m
 \subsection{Hardware Requirements}
 \begin{itemize}
     \item \textbf{Development and Training Unit:} The model training was executed on a high-performance research workstation equipped with an NVIDIA GeForce RTX 4080 GPU (16GB VRAM, Ada Lovelace architecture supporting FP8 and FP16 tensor operations), an Intel Core i9-13900K CPU, 64GB of DDR5 RAM, and a 2TB NVMe SSD to handle high-throughput image and video loading.
-    \item \textbf{Edge Deployment Unit:} For live farm surveillance, the system is designed to run on resource-constrained edge computers such as the Jetson Orin Nano (8GB VRAM) or a Raspberry Pi 5. The total model size is optimized to remain under 10 million parameters ($<$ 40MB file size in FP16 format) to fit into edge device memory.
+    \item \textbf{Edge Deployment Unit:} For live farm surveillance, the system is designed to run on resource-constrained edge computers such as the Jetson Orin Nano (8GB VRAM) or a Raspberry Pi 5. The total model size is optimized to remain under 10 million parameters ($<$ 40MB file size in FP16 format) to fit into edge device memory. Furthermore, the shared EfficientNet-B0 backbone requires approximately 0.39 GFLOPs per frame. Processing a full 20-frame spatiotemporal sequence requires only $\sim$7.8 GFLOPs, which falls comfortably within the real-time processing capabilities of a Jetson Orin Nano (capable of 40 TOPS).
     \item \textbf{Imaging Sensors:} Standard 1080p surveillance cameras operating at 30 frames per second (FPS) positioned at cattle walkways or feeding troughs. For the Dryad dataset, depth maps were captured using active infrared depth sensors.
 \end{itemize}
 

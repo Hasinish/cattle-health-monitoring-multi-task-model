@@ -65,7 +65,7 @@ The final attention-weighted feature map is pooled using Adaptive Average Poolin
 The feature vector is routed to four independent task heads:
 \begin{enumerate}
     \item \textbf{BCS Head:} A linear layer projecting the 1,280 features to 4 outputs representing the ordinal ranking.
-    \item \textbf{Behavior Head:} A linear classifier projecting features to 7 outputs representing behavior logits.
+    \item \textbf{Behavior Head (Temporal LSTM):} Similar to the lameness head, the sequence of feature vectors is processed by a single-layer LSTM, followed by a linear classification layer to output 7 behavior logits.
     \item \textbf{Lameness Head (Temporal LSTM):} The sequence of 20 feature vectors is processed by a single-layer LSTM (hidden size = 256, dropout = 0.5), followed by a linear classification layer to output a binary logit.
     \item \textbf{Cow ID Head:} A linear layer projecting features to $N$ cattle identity classes.
 \end{enumerate}

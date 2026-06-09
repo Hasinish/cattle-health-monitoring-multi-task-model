@@ -84,6 +84,12 @@ To ensure feasibility and depth of investigation, this research is defined by th
 
 \subsection{Challenges}
 
+\textbf{Camera Geometry Conflicts}
+
+The four tasks in this framework require fundamentally different camera viewpoints: BCS scoring performs best from a rear-view angle (capturing hip and spine morphology), while Lameness detection requires a side-view angle (to observe gait stride length and limb symmetry). Running both tasks from a single fixed camera creates an unavoidable geometric trade-off. To address this, the deployment model assumes a multi-camera setup where a single edge device loads the shared backbone once, but selectively activates the rear-view or side-view task heads based on the incoming camera feed.
+
+
+
 \textbf{Dataset Heterogeneity}
 
 Public cattle datasets exhibit high heterogeneity, including variations in image resolution, quality, camera placement (top-view, rear-view, and side-view), annotation protocols, breed characteristics, and farm environments. To mitigate these discrepancies, the methodology incorporates a standardized preprocessing pipeline, robust data augmentation, and domain adaptation techniques.
