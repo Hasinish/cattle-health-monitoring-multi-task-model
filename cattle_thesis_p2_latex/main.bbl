@@ -106,6 +106,83 @@
       \field{pages}{5323\bibrangedash 5335}
       \range{pages}{13}
     \endentry
+    \entry{chen2018gradnorm}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{hash=76448b761ad64dd0746ba4b504382a50}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
+           given={Zhao},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=2b517df4f81c42dc3c5b32aede012cf9}{%
+           family={Badrinarayanan},
+           familyi={B\bibinitperiod},
+           given={Vijay},
+           giveni={V\bibinitperiod}}}%
+        {{hash=6eaa1faa8858aaf301ebb0ce05fcd149}{%
+           family={Lee},
+           familyi={L\bibinitperiod},
+           given={Chen-Yu},
+           giveni={C\bibinithyphendelim Y\bibinitperiod}}}%
+        {{hash=aa04c4d6213a1e867b1650e298cb2668}{%
+           family={Rabinovich},
+           familyi={R\bibinitperiod},
+           given={Andrew},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{c35b2dbc0f66c34d1c746b31fb212190}
+      \strng{fullhash}{91415c3eeddbb2a3eaa99cdacdf35c4d}
+      \strng{fullhashraw}{91415c3eeddbb2a3eaa99cdacdf35c4d}
+      \strng{bibnamehash}{91415c3eeddbb2a3eaa99cdacdf35c4d}
+      \strng{authorbibnamehash}{91415c3eeddbb2a3eaa99cdacdf35c4d}
+      \strng{authornamehash}{c35b2dbc0f66c34d1c746b31fb212190}
+      \strng{authorfullhash}{91415c3eeddbb2a3eaa99cdacdf35c4d}
+      \strng{authorfullhashraw}{91415c3eeddbb2a3eaa99cdacdf35c4d}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{International Conference on Machine Learning}
+      \field{title}{GradNorm: Gradient Normalization for Adaptive Loss Balancing in Deep Multitask Networks}
+      \field{year}{2018}
+      \field{pages}{794\bibrangedash 803}
+      \range{pages}{10}
+    \endentry
+    \entry{kendall2018multi}{inproceedings}{}{}
+      \name{author}{3}{}{%
+        {{hash=4b1053f4ffb69cd61c1f122cc435c884}{%
+           family={Kendall},
+           familyi={K\bibinitperiod},
+           given={Alex},
+           giveni={A\bibinitperiod}}}%
+        {{hash=d4f394bd4030e20e7b1399e0abe7dc6a}{%
+           family={Gal},
+           familyi={G\bibinitperiod},
+           given={Yarin},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=95c5bd0a1d6e6649ed56043a63268bfa}{%
+           family={Cipolla},
+           familyi={C\bibinitperiod},
+           given={Roberto},
+           giveni={R\bibinitperiod}}}%
+      }
+      \strng{namehash}{67fae8c7b2d9ca45db463bbf1488d262}
+      \strng{fullhash}{ad7ca9344d220338e46d70dee0ed52e1}
+      \strng{fullhashraw}{ad7ca9344d220338e46d70dee0ed52e1}
+      \strng{bibnamehash}{ad7ca9344d220338e46d70dee0ed52e1}
+      \strng{authorbibnamehash}{ad7ca9344d220338e46d70dee0ed52e1}
+      \strng{authornamehash}{67fae8c7b2d9ca45db463bbf1488d262}
+      \strng{authorfullhash}{ad7ca9344d220338e46d70dee0ed52e1}
+      \strng{authorfullhashraw}{ad7ca9344d220338e46d70dee0ed52e1}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition}
+      \field{title}{Multi-Task Learning Using Uncertainty to Weigh Losses for Scene Geometry and Semantics}
+      \field{year}{2018}
+      \field{pages}{7482\bibrangedash 7491}
+      \range{pages}{10}
+    \endentry
     \entry{crawshaw2020mtl}{article}{}{}
       \name{author}{1}{}{%
         {{hash=d2f59d71533b4402d867c0e65d97171f}{%
@@ -189,6 +266,114 @@
       \field{year}{2020}
       \field{pages}{100367}
       \range{pages}{1}
+    \endentry
+    \entry{standley2020tasks}{inproceedings}{}{}
+      \name{author}{7}{}{%
+        {{hash=f5e1f3a4d8338215157631eb6b2e6e94}{%
+           family={Standley},
+           familyi={S\bibinitperiod},
+           given={Trevor},
+           giveni={T\bibinitperiod}}}%
+        {{hash=c46328e84c28ad55c820353ca270e031}{%
+           family={Zamir},
+           familyi={Z\bibinitperiod},
+           given={Amir},
+           giveni={A\bibinitperiod}}}%
+        {{hash=fbc734567071343beca313e967b454a9}{%
+           family={Dawn},
+           familyi={D\bibinitperiod},
+           given={Dawn},
+           giveni={D\bibinitperiod}}}%
+        {{hash=9958ccb241e8eac42694f3fcb9e4c43d}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Jiajun},
+           giveni={J\bibinitperiod}}}%
+        {{hash=c9589e375b527dce2a071defb9d71943}{%
+           family={Roberto},
+           familyi={R\bibinitperiod},
+           given={Cipolla},
+           giveni={C\bibinitperiod}}}%
+        {{hash=c75a5377b6dc5213831576e88ffe553c}{%
+           family={Malik},
+           familyi={M\bibinitperiod},
+           given={Jitendra},
+           giveni={J\bibinitperiod}}}%
+        {{hash=e29c20003a517abaaac28852301c03c2}{%
+           family={Savarese},
+           familyi={S\bibinitperiod},
+           given={Silvio},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{3888d7aa0e0ee4021a09d103db420e73}
+      \strng{fullhash}{17a1329652d7e9f352b22e226866e96f}
+      \strng{fullhashraw}{17a1329652d7e9f352b22e226866e96f}
+      \strng{bibnamehash}{3888d7aa0e0ee4021a09d103db420e73}
+      \strng{authorbibnamehash}{3888d7aa0e0ee4021a09d103db420e73}
+      \strng{authornamehash}{3888d7aa0e0ee4021a09d103db420e73}
+      \strng{authorfullhash}{17a1329652d7e9f352b22e226866e96f}
+      \strng{authorfullhashraw}{17a1329652d7e9f352b22e226866e96f}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}
+      \field{title}{Which Tasks Should Be Learned Together in Multi-Task Learning?}
+      \field{year}{2020}
+      \field{pages}{6478\bibrangedash 6487}
+      \range{pages}{10}
+    \endentry
+    \entry{yu2020pcgrad}{inproceedings}{}{}
+      \name{author}{6}{}{%
+        {{hash=9deda9161d91175c5ce4efe814e405c7}{%
+           family={Yu},
+           familyi={Y\bibinitperiod},
+           given={Tianhe},
+           giveni={T\bibinitperiod}}}%
+        {{hash=c3ac9e7dae03c093a86970853c449196}{%
+           family={Kumar},
+           familyi={K\bibinitperiod},
+           given={Saurabh},
+           giveni={S\bibinitperiod}}}%
+        {{hash=d0792eb04b685020eafedbc871aeb84f}{%
+           family={Gupta},
+           familyi={G\bibinitperiod},
+           given={Abhishek},
+           giveni={A\bibinitperiod}}}%
+        {{hash=c9545da54b33744da25943cdf66eadac}{%
+           family={Levine},
+           familyi={L\bibinitperiod},
+           given={Sergey},
+           giveni={S\bibinitperiod}}}%
+        {{hash=db5fb91bc488e352c6b92899f58c54f2}{%
+           family={Hausman},
+           familyi={H\bibinitperiod},
+           given={Karol},
+           giveni={K\bibinitperiod}}}%
+        {{hash=058e82495825ae376c6a96a12169e6ee}{%
+           family={Finn},
+           familyi={F\bibinitperiod},
+           given={Chelsea},
+           giveni={C\bibinitperiod}}}%
+      }
+      \strng{namehash}{0cc34fca18ddc4c1ea84eb7bb8715299}
+      \strng{fullhash}{64f34b904e4547203c82b935bb15f203}
+      \strng{fullhashraw}{64f34b904e4547203c82b935bb15f203}
+      \strng{bibnamehash}{64f34b904e4547203c82b935bb15f203}
+      \strng{authorbibnamehash}{64f34b904e4547203c82b935bb15f203}
+      \strng{authornamehash}{0cc34fca18ddc4c1ea84eb7bb8715299}
+      \strng{authorfullhash}{64f34b904e4547203c82b935bb15f203}
+      \strng{authorfullhashraw}{64f34b904e4547203c82b935bb15f203}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Advances in Neural Information Processing Systems}
+      \field{title}{Gradient Surgery for Multi-Task Learning}
+      \field{volume}{33}
+      \field{year}{2020}
+      \field{pages}{5824\bibrangedash 5836}
+      \range{pages}{13}
     \endentry
     \entry{gjergji2022weight}{article}{}{}
       \true{moreauthor}
