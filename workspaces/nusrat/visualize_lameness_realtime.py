@@ -12,12 +12,12 @@ from tqdm import tqdm
 
 # Configurations
 BASE_DIR = r"D:\T25301094 P2"
-YOLO_MODEL_PATH = os.path.join(BASE_DIR, "yolov8n.pt")
+YOLO_MODEL_PATH = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")
 LAME_CHECKPOINT_PATH = os.path.join(BASE_DIR, "workspaces", "nusrat", "spatiotemporal_lameness_efficientnet_best.pth")
 ID_CHECKPOINT_PATH = os.path.join(BASE_DIR, "workspaces", "nusrat", "id_best.pth")
 CSV_PATH = os.path.join(BASE_DIR, "datasets", "id", "id_index.csv")
-INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "cut_cow_video.mp4")
-OUTPUT_VIDEO_PATH = os.path.join(BASE_DIR, "cut_cow_realtime_detection.mp4")
+INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "cut_cow_video.mp4")
+OUTPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "cut_cow_realtime_detection.mp4")
 
 MODEL_NAME = "efficientnet_b0"
 HIDDEN_DIM = 64

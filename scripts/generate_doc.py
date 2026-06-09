@@ -124,6 +124,8 @@ def md_to_docx(md_path, docx_path):
     print(f"Successfully generated docx: {docx_path}")
 
 if __name__ == "__main__":
-    md_file = "presentation_key_concepts.md"
-    docx_file = "presentation_key_concepts.docx"
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    root_dir = os.path.dirname(script_dir)
+    md_file = os.path.join(root_dir, "docs", "presentation_key_concepts.md")
+    docx_file = os.path.join(root_dir, "docs", "presentation_key_concepts.docx")
     md_to_docx(md_file, docx_file)

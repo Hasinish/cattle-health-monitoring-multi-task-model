@@ -9,7 +9,7 @@ BASE_DIR = r"D:\T25301094 P2"
 INPUT_CSV = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_index.csv")
 OUTPUT_CSV = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_cropped_index.csv")
 CROPPED_DIR = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_cropped")
-YOLO_MODEL = "yolov8n.pt"
+YOLO_MODEL = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")
 TARGET_SIZE = (224, 224)
 
 def main():

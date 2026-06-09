@@ -9,7 +9,7 @@ from ultralytics import YOLO
 BASE_DIR = r"D:\T25301094 P2"
 INPUT_CSV = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_index.csv")
 OUTPUT_IMAGE = os.path.join(BASE_DIR, "workspaces", "nusrat", "bcs_crop_samples.png")
-YOLO_MODEL = "yolov8n.pt"
+YOLO_MODEL = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")
 PANEL_SIZE = (224, 224)
 
 def main():

@@ -3,8 +3,9 @@ import cv2
 from tqdm import tqdm
 
 # Configuration
-INPUT_VIDEO = r"D:\T25301094 P2\full_download.mp4"
-OUTPUT_VIDEO = r"D:\T25301094 P2\cut_cow_video_2.mp4"
+BASE_DIR = r"D:\T25301094 P2"
+INPUT_VIDEO = os.path.join(BASE_DIR, "videos", "full_download.mp4")
+OUTPUT_VIDEO = os.path.join(BASE_DIR, "videos", "cut_cow_video_2.mp4")
 START_SEC = 175.0  # 2:55 (2 * 60 + 55)
 END_SEC = 215.0    # 3:35 (3 * 60 + 35)
 

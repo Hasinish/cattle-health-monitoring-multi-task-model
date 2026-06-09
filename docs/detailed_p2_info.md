@@ -952,7 +952,7 @@ FIX: Implement PATIENCE=10 exactly as shown in EARLY STOPPING section above
 ## 2. PRESENTATION & KEY CONCEPTS
 ================================================================================
 
-### FILE: presentation_key_concepts.md
+### FILE: docs\presentation_key_concepts.md
 ---
 ```text
 # Thesis: Multi-Task Deep Learning Framework for Unified Cattle Health and Behavior Monitoring
@@ -987,11 +987,13 @@ Instead of 4 disconnected models, our project utilizes **Hard Parameter Sharing*
 ##### Actual Technical Example:
 We feed an image of a cow into a single shared backbone network *(a pre-trained neural network module, like EfficientNetB0, that acts as the core feature extractor or "eyes" of the system)*. 
 * **The Shared Backbone:** The backbone processes the raw pixels and extracts a universal **feature vector** *(a compressed list of 1,280 numbers summarizing the cow's shapes, curves, and patterns)*.
-* **Specialized Heads:** This exact same 1280-length feature vector is passed simultaneously to four separate, lightweight prediction heads *(small neural network layers attached to the end of the backbone that perform the final classification or regression for each task)*:
-  1. Head 1 uses it to output a BCS score.
-  2. Head 2 uses it to output a Behavior classification.
-  3. Head 3 uses it to output a Lameness prediction.
-  4. Head 4 uses it to output a Cow ID.
+* **Specialized Routing Paths:** The extracted feature vector is routed into two separate pathways:
+  * **Static Path (A):** The vector is passed directly to 3 lightweight prediction heads *(small neural network layers attached to the end of the backbone that perform the final classification or regression for each task)*:
+    1. **Head 1** uses it to output a Body Condition Score (BCS).
+    2. **Head 2** uses it to output a Behavior classification.
+    3. **Head 3** uses it to output a Cow ID.
+  * **Sequence Path (B):** For video data, a sequence of 20 feature vectors is passed into a memory module:
+    4. **Head 4** uses the sequence to output a Lameness prediction.
 
 ##### Benefits for the Thesis:
 1. **Extreme Efficiency:** The entire model remains under **10 million parameters** *(the individual weight variables adjusted during learning)*. It can run in real-time on edge cameras without cloud latency.
@@ -1012,15 +1014,15 @@ To find the perfect "shared brain," the 5 group members individually trained sin
 
 Here is the baseline performance table showing the results of each base model:
 
-| Model Architecture | BCS Test MAE (Dryad / SciDB) | Behavior Test Macro F1 | Lameness Test AUC (Spatial / Spatiotemporal) | ID Top-1 Accuracy | Average Rank |
+| Model Architecture | BCS Test MAE (Dryad / SciDB) | Behavior Test Macro F1 | Lameness Test AUC | ID Top-1 Accuracy | Average Rank |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **ResNet-18** (Hasin) | 0.8675 / 0.5800 | 0.7134 | 0.8400 (ST) | Pending | 4th |
-| **MobileNetV3-Small** (Namira) | 0.5250 / 0.7090 | 0.6810 | Pending | Pending | 5th |
-| **ResNet-50** (Bithi) | 0.6300 / 0.6485 | 0.7037 | Pending | Pending | 3rd |
-| **DenseNet121** (Shouvik) | 0.5875 / 0.6292 | 0.7366 | Pending | Pending | 2nd |
-| **EfficientNetB0** (Nusrat) | 0.6175 / 0.5566 | 0.7445 | 0.9829 (Spatial) / 0.8400 (ST) | 86.49% | **1st (Selected)** |
+| **ResNet-18** (Hasin) | 0.8675 / 0.5800 | 0.7134 | 0.9600 (ST) | -- | 4th |
+| **MobileNetV3-Small** (Namira) | 0.5250 / 0.7090 | 0.6810 | -- | -- | 5th |
+| **ResNet-50** (Bithi) | 0.6300 / 0.6485 | 0.7037 | -- | -- | 3rd |
+| **DenseNet121** (Shouvik) | 0.5875 / 0.6292 | 0.7366 | -- | -- | 2nd |
+| **EfficientNetB0** (Nusrat) | 0.6175 / 0.5566 | 0.7445 | 0.9829 (Spatial) | 86.49% | **1st (Selected)** |
 
-*\*Note: The 0.8400 Spatiotemporal (ST) *(image sequence tracking)* AUC *(Area Under the ROC Curve)* was achieved using the YOLO-cropped EfficientNetB0-LSTM sequence model.*
+*\*Note: The 0.9600 Spatiotemporal (ST) *(image sequence tracking)* AUC *(Area Under the ROC Curve)* was achieved using the ResNet18-LSTM sequence model. The selected EfficientNet-B0 backbone achieved 0.9829 (Spatial AUC) as a single-task baseline, and 0.8400 (Sequence AUC) when integrated with the LSTM sequence tracking model.*
 
 The backbone with the best average rank is **EfficientNetB0** (Nusrat), which achieves a Test MAE *(Mean Absolute Error)* of `0.6175` (Dryad) and `0.5566` (ScienceDB), a Behavior Test F1 of `0.7445`, and a Lameness Test AUC of `0.9829` (Spatial). It serves as the shared backbone for the final Multi-Task model.
 
@@ -1167,14 +1169,14 @@ Because the lameness training set was small (50 videos total), the model's proba
 Imagine Deployed Video Inference *(running a trained model in a live production environment to generate predictions on new video feeds)* where a camera is mounted above a farm walkway. A cow walks past, and the camera captures a 20-frame video clip.
 
 1. **Feature Extraction:** The 20 frames are passed through the shared `EfficientNetB0` backbone, generating 20 independent feature vectors.
-2. **Spatial Heads (BCS & ID) Process the Data:**
-   * These heads are designed for static images. They generate 20 independent BCS predictions and 20 independent ID predictions (one for each frame).
+2. **Static Spatial Heads (BCS, ID, & Behavior) Process the Data:**
+   * These heads are designed for single, static images. They generate 20 independent BCS predictions, 20 ID predictions, and 20 Behavior predictions (one for each frame).
    * **Temporal Averaging (For BCS):** We use temporal averaging *(calculating the mathematical mean of predictions made across multiple frames over time)* to average all 20 predicted scores to output a single, stable body score.
-   * **Majority Voting (For ID):** We use majority voting *(selecting the classification class that was predicted most frequently across a sequence of frames)* to count which Cow ID was predicted most often across the 20 frames and output that as the final ID.
-   * **Occlusion Example:** If the cow walks behind a fence post and suffers from occlusion *(the state of being visually blocked or hidden from the camera's view by another object)* for 3 frames, the spatial heads might predict incorrect values for those 3 frames. Temporal averaging and majority voting filter out that noise completely.
-3. **Temporal Heads (Behavior & Lameness) Process the Data:**
-   * The 20 feature vectors are fed sequentially into the LSTM networks.
-   * The LSTM tracks the gait mechanics frame-by-frame and outputs the final classification on the 20th frame: **Behavior: Walking** and **Lameness: Positive**.
+   * **Majority Voting (For ID & Behavior):** We use majority voting *(selecting the classification class that was predicted most frequently across a sequence of frames)* to count which Cow ID and Behavior was predicted most often across the 20 frames and output that as the final classification.
+   * **Occlusion Example:** If the cow walks behind a fence post and suffers from occlusion *(the state of being visually blocked or hidden from the camera's view by another object)* for 3 frames, the static heads might predict incorrect values for those 3 frames. Temporal averaging and majority voting filter out that noise completely.
+3. **Spatiotemporal Sequence Head (Lameness) Processes the Data:**
+   * The sequence of 20 feature vectors is fed sequentially into the LSTM network.
+   * The LSTM tracks the gait mechanics frame-by-frame and outputs the final classification on the 20th frame: **Lameness: Positive**.
 
 ---
 
@@ -3639,9 +3641,10 @@ from ultralytics import YOLO
 from tqdm import tqdm
 
 # Configuration
-INPUT_VIDEO_PATH = r"D:\T25301094 P2\cut_cow_video.mp4"
-OUTPUT_VIDEO_PATH = r"D:\T25301094 P2\cropped_cow_video.mp4"
-MODEL_NAME = "yolov8n.pt"  # Lightweight YOLOv8 Nano model
+BASE_DIR = r"D:\T25301094 P2"
+INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "cut_cow_video.mp4")
+OUTPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "cropped_cow_video.mp4")
+MODEL_NAME = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")  # Lightweight YOLOv8 Nano model
 TARGET_SIZE = (224, 224)   # Standard crop size for neural networks
 
 def main():
@@ -3756,7 +3759,7 @@ BASE_DIR = r"D:\T25301094 P2"
 INPUT_CSV = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_index.csv")
 OUTPUT_CSV = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_cropped_index.csv")
 CROPPED_DIR = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_cropped")
-YOLO_MODEL = "yolov8n.pt"
+YOLO_MODEL = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")
 TARGET_SIZE = (224, 224)
 
 def main():
@@ -3853,8 +3856,9 @@ import cv2
 from tqdm import tqdm
 
 # Configuration
-INPUT_VIDEO = r"D:\T25301094 P2\full_download.mp4"
-OUTPUT_VIDEO = r"D:\T25301094 P2\cut_cow_video_2.mp4"
+BASE_DIR = r"D:\T25301094 P2"
+INPUT_VIDEO = os.path.join(BASE_DIR, "videos", "full_download.mp4")
+OUTPUT_VIDEO = os.path.join(BASE_DIR, "videos", "cut_cow_video_2.mp4")
 START_SEC = 175.0  # 2:55 (2 * 60 + 55)
 END_SEC = 215.0    # 3:35 (3 * 60 + 35)
 
@@ -6985,7 +6989,7 @@ from ultralytics import YOLO
 BASE_DIR = r"D:\T25301094 P2"
 INPUT_CSV = os.path.join(BASE_DIR, "datasets", "bcs", "sciencedb_bcs_index.csv")
 OUTPUT_IMAGE = os.path.join(BASE_DIR, "workspaces", "nusrat", "bcs_crop_samples.png")
-YOLO_MODEL = "yolov8n.pt"
+YOLO_MODEL = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")
 PANEL_SIZE = (224, 224)
 
 def main():
@@ -7098,9 +7102,10 @@ from ultralytics import YOLO
 from tqdm import tqdm
 
 # Configuration
-INPUT_VIDEO_PATH = r"D:\T25301094 P2\test_cow.mp4"
-OUTPUT_VIDEO_PATH = r"D:\T25301094 P2\test_cow_detection.mp4"
-MODEL_NAME = "yolov8n.pt"  # Lightweight YOLOv8 Nano model
+BASE_DIR = r"D:\T25301094 P2"
+INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "test_cow.mp4")
+OUTPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "test_cow_detection.mp4")
+MODEL_NAME = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")  # Lightweight YOLOv8 Nano model
 MAX_FRAMES_TO_PROCESS = 2000  # Default limit to process a subset of the long video quickly
 
 def main():
@@ -7217,12 +7222,12 @@ from tqdm import tqdm
 
 # Configurations
 BASE_DIR = r"D:\T25301094 P2"
-YOLO_MODEL_PATH = os.path.join(BASE_DIR, "yolov8n.pt")
+YOLO_MODEL_PATH = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")
 LAME_CHECKPOINT_PATH = os.path.join(BASE_DIR, "workspaces", "nusrat", "spatiotemporal_lameness_efficientnet_best.pth")
 ID_CHECKPOINT_PATH = os.path.join(BASE_DIR, "workspaces", "nusrat", "id_best.pth")
 CSV_PATH = os.path.join(BASE_DIR, "datasets", "id", "id_index.csv")
-INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "cut_cow_video.mp4")
-OUTPUT_VIDEO_PATH = os.path.join(BASE_DIR, "cut_cow_realtime_detection.mp4")
+INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "cut_cow_video.mp4")
+OUTPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "cut_cow_realtime_detection.mp4")
 
 MODEL_NAME = "efficientnet_b0"
 HIDDEN_DIM = 64

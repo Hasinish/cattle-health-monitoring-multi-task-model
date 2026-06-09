@@ -4,9 +4,10 @@ from ultralytics import YOLO
 from tqdm import tqdm
 
 # Configuration
-INPUT_VIDEO_PATH = r"D:\T25301094 P2\cut_cow_video.mp4"
-OUTPUT_VIDEO_PATH = r"D:\T25301094 P2\cropped_cow_video.mp4"
-MODEL_NAME = "yolov8n.pt"  # Lightweight YOLOv8 Nano model
+BASE_DIR = r"D:\T25301094 P2"
+INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "cut_cow_video.mp4")
+OUTPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "cropped_cow_video.mp4")
+MODEL_NAME = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")  # Lightweight YOLOv8 Nano model
 TARGET_SIZE = (224, 224)   # Standard crop size for neural networks
 
 def main():

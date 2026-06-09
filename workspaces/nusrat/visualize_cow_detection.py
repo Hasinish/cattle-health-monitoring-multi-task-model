@@ -4,9 +4,10 @@ from ultralytics import YOLO
 from tqdm import tqdm
 
 # Configuration
-INPUT_VIDEO_PATH = r"D:\T25301094 P2\test_cow.mp4"
-OUTPUT_VIDEO_PATH = r"D:\T25301094 P2\test_cow_detection.mp4"
-MODEL_NAME = "yolov8n.pt"  # Lightweight YOLOv8 Nano model
+BASE_DIR = r"D:\T25301094 P2"
+INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "test_cow.mp4")
+OUTPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "test_cow_detection.mp4")
+MODEL_NAME = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")  # Lightweight YOLOv8 Nano model
 MAX_FRAMES_TO_PROCESS = 2000  # Default limit to process a subset of the long video quickly
 
 def main():

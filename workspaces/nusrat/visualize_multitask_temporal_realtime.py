@@ -16,11 +16,11 @@ from tqdm import tqdm
 BASE_DIR = r"D:\T25301094 P2"
 WORKSPACE_DIR = os.path.join(BASE_DIR, "workspaces", "nusrat")
 
-YOLO_MODEL_PATH = os.path.join(BASE_DIR, "yolov8n.pt")
+YOLO_MODEL_PATH = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")
 MULTITASK_CHECKPOINT_PATH = os.path.join(WORKSPACE_DIR, "multitask_temporal_best.pth")
 
 # Defaulting to Downloaded YouTube Cow Video
-INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "youtube_cow_video.mp4")
+INPUT_VIDEO_PATH = os.path.join(BASE_DIR, "videos", "youtube_cow_video.mp4")
 OUTPUT_VIDEO_PATH = os.path.join(WORKSPACE_DIR, "youtube_temporal_realtime_demo.mp4")
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
