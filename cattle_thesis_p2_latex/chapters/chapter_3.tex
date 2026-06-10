@@ -29,7 +29,7 @@ The development of automated cattle health monitoring systems has a profound pos
 \section{Environmental Impact}
 Deep learning models are historically compute-intensive, contributing to carbon emissions during training. Our proposed framework addresses this environmental concern through:
 \begin{itemize}
-    \item \textbf{Green Computing via Multi-Task Learning (MTL):} Instead of deploying four separate convolutional neural networks (each consuming GPU power and memory), our hard parameter sharing approach utilizes a single shared EfficientNet-B0 encoder. This consolidation reduces inference energy consumption by approximately 75\%, minimizing the operational carbon footprint of edge surveillance systems deployed on thousands of farms.
+    \item \textbf{Green Computing via Multi-Task Learning (MTL):} Instead of deploying four separate convolutional neural networks (each consuming GPU power and memory), our hard parameter sharing approach utilizes a single shared EfficientNet-B0 encoder. This consolidation is expected to reduce duplicated backbone computation compared with four separate models, although measured edge-device energy benchmarking remains future work, minimizing the operational carbon footprint of edge surveillance systems deployed on thousands of farms.
     \item \textbf{Resource Optimization:} By implementing sparse temporal sampling (reducing 300-frame video clips to 20 key frames) and capping dataset classes, we decreased active training GPU runtimes, reducing energy overhead during the development lifecycle.
 \end{itemize}
 
@@ -70,7 +70,7 @@ The timeline was structured in sprints: dataset curation, single-task baseline t
 \textbf{Risk Identified} & \textbf{Potential Impact} & \textbf{Mitigation Strategy} \\
 \midrule
 Class Imbalance & Model fails to learn rare behaviors (licking, drinking). & Implemented Focal Loss ($\gamma=2$) and hard data capping (max 3000 images per class). \\
-Data Leakage & Memorization of cow identities leading to overfitting. & Enforced cow-wise split partitioning so same cow is never in train and test sets. \\
+Data Leakage & Memorization of cow identities leading to overfitting. & Task-appropriate splitting (cow-wise for BCS/behavior, video-wise for lameness, image-wise within identity for ID). \\
 Out of Memory (OOM) & GPU VRAM crash when processing long sequences. & Integrated Automatic Mixed Precision (AMP) in FP16 and sparse temporal sampling of 20 frames. \\
 Domain Shift & Performance drop when deployed on unseen farms. & Performed cross-dataset validation on CBVD-5 to evaluate generalizability and recommend future unfreezed fine-tuning. \\
 \bottomrule

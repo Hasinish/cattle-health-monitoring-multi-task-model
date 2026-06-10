@@ -1,16 +1,28 @@
 \section{Summary of Findings}
 This research successfully developed, trained, and evaluated a unified, lightweight, and spatiotemporal multi-task deep learning framework for real-time cattle health and behavior monitoring. Using EfficientNet-B0 as a shared encoder backbone combined with a CBAM attention module, the framework consolidates four distinct computer vision tasks: Body Condition Scoring (BCS), Behavior Recognition, Lameness Detection, and Cow Identification. 
 
-The experimental results confirmed that sequence modeling with LSTM layers is highly effective for video-based tasks, achieving an uncalibrated 80.00\% accuracy on lameness detection sequences (which rose to 100.00\% accuracy and 1.0000 AUC only under post-hoc threshold tuning, serving as a preliminary proof-of-concept). For behavior recognition, the spatiotemporal setup raised the Macro F1-score from 0.3771 (frame-level multi-task) to 0.4948, although this represents a degradation compared to the single-task baseline of 0.7445 due to expected negative transfer. The multi-task model exhibits outstanding computational efficiency, reducing VRAM requirements by approximately 75\% compared to deploying four independent single-task models, making it well-suited for resource-constrained offline farm surveillance. However, due to the severe negative transfer observed in the spatial tasks, the current joint framework is presented as a foundational baseline for future gradient-balancing research rather than a system ready for immediate clinical deployment.
+The experimental results confirmed that sequence modeling with LSTM layers is highly effective for video-based tasks, achieving an uncalibrated 80.00\% accuracy on lameness detection sequences (post-hoc threshold tuning produced perfect separation but is treated as invalid for final evaluation because it introduces test-set leakage). For behavior recognition, the spatiotemporal setup raised the Macro F1-score from 0.3771 (frame-level multi-task) to 0.4948, although this represents a degradation compared to the single-task baseline of 0.7445 due to expected negative transfer. The multi-task model exhibits outstanding computational efficiency, reducing VRAM requirements by approximately 75\% compared to deploying four independent single-task models, making it well-suited for resource-constrained offline farm surveillance. However, due to the severe negative transfer observed in the spatial tasks, the current joint framework is presented as an honest baseline characterizing negative transfer for future gradient-balancing research rather than a successful unified system ready for immediate clinical deployment.
 
 \section{Contributions to the Field}
 This thesis provides several key contributions to the domain of Precision Livestock Farming (PLF) and agricultural computer vision:
 \begin{enumerate}
-    \item \textbf{A Unified Multi-Task Framework:} To the best of our knowledge, this is the first end-to-end multi-task deep learning framework that simultaneously monitors BCS, behavior, lameness, and individual cow identity from video sequences using a single shared encoder.
-    \item \textbf{Commitment to Full Reproducibility:} Unlike the majority of agricultural computer vision literature which relies on private datasets, our study was designed, trained, and validated exclusively on publicly available datasets (ScienceDB, Dryad, MmCows, CattleLameness, OpenCows2020, CBVD-5), establishing a standardized benchmark for future research.
+    \item \textbf{A Unified Multi-Task Framework:} To the best of our knowledge, this is the first end-to-end multi-task deep learning framework that simultaneously monitors BCS, behavior, lameness, and individual cow identity from image and video inputs using a single shared encoder.
+    \item \textbf{Commitment to Open Evaluation:} Unlike the majority of agricultural computer vision literature which relies on private datasets, our study was designed, trained, and validated exclusively on publicly available datasets (ScienceDB, Dryad, MmCows, CattleLameness, OpenCows2020, CBVD-5), establishing a more transparent and reproducibility-oriented benchmark via documented preprocessing and task-specific splits.
     \item \textbf{Spatiotemporal Integration with Attention:} We successfully integrated a CBAM attention layer and LSTM sequence-tracking to process both spatial anatomical shapes (spine, hip bones) and temporal locomotion strides, bridging static 2D image analysis and recurrent 3D time-series.
     \item \textbf{Edge Optimization:} The model structure was optimized to remain under 10 million parameters, enabling cost-effective, non-invasive surveillance directly on camera nodes, reducing dependency on expensive wearable sensors.
 \end{enumerate}
+
+\section{Limitations}
+Several critical limitations must be addressed before clinical deployment:
+\begin{itemize}
+    \item The lameness dataset contains only 50 videos, so reported lameness results have high variance and should be treated as preliminary.
+    \item The post-hoc threshold-tuned perfect lameness result is invalid for final evaluation because it uses test-set feedback.
+    \item ScienceDB BCS covers only a narrow score range of 3.25--4.25, so the model has not been validated on extremely thin or obese cattle.
+    \item The CBVD-5 evaluation shows domain shift, meaning behavior recognition does not yet generalize reliably across farms.
+    \item Results are reported from limited experimental runs; future work should include repeated runs with mean $\pm$ standard deviation and confidence intervals.
+    \item Edge deployment is estimated from model size and FLOPs, not from measured Jetson/Raspberry Pi latency or energy benchmarks.
+    \item The comparison with published studies is non-equivalent because datasets, modalities, splits, and metrics differ.
+\end{itemize}
 
 \section{Recommendations for Future Work}
 While the framework has shown strong feasibility, several areas represent crucial directions for future expansion:

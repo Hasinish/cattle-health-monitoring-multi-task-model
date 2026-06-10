@@ -78,33 +78,54 @@
       \range{pages}{6}
     \endentry
     \entry{weary2009understanding}{article}{}{}
-      \true{moreauthor}
-      \true{morelabelname}
-      \name{author}{1}{}{%
+      \name{author}{4}{}{%
+        {{hash=d35af539f988c517a82379720a8206b7}{%
+           family={Keyserlingk},
+           familyi={K\bibinitperiod},
+           given={M.\bibnamedelimi A.\bibnamedelimi G.},
+           giveni={M\bibinitperiod\bibinitdelim A\bibinitperiod\bibinitdelim G\bibinitperiod},
+           prefix={von},
+           prefixi={v\bibinitperiod}}}%
+        {{hash=85fe6b7ae623c6e85374f14ae51a48ca}{%
+           family={Rushen},
+           familyi={R\bibinitperiod},
+           given={J.},
+           giveni={J\bibinitperiod}}}%
+        {{hash=0fd7e30d2b91f1e5d45ae1cb56eeddee}{%
+           family={Passillé},
+           familyi={P\bibinitperiod},
+           given={A.\bibnamedelimi M.},
+           giveni={A\bibinitperiod\bibinitdelim M\bibinitperiod},
+           prefix={de},
+           prefixi={d\bibinitperiod}}}%
         {{hash=eae6941f3472c0e6dc655d3c33e6adad}{%
            family={Weary},
            familyi={W\bibinitperiod},
            given={Daniel\bibnamedelima M.},
            giveni={D\bibinitperiod\bibinitdelim M\bibinitperiod}}}%
       }
-      \strng{namehash}{500c3ba28b14c52f012ceedd04dc93a0}
-      \strng{fullhash}{500c3ba28b14c52f012ceedd04dc93a0}
-      \strng{fullhashraw}{500c3ba28b14c52f012ceedd04dc93a0}
-      \strng{bibnamehash}{500c3ba28b14c52f012ceedd04dc93a0}
-      \strng{authorbibnamehash}{500c3ba28b14c52f012ceedd04dc93a0}
-      \strng{authornamehash}{500c3ba28b14c52f012ceedd04dc93a0}
-      \strng{authorfullhash}{500c3ba28b14c52f012ceedd04dc93a0}
-      \strng{authorfullhashraw}{500c3ba28b14c52f012ceedd04dc93a0}
+      \strng{namehash}{6200c24686f49ef86910381cc6c32aaa}
+      \strng{fullhash}{17fec880c8548bb3afe433960e5ef3cf}
+      \strng{fullhashraw}{17fec880c8548bb3afe433960e5ef3cf}
+      \strng{bibnamehash}{17fec880c8548bb3afe433960e5ef3cf}
+      \strng{authorbibnamehash}{17fec880c8548bb3afe433960e5ef3cf}
+      \strng{authornamehash}{6200c24686f49ef86910381cc6c32aaa}
+      \strng{authorfullhash}{17fec880c8548bb3afe433960e5ef3cf}
+      \strng{authorfullhashraw}{17fec880c8548bb3afe433960e5ef3cf}
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{journaltitle}{Journal of Dairy Science}
-      \field{title}{Understanding and Improving the Welfare of Dairy Cattle}
+      \field{number}{9}
+      \field{title}{Invited review: The welfare of dairy cattle---Key concepts and the role of science}
       \field{volume}{92}
       \field{year}{2009}
-      \field{pages}{5323\bibrangedash 5335}
-      \range{pages}{13}
+      \field{pages}{4101\bibrangedash 4111}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.3168/jds.2009-2326
+      \endverb
     \endentry
     \entry{andrew2017cattle}{inproceedings}{}{}
       \name{author}{4}{}{%
@@ -143,69 +164,59 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{IEEE International Conference on Image Processing (ICIP)}
-      \field{title}{Automatic Individual Identification of Holstein Cattle via Selective Local Coat Pattern Matching in RGB-D Imagery}
-      \field{year}{2017}
-      \field{pages}{484\bibrangedash 488}
+      \field{title}{Automatic individual Holstein Friesian cattle identification via selective local coat pattern matching in RGB-D imagery}
+      \field{year}{2016}
+      \field{pages}{2707\bibrangedash 2711}
       \range{pages}{5}
       \verb{doi}
-      \verb 10.1109/ICIP.2017.8296327
+      \verb 10.1109/ICIP.2016.7532404
       \endverb
     \endentry
-    \entry{focalloss2017}{article}{}{}
-      \true{moreauthor}
-      \true{morelabelname}
-      \name{author}{1}{}{%
+    \entry{focalloss2017}{inproceedings}{}{}
+      \name{author}{5}{}{%
         {{hash=08f925fe4692d130a1d7cb7d94483351}{%
            family={Lin},
            familyi={L\bibinitperiod},
            given={Tsung-Yi},
            giveni={T\bibinithyphendelim Y\bibinitperiod}}}%
+        {{hash=d87be7c19fa16049347907c9820816c6}{%
+           family={Goyal},
+           familyi={G\bibinitperiod},
+           given={Priya},
+           giveni={P\bibinitperiod}}}%
+        {{hash=bd5dadbe57bedc5957c19a3154c4d424}{%
+           family={Girshick},
+           familyi={G\bibinitperiod},
+           given={Ross},
+           giveni={R\bibinitperiod}}}%
+        {{hash=6b4b60e909e78633945f3f9c9dc83e01}{%
+           family={He},
+           familyi={H\bibinitperiod},
+           given={Kaiming},
+           giveni={K\bibinitperiod}}}%
+        {{hash=ecd149fdcb3e0503881d49e545744c3d}{%
+           family={Dollár},
+           familyi={D\bibinitperiod},
+           given={Piotr},
+           giveni={P\bibinitperiod}}}%
       }
       \strng{namehash}{3b7e00bc88d7aca4d4d5ddb8c252e36c}
-      \strng{fullhash}{3b7e00bc88d7aca4d4d5ddb8c252e36c}
-      \strng{fullhashraw}{3b7e00bc88d7aca4d4d5ddb8c252e36c}
-      \strng{bibnamehash}{3b7e00bc88d7aca4d4d5ddb8c252e36c}
-      \strng{authorbibnamehash}{3b7e00bc88d7aca4d4d5ddb8c252e36c}
+      \strng{fullhash}{4ccabcfdf9c34f3d9a88fdca5bb95dd5}
+      \strng{fullhashraw}{4ccabcfdf9c34f3d9a88fdca5bb95dd5}
+      \strng{bibnamehash}{4ccabcfdf9c34f3d9a88fdca5bb95dd5}
+      \strng{authorbibnamehash}{4ccabcfdf9c34f3d9a88fdca5bb95dd5}
       \strng{authornamehash}{3b7e00bc88d7aca4d4d5ddb8c252e36c}
-      \strng{authorfullhash}{3b7e00bc88d7aca4d4d5ddb8c252e36c}
-      \strng{authorfullhashraw}{3b7e00bc88d7aca4d4d5ddb8c252e36c}
+      \strng{authorfullhash}{4ccabcfdf9c34f3d9a88fdca5bb95dd5}
+      \strng{authorfullhashraw}{4ccabcfdf9c34f3d9a88fdca5bb95dd5}
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{ICCV}
+      \field{booktitle}{Proceedings of the IEEE International Conference on Computer Vision}
       \field{title}{Focal Loss for Dense Object Detection}
       \field{year}{2017}
       \field{pages}{2980\bibrangedash 2988}
       \range{pages}{9}
-    \endentry
-    \entry{deepsort2017}{inproceedings}{}{}
-      \true{moreauthor}
-      \true{morelabelname}
-      \name{author}{1}{}{%
-        {{hash=b926658d6906979bd0ae465c48154351}{%
-           family={Wojke},
-           familyi={W\bibinitperiod},
-           given={Nicolai},
-           giveni={N\bibinitperiod}}}%
-      }
-      \strng{namehash}{e3b21ca30a37c097e20088a3962cfa47}
-      \strng{fullhash}{e3b21ca30a37c097e20088a3962cfa47}
-      \strng{fullhashraw}{e3b21ca30a37c097e20088a3962cfa47}
-      \strng{bibnamehash}{e3b21ca30a37c097e20088a3962cfa47}
-      \strng{authorbibnamehash}{e3b21ca30a37c097e20088a3962cfa47}
-      \strng{authornamehash}{e3b21ca30a37c097e20088a3962cfa47}
-      \strng{authorfullhash}{e3b21ca30a37c097e20088a3962cfa47}
-      \strng{authorfullhashraw}{e3b21ca30a37c097e20088a3962cfa47}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{booktitle}{ICIP}
-      \field{title}{Simple Online and Realtime Tracking with a Deep Association Metric}
-      \field{year}{2017}
-      \field{pages}{3645\bibrangedash 3649}
-      \range{pages}{5}
     \endentry
     \entry{chen2018gradnorm}{inproceedings}{}{}
       \name{author}{4}{}{%
@@ -247,6 +258,37 @@
       \field{year}{2018}
       \field{pages}{794\bibrangedash 803}
       \range{pages}{10}
+    \endentry
+    \entry{fao2018livestock}{report}{}{}
+      \name{author}{1}{}{%
+        {{hash=ff4f0ed8592c228c5fd8457c0ab3906e}{%
+           family={{Food and Agriculture Organization}},
+           familyi={F\bibinitperiod}}}%
+      }
+      \list{institution}{2}{%
+        {Food}%
+        {Agriculture Organization of the United Nations}%
+      }
+      \list{location}{1}{%
+        {Rome}%
+      }
+      \strng{namehash}{ff4f0ed8592c228c5fd8457c0ab3906e}
+      \strng{fullhash}{ff4f0ed8592c228c5fd8457c0ab3906e}
+      \strng{fullhashraw}{ff4f0ed8592c228c5fd8457c0ab3906e}
+      \strng{bibnamehash}{ff4f0ed8592c228c5fd8457c0ab3906e}
+      \strng{authorbibnamehash}{ff4f0ed8592c228c5fd8457c0ab3906e}
+      \strng{authornamehash}{ff4f0ed8592c228c5fd8457c0ab3906e}
+      \strng{authorfullhash}{ff4f0ed8592c228c5fd8457c0ab3906e}
+      \strng{authorfullhashraw}{ff4f0ed8592c228c5fd8457c0ab3906e}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{World Livestock: Transforming the Livestock Sector through the Sustainable Development Goals}
+      \field{year}{2018}
+      \verb{doi}
+      \verb 10.4060/ca1201en
+      \endverb
     \endentry
     \entry{kendall2018multi}{inproceedings}{}{}
       \name{author}{3}{}{%
@@ -311,35 +353,6 @@
       \field{year}{2018}
       \field{pages}{3\bibrangedash 19}
       \range{pages}{17}
-    \endentry
-    \entry{coral2019}{article}{}{}
-      \true{moreauthor}
-      \true{morelabelname}
-      \name{author}{1}{}{%
-        {{hash=09575a6a926d15938fef5eabf6fd9130}{%
-           family={Cao},
-           familyi={C\bibinitperiod},
-           given={Wenzhi},
-           giveni={W\bibinitperiod}}}%
-      }
-      \strng{namehash}{33326f27e66ac0745f78a759b5eb6c0f}
-      \strng{fullhash}{33326f27e66ac0745f78a759b5eb6c0f}
-      \strng{fullhashraw}{33326f27e66ac0745f78a759b5eb6c0f}
-      \strng{bibnamehash}{33326f27e66ac0745f78a759b5eb6c0f}
-      \strng{authorbibnamehash}{33326f27e66ac0745f78a759b5eb6c0f}
-      \strng{authornamehash}{33326f27e66ac0745f78a759b5eb6c0f}
-      \strng{authorfullhash}{33326f27e66ac0745f78a759b5eb6c0f}
-      \strng{authorfullhashraw}{33326f27e66ac0745f78a759b5eb6c0f}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{Pattern Recognition Letters}
-      \field{title}{Rank Consistent Ordinal Regression for Neural Networks with Application to Age Estimation}
-      \field{volume}{140}
-      \field{year}{2019}
-      \field{pages}{325\bibrangedash 331}
-      \range{pages}{7}
     \endentry
     \entry{mobilenetv3}{inproceedings}{}{}
       \true{moreauthor}
@@ -428,6 +441,46 @@
       \field{title}{OpenCows2020: Visual Identification of Individual Holstein Friesian Cattle}
       \field{year}{2020}
     \endentry
+    \entry{coral2020}{article}{}{}
+      \name{author}{3}{}{%
+        {{hash=09575a6a926d15938fef5eabf6fd9130}{%
+           family={Cao},
+           familyi={C\bibinitperiod},
+           given={Wenzhi},
+           giveni={W\bibinitperiod}}}%
+        {{hash=ea5b3d38b4b9dc9c54ee2a9c3d6c7437}{%
+           family={Mirjalili},
+           familyi={M\bibinitperiod},
+           given={Vahid},
+           giveni={V\bibinitperiod}}}%
+        {{hash=bb679961e3f3f4bba79fc1cf3aa7df1c}{%
+           family={Raschka},
+           familyi={R\bibinitperiod},
+           given={Sebastian},
+           giveni={S\bibinitperiod}}}%
+      }
+      \strng{namehash}{33326f27e66ac0745f78a759b5eb6c0f}
+      \strng{fullhash}{a7fa252feaa0300c6a2454ab5f2d0b53}
+      \strng{fullhashraw}{a7fa252feaa0300c6a2454ab5f2d0b53}
+      \strng{bibnamehash}{a7fa252feaa0300c6a2454ab5f2d0b53}
+      \strng{authorbibnamehash}{a7fa252feaa0300c6a2454ab5f2d0b53}
+      \strng{authornamehash}{33326f27e66ac0745f78a759b5eb6c0f}
+      \strng{authorfullhash}{a7fa252feaa0300c6a2454ab5f2d0b53}
+      \strng{authorfullhashraw}{a7fa252feaa0300c6a2454ab5f2d0b53}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Pattern Recognition Letters}
+      \field{title}{Rank Consistent Ordinal Regression for Neural Networks with Application to Age Estimation}
+      \field{volume}{140}
+      \field{year}{2020}
+      \field{pages}{325\bibrangedash 331}
+      \range{pages}{7}
+      \verb{doi}
+      \verb 10.1016/j.patrec.2020.11.008
+      \endverb
+    \endentry
     \entry{crawshaw2020mtl}{article}{}{}
       \name{author}{1}{}{%
         {{hash=d2f59d71533b4402d867c0e65d97171f}{%
@@ -480,7 +533,7 @@
       \range{pages}{1}
     \endentry
     \entry{standley2020tasks}{inproceedings}{}{}
-      \name{author}{7}{}{%
+      \name{author}{6}{}{%
         {{hash=f5e1f3a4d8338215157631eb6b2e6e94}{%
            family={Standley},
            familyi={S\bibinitperiod},
@@ -491,21 +544,16 @@
            familyi={Z\bibinitperiod},
            given={Amir},
            giveni={A\bibinitperiod}}}%
-        {{hash=fbc734567071343beca313e967b454a9}{%
-           family={Dawn},
-           familyi={D\bibinitperiod},
+        {{hash=5d6ccb7a4011216fa866aef06d0e0c15}{%
+           family={Chen},
+           familyi={C\bibinitperiod},
            given={Dawn},
            giveni={D\bibinitperiod}}}%
-        {{hash=9958ccb241e8eac42694f3fcb9e4c43d}{%
-           family={Li},
-           familyi={L\bibinitperiod},
-           given={Jiajun},
-           giveni={J\bibinitperiod}}}%
-        {{hash=c9589e375b527dce2a071defb9d71943}{%
-           family={Roberto},
-           familyi={R\bibinitperiod},
-           given={Cipolla},
-           giveni={C\bibinitperiod}}}%
+        {{hash=4d4e5ccdf2edc6a547ab14d5b0113a71}{%
+           family={Guibas},
+           familyi={G\bibinitperiod},
+           given={Leonidas},
+           giveni={L\bibinitperiod}}}%
         {{hash=c75a5377b6dc5213831576e88ffe553c}{%
            family={Malik},
            familyi={M\bibinitperiod},
@@ -517,23 +565,26 @@
            given={Silvio},
            giveni={S\bibinitperiod}}}%
       }
+      \list{publisher}{1}{%
+        {PMLR}%
+      }
       \strng{namehash}{3888d7aa0e0ee4021a09d103db420e73}
-      \strng{fullhash}{17a1329652d7e9f352b22e226866e96f}
-      \strng{fullhashraw}{17a1329652d7e9f352b22e226866e96f}
-      \strng{bibnamehash}{3888d7aa0e0ee4021a09d103db420e73}
-      \strng{authorbibnamehash}{3888d7aa0e0ee4021a09d103db420e73}
+      \strng{fullhash}{0fba3c49cdb394e7d3f29f85220f4921}
+      \strng{fullhashraw}{0fba3c49cdb394e7d3f29f85220f4921}
+      \strng{bibnamehash}{0fba3c49cdb394e7d3f29f85220f4921}
+      \strng{authorbibnamehash}{0fba3c49cdb394e7d3f29f85220f4921}
       \strng{authornamehash}{3888d7aa0e0ee4021a09d103db420e73}
-      \strng{authorfullhash}{17a1329652d7e9f352b22e226866e96f}
-      \strng{authorfullhashraw}{17a1329652d7e9f352b22e226866e96f}
+      \strng{authorfullhash}{0fba3c49cdb394e7d3f29f85220f4921}
+      \strng{authorfullhashraw}{0fba3c49cdb394e7d3f29f85220f4921}
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{booktitle}{Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition}
+      \field{booktitle}{International Conference on Machine Learning}
       \field{title}{Which Tasks Should Be Learned Together in Multi-Task Learning?}
       \field{year}{2020}
-      \field{pages}{6478\bibrangedash 6487}
-      \range{pages}{10}
+      \field{pages}{9120\bibrangedash 9132}
+      \range{pages}{13}
     \endentry
     \entry{yu2020pcgrad}{inproceedings}{}{}
       \name{author}{6}{}{%
@@ -643,7 +694,7 @@
       \verb 10.1016/j.compag.2021.106133
       \endverb
     \endentry
-    \entry{gao2021cows2021}{article}{}{}
+    \entry{cows2021}{misc}{}{}
       \name{author}{5}{}{%
         {{hash=8b7cfd8a449c694ae68dfb629a88229e}{%
            family={Gao},
@@ -684,36 +735,57 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{arXiv preprint arXiv:2105.01938}
-      \field{title}{Towards Self-Supervision for Video Identification of Individual Holstein-Friesian Cattle: The Cows2021 Dataset}
+      \field{howpublished}{\url{https://doi.org/10.5523/bris.4vnrca7qw1642qlwxjadp87h7}}
+      \field{note}{Accessed: 2025-01-15}
+      \field{title}{Cows2021: Individual Cattle Identification Dataset}
       \field{year}{2021}
+      \verb{doi}
+      \verb 10.5523/bris.4vnrca7qw1642qlwxjadp87h7
+      \endverb
     \endentry
-    \entry{cows2021}{misc}{}{}
-      \true{moreauthor}
-      \true{morelabelname}
-      \name{author}{1}{}{%
-        {{hash=378dcc553118028b0581443ba8d91be8}{%
+    \entry{gao2021cows2021}{article}{}{}
+      \name{author}{5}{}{%
+        {{hash=8b7cfd8a449c694ae68dfb629a88229e}{%
            family={Gao},
            familyi={G\bibinitperiod},
-           given={Yuxiang},
-           giveni={Y\bibinitperiod}}}%
+           given={Jing},
+           giveni={J\bibinitperiod}}}%
+        {{hash=b8f8b0871d9979857ebc8d1483ef00b2}{%
+           family={Burghardt},
+           familyi={B\bibinitperiod},
+           given={Tilo},
+           giveni={T\bibinitperiod}}}%
+        {{hash=1b6386ded8be9a1d976745c7076b6bfd}{%
+           family={Andrew},
+           familyi={A\bibinitperiod},
+           given={William},
+           giveni={W\bibinitperiod}}}%
+        {{hash=98b6a62ce15e5e6cd98a6dbfd613e035}{%
+           family={Dowsey},
+           familyi={D\bibinitperiod},
+           given={Andrew\bibnamedelima W.},
+           giveni={A\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+        {{hash=cbeaa53287fb991c4d928dd4341f600d}{%
+           family={Campbell},
+           familyi={C\bibinitperiod},
+           given={Neill\bibnamedelima W.},
+           giveni={N\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
       }
-      \strng{namehash}{b9cba88468e035a53b947e2fffd4520b}
-      \strng{fullhash}{b9cba88468e035a53b947e2fffd4520b}
-      \strng{fullhashraw}{b9cba88468e035a53b947e2fffd4520b}
-      \strng{bibnamehash}{b9cba88468e035a53b947e2fffd4520b}
-      \strng{authorbibnamehash}{b9cba88468e035a53b947e2fffd4520b}
-      \strng{authornamehash}{b9cba88468e035a53b947e2fffd4520b}
-      \strng{authorfullhash}{b9cba88468e035a53b947e2fffd4520b}
-      \strng{authorfullhashraw}{b9cba88468e035a53b947e2fffd4520b}
+      \strng{namehash}{4d92a49de5c7fd9d1c215e07cf788058}
+      \strng{fullhash}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \strng{fullhashraw}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \strng{bibnamehash}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \strng{authorbibnamehash}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \strng{authornamehash}{4d92a49de5c7fd9d1c215e07cf788058}
+      \strng{authorfullhash}{8a67e7d7da39fc1dcf7debe84f38cdc4}
+      \strng{authorfullhashraw}{8a67e7d7da39fc1dcf7debe84f38cdc4}
       \field{extraname}{2}
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{\url{https://data.bristol.ac.uk}}
-      \field{note}{Accessed: 2025-01-15}
-      \field{title}{Cows2021: Individual Cattle Identification Dataset}
+      \field{journaltitle}{arXiv preprint arXiv:2105.01938}
+      \field{title}{Towards Self-Supervision for Video Identification of Individual Holstein-Friesian Cattle: The Cows2021 Dataset}
       \field{year}{2021}
     \endentry
     \entry{weng2022cattleface}{article}{}{}
@@ -771,30 +843,35 @@
       \verb 10.1016/j.compag.2022.106871
       \endverb
     \endentry
-    \entry{fao2023livestock}{article}{}{}
+    \entry{dryad2023bcs}{misc}{}{}
+      \true{moreauthor}
+      \true{morelabelname}
       \name{author}{1}{}{%
-        {{hash=ff4f0ed8592c228c5fd8457c0ab3906e}{%
-           family={{Food and Agriculture Organization}},
-           familyi={F\bibinitperiod}}}%
+        {{hash=5d0bf2defc81c25a31a256d2fa59e66f}{%
+           family={Fischer},
+           familyi={F\bibinitperiod},
+           given={Andrew},
+           giveni={A\bibinitperiod}}}%
       }
-      \list{publisher}{1}{%
-        {FAO}%
-      }
-      \strng{namehash}{ff4f0ed8592c228c5fd8457c0ab3906e}
-      \strng{fullhash}{ff4f0ed8592c228c5fd8457c0ab3906e}
-      \strng{fullhashraw}{ff4f0ed8592c228c5fd8457c0ab3906e}
-      \strng{bibnamehash}{ff4f0ed8592c228c5fd8457c0ab3906e}
-      \strng{authorbibnamehash}{ff4f0ed8592c228c5fd8457c0ab3906e}
-      \strng{authornamehash}{ff4f0ed8592c228c5fd8457c0ab3906e}
-      \strng{authorfullhash}{ff4f0ed8592c228c5fd8457c0ab3906e}
-      \strng{authorfullhashraw}{ff4f0ed8592c228c5fd8457c0ab3906e}
+      \strng{namehash}{d053f3cc44ec85c3e11ce490f2169794}
+      \strng{fullhash}{d053f3cc44ec85c3e11ce490f2169794}
+      \strng{fullhashraw}{d053f3cc44ec85c3e11ce490f2169794}
+      \strng{bibnamehash}{d053f3cc44ec85c3e11ce490f2169794}
+      \strng{authorbibnamehash}{d053f3cc44ec85c3e11ce490f2169794}
+      \strng{authornamehash}{d053f3cc44ec85c3e11ce490f2169794}
+      \strng{authorfullhash}{d053f3cc44ec85c3e11ce490f2169794}
+      \strng{authorfullhashraw}{d053f3cc44ec85c3e11ce490f2169794}
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{FAO Report}
-      \field{title}{World Livestock: Transforming the Livestock Sector through the Sustainable Development Goals}
+      \field{howpublished}{\url{https://datadryad.org/dataset/doi:10.5061/dryad.tqjq2bw4s}}
+      \field{note}{Accessed: 2025-01-15}
+      \field{title}{Labeled RGB and Depth Images for Cattle Body Condition Score Prediction}
       \field{year}{2023}
+      \verb{doi}
+      \verb 10.5061/dryad.tqjq2bw4s
+      \endverb
     \endentry
     \entry{cattlelameness2024}{misc}{}{}
       \name{author}{1}{}{%
@@ -821,32 +898,50 @@
       \field{title}{CattleLameness Dataset}
       \field{year}{2024}
     \endentry
-    \entry{dryad2024}{misc}{}{}
-      \true{moreauthor}
-      \true{morelabelname}
-      \name{author}{1}{}{%
-        {{hash=5d0bf2defc81c25a31a256d2fa59e66f}{%
-           family={Fischer},
+    \entry{li2024cbvd5}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=89210cc543177332b33cbe5581f8bf1c}{%
+           family={Li},
+           familyi={L\bibinitperiod},
+           given={Kuo},
+           giveni={K\bibinitperiod}}}%
+        {{hash=5365ded07e246863930490035ff708f1}{%
+           family={Fan},
            familyi={F\bibinitperiod},
-           given={Andrew},
+           given={Daoerji},
+           giveni={D\bibinitperiod}}}%
+        {{hash=ebfaaf0ec7f1aeffa92450bbd2b90e9c}{%
+           family={Wu},
+           familyi={W\bibinitperiod},
+           given={Huijuan},
+           giveni={H\bibinitperiod}}}%
+        {{hash=f92074bb073df9732e3799912aec2827}{%
+           family={Zhao},
+           familyi={Z\bibinitperiod},
+           given={Aruna},
            giveni={A\bibinitperiod}}}%
       }
-      \strng{namehash}{d053f3cc44ec85c3e11ce490f2169794}
-      \strng{fullhash}{d053f3cc44ec85c3e11ce490f2169794}
-      \strng{fullhashraw}{d053f3cc44ec85c3e11ce490f2169794}
-      \strng{bibnamehash}{d053f3cc44ec85c3e11ce490f2169794}
-      \strng{authorbibnamehash}{d053f3cc44ec85c3e11ce490f2169794}
-      \strng{authornamehash}{d053f3cc44ec85c3e11ce490f2169794}
-      \strng{authorfullhash}{d053f3cc44ec85c3e11ce490f2169794}
-      \strng{authorfullhashraw}{d053f3cc44ec85c3e11ce490f2169794}
+      \strng{namehash}{b55bef6eb2bf69ab15c2d2c0b430b119}
+      \strng{fullhash}{a02d1fa3fddbb42231298ebeab905f70}
+      \strng{fullhashraw}{a02d1fa3fddbb42231298ebeab905f70}
+      \strng{bibnamehash}{a02d1fa3fddbb42231298ebeab905f70}
+      \strng{authorbibnamehash}{a02d1fa3fddbb42231298ebeab905f70}
+      \strng{authornamehash}{b55bef6eb2bf69ab15c2d2c0b430b119}
+      \strng{authorfullhash}{a02d1fa3fddbb42231298ebeab905f70}
+      \strng{authorfullhashraw}{a02d1fa3fddbb42231298ebeab905f70}
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{\url{https://datadryad.org/dataset/doi:10.5061/dryad.tqjq2bw4s}}
-      \field{note}{Accessed: 2025-01-15}
-      \field{title}{RGB and Depth Images for Dairy Cow Body Condition Scoring}
+      \field{journaltitle}{Scientific Reports}
+      \field{title}{A new dataset for video-based cow behavior recognition}
+      \field{volume}{14}
       \field{year}{2024}
+      \field{pages}{18702}
+      \range{pages}{1}
+      \verb{doi}
+      \verb 10.1038/s41598-024-65953-x
+      \endverb
     \endentry
     \entry{sciencedb2024}{misc}{}{}
       \name{author}{1}{}{%
@@ -889,6 +984,7 @@
       \strng{authornamehash}{733bb53414ed0dc56fad7171e751c217}
       \strng{authorfullhash}{733bb53414ed0dc56fad7171e751c217}
       \strng{authorfullhashraw}{733bb53414ed0dc56fad7171e751c217}
+      \field{extraname}{1}
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
@@ -896,6 +992,61 @@
       \field{howpublished}{\url{https://kaggle.com/datasets/hienvuvg/mmcows}}
       \field{note}{Accessed: 2025-01-15}
       \field{title}{MmCows: A Multimodal Dataset for Dairy Cow Monitoring}
+      \field{year}{2024}
+    \endentry
+    \entry{vu2024mmcows}{inproceedings}{}{}
+      \name{author}{7}{}{%
+        {{hash=32c0083104cb8e553075e35e4075d894}{%
+           family={Vu},
+           familyi={V\bibinitperiod},
+           given={Hien},
+           giveni={H\bibinitperiod}}}%
+        {{hash=73b89da214fd9d73e5de8e35ab5c702b}{%
+           family={Prabhune},
+           familyi={P\bibinitperiod},
+           given={Omkar},
+           giveni={O\bibinitperiod}}}%
+        {{hash=c1b613db2371bca88d99eb8d0678a225}{%
+           family={Raskar},
+           familyi={R\bibinitperiod},
+           given={Unmesh},
+           giveni={U\bibinitperiod}}}%
+        {{hash=d92c3df05ac74115c94754e84dd11a8d}{%
+           family={Panditharatne},
+           familyi={P\bibinitperiod},
+           given={Dimuth},
+           giveni={D\bibinitperiod}}}%
+        {{hash=37e963755a75ee6d00ff24161956b060}{%
+           family={Chung},
+           familyi={C\bibinitperiod},
+           given={Hanwook},
+           giveni={H\bibinitperiod}}}%
+        {{hash=1195b8bd96eb77e7ecdd63ce5b3bd9fc}{%
+           family={Choi},
+           familyi={C\bibinitperiod},
+           given={Christopher},
+           giveni={C\bibinitperiod}}}%
+        {{hash=b457f7dd63c2b14b83452c28603dacd0}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Younghyun},
+           giveni={Y\bibinitperiod}}}%
+      }
+      \strng{namehash}{733bb53414ed0dc56fad7171e751c217}
+      \strng{fullhash}{b573d8fb86cb1037e4323f0eb74dbe22}
+      \strng{fullhashraw}{b573d8fb86cb1037e4323f0eb74dbe22}
+      \strng{bibnamehash}{733bb53414ed0dc56fad7171e751c217}
+      \strng{authorbibnamehash}{733bb53414ed0dc56fad7171e751c217}
+      \strng{authornamehash}{733bb53414ed0dc56fad7171e751c217}
+      \strng{authorfullhash}{b573d8fb86cb1037e4323f0eb74dbe22}
+      \strng{authorfullhashraw}{b573d8fb86cb1037e4323f0eb74dbe22}
+      \field{extraname}{2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{Advances in Neural Information Processing Systems, Datasets and Benchmarks Track}
+      \field{title}{MmCows: A Multimodal Dataset for Dairy Cattle Monitoring}
       \field{year}{2024}
     \endentry
     \entry{antognoli2025ani1}{article}{}{}
@@ -938,78 +1089,80 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Animals}
       \field{title}{Computer Vision in Dairy Farm Management: A Literature Review of Current Applications and Future Perspectives.}
       \field{year}{2025}
       \verb{doi}
-      \verb https://doi.org/10.3390/ani15172508
+      \verb 10.3390/ani15172508
       \endverb
     \endentry
-    \entry{attri2025ms90}{article}{}{}
+    \entry{attri2025saamvetnet}{article}{}{}
       \name{author}{9}{}{%
-        {{hash=f9453d9d61c306b9781730ebd99f57e0}{%
+        {{hash=60ce83154a943164c67cd7b46a45b72e}{%
            family={Attri},
            familyi={A\bibinitperiod},
-           given={I},
+           given={Ishana},
            giveni={I\bibinitperiod}}}%
-        {{hash=e4274429e0fc34d9c0cc4a62e03c8a7d}{%
+        {{hash=2c6930a049b5dcf5a298a90eb718a825}{%
            family={Vanita},
            familyi={V\bibinitperiod},
-           given={B},
+           given={Brij},
            giveni={B\bibinitperiod}}}%
-        {{hash=ff059a08ad05bd845331bcea081d36b9}{%
+        {{hash=0d56238cf7588db85f02169c0577218f}{%
            family={Rajput},
            familyi={R\bibinitperiod},
-           given={R},
+           given={Rajesh},
            giveni={R\bibinitperiod}}}%
-        {{hash=8854da968826ab6bc6ab0e3a0b0a18b7}{%
+        {{hash=d9950d4a3864ed72a1b122a74782a702}{%
            family={Awasthi},
            familyi={A\bibinitperiod},
-           given={LK},
-           giveni={L\bibinitperiod}}}%
-        {{hash=b199e8ce3e91232cf523f2bd440fb69a}{%
+           given={Lalit\bibnamedelima K.},
+           giveni={L\bibinitperiod\bibinitdelim K\bibinitperiod}}}%
+        {{hash=ae725cb4e77e4dd738a768dae51f261b}{%
            family={Thakur},
            familyi={T\bibinitperiod},
-           given={A},
+           given={Anil},
            giveni={A\bibinitperiod}}}%
-        {{hash=436cbbc07d0d5732aaed4756f511c139}{%
+        {{hash=d0db55500e9f9df183704fcfd1c735cc}{%
            family={Tripathi},
            familyi={T\bibinitperiod},
-           given={D},
+           given={Deepak},
            giveni={D\bibinitperiod}}}%
-        {{hash=73af9c252a939ad204193da04637508e}{%
+        {{hash=8d52a903ecbf2ea09ba6a5dd5a954fb5}{%
            family={Pathak},
            familyi={P\bibinitperiod},
-           given={V},
+           given={Vivek},
            giveni={V\bibinitperiod}}}%
-        {{hash=0d7333dc4a465b82575cc8085775d3e3}{%
+        {{hash=68f77c40a6743c3219a458d105440ff3}{%
            family={Shukla},
            familyi={S\bibinitperiod},
-           given={P},
+           given={Poonam},
            giveni={P\bibinitperiod}}}%
-        {{hash=e7b48cc37af5f47d086420a6c5c52d4f}{%
+        {{hash=2da3c22a96d1c2bba1801bd0662e4244}{%
            family={Gupta},
            familyi={G\bibinitperiod},
-           given={D},
+           given={Deepak},
            giveni={D\bibinitperiod}}}%
       }
-      \strng{namehash}{c578412ad50846723851e35b1d9a8ab1}
-      \strng{fullhash}{b303357d5b68e72bc78a85f606c06934}
-      \strng{fullhashraw}{b303357d5b68e72bc78a85f606c06934}
-      \strng{bibnamehash}{c578412ad50846723851e35b1d9a8ab1}
-      \strng{authorbibnamehash}{c578412ad50846723851e35b1d9a8ab1}
-      \strng{authornamehash}{c578412ad50846723851e35b1d9a8ab1}
-      \strng{authorfullhash}{b303357d5b68e72bc78a85f606c06934}
-      \strng{authorfullhashraw}{b303357d5b68e72bc78a85f606c06934}
+      \strng{namehash}{07d0d3c0b79543ab06efa435b4f3cd83}
+      \strng{fullhash}{29d25d980c0d1c740e0a434d85952cf8}
+      \strng{fullhashraw}{29d25d980c0d1c740e0a434d85952cf8}
+      \strng{bibnamehash}{07d0d3c0b79543ab06efa435b4f3cd83}
+      \strng{authorbibnamehash}{07d0d3c0b79543ab06efa435b4f3cd83}
+      \strng{authornamehash}{07d0d3c0b79543ab06efa435b4f3cd83}
+      \strng{authorfullhash}{29d25d980c0d1c740e0a434d85952cf8}
+      \strng{authorfullhashraw}{29d25d980c0d1c740e0a434d85952cf8}
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
-      \field{title}{SAAM-VetNet: an attention-based multi-task framework for animal disease detection and severity grading.}
+      \field{journaltitle}{Annals of Medicine and Surgery}
+      \field{number}{10}
+      \field{title}{SAAM-VetNet: an attention-based multi-task framework for animal disease detection and severity grading}
+      \field{volume}{87}
       \field{year}{2025}
       \verb{doi}
-      \verb https://doi.org/10.1097/ms9.0000000000003728
+      \verb 10.1097/MS9.0000000000003728
       \endverb
     \endentry
     \entry{gonçalves2025skaf}{article}{}{}
@@ -1042,11 +1195,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Journal of Animal Science}
       \field{title}{Computer vision analysis of luteal color Doppler ultrasonography for early and automated pregnancy diagnosis in Bos taurus beef cows.}
       \field{year}{2025}
       \verb{doi}
-      \verb https://doi.org/10.1093/jas/skaf166
+      \verb 10.1093/jas/skaf166
       \endverb
     \endentry
     \entry{liu2025vets}{article}{}{}
@@ -1094,11 +1247,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Veterinary Sciences}
       \field{title}{A Novel Lightweight Dairy Cattle Body Condition Scoring Model for Edge Devices Based on Tail Features and Attention Mechanisms.}
       \field{year}{2025}
       \verb{doi}
-      \verb https://doi.org/10.3390/vetsci12090906
+      \verb 10.3390/vetsci12090906
       \endverb
     \endentry
     \entry{palma2025ani1}{article}{}{}
@@ -1136,11 +1289,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Animals}
       \field{title}{AI and Data Analytics in the Dairy Farms: A Scoping Review.}
       \field{year}{2025}
       \verb{doi}
-      \verb https://doi.org/10.3390/ani15091291
+      \verb 10.3390/ani15091291
       \endverb
     \endentry
     \entry{sohan2025s415}{article}{}{}
@@ -1183,11 +1336,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Scientific Reports}
       \field{title}{Direct video-based spatiotemporal deep learning for cattle lameness detection.}
       \field{year}{2025}
       \verb{doi}
-      \verb https://doi.org/10.1038/s41598-025-29118-8
+      \verb 10.1038/s41598-025-29118-8
       \endverb
     \endentry
     \entry{szyc2025s251}{article}{}{}
@@ -1230,11 +1383,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Sensors}
       \field{title}{Video-Based Automated Lameness Detection for Dairy Cows.}
       \field{year}{2025}
       \verb{doi}
-      \verb https://doi.org/10.3390/s25185771
+      \verb 10.3390/s25185771
       \endverb
     \endentry
     \entry{asim2026s260}{article}{}{}
@@ -1272,11 +1425,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Sensors}
       \field{title}{Cattle Farming Activity Monitoring Using Advanced Deep Learning Approach.}
       \field{year}{2026}
       \verb{doi}
-      \verb https://doi.org/10.3390/s26030785
+      \verb 10.3390/s26030785
       \endverb
     \endentry
     \entry{bu2026jsaa}{article}{}{}
@@ -1329,11 +1482,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Spectrochimica Acta Part A: Molecular and Biomolecular Spectroscopy}
       \field{title}{Dual-channel self-supervised multi-task learning for spectral detection of soluble solids content and firmness in Korla fragrant pears.}
       \field{year}{2026}
       \verb{doi}
-      \verb https://doi.org/10.1016/j.saa.2026.127684
+      \verb 10.1016/j.saa.2026.127684
       \endverb
     \endentry
     \entry{guzhva2026s415}{article}{}{}
@@ -1376,11 +1529,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Scientific Reports}
       \field{title}{PickAMoo: LIDAR-enhanced mask R-CNN segmentation for precision weight estimation in dairy cattle using smartphone imaging.}
       \field{year}{2026}
       \verb{doi}
-      \verb https://doi.org/10.1038/s41598-026-54742-3
+      \verb 10.1038/s41598-026-54742-3
       \endverb
     \endentry
     \entry{lee2026ab26}{article}{}{}
@@ -1413,11 +1566,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Animal Bioscience}
       \field{title}{- Invited Review - Biosensors in precision livestock farming in dairy production: decoding animals' needs.}
       \field{year}{2026}
       \verb{doi}
-      \verb https://doi.org/10.5713/ab.260154
+      \verb 10.5713/ab.260154
       \endverb
     \endentry
     \entry{paneru2026jpsj}{article}{}{}
@@ -1470,11 +1623,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Poultry Science}
       \field{title}{Computer vision models for precision poultry farming: A narrative review of behavioral and welfare monitoring studies.}
       \field{year}{2026}
       \verb{doi}
-      \verb https://doi.org/10.1016/j.psj.2026.106887
+      \verb 10.1016/j.psj.2026.106887
       \endverb
     \endentry
     \entry{sandal2026v1}{article}{}{}
@@ -1502,11 +1655,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Research Square}
       \field{title}{Deep Learning for Tomato Disease Detection and Severity Assessment: A Systematic Analytical Review of Methods, Datasets, and Challenges}
       \field{year}{2026}
       \verb{doi}
-      \verb https://doi.org/10.21203/rs.3.rs-9600064/v1
+      \verb 10.21203/rs.3.rs-9600064/v1
       \endverb
     \endentry
     \entry{sani2026ab25}{article}{}{}
@@ -1544,11 +1697,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Animal Bioscience}
       \field{title}{- Invited Review - Application of precision livestock farming: challenges and opportunities.}
       \field{year}{2026}
       \verb{doi}
-      \verb https://doi.org/10.5713/ab.250895
+      \verb 10.5713/ab.250895
       \endverb
     \endentry
     \entry{shalaldeh2026biol}{article}{}{}
@@ -1586,11 +1739,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Biology}
       \field{title}{Estimation of Ewe Live Weight and Carcass Traits Using Advanced Hybrid Deep Learning and Multimodal Feature Fusion.}
       \field{year}{2026}
       \verb{doi}
-      \verb https://doi.org/10.3390/biology15100815
+      \verb 10.3390/biology15100815
       \endverb
     \endentry
     \entry{yao2026jds2}{article}{}{}
@@ -1643,11 +1796,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Journal of Dairy Science}
       \field{title}{Automated dairy cattle body condition score using side-view images and deep learning.}
       \field{year}{2026}
       \verb{doi}
-      \verb https://doi.org/10.3168/jds.2025-27759
+      \verb 10.3168/jds.2025-27759
       \endverb
     \endentry
     \entry{zin2026ab26}{article}{}{}
@@ -1675,11 +1828,11 @@
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Precision Agriculture}
+      \field{journaltitle}{Animal Bioscience}
       \field{title}{- Invited Review - Computer vision in precision livestock farming: artificial intelligence-driven technologies and applications for sustainable animal production.}
       \field{year}{2026}
       \verb{doi}
-      \verb https://doi.org/10.5713/ab.260165
+      \verb 10.5713/ab.260165
       \endverb
     \endentry
   \enddatalist

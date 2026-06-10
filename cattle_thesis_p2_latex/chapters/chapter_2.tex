@@ -28,7 +28,7 @@ This section shows a comprehensive analysis of related research arranged by task
 
 \subsection{Body Condition Scoring Research}
 
-Body condition scoring represents a highly studied task in cattle computer vision literature, with numerous papers addressing automated BCS assessment. Zin et al. (2026) \cite{zin2026ab26} explored BCS automation using Deep Learning architectures, demonstrating significant improvements in assessment accuracy and noting that deep learning methods provide robust feature extraction from Sensor Data. Yao et al. (2026) \cite{yao2026jds2} explored BCS automation using YOLO-based architectures, demonstrating significant improvements in assessment accuracy and noting that deep learning methods provide robust feature extraction from RGB Video/Image. Guzhva et al. (2026) \cite{guzhva2026s415} explored BCS automation using Mask R-CNN architectures, demonstrating significant improvements in assessment accuracy and noting that deep learning methods provide robust feature extraction from RGB-D/Depth. Liu et al. (2025) \cite{liu2025vets} explored BCS automation using EfficientNet architectures, demonstrating significant improvements in assessment accuracy and noting that deep learning methods provide robust feature extraction from RGB Video/Image. Antognoli et al. (2025) \cite{antognoli2025ani1} explored BCS automation using Deep Learning architectures, demonstrating significant improvements in assessment accuracy and noting that deep learning methods provide robust feature extraction from RGB Video/Image. Sani et al. (2026) \cite{sani2026ab25} explored BCS automation using CNN architectures, demonstrating significant improvements in assessment accuracy and noting that deep learning methods provide robust feature extraction from Sensor Data. Palma et al. (2025) \cite{palma2025ani1} explored BCS automation using CNN architectures, demonstrating significant improvements in assessment accuracy and noting that deep learning methods provide robust feature extraction from Sensor Data. Lee et al. (2026) \cite{lee2026ab26} explored BCS automation using Deep Learning architectures, demonstrating significant improvements in assessment accuracy and noting that deep learning methods provide robust feature extraction from Sensor Data. Gonçalves et al. (2025) \cite{gonçalves2025skaf} explored BCS automation using ResNet architectures, demonstrating significant improvements in assessment accuracy and noting that deep learning methods provide robust feature extraction from RGB Video/Image. 
+Body condition scoring represents a highly studied task in cattle computer vision literature, with numerous papers addressing automated BCS assessment. Yao et al. (2026) \cite{yao2026jds2} developed an automated dairy cattle body condition scoring system using side-view images and deep learning, demonstrating that robust feature extraction can effectively estimate body fat reserves. Liu et al. (2025) \cite{liu2025vets} proposed a novel lightweight scoring model for edge devices based on tail features and attention mechanisms, focusing on real-time inference constraints on farm deployments. Guzhva et al. (2026) \cite{guzhva2026s415} tackled a weight-estimation and BCS-adjacent cattle vision problem by employing LIDAR-enhanced Mask R-CNN segmentation for precision weight estimation (rather than direct BCS scoring) in dairy cattle using smartphone imaging. Finally, Antognoli et al. (2025) \cite{antognoli2025ani1} provided a comprehensive literature review paper (rather than an empirical model result study) summarizing current computer vision applications in dairy farm management, highlighting BCS as a primary metric for systemic health evaluation.
 
 \begin{table}[H]
 \centering
@@ -37,25 +37,15 @@ Body condition scoring represents a highly studied task in cattle computer visio
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|>{\raggedright\arraybackslash}p{2.5cm}|>{\raggedright\arraybackslash}p{3.8cm}|>{\raggedright\arraybackslash}p{2.5cm}|>{\raggedright\arraybackslash}p{2.0cm}|>{\raggedright\arraybackslash}p{2.0cm}|}
 \hline
-\textbf{Reference} & \textbf{Architecture} & \textbf{Input} & \textbf{Accuracy} & \textbf{Dataset} \\
+\textbf{Reference} & \textbf{Architecture} & \textbf{Input} & \textbf{Type} & \textbf{Dataset} \\
 \hline
-Zin 2026 & Deep Learning & Sensor Data & High & Various \\
+Yao 2026 \cite{yao2026jds2} & Deep Learning & Side-view RGB & Empirical & Various \\
 \hline
-Yao 2026 & YOLO-based & RGB Video / Image & 99.5\% & Various \\
+Liu 2025 \cite{liu2025vets} & Lightweight CNN + Attention & Tail Features & Empirical & Various \\
 \hline
-Guzhva 2026 & Mask R-CNN & RGB-D / Depth & 95\% & Various \\
+Guzhva 2026 \cite{guzhva2026s415} & Mask R-CNN + LIDAR & RGB-D / Smartphone & Empirical & Various \\
 \hline
-Liu 2025 & EfficientNet & RGB Video / Image & 91.10\% & Various \\
-\hline
-Antognoli 2025 & Deep Learning & RGB Video / Image & High & Various \\
-\hline
-Sani 2026 & CNN & Sensor Data & High & Various \\
-\hline
-Palma 2025 & CNN & Sensor Data & 87\% & Various \\
-\hline
-Lee 2026 & Deep Learning & Sensor Data & High & Various \\
-\hline
-Gonçalves 2025 & ResNet & RGB Video / Image & 84\% & Various \\
+Antognoli 2025 \cite{antognoli2025ani1} & N/A (Review) & Vision/Video & Review & N/A \\
 \hline
 \end{tabular}%
 }
@@ -63,7 +53,7 @@ Gonçalves 2025 & ResNet & RGB Video / Image & 84\% & Various \\
 
 \subsection{Lameness Detection Research}
 
-Lameness detection research mostly utilizes video-based analysis with pose estimation as well as gait analysis pipelines. Paneru et al. (2026) \cite{paneru2026jpsj} developed a lameness detection system utilizing YOLO-based, focusing on the extraction of locomotion patterns from RGB Video / Image to achieve robust classification. Sohan et al. (2025) \cite{sohan2025s415} developed a lameness detection system utilizing CNN, focusing on the extraction of locomotion patterns from RGB-D / Depth to achieve robust classification. Szyc et al. (2025) \cite{szyc2025s251} developed a lameness detection system utilizing Deep Learning, focusing on the extraction of locomotion patterns from RGB Video / Image to achieve robust classification. Zin et al. (2026) \cite{zin2026ab26} developed a lameness detection system utilizing Deep Learning, focusing on the extraction of locomotion patterns from Sensor Data to achieve robust classification. Sani et al. (2026) \cite{sani2026ab25} developed a lameness detection system utilizing CNN, focusing on the extraction of locomotion patterns from Sensor Data to achieve robust classification. 
+Lameness detection research mostly utilizes video-based analysis with pose estimation as well as gait analysis pipelines. Sohan et al. (2025) \cite{sohan2025s415} developed a lameness detection system focusing on the extraction of locomotion patterns from video using spatiotemporal deep learning to achieve robust classification. Similarly, Szyc et al. (2025) \cite{szyc2025s251} introduced a video-based automated lameness detection framework for dairy cows, demonstrating the potential of sequential analysis for identifying abnormal gait signatures. 
 
 A comparative analysis of these methods highlights the critical role of deployment conditions and target granularity.
 
@@ -74,17 +64,11 @@ A comparative analysis of these methods highlights the critical role of deployme
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|>{\raggedright\arraybackslash}p{2.4cm}|>{\raggedright\arraybackslash}p{3.4cm}|>{\raggedright\arraybackslash}p{2.5cm}|>{\raggedright\arraybackslash}p{2.0cm}|>{\raggedright\arraybackslash}p{2.5cm}|}
 \hline
-\textbf{Reference} & \textbf{Architecture} & \textbf{Input} & \textbf{Accuracy} & \textbf{Innovation} \\
+\textbf{Reference} & \textbf{Architecture} & \textbf{Input} & \textbf{Type} & \textbf{Innovation} \\
 \hline
-Paneru 2026 & YOLO-based & RGB Video / Image & High & DL-based Lameness \\
+Sohan 2025 \cite{sohan2025s415} & Spatiotemporal DL & RGB Video & Empirical & Video-based Lameness \\
 \hline
-Sohan 2025 & CNN & RGB-D / Depth & 90\% & DL-based Lameness \\
-\hline
-Szyc 2025 & Deep Learning & RGB Video / Image & 82\% & DL-based Lameness \\
-\hline
-Zin 2026 & Deep Learning & Sensor Data & High & DL-based Lameness \\
-\hline
-Sani 2026 & CNN & Sensor Data & High & DL-based Lameness \\
+Szyc 2025 \cite{szyc2025s251} & Deep Learning & RGB Video & Empirical & Video-based Lameness \\
 \hline
 \end{tabular}%
 }
@@ -92,7 +76,7 @@ Sani 2026 & CNN & Sensor Data & High & DL-based Lameness \\
 
 \subsection{Behavior Recognition Research}
 
-Behavior recognition covers vision-based as well as sensor-based approaches. Paneru et al. (2026) \cite{paneru2026jpsj} contributed to the field by leveraging YOLO-based for analyzing cattle activities through RGB Video / Image, achieving an accuracy of High. Asim et al. (2026) \cite{asim2026s260} contributed to the field by leveraging YOLO-based for analyzing cattle activities through Sensor Data, achieving an accuracy of 91.11\%. Zin et al. (2026) \cite{zin2026ab26} contributed to the field by leveraging Deep Learning for analyzing cattle activities through Sensor Data, achieving an accuracy of High. Liu et al. (2025) \cite{liu2025vets} contributed to the field by leveraging EfficientNet for analyzing cattle activities through RGB Video / Image, achieving an accuracy of 91.10\%. Sani et al. (2026) \cite{sani2026ab25} contributed to the field by leveraging CNN for analyzing cattle activities through Sensor Data, achieving an accuracy of High. 
+Behavior recognition covers vision-based as well as sensor-based approaches. Asim et al. (2026) \cite{asim2026s260} contributed to the field by leveraging an advanced deep learning approach for analyzing cattle farming activity, focusing on robust monitoring using sensor data.
 
 \begin{table}[H]
 \centering
@@ -101,17 +85,9 @@ Behavior recognition covers vision-based as well as sensor-based approaches. Pan
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|>{\raggedright\arraybackslash}p{2.5cm}|>{\raggedright\arraybackslash}p{3.8cm}|>{\raggedright\arraybackslash}p{2.6cm}|>{\raggedright\arraybackslash}p{2.0cm}|>{\raggedright\arraybackslash}p{2.0cm}|}
 \hline
-\textbf{Reference} & \textbf{Architecture} & \textbf{Input} & \textbf{Accuracy} & \textbf{Dataset} \\
+\textbf{Reference} & \textbf{Architecture} & \textbf{Input} & \textbf{Type} & \textbf{Dataset} \\
 \hline
-Paneru 2026 & YOLO-based & RGB Video / Image & High & Various \\
-\hline
-Asim 2026 & YOLO-based & Sensor Data & 91.11\% & Various \\
-\hline
-Zin 2026 & Deep Learning & Sensor Data & High & Various \\
-\hline
-Liu 2025 & EfficientNet & RGB Video / Image & 91.10\% & Various \\
-\hline
-Sani 2026 & CNN & Sensor Data & High & Various \\
+Asim 2026 \cite{asim2026s260} & Deep Learning & Sensor Data & Empirical & Various \\
 \hline
 \end{tabular}%
 }
@@ -144,26 +120,34 @@ Andrew 2017 & Coat Pattern Matching & RGB-D & Robust & Private \\
 
 \subsection{Multi-Task Learning and Survey Papers}
 
-Numerous papers provide foundational knowledge for multi-task learning approaches and comprehensive surveys of agricultural AI. Shalaldeh et al. (2026) \cite{shalaldeh2026biol} investigated multi-task paradigms using ResNet, demonstrating improved efficiency when concurrently predicting multiple traits in agricultural domains. Attri et al. (2025) \cite{attri2025ms90} investigated multi-task paradigms using EfficientNet, demonstrating improved efficiency when concurrently predicting multiple traits in agricultural domains. Sandal et al. (2026) \cite{sandal2026v1} investigated multi-task paradigms using CNN, demonstrating improved efficiency when concurrently predicting multiple traits in agricultural domains. Bu et al. (2026) \cite{bu2026jsaa} investigated multi-task paradigms using CNN, demonstrating improved efficiency when concurrently predicting multiple traits in agricultural domains. 
+Beyond direct cattle monitoring, several studies provide foundational knowledge for multi-task learning (MTL) approaches across diverse agricultural domains, demonstrating the broad applicability of these architectures. Shalaldeh et al. (2026) \cite{shalaldeh2026biol} investigated hybrid deep learning and multimodal feature fusion for estimating ewe live weight and carcass traits, showcasing MTL's utility in sheep farming. Attri et al. (2025) \cite{attri2025saamvetnet} proposed SAAM-VetNet, an attention-based multi-task framework for animal disease detection and severity grading. Extending beyond livestock, Sandal et al. (2026) \cite{sandal2026v1} reviewed deep learning methods for tomato disease detection and severity assessment as tomato/plant-disease cross-domain work, while Bu et al. (2026) \cite{bu2026jsaa} explored self-supervised MTL for spectral detection in pears as pear/spectral cross-domain MTL work, illustrating cross-domain efficiency gains.
+
+Furthermore, several comprehensive survey/review papers (rather than empirical model result papers) outline the broader landscape of precision livestock farming (PLF) and computer vision. Zin et al. (2026) \cite{zin2026ab26} and Sani et al. (2026) \cite{sani2026ab25} reviewed AI-driven technologies and challenges in PLF, respectively. Palma et al. (2025) \cite{palma2025ani1} provided a scoping review of data analytics in dairy farms, and Lee et al. (2026) \cite{lee2026ab26} reviewed biosensors for decoding animal needs. Finally, studies such as Paneru et al. (2026) \cite{paneru2026jpsj} (focusing on a narrative review of poultry welfare and cross-domain PLF vision, rather than cattle-specific models) and Gonçalves et al. (2025) \cite{gonçalves2025skaf} (focusing on allied agricultural computer vision for pregnancy diagnosis, rather than BCS or behavior monitoring) highlight the expanding role of computer vision in allied agricultural tasks. Crawshaw's (2020) \cite{crawshaw2020mtl} survey on deep multi-task learning remains a foundational taxonomy guiding our architectural choices.
 
 \begin{table}[H]
 \centering
-\caption{Summary of MTL, Survey, and Other Papers}
+\caption{Summary of MTL, Survey, and Cross-Domain Papers}
 \label{tab:mtl_papers}
 \resizebox{\textwidth}{!}{%
 \begin{tabular}{|>{\raggedright\arraybackslash}p{3.0cm}|>{\raggedright\arraybackslash}p{3.5cm}|>{\raggedright\arraybackslash}p{2.8cm}|>{\raggedright\arraybackslash}p{4.1cm}|}
 \hline
-\textbf{Reference} & \textbf{Focus} & \textbf{Type} & \textbf{Key Contribution} \\
+\textbf{Reference} & \textbf{Focus Domain} & \textbf{Type} & \textbf{Key Contribution} \\
 \hline
-Shalaldeh 2026 & Multi-Task Analysis & Method / Survey & Agricultural MTL \\
+Shalaldeh 2026 \cite{shalaldeh2026biol} & Sheep (Ewes) & Empirical & Multimodal MTL for weight estimation \\
 \hline
-Attri 2025 & Multi-Task Analysis & Method / Survey & Agricultural MTL \\
+Attri 2025 \cite{attri2025saamvetnet} & General Livestock & Empirical & SAAM-VetNet multi-task disease detection \\
 \hline
-Sandal 2026 & Multi-Task Analysis & Method / Survey & Agricultural MTL \\
+Sandal 2026 \cite{sandal2026v1} & Tomatoes & Review & Tomato/plant-disease cross-domain review \\
 \hline
-Bu 2026 & Multi-Task Analysis & Method / Survey & Agricultural MTL \\
+Bu 2026 \cite{bu2026jsaa} & Pears & Empirical & Pear/spectral cross-domain MTL \\
 \hline
-Crawshaw 2020 & Multi-Task Learning & Survey & MTL taxonomy and guidelines \\
+Zin 2026 \cite{zin2026ab26} & General PLF & Review & Computer vision in PLF (Review) \\
+\hline
+Sani 2026 \cite{sani2026ab25} & General PLF & Review & PLF challenges and opportunities (Review) \\
+\hline
+Palma 2025 \cite{palma2025ani1} & Dairy Farms & Review & AI and Data Analytics scoping review (Review) \\
+\hline
+Crawshaw 2020 \cite{crawshaw2020mtl} & Deep Learning & Review & MTL taxonomy and guidelines \\
 \hline
 \end{tabular}%
 }
@@ -173,7 +157,7 @@ Crawshaw 2020 & Multi-Task Learning & Survey & MTL taxonomy and guidelines \\
 
 The structured review of 33 papers reveals many critical insights that directly inform our proposed methodology.
 
-The substantial majority of papers (89\%) rely on private datasets which creates a reproducibility crisis. Among them only a small fraction relies on publicly available cattle-specific datasets, yet they still obtain competitive performance, indicating that public datasets can efficiently support high-quality research. Our targeted use of public datasets helps bridge this gap, enabling total reproducibility as well as fair benchmarking.
+The substantial majority of papers (29 of 33, $\approx 88\%$) rely on private datasets which creates a reproducibility crisis. Among them only a small fraction relies on publicly available cattle-specific datasets, yet they still obtain competitive performance, indicating that public datasets can efficiently support high-quality research. Our targeted use of public datasets helps bridge this gap, enabling a more transparent and reproducibility-oriented approach, using public datasets and documented preprocessing/splits, as well as fair benchmarking.
 
 Despite being consistently raised on multi-task learning in most of the literature, no existing paper integrates BCS, behavior recognition, lameness detection, and individual identification in a unified framework. Most of the papers address single tasks in isolation. Our unified four task framework represents a true novelty with potential for improved efficiency and cross task learning. To substantiate this novelty claim, an exhaustive literature search methodology was executed. Standard academic databases (including Google Scholar, IEEE Xplore, ScienceDirect, and MDPI) were systematically queried using combinations of search terms: (\textit{``cattle''} OR \textit{``dairy cow''}) AND (\textit{``body condition score''} OR \textit{``BCS''} OR \textit{``lameness''} OR \textit{``behavior''} OR \textit{``activity recognition''} OR \textit{``re-identification''} OR \textit{``individual ID''}) AND (\textit{``multi-task learning''} OR \textit{``deep learning''} OR \textit{``computer vision''}). Inclusion criteria prioritized peer-reviewed journal articles and conference papers published between 2018 and 2026. Exclusion criteria filtered out studies relying purely on wearable sensors (such as collar accelerometers) without visual modalities, and papers written in languages other than English. Out of 78 initially screened records, 33 primary papers were critically analyzed in detail. This systematic mapping confirmed the complete absence of any unified end-to-end vision framework executing all four core health monitoring tasks concurrently under a shared representation model.
 
@@ -194,17 +178,17 @@ Comprehensive search reveals there are no publicly available thermal or infrared
 \hline
 \textbf{Technique} & \textbf{Platform} & \textbf{Accuracy} & \textbf{Strength} & \textbf{Weakness} \\
 \hline
-EfficientNet + SE & RGB BCS & 93.77\% & High accuracy, attention & Single task \\
+EfficientNet + Attention \cite{liu2025vets} & RGB BCS & 91.10\% & High accuracy, lightweight & Single task \\
 \hline
-BCS-YOLO + KD & RGB BCS & 92.7\% & Edge-ready, distilled & Single task \\
+YOLO-based \cite{yao2026jds2} & RGB BCS & N/A & Edge-ready & Single task \\
 \hline
-Detectron2 + SORT \cite{deepsort2017} & Depth Lameness & 99.94\% & Excellent detection & Requires depth \\
+Spatiotemporal DL \cite{sohan2025s415} & RGB Lameness & N/A & Excellent detection & Single task \\
 \hline
-CNN-LSTM & RGB Behavior & 97.35\% & Temporal modeling & Private data \\
+Advanced DL \cite{asim2026s260} & Sensor Behavior & 91.11\% & Temporal modeling & Requires sensors \\
 \hline
-XGBoost + DWT & IMU Behavior & 91.8\% & Public benchmark & Requires sensors \\
+Deep Metric Learning \cite{andrew2021opencows} & RGB ID & 98.2\% & Robust identification & Needs overhead camera \\
 \hline
-MTL Survey & Cross-platform & N/A & Guidelines & No implementation \\
+MTL Survey \cite{crawshaw2020mtl} & Cross-platform & N/A & Guidelines & No implementation \\
 \hline
 \end{tabular}%
 }
