@@ -11,8 +11,8 @@ The primary objective of this research is to construct a unified, lightweight, a
 The pipeline is split into three main segments:
 \begin{enumerate}
     \item \textbf{Cattle Detection and Cropping:} YOLOv8-Nano is applied to locate the cow and extract its bounding box crop, eliminating background farm clutter and normalizing the input.
-    \item \textbf{Feature Extraction:} The cropped images or sequences are processed by a shared EfficientNet-B0 encoder enhanced with a Convolutional Block Attention Module (CBAM) to spotlight key anatomical indicators.
-    \item \textbf{Task Prediction:} The feature vectors are fed into task-specific heads: ordinal regression for BCS, focal-loss classification for Behavior, sequence-based LSTM for Lameness, and classification for Cow ID.
+    \item \textbf{Feature Extraction:} The cropped images or sequences are processed by a shared EfficientNet-B0 \cite{efficientnet2019} encoder enhanced with a Convolutional Block Attention Module (CBAM) \cite{cbam2018} to spotlight key anatomical indicators.
+    \item \textbf{Task Prediction:} The feature vectors are fed into task-specific heads: ordinal regression for BCS, focal-loss classification \cite{focalloss2017} for Behavior, sequence-based LSTM for Lameness, and classification for Cow ID.
 \end{enumerate}
 
 \section{Data Collection and Preprocessing}
@@ -20,11 +20,11 @@ To establish a fully reproducible framework, only publicly available cattle data
 
 \subsection{Dataset Profiles}
 \begin{itemize}
-    \item \textbf{ScienceDB BCS Dataset:} Consists of 53,566 high-resolution RGB images of dairy cows taken from a rear-view angle. The body condition scores are annotated on a 5-point scale with 0.25 increments, representing five classes: $\{3.25, 3.50, 3.75, 4.00, 4.25\}$.
-    \item \textbf{Dryad BCS Dataset:} Contains 5,923 rear-view images captured in a Depth Grayscale Edge (DGE) format (combining depth coordinates, grayscale intensity, and Canny edge maps as three channels). The annotations are integer scores ranging from 2 to 6, corresponding to five distinct ordinal classes.
-    \item \textbf{MmCows Behavior Dataset:} Includes 213,686 crop frames extracted from continuous farm surveillance videos. The dataset is labeled into seven behavior classes: walking, standing, feeding head up, feeding head down, licking, drinking, and lying.
-    \item \textbf{CattleLameness Dataset:} Contains side-view walking video clips of cows. We compiled 50 videos (25 labeled as Lame and 25 as Normal/Sound) for spatiotemporal sequence modeling.
-    \item \textbf{OpenCows2020 Dataset:} Consists of 4,736 images of cows labeled by their unique individual identity across 46 classes, enabling vision-based biometrics.
+    \item \textbf{ScienceDB BCS Dataset \cite{sciencedb2024}:} Consists of 53,566 high-resolution RGB images of dairy cows taken from a rear-view angle. The body condition scores are annotated on a 5-point scale with 0.25 increments, representing five classes: $\{3.25, 3.50, 3.75, 4.00, 4.25\}$.
+    \item \textbf{Dryad BCS Dataset \cite{dryad2024}:} Contains 5,923 rear-view images captured in a Depth Grayscale Edge (DGE) format (combining depth coordinates, grayscale intensity, and Canny edge maps as three channels). The annotations are integer scores ranging from 2 to 6, corresponding to five distinct ordinal classes.
+    \item \textbf{MmCows Behavior Dataset \cite{mmcows2024}:} Includes 213,686 crop frames extracted from continuous farm surveillance videos. The dataset is labeled into seven behavior classes: walking, standing, feeding head up, feeding head down, licking, drinking, and lying.
+    \item \textbf{CattleLameness Dataset \cite{cattlelameness2024}:} Contains side-view walking video clips of cows. We compiled 50 videos (25 labeled as Lame and 25 as Normal/Sound) for spatiotemporal sequence modeling.
+    \item \textbf{OpenCows2020 Dataset \cite{opencows2020}:} Consists of 4,736 images of cows labeled by their unique individual identity across 46 classes, enabling vision-based biometrics.
     \item \textbf{CBVD-5 Dataset:} Used exclusively as an independent test set for behavior, consisting of 2,000 balanced images of cattle behaviors to evaluate model generalization under domain shift.
 \end{itemize}
 
@@ -45,10 +45,10 @@ The encoder backbone is initialized with ImageNet-pretrained weights from timm:
 \begin{equation}
     F_{\text{raw}} = \text{Encoder}(X) \quad F_{\text{raw}} \in \mathbb{R}^{B \times C \times H \times W}
 \end{equation}
-EfficientNet-B0 (5.3M parameters) and MobileNetV3-Small (2.5M parameters) were evaluated, with EfficientNet-B0 selected as the final backbone due to its superior feature representation.
+EfficientNet-B0 \cite{efficientnet2019} (5.3M parameters) and MobileNetV3-Small \cite{mobilenetv3} (2.5M parameters) were evaluated, with EfficientNet-B0 selected as the final backbone due to its superior feature representation.
 
 \subsection{CBAM Attention Module}
-A Convolutional Block Attention Module (CBAM) is inserted immediately after the backbone's final feature map.
+A Convolutional Block Attention Module (CBAM) \cite{cbam2018} is inserted immediately after the backbone's final feature map.
 \begin{itemize}
     \item \textbf{Channel Attention:} Identifies ``what'' channels contain relevant signal using average and max pooling:
     \begin{equation}
@@ -74,7 +74,7 @@ The feature vector is routed to four independent task heads:
 Each task is optimized using a loss function tailored to its specific mathematical properties:
 
 \subsection{Consistent Rank Logits (CORAL) Loss for BCS}
-To preserve the natural ordering of body condition scores, ordinal regression was formulated. For $K$ classes (where $K=5$), the model outputs $K-1=4$ binary logits. The loss is computed as the sum of binary cross-entropies:
+To preserve the natural ordering of body condition scores, ordinal regression using the Consistent Rank Logits (CORAL) framework \cite{coral2019} was formulated. For $K$ classes (where $K=5$), the model outputs $K-1=4$ binary logits. The loss is computed as the sum of binary cross-entropies:
 \begin{equation}
     L_{\text{BCS}} = -\frac{1}{K-1} \sum_{i=1}^{K-1} \left[ y_i \log(\sigma(g_i)) + (1 - y_i) \log(1 - \sigma(g_i)) \right]
 \end{equation}
@@ -84,7 +84,7 @@ where $y_i = \mathbb{I}(y > i)$ is the binary rank representation of the actual 
 \end{equation}
 
 \subsection{Focal Loss for Behavior Classification}
-To prevent the overwhelming majority classes from dominating training gradients, Focal Loss is applied to the behavior outputs:
+To prevent the overwhelming majority classes from dominating training gradients, Focal Loss \cite{focalloss2017} is applied to the behavior outputs:
 \begin{equation}
     L_{\text{Behavior}} = -\alpha_t (1 - p_t)^\gamma \log(p_t)
 \end{equation}

@@ -1,0 +1,107 @@
+HEADER
+Title: Multi-Task Deep Learning Framework for Unified Cattle Health and Behavior Monitoring
+Authors: Hasin Ishrak, Namira Abrar Haque, Sanjida Akter Bithi, Shouvik Banik, Nusrat Lamya Faruk
+Affiliation: Department of Computer Science and Engineering, BRAC University
+Supervisors: Supervisor: Dr. Md. Khalilur Rahman | Co-Supervisor: Mehedi Hasan Emo
+
+1. ABSTRACT
+This thesis proposes a unified, lightweight, spatiotemporal multi-task deep learning framework for cattle monitoring from video inputs. It simultaneously addresses Body Condition Scoring (BCS), behavior recognition, lameness detection, and individual cow identification using only public datasets. The model employs a shared EfficientNet-B0 backbone with CBAM attention and task-specific heads, with temporal modeling via LSTM for sequence analysis. The framework reduces edge VRAM requirements by about 75% compared with deploying four separate models, making it suitable for low-cost edge devices.
+
+2. RESEARCH OBJECTIVES
+1. Build a unified multi-task framework for four cattle monitoring tasks.
+2. Use only publicly available datasets to ensure reproducibility.
+3. Develop a lightweight, edge-deployable architecture using shared feature learning.
+4. Compare single-task and multi-task performance and analyze generalization.
+
+3. PROBLEM STATEMENT
+- Existing studies treat cattle monitoring tasks in isolation.
+- Many rely on private datasets, limiting reproducibility.
+- Cross-dataset evaluation is rarely performed.
+- Models often require high-end GPUs, unsuitable for edge use.
+(Arrow Text): A unified, low-cost, vision-based framework is needed to deliver reliable, real-time cattle health and behavior insights.
+
+4. DATA COLLECTION & PREPROCESSING
+Table:
+- ScienceDB: Body Condition Scoring (BCS) | 53,566 images
+- Dryad: Depth Grayscale Edge (DGE) for BCS | 5,923 images
+- MmCows: Behavior recognition (7 classes, severe imbalance) | 21,000+ capped frames, Imbalance: 42:1
+- CattleLameness: Locomotion / lameness analysis | 50 video clips
+- OpenCows2020: Cow identification | 4,736 images
+
+Preprocessing Pipeline:
+Input Video / RGB Cameras / Public Datasets -> YOLOv8-Nano Detection & Cropping -> Resize & Normalize -> Augmentation (Flip, Color, etc.) -> Sequence Formation (Lameness) -> Class-Imbalance Handling
+Bottom Text: Consistent preprocessing ensures quality inputs and balanced training.
+
+5. PROPOSED METHODOLOGY / FRAMEWORK
+Inputs:
+- Input Video / RGB Cameras
+- Public Datasets (ScienceDB, Dryad, MmCows, CattleLameness, OpenCows2020)
+- YOLOv8-Nano Cattle Detection & Cropping
+
+Shared Encoder:
+- SHARED ENCODER (EfficientNet-B0 + CBAM)
+- + CBAM Attention
+
+Task-Specific Heads:
+- BCS HEAD (Ordinal Regression) CORAL Loss
+- BEHAVIOR HEAD (Temporal LSTM) Focal Loss
+- LAMENESS HEAD (LSTM Sequence Modeling + Binary Classification)
+- COW ID HEAD (Classification / Top-1 Accuracy)
+
+Outputs:
+- Body Condition Score (1-5)
+- Behavior Alerts
+- Lameness Detection
+- Individual ID / Tracking
+
+Training Strategy:
+- Phased Sequential Training: BCS Warm-up -> Behavior Warm-up -> Lameness Warm-up -> ID Warm-up
+- Joint Optimization (Weighted Loss): L = 0.35 L_BCS + 0.35 L_Beh + 0.15 L_Lam + 0.15 L_ID
+
+Framework Benefits:
+- Unified Inference (Simple Pipeline)
+- ~75% Lower VRAM Needs
+- Edge-Deployable & Lightweight
+- Real-Time Monitoring Ready
+- End-to-End Trainable
+
+6. BACKBONE SELECTION / MODEL TRAINING
+Table Columns: Backbone | BCS (MAE) ScienceDB | BCS (MAE) Dryad | Behavior (Macro F1) | Lameness (AUC) | Cow ID (Top-1) | Params (M)
+- ResNet-18: 0.8675 | 0.5800 | 0.7134 | 0.7200 | 45.56% | 11.2
+- MobileNetV3-Small: 0.5250 | 0.7090 | 0.6810 | 0.7228 | 78.83% | 2.5
+- ResNet-50: 0.6300 | 0.6485 | 0.7037 | 0.7444 | 53.02% | 23.5
+- DenseNet121: 0.5875 | 0.6292 | 0.7366 | 0.7944 | 82.46% | 7.0
+- EfficientNet-B0: 0.6175 | 0.5566 | 0.7445 | 0.9829 | 86.49% | 5.3
+Bottom Text: EfficientNet-B0 is selected as the shared backbone due to the strongest overall performance, especially in Lameness and Cow ID tasks, with only 5.3M parameters.
+
+7. RESULTS & VISUALIZATION
+Key Performance Summary Table:
+- BCS (MAE): 0.5566 (ScienceDB) -> 0.7827 (MAE)
+- Behavior (Macro F1): 0.7445 (DenseNet121) -> 0.4948 (Macro F1)
+- Lameness: 93.05% Accuracy, 0.9829 AUC (Spatial Baseline) -> 80.00% Accuracy*, 1.0000 AUC (Spatiotemporal)
+- Cow ID (Top-1 Acc): 86.49% (EfficientNet-B0) -> 97.58% (Spatiotemporal)
+
+Bar Chart Numbers (Blue / Orange):
+- Behavior F1: 0.38 / 0.49
+- Lameness Acc: 0.95 / 0.80
+- Lameness AUC: 0.99 / 1.00
+- ID Acc: 0.95 / 0.98
+
+8. KEY ANALYSIS
+- EfficientNet-B0 achieved the best overall single-task performance.
+- Temporal sequence modeling improved lameness detection and cow identification.
+- CORAL loss improved BCS over cross-entropy: MAE 0.5566 vs 0.6940.
+- Focal Loss improved behavior recognition under class imbalance: Macro F1 0.7445 vs 0.7074.
+- Multi-task learning introduces negative transfer for some spatial tasks, but cuts memory/latency by about 75%.
+- Cross-dataset behavior performance on CBVD-5 dropped to Macro F1 0.1245, showing strong domain shift.
+
+9. CONCLUSION
+This work presents a reproducible public-dataset multi-task pipeline for unified cattle health and behavior monitoring. The model is suitable for edge-oriented deployment and demonstrates especially strong gains for sequence-based lameness analysis and video-based cow identification. Future work should address negative transfer using gradient balancing methods such as GradNorm or PCGrad and improve multi-farm generalization.
+
+10. REFERENCES
+1. Liang, J., Wang, H., & Sun, Y. (2025). ScienceDB: A large-scale dataset and benchmark for automatic body condition scoring in dairy cows. Computers and Electronics in Agriculture, 225, 109372.
+2. Dottorini, T., Nicotera, C., & Sarti, L. (2025). MmCows: A multimodal and multi-view dataset for zero-shot behavior recognition in cattle. Computers and Electronics in Agriculture, 226, 109410.
+3. Russello, G., Meneguz, M., Visentin, D., Cozzi, G., & Gottardo, P. (2024). Sequence-based lameness detection in dairy cows using deep learning. Applied Animal Behaviour Science, 274, 106241.
+
+FOOTER
+Pre-Thesis 2: Poster Presentation | BRAC UNIVERSITY

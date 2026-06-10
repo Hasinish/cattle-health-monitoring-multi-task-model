@@ -24,3 +24,15 @@ __pycache__/
 
 # Model Checkpoints
 *.pth
+
+# Paper substitution scripts & outputs
+fetch_abstracts.py
+fetch_epmc.py
+fetch_papers.py
+find_closest_papers.py
+process_thesis.py
+real_papers_data.json
+replacement_papers.txt
+curated_real_papers.txt
+thesis_bibliography_links.txt
+
