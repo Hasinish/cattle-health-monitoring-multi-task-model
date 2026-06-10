@@ -14,7 +14,7 @@ The implementation of the multi-task deep learning framework for cattle health m
     \item \textbf{Programming Language:} Python 3.12.3.
     \item \textbf{Deep Learning Library:} PyTorch 2.5.1 + CUDA 12.1.
     \item \textbf{Backbone Repository:} PyTorch Image Models (\texttt{timm}) library for loading pre-trained EfficientNet-B0 and MobileNetV3 architectures.
-    \item \textbf{Computer Vision Tools:} OpenCV 4.9.0 (for real-time video streaming, bounding box visualization, and frame interpolation) and Albumentations 1.4.0 (for spatial and pixel-level data augmentations).
+    \item \textbf{Computer Vision Tools:} Computer vision operations are implemented using OpenCV 4.9.0 for video processing and Albumentations 1.4.0 for image augmentation and preprocessing tasks.
     \item \textbf{Data Pipelines:} Pandas, NumPy, and Scikit-learn for group-wise dataset splits and metric computations.
 \end{itemize}
 
@@ -49,13 +49,13 @@ The proposed system and agricultural metrics are developed according to the foll
 \end{itemize}
 
 \section{Project Management Plan}
-To manage the multi-task and multi-backbone complexity of the project, the workload was distributed across 5 team members based on their base backbone assignments and specific tasks:
+The workload was divided among five team members according to their base backbone assignments and particular tasks to handle the multi-task and multi-backbone complexity of the project:
 \begin{itemize}
-    \item \textbf{Hasin Ishrak:} Preprocessed the primary datasets, established the baseline training pipelines, evaluated the ResNet-18 baseline, and conducted the primary ablation studies (such as CBAM evaluations and RGB vs. Depth modalities).
-    \item \textbf{Namira Abrar Haque:} Evaluated the MobileNetV3-Small baseline, analyzing the performance of highly compressed networks for resource-constrained edge deployment.
-    \item \textbf{Sanjida Akter Bithi:} Evaluated the ResNet-50 baseline, evaluating the benefits of deeper architectures on spatial feature extraction.
-    \item \textbf{Shouvik Banik:} Evaluated the DenseNet121 baseline, studying dense feature connectivity for multi-class behavior recognition.
-    \item \textbf{Nusrat Lamya Faruk:} Evaluated the winning EfficientNet-B0 baseline, implemented the final spatiotemporal multi-task model, integrated the LSTM sequence-tracking layers, and deployed the real-time visualization interface.
+    \item \textbf{Hasin Ishrak:} Preprocessed the main datasets, implemented the baseline training pipelines, evaluated the ResNet-18 baseline, and executed the primary ablation studies including CBAM evaluations and the comparison between RGB and Depth modalities. 
+    \item \textbf{Namira Abrar Haque:} Evaluated the MobileNetV3-Small baseline and examined how highly compressed networks perform for resource-constrained edge deployment. 
+    \item \textbf{Sanjida Akter Bithi:} Evaluated the ResNet-50 baseline, and evaluated the advantages of deeper architectures on spatial feature extraction. 
+    \item \textbf{Shouvik Banik:} Evaluated the DenseNet121 baseline, and studied the effect of dense feature connectivity in multi-class behavior recognition. 
+    \item \textbf{Nusrat Lamya Faruk:} Evaluated the winning EfficientNet-B0 baseline, developed the final spatiotemporal multi-task model, combined the LSTM sequence-tracking layers, and implemented the real-time visualization interface. 
 \end{itemize}
 The timeline was structured in sprints: dataset curation, single-task baseline training, backbone selection, spatiotemporal multi-task model integration, and finally report writing and visualizer deployment.
 
