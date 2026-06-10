@@ -34,18 +34,18 @@ Deep learning models are historically compute-intensive, contributing to carbon 
 \end{itemize}
 
 \section{Ethical Issues}
-Automated visual surveillance systems on farms raise specific ethical considerations:
+The use of visual monitoring systems on farms raises ethical concerns that must be addressed:
 \begin{itemize}
-    \item \textbf{Non-Invasive Monitoring:} Traditional identification and health tracking rely on invasive techniques such as branding, ear tags, or surgically implanted RFID transponders, which cause pain and stress to the animals. Our camera-based approach is completely non-invasive, posing zero physical discomfort or psychological stress to the cattle.
-    \item \textbf{Data Privacy:} Farm surveillance footage must be processed locally on edge systems to prevent the leakage of proprietary farm operation details, veterinarian records, or geographic information to public networks. Our offline edge architecture addresses this ethical requirement.
+    \item \textbf{Non-Invasive Monitoring:} Traditional cattle identification methods such as branding, ear tags, and implanted RFID devices can cause pain and can negatively affect animal welfare. Our proposed vision-based monitoring approach avoids physical contact and reduces stress for the animals.
+    \item \textbf{Data Privacy:} Local edge processing helps prevent farm data and operational details from being exposed to public networks. The proposed offline edge system ensures data privacy and security.
 \end{itemize}
 
 \section{Standards - if applicable}
-The software code and agricultural metrics strictly adhere to the following standards:
+The proposed system and agricultural metrics are developed according to the following standards:
 \begin{itemize}
-    \item \textbf{Body Condition Scoring (BCS) Standards:} The target BCS grading scale follows the internationally recognized 5-point Elanco scale (with increments of 0.25 on ScienceDB and integer values on Dryad) which is the standard reference used by professional dairy veterinarians.
-    \item \textbf{Locomotion Scoring Standards:} The lameness target labels are aligned with the Sprecher locomotion scoring system, classifying gait posture on a binary scale (sound vs. lame).
-    \item \textbf{IEEE Software Quality Standards:} The code is written in compliance with the PEP 8 style guide for Python, and evaluation metrics conform to standard definitions (Macro F1-score for classification under imbalance, Mean Absolute Error for ordinal variables, and AUC-ROC for ranking).
+    \item \textbf{Body Condition Scoring (BCS) Standards:} The Body Condition Scoring system uses globally recognized 5-point Elanco scale with 0.25 increments in ScienceDB and integer scores in Dryad.
+    \item \textbf{Locomotion Scoring Standards:} Lameness labels are based on the Sprecher scoring system, where cattle are classified as either healthy or lame.
+    \item \textbf{IEEE Software Quality Standards:} The software is developed according to the PEP 8 Python style guide, and the evaluation metrics use standard definitions such as Macro F1-score, MAE, and AUC-ROC.
 \end{itemize}
 
 \section{Project Management Plan}
