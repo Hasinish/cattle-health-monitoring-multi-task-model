@@ -127,6 +127,15 @@ Nusrat & EfficientNet-B0 (Spatial) & 10 & \textbf{0.9829} & \textbf{93.05\%} & \
 
 The lameness baseline results highlight the risk of data leakage on small datasets. The spatial EfficientNet-B0 model achieved an apparent AUC of 0.9829; however, because the dataset contains only 50 videos, frame-level splitting unavoidably shares individuals and backgrounds across the train and test sets. Consequently, this high AUC must be interpreted as a potential artifact of identity leakage rather than genuine lameness generalization.
 
+The training and validation loss curves for the spatiotemporal lameness detection model (EfficientNet-B0-LSTM) are plotted in Figure~\ref{fig:lameness_loss_curve}. The curves show that the sequence training converges steadily over 15 epochs without significant divergence, indicating that the spatiotemporal setup is more stable than static spatial frames.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{spatiotemporal_lameness_efficientnet_loss_curve.png}
+\caption{Training and validation loss curve for the spatiotemporal lameness detection model (EfficientNet-B0-LSTM).}
+\label{fig:lameness_loss_curve}
+\end{figure}
+
 \subsection{Cattle Identification Results}
 \begin{table}[H]
 \centering
@@ -148,6 +157,15 @@ Nusrat & EfficientNet-B0 + CBAM & 10 & \textbf{0.5508} & \textbf{87.06\%} & \tex
 \end{table}
 
 It is important to note that the comparison in Table~\ref{tab:id_baselines} is budget-matched rather than convergence-matched. All backbones were trained with a fixed 10-epoch budget. As indicated by the high final training losses for ResNet-18 (2.4158) and ResNet-50 (2.1213), these deeper models had not yet converged within the 10 epochs, making the comparison somewhat unfair to the ResNet architectures.
+
+The training and validation loss trajectories for the winning EfficientNet-B0 cow identification model are shown in Figure~\ref{fig:id_loss_curve}. The model shows rapid convergence in the first few epochs, reaching an 87.06\% validation accuracy by epoch 10.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{id_loss_curve.png}
+\caption{Training and validation loss curve for the cattle identification model (EfficientNet-B0 + CBAM).}
+\label{fig:id_loss_curve}
+\end{figure}
 
 \section{Analysis of Design Solutions (Backbone Selection)}
 Before constructing the unified multi-task model, a systematic backbone architecture evaluation was conducted. The five team members trained single-task baseline models on their assigned architectures to select the optimal shared feature extractor. The empirical evaluation is summarized in Table~\ref{tab:backbone_selection}.

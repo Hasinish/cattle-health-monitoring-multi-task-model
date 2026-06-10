@@ -32,7 +32,52 @@ To establish a more transparent and reproducibility-oriented framework, using pu
 To ensure the deep learning models do not learn artifact features or identity shortcuts, rigorous preprocessing was applied:
 \begin{itemize}
     \item \textbf{Task-Specific Splitting:} Splitting strategy was task-dependent. For BCS and behavior recognition, a cow-wise group split was enforced (unique cow IDs partitioned 70/15/15) so that no individual appearing in test was seen in training, preventing identity shortcuts. For lameness, a video-wise split was used (no video shared across sets). For individual identification, where the model must recognize known individuals, an image-wise split within each identity was used: every cow appears in train, validation, and test, but no individual image is shared across splits.
-    \item \textbf{Sparse Temporal Sampling:} Videos vary in frame length. To format sequences for recurrent layers without hidden-state drift or out-of-memory (OOM) GPU crashes, videos were divided into 20 equal temporal segments, and exactly one frame was sampled from the center of each segment. This standardized the input sequence tensor to a fixed shape of $(20, 3, 224, 224)$.
+    \item \textbf{Sparse Temporal Sampling:} Videos vary in frame length. To format sequences for recurrent layers without hidden-state drift or out-of-memory (OOM) GPU crashes, videos were divided into 20 equal temporal segments, and exactly one frame was sampled from the center of each segment. This standardized the input sequence tensor to a fixed shape of $(20, 3, 224, 224)$. This sparse temporal sampling strategy is visually illustrated in Figure~\ref{fig:temporal_sampling}.
+
+    \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=0.85, every node/.style={transform shape}]
+        % Draw timeline bar
+        \draw[thick, ->] (0,0) -- (11.0,0) node[right] {Time};
+        
+        % Draw segment boundaries
+        \draw[thick] (0,-0.15) -- (0,0.15);
+        \draw[thick] (2,-0.15) -- (2,0.15);
+        \draw[thick] (4,-0.15) -- (4,0.15);
+        \draw[thick] (6,-0.15) -- (6,0.15);
+        \draw[thick] (8,-0.15) -- (8,0.15);
+        \draw[thick] (10,-0.15) -- (10,0.15);
+        
+        % Labels for segments
+        \node[above] at (1,0.2) {Segment 1};
+        \node[above] at (3,0.2) {Segment 2};
+        \node[above] at (5,0.2) {Segment 3};
+        \node[above] at (7,0.2) {\dots};
+        \node[above] at (9,0.2) {Segment 20};
+        
+        % Draw frames as tick marks inside Segment 1 to illustrate sampling
+        \foreach \f in {0.2, 0.4, 0.6, 0.8, 1.2, 1.4, 1.6, 1.8} {
+            \draw[gray, thin] (\f, -0.3) -- (\f, 0.3);
+        }
+        \node[below, gray, scale=0.7] at (0.5,-0.3) {Unsampled Frames};
+        
+        % Draw center sampled frames in red
+        \foreach \center/\num in {1/1, 3/2, 5/3, 9/20} {
+            \draw[red, ultra thick] (\center, -0.4) -- (\center, 0.4);
+            \draw[red, fill=red] (\center,0) circle (0.07);
+            \draw[red, dashed, ->] (\center,-0.4) -- (\center,-1.4);
+            \node[below, red, scale=0.8] at (\center,-1.4) {Frame \num};
+        }
+        \node[below, red] at (7,-1.4) {\dots};
+        
+        % Box enclosing the sequence tensor
+        \draw[thick, blue, rounded corners] (0.2,-2.7) rectangle (9.8,-1.9);
+        \node[blue, scale=0.9] at (5,-2.3) {Output Sequence Tensor: $(20 \times 3 \times 224 \times 224)$};
+        
+    \end{tikzpicture}
+    \caption{Sparse Temporal Sampling illustration. The video clip is divided into 20 equal temporal segments, and exactly the center frame of each segment is sampled to construct a standardized sequence tensor of shape $(20, 3, 224, 224)$.}
+    \label{fig:temporal_sampling}
+    \end{figure}
     \item \textbf{Imbalance Data Capping:} In the MmCows behavior dataset, classes were severely imbalanced (lying and standing had over 70,000 images, while licking had only 2,009). Training on this directly causes majority-class bias. To mitigate this, majority classes were capped at a maximum of 3,000 randomly sampled training images per epoch, yielding a balanced sub-dataset of approximately 21,000 images.
     \item \textbf{Augmentations:} Training samples were resized to $224 \times 224$ pixels, normalized using ImageNet statistics (mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]), and augmented with random horizontal flips ($p=0.5$) and random rotations ($\pm 15^\circ$). Validation and test samples were resized and normalized without augmentations.
 \end{itemize}
