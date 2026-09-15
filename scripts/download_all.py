@@ -68,6 +68,8 @@ def restore_id(url=None):
 # -----------------------------------------------------------------------------
 # 4. BCS (Dryad BCS)
 # -----------------------------------------------------------------------------
+DRYAD_STREAM_URL = "https://datadryad.org/downloads/file_stream/2391628"
+
 def restore_bcs():
     bcs_target = DATASETS_DIR / "bcs" / "dryad_bcs"
     bcs_target.mkdir(parents=True, exist_ok=True)
@@ -80,6 +82,38 @@ def restore_bcs():
         print(f"[FOUND] Dryad BCS images already extracted ({len(dge_images)} images found).")
     else:
         import zipfile
+        import time
+        import webbrowser
+
+        if not zip_path.exists() and not downloads_zip.exists():
+            print("\nDryad BCS archive not found locally.")
+            print(f"Opening direct download stream in your browser:")
+            print(f"  {DRYAD_STREAM_URL}")
+            print("\nDryad uses JavaScript Proof-of-Work (Anubis) bot protection,")
+            print("so the download must be triggered through a real browser window.")
+            webbrowser.open(DRYAD_STREAM_URL)
+            print("Browser launched! Waiting for Total_sorted_DGE_images.zip in Downloads folder...")
+            
+            # Wait for download to appear and complete
+            start_wait = time.time()
+            crdownload_seen = False
+            while time.time() - start_wait < 900:
+                if downloads_zip.exists():
+                    time.sleep(2)
+                    break
+                inprogress = list((Path.home() / "Downloads").glob("*Total_sorted_DGE*.crdownload")) + \
+                             list((Path.home() / "Downloads").glob("*Total_sorted_DGE*.part"))
+                if inprogress:
+                    crdownload_seen = True
+                    sys.stdout.write(f"\rDownloading in browser: {inprogress[0].stat().st_size / (1024**2):.1f} MB received...")
+                    sys.stdout.flush()
+                elif crdownload_seen:
+                    time.sleep(2)
+                    if downloads_zip.exists():
+                        break
+                time.sleep(2)
+            print("")
+
         if zip_path.exists():
             print(f"Extracting {zip_path.name} to {bcs_target}...")
             with zipfile.ZipFile(zip_path, 'r') as zf:
@@ -92,10 +126,9 @@ def restore_bcs():
                 zf.extractall(bcs_target)
             print("Extracted successfully!")
         else:
-            print("Dryad BCS archive not found.")
-            print("Note: Place Total_sorted_DGE_images.zip or extract DGE images into:")
-            print(f"  {bcs_target}")
-            print("Or keep it in your Downloads folder: ~/Downloads/Total_sorted_DGE_images.zip")
+            print("Download not completed or archive not found.")
+            print(f"Please ensure Total_sorted_DGE_images.zip is in {bcs_target} or ~/Downloads/")
+            return
 
     script = REPO_ROOT / "context" / "preprocess_bcs.py"
     if script.exists():
