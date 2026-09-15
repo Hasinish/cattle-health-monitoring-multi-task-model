@@ -10,11 +10,11 @@ Write-Host "======================================================" -ForegroundC
 Write-Host "  P3 RESEARCH PC AUTOMATED RESTORATION PROTOCOL       " -ForegroundColor Yellow
 Write-Host "======================================================" -ForegroundColor Cyan
 
-# 1. Base Directories
-$BASE_DIR = "D:\T25301094 P2"
-$DATASETS_DIR = "$BASE_DIR\datasets"
+# 1. Base Directories relative to repo root
+$REPO_ROOT = Split-Path -Parent $PSScriptRoot
+$DATASETS_DIR = "$REPO_ROOT\datasets"
 
-Write-Host "`n[STEP 1/6] Creating directory structure at $BASE_DIR..." -ForegroundColor Green
+Write-Host "`n[STEP 1/6] Creating directory structure at $DATASETS_DIR..." -ForegroundColor Green
 $folders = @(
     "$DATASETS_DIR\bcs\dryad_bcs",
     "$DATASETS_DIR\bcs\sciencedb_bcs",
@@ -22,7 +22,7 @@ $folders = @(
     "$DATASETS_DIR\behavior\CBVD-5",
     "$DATASETS_DIR\lameness",
     "$DATASETS_DIR\id",
-    "$BASE_DIR\final_models"
+    "$REPO_ROOT\final_models"
 )
 foreach ($f in $folders) {
     if (-not (Test-Path $f)) {
@@ -41,7 +41,7 @@ if (-not (Test-Path "$lameTarget\.git")) {
 }
 
 # 3. Preprocess Lameness Frames
-$lameScript = "d:\cattle-health-monitoring-multi-task-model\context\preprocess_lameness.py"
+$lameScript = "$REPO_ROOT\context\preprocess_lameness.py"
 if (Test-Path $lameScript) {
     Write-Host "  Running lameness frame extraction..." -ForegroundColor Cyan
     python $lameScript
@@ -54,7 +54,7 @@ if (Test-Path $kaggleJson) {
     Write-Host "  Found kaggle.json! Downloading MmCows in background..." -ForegroundColor Cyan
     kaggle datasets download -d hienvuvg/mmcows -p "$DATASETS_DIR\behavior\mmcows" --unzip
     
-    $behScript = "d:\cattle-health-monitoring-multi-task-model\context\preprocess_mmcows_behavior.py"
+    $behScript = "$REPO_ROOT\context\preprocess_mmcows_behavior.py"
     if (Test-Path $behScript) {
         Write-Host "  Running behavior indexer..." -ForegroundColor Cyan
         python $behScript
@@ -79,10 +79,10 @@ Start-Process "https://scidb.cn/en/detail?dataSetId=16b8bdaf31ee4c8b9891fc7e9df6
 Write-Host "`n======================================================" -ForegroundColor Cyan
 Write-Host "  INSTRUCTIONS FOR UNPACKING DOWNLOADED ZIPS:         " -ForegroundColor Yellow
 Write-Host "======================================================" -ForegroundColor Cyan
-Write-Host "1. Dryad ZIP -> Extract into: D:\T25301094 P2\datasets\bcs\dryad_bcs\"
-Write-Host "   Then run: python d:\cattle-health-monitoring-multi-task-model\context\preprocess_bcs.py"
-Write-Host "`n2. OpenCows2020 ZIP -> Extract into: D:\T25301094 P2\datasets\id\opencow2020-DatasetNinja\"
-Write-Host "   Then run: python d:\cattle-health-monitoring-multi-task-model\context\preprocess_id.py"
-Write-Host "`n3. ScienceDB ZIP -> Extract into: D:\T25301094 P2\datasets\bcs\sciencedb_bcs\"
-Write-Host "   Then run: python d:\cattle-health-monitoring-multi-task-model\context\preprocess_sciencedb_bcs.py"
+Write-Host "1. Dryad ZIP -> Extract into: $DATASETS_DIR\bcs\dryad_bcs\"
+Write-Host "   Then run: python $REPO_ROOT\context\preprocess_bcs.py"
+Write-Host "`n2. OpenCows2020 ZIP -> Extract into: $DATASETS_DIR\id\opencow2020-DatasetNinja\"
+Write-Host "   Then run: python $REPO_ROOT\context\preprocess_id.py"
+Write-Host "`n3. ScienceDB ZIP -> Extract into: $DATASETS_DIR\bcs\sciencedb_bcs\"
+Write-Host "   Then run: python $REPO_ROOT\context\preprocess_sciencedb_bcs.py"
 Write-Host "======================================================`n" -ForegroundColor Cyan

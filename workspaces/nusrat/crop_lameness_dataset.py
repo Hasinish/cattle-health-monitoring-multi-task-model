@@ -4,12 +4,15 @@ import pandas as pd
 from ultralytics import YOLO
 from tqdm import tqdm
 
-# Configuration
-BASE_DIR = r"D:\T25301094 P2"
-INPUT_CSV = os.path.join(BASE_DIR, "datasets", "lameness", "lameness_index.csv")
-OUTPUT_CSV = os.path.join(BASE_DIR, "datasets", "lameness", "lameness_cropped_index.csv")
-CROPPED_DIR = os.path.join(BASE_DIR, "datasets", "lameness", "cropped_frames")
-YOLO_MODEL = os.path.join(BASE_DIR, "final_models", "yolov8n.pt")
+from pathlib import Path
+
+# Configuration relative to repo root
+REPO_ROOT = Path(__file__).resolve().parents[2]
+BASE_DIR = str(REPO_ROOT)
+INPUT_CSV = str(REPO_ROOT / "datasets" / "lameness" / "lameness_index.csv")
+OUTPUT_CSV = str(REPO_ROOT / "datasets" / "lameness" / "lameness_cropped_index.csv")
+CROPPED_DIR = str(REPO_ROOT / "datasets" / "lameness" / "cropped_frames")
+YOLO_MODEL = str(REPO_ROOT / "final_models" / "yolov8n.pt")
 TARGET_SIZE = (224, 224)
 
 def main():

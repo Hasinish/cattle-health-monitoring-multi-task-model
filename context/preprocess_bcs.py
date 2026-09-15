@@ -4,9 +4,10 @@ import shutil
 import csv
 from pathlib import Path
 
-# CONFIG
-DATASET_ROOT = r"D:\T25301094 P2\datasets\bcs\dryad_bcs\Total_sorted_DGE_images\Total_sorted_DGE_images"
-OUTPUT_CSV = r"D:\T25301094 P2\datasets\bcs\bcs_index.csv"
+# CONFIG relative to repo root
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DATASET_ROOT = REPO_ROOT / "datasets" / "bcs" / "dryad_bcs" / "Total_sorted_DGE_images" / "Total_sorted_DGE_images"
+OUTPUT_CSV = REPO_ROOT / "datasets" / "bcs" / "bcs_index.csv"
 VALID_CLASSES = ['2', '3', '4', '5', '6']
 TRAIN_RATIO = 0.70
 VAL_RATIO = 0.15

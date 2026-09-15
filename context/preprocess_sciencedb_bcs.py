@@ -4,8 +4,9 @@ import csv
 from pathlib import Path
 from collections import defaultdict, Counter
 
-DATASET_ROOT = r"D:\T25301094 P2\datasets\bcs\sciencedb_bcs\dataset"
-OUTPUT_CSV = r"D:\T25301094 P2\datasets\bcs\sciencedb_bcs_index.csv"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DATASET_ROOT = REPO_ROOT / "datasets" / "bcs" / "sciencedb_bcs" / "dataset"
+OUTPUT_CSV = REPO_ROOT / "datasets" / "bcs" / "sciencedb_bcs_index.csv"
 VALID_CLASSES = ['3.25', '3.5', '3.75', '4.0', '4.25']
 TRAIN_RATIO = 0.70
 VAL_RATIO = 0.15

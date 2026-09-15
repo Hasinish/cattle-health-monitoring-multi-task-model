@@ -6,9 +6,10 @@ import cv2
 from pathlib import Path
 from collections import defaultdict
 
-# CONFIG
-BASE_DIR = r"d:\T25301094 P2"
-DATASET_ROOT = Path(BASE_DIR) / "datasets" / "behavior" / "CBVD-5"
+# CONFIG relative to repo root
+REPO_ROOT = Path(__file__).resolve().parent.parent
+BASE_DIR = REPO_ROOT / "datasets"
+DATASET_ROOT = BASE_DIR / "behavior" / "CBVD-5"
 OUTPUT_CROP_DIR = DATASET_ROOT / "cropped"
 OUTPUT_CSV = DATASET_ROOT / "cbvd_cropped_index.csv"
 RANDOM_SEED = 42

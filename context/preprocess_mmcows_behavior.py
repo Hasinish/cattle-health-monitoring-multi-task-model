@@ -4,8 +4,9 @@ import random
 from pathlib import Path
 from collections import defaultdict, Counter
 
-DATASET_ROOT = r"D:\T25301094 P2\datasets\behavior\mmcows\cropped_bboxes\cropped_bboxes\behaviors"
-OUTPUT_CSV = r"D:\T25301094 P2\datasets\behavior\behavior_index.csv"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DATASET_ROOT = REPO_ROOT / "datasets" / "behavior" / "mmcows" / "cropped_bboxes" / "cropped_bboxes" / "behaviors"
+OUTPUT_CSV = REPO_ROOT / "datasets" / "behavior" / "behavior_index.csv"
 VALID_CLASSES = ['1','2','3','4','5','6','7']
 TRAIN_RATIO = 0.70
 VAL_RATIO = 0.15

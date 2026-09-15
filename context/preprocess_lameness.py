@@ -4,12 +4,13 @@ import csv
 import random
 from pathlib import Path
 
-# Paths
-BASE_DIR = r"D:\T25301094 P2"
-LAME_DIR = Path(BASE_DIR) / "datasets" / "lameness" / "CattleLameness" / "Data" / "Lame"
-NORMAL_DIR = Path(BASE_DIR) / "datasets" / "lameness" / "CattleLameness" / "Data" / "Normal"
-OUTPUT_FRAMES_DIR = Path(BASE_DIR) / "datasets" / "lameness" / "frames"
-OUTPUT_CSV = Path(BASE_DIR) / "datasets" / "lameness" / "lameness_index.csv"
+# Paths relative to repo root
+REPO_ROOT = Path(__file__).resolve().parent.parent
+BASE_DIR = REPO_ROOT / "datasets"
+LAME_DIR = BASE_DIR / "lameness" / "CattleLameness" / "Data" / "Lame"
+NORMAL_DIR = BASE_DIR / "lameness" / "CattleLameness" / "Data" / "Normal"
+OUTPUT_FRAMES_DIR = BASE_DIR / "lameness" / "frames"
+OUTPUT_CSV = BASE_DIR / "lameness" / "lameness_index.csv"
 
 # Configuration
 TARGET_SIZE = (224, 224)

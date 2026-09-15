@@ -4,10 +4,11 @@ import random
 from pathlib import Path
 from collections import defaultdict, Counter
 
-# CONFIG
-BASE_DIR = r"d:\T25301094 P2"
-DATASET_ROOT = Path(BASE_DIR) / "datasets" / "id" / "opencow2020-DatasetNinja"
-OUTPUT_CSV = Path(BASE_DIR) / "datasets" / "id" / "id_index.csv"
+# CONFIG relative to repo root
+REPO_ROOT = Path(__file__).resolve().parent.parent
+BASE_DIR = REPO_ROOT / "datasets"
+DATASET_ROOT = BASE_DIR / "id" / "opencow2020-DatasetNinja"
+OUTPUT_CSV = BASE_DIR / "id" / "id_index.csv"
 RANDOM_SEED = 42
 
 random.seed(RANDOM_SEED)
