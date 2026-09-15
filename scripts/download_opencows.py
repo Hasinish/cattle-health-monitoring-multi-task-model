@@ -71,6 +71,64 @@ def download_via_url(url):
     extract_archive(archive_path, ID_DIR)
 
 
+def download_via_kagglehub():
+    print("Downloading amibhavsar/open-cow-2020 via kagglehub...")
+    import kagglehub
+    path = Path(kagglehub.dataset_download("amibhavsar/open-cow-2020"))
+    print(f"Kagglehub dataset path: {path}")
+    
+    # Locate identification/images
+    id_img_root = None
+    for cand in [
+        path / "identification" / "images",
+        path / "10m32xl88x2b61zlkkgz3fml17" / "identification" / "images",
+        path / "images",
+    ]:
+        if cand.exists() and (cand / "train").exists():
+            id_img_root = cand
+            break
+            
+    if not id_img_root:
+        for p in path.rglob("train"):
+            if p.is_dir() and any(c.is_dir() for c in p.iterdir()):
+                id_img_root = p.parent
+                break
+                
+    if not id_img_root:
+        raise RuntimeError(f"Could not locate identification images in {path}")
+        
+    print(f"Found identification images at: {id_img_root}")
+    train_src = id_img_root / "train"
+    test_src = id_img_root / "test"
+    
+    train_dst = TARGET_DIR / "identification-train" / "img"
+    test_dst = TARGET_DIR / "identification-test" / "img"
+    train_dst.mkdir(parents=True, exist_ok=True)
+    test_dst.mkdir(parents=True, exist_ok=True)
+    
+    def copy_split(src_dir, dst_dir, split_name):
+        print(f"Copying and formatting {split_name} images to {dst_dir}...")
+        count = 0
+        for cow_folder in sorted(src_dir.iterdir()):
+            if not cow_folder.is_dir():
+                continue
+            try:
+                cow_id = str(int(cow_folder.name))
+            except ValueError:
+                continue
+            for img in cow_folder.glob("*.jpg"):
+                dst_file = dst_dir / f"{cow_id}_{img.name}"
+                if not dst_file.exists():
+                    shutil.copy2(img, dst_file)
+                count += 1
+        print(f"Formatted and copied {count} {split_name} images.")
+        
+    copy_split(train_src, train_dst, "train")
+    copy_split(test_src, test_dst, "test")
+
+
+DEFAULT_URL = "https://assets.supervisely.com/remote/eyJsaW5rIjogInMzOi8vc3VwZXJ2aXNlbHktZGF0YXNldHMvMTg3Nl9PcGVuQ293MjAyMC9vcGVuY293MjAyMC1EYXRhc2V0TmluamEudGFyIiwgInNpZyI6ICI0WEZmblFEMDBPVm5yNWoyREVSbE1TMkxKeTFpVHg2bThUWHdDc2dSK1NnPSJ9?response-content-disposition=attachment%3B%20filename%3D%22opencow2020-DatasetNinja.tar%22"
+
 def main():
     print("==================================================")
     print("  OPENCOWS2020 AUTOMATED DOWNLOAD & SETUP")
@@ -78,14 +136,14 @@ def main():
     print("==================================================")
 
     # If already extracted and valid
-    if (TARGET_DIR / "identification-train" / "img").exists():
+    if (TARGET_DIR / "identification-train" / "img").exists() and len(list((TARGET_DIR / "identification-train" / "img").glob("*.jpg"))) > 100:
         print(f"Dataset already exists at {TARGET_DIR}!")
     else:
         # Check if URL was passed as command-line argument
         if len(sys.argv) > 1 and sys.argv[1].startswith("http"):
             download_via_url(sys.argv[1])
         else:
-            # Check if tar exists locally in datasets/id or Downloads
+            # Check local tar archives first
             local_tar = ID_DIR / "opencow2020-DatasetNinja.tar"
             downloads_tar = Path.home() / "Downloads" / "opencow2020-DatasetNinja.tar"
             
@@ -95,13 +153,23 @@ def main():
                 print(f"Found archive in Downloads: {downloads_tar}")
                 extract_archive(downloads_tar, ID_DIR)
             else:
+                # 1. Try Kagglehub first (fastest, most reliable)
                 try:
-                    download_via_dataset_tools()
+                    download_via_kagglehub()
                 except Exception as e:
-                    print(f"dataset-tools download failed: {e}")
-                    print("\nRun this script with the direct URL:")
-                    print("  python scripts/download_opencows.py \"<direct_url>\"")
-                    return
+                    print(f"Kagglehub download failed: {e}")
+                    # 2. Fall back to direct S3 download
+                    print("[FALLBACK] Switching to direct S3 download URL...")
+                    try:
+                        download_via_url(DEFAULT_URL)
+                    except Exception as e2:
+                        print(f"Direct S3 download failed: {e2}")
+                        # 3. Fall back to dataset-tools
+                        download_via_dataset_tools()
+
+    # Verify target directory exists
+    if not (TARGET_DIR / "identification-train" / "img").exists():
+        raise RuntimeError(f"OpenCows2020 directory structure missing at {TARGET_DIR}")
 
     # Run preprocessor
     print("\nRunning preprocess_id.py to generate index CSV...")

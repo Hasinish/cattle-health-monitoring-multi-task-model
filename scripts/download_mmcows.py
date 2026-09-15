@@ -56,8 +56,13 @@ def download_and_extract_mmcows():
     # Step 2: Extract archive
     print(f"\nExtracting {zip_path.name} into {TARGET_DIR}...")
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(TARGET_DIR)
     print("Extraction complete!")
+    if zip_path.exists():
+        print("Cleaning up cropped_bboxes.zip archive to save disk space...")
+        try:
+            zip_path.unlink()
+        except Exception:
+            pass
 
     # Step 3: Run preprocessor
     print(f"\nRunning behavior preprocessor: {PREPROCESS_SCRIPT.name}...")

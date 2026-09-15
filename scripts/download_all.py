@@ -72,23 +72,30 @@ def restore_bcs():
     bcs_target = DATASETS_DIR / "bcs" / "dryad_bcs"
     bcs_target.mkdir(parents=True, exist_ok=True)
     zip_path = bcs_target / "Total_sorted_DGE_images.zip"
+    downloads_zip = Path.home() / "Downloads" / "Total_sorted_DGE_images.zip"
     
     # Check if images already extracted
     dge_images = list(bcs_target.glob("*.jpg")) + list(bcs_target.glob("*.png")) + list((bcs_target / "Total_sorted_DGE_images").glob("*.jpg"))
     if len(dge_images) > 1000:
         print(f"[FOUND] Dryad BCS images already extracted ({len(dge_images)} images found).")
     else:
-        print("Dryad BCS images need to be present at:")
-        print(f"  {bcs_target}")
-        print("If Total_sorted_DGE_images.zip exists, extracting...")
+        import zipfile
         if zip_path.exists():
-            import zipfile
+            print(f"Extracting {zip_path.name} to {bcs_target}...")
             with zipfile.ZipFile(zip_path, 'r') as zf:
                 zf.extractall(bcs_target)
             print("Extracted successfully!")
+        elif downloads_zip.exists():
+            print(f"Found archive in Downloads: {downloads_zip}")
+            print(f"Extracting to {bcs_target}...")
+            with zipfile.ZipFile(downloads_zip, 'r') as zf:
+                zf.extractall(bcs_target)
+            print("Extracted successfully!")
         else:
+            print("Dryad BCS archive not found.")
             print("Note: Place Total_sorted_DGE_images.zip or extract DGE images into:")
             print(f"  {bcs_target}")
+            print("Or keep it in your Downloads folder: ~/Downloads/Total_sorted_DGE_images.zip")
 
     script = REPO_ROOT / "context" / "preprocess_bcs.py"
     if script.exists():

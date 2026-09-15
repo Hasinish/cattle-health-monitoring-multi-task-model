@@ -5,20 +5,22 @@
 - [x] Protect `personal_info.md` via `.gitignore` to prevent leaking private info
 - [x] Build automated dataset restoration script for research PC (`scripts/setup_research_pc.ps1`)
 - [x] Download & extract Mendeley CattleLameness dataset (9,950 frames extracted, index CSV generated)
-- [x] Download & extract 22.3 GB MmCows behavior dataset via KaggleHub to `datasets/kaggle_cache/`
-- [ ] Complete OpenCows2020 dataset download via `download_opencows.py`
+- [x] Download & extract 213,686 MmCows behavior images via Hugging Face (`cropped_bboxes.zip`) directly to `datasets/behavior/`
+- [x] Complete OpenCows2020 dataset download & indexing (4,736 images indexed across 46 classes via Kagglehub)
+- [ ] Place Dryad BCS archive (`Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`
 - [ ] Connect to Research PC (RTX 5090) at 1:00 AM and run dataset restoration
 - [ ] Launch PCGrad multi-task training run
 - [ ] Prepare P3 draft submission by September 26
 
 ## Last Session (Convo dba0f4b9-4e4d-469f-870d-b0601e3fb7ef)
 - Analyzed P2 Hostile Review (`P2_hostile_review.md`) and diagnosed root causes of negative transfer, threshold leakage, and unit mismatches.
-- Created and committed automated restoration script `scripts/setup_research_pc.ps1`.
-- Created and committed `scripts/pcgrad.py` implementing Projecting Conflicting Gradients (NeurIPS 2020) to resolve task interference in the shared backbone.
-- Successfully restored CattleLameness (9,950 frames indexed) and downloaded full MmCows (22.3 GB) on local HDD.
+- Created and committed automated restoration script `scripts/setup_research_pc.ps1` and `scripts/download_all.py`.
+- Created and committed `scripts/pcgrad.py` implementing Projecting Conflicting Gradients (NeurIPS 2020).
+- Successfully restored CattleLameness (9,950 frames), MmCows behavior (213,686 frames), and OpenCows2020 (4,736 frames).
+- 3 out of 4 datasets 100% restored and indexed! Only Dryad BCS remaining.
 
 ## Current Blockers & Notes
-- OpenCows2020 download currently running in user terminal.
-- Lab slot starts at 1:00 AM (Wed-Thu 1 AM to 1 PM). Ready to deploy scripts to Research PC.
+- Dryad BCS pending `Total_sorted_DGE_images.zip` from https://datadryad.org/stash/dataset/doi:10.5061/dryad.tqjq2bw4s.
+- Lab slot starts at 1:00 AM (Wed-Thu 1 AM to 1 PM). Local pipeline is tested and proven ready for deployment to Research PC.
 
 
