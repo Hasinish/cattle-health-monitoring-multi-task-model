@@ -45,6 +45,12 @@ def download_via_dataset_tools():
     dtools.download(dataset="OpenCow2020", dst_dir=str(ID_DIR))
     print("Download finished via dataset_tools!")
 
+    # Normalize folder name if needed
+    for possible in [ID_DIR / "OpenCow2020", ID_DIR / "opencow2020", ID_DIR / "OpenCows2020"]:
+        if possible.exists() and not TARGET_DIR.exists():
+            print(f"Standardizing folder name: {possible.name} -> {TARGET_DIR.name}...")
+            possible.rename(TARGET_DIR)
+
 
 def download_via_url(url):
     print("Downloading via direct URL...")
