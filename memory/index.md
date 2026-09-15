@@ -1,0 +1,86 @@
+# Workspace Index
+
+## Directory Structure & Detailed File Context
+
+### `memory/`
+Workspace memory and context tracking system for AI agents.
+- `personality.md`: Defines assistant persona, roasting rules, tone parameters, humor mechanics, and guardrails.
+- `personal_info.md`: Detailed user profile for Hasin Ishrak (education, roles, technical stack, target companies).
+- `purpose.md`: Workspace mission statement, thesis milestones, and research objectives.
+- `state.md`: Active goals, session logs, blockers, and workspace sync status.
+- `history.md`: Chronological log of past conversations and session achievements.
+- `index.md`: Comprehensive workspace index detailing directories, code, models, and LaTeX thesis assets.
+
+### `cattle_thesis_p1_latex/`
+Phase 1 (P1) LaTeX thesis sources and artifacts for the CSE400 pre-thesis submission.
+- `main.tex`: Master LaTeX document assembling P1 chapters, abstract, title page, and layout configurations.
+- `chapters/`: Individual chapter source files detailing problem introduction, preliminary literature review, and proposed methodology.
+- `bibliography/`: BibTeX references cited throughout Phase 1.
+- `core/`: Template macros, styling packages, and university formatting definitions.
+- `images/`: Architectural diagrams, baseline flowcharts, and sample figures for P1.
+- `main.pdf`: Compiled Phase 1 thesis report.
+
+### `cattle_thesis_p2_latex/`
+Phase 2 (P2) LaTeX thesis sources, defense posters, and compiled final thesis reports.
+- `main.tex`: Master LaTeX document orchestrating the complete final thesis manuscript.
+- `chapters/`: Modular LaTeX files for Chapters 1 through 6:
+  - Chapter 1: Introduction, problem statement, research motivation, objectives, and contributions.
+  - Chapter 2: Literature review on computer vision in livestock, individual identification, BCS assessment, behavior classification, and lameness detection.
+  - Chapter 3: Proposed Multi-Task Learning (MTL) methodology, backbone architectures (ResNet-18, EfficientNet), attention mechanisms (CBAM), loss balancing formulations (Total Loss = w_id * L_id + w_bcs * L_bcs + w_beh * L_beh + w_lame * L_lame), and temporal spatiotemporal lameness modeling.
+  - Chapter 4: Experimental setup, dataset descriptions (Dryad, ScienceDB, CBVD, MMCows), augmentation strategies, training hyperparameters, and evaluation metrics.
+  - Chapter 5: Results, performance metrics (Accuracy, Precision, Recall, F1, Loss curves), ablation studies comparing single-task vs multi-task architectures, and qualitative visualizations.
+  - Chapter 6: Conclusion, limitations, ethical considerations, and future directions.
+- `bibliography/`: Complete BibTeX references for peer-reviewed citations.
+- `images/`: Model architecture diagrams (`mtl_architecture.png`), loss curves, confusion matrices, and crop samples.
+- `T25301094_P2 Poster.pdf`: Compiled presentation poster for the P2 thesis defense exhibition.
+- `T25301094_P2_Report.pdf`: Compiled final P2 thesis report document ready for department archiving.
+
+### `context/`
+Dataset preprocessing routines, member work splits, and original problem context files.
+- `context1_master_plan.txt`: Research master plan and pipeline roadmap.
+- `context2_bcs.txt` & `context2_behavior.txt`: Dataset specifications, label encodings, and split guidelines for BCS and behavior tasks.
+- `Context3_[Member]_[Task].txt`: Individual member task configurations (Hasin, Nusrat, Shouvik, Bithi, Namira) detailing assigned model variants and datasets.
+- `Pre-Thesis I Report.pdf`: Original Phase 1 evaluation report.
+- `preprocess_bcs.py`: Image cropping, resizing, and normalization pipeline for Dryad BCS images.
+- `preprocess_cbvd.py`: Processing script for cattle behavior video dataset frames.
+- `preprocess_id.py`: Extraction and alignment pipeline for individual cattle identification datasets.
+- `preprocess_lameness.py`: Frame sequence extraction and optical flow/spatiotemporal prep for lameness analysis.
+- `preprocess_mmcows_behavior.py`: Data loader and bounding-box crop generator for MMCows behavior dataset.
+- `preprocess_sciencedb_bcs.py`: Preprocessing script for ScienceDB thermal/RGB cattle dataset.
+
+### `docs/`
+Presentation guides, defense preparation notes, and review summaries.
+- `cattle_thesis_p2_preview.md`: Markdown preview summary of P2 thesis content.
+- `deep_analysis.md`: Detailed architectural and statistical deep dive into experimental results.
+- `detailed_p2_info.md`: Supplementary technical documentation for Phase 2.
+- `extracted_results.txt`: Tabulated benchmark metrics across all model runs and task heads.
+- `P2_Report_Cattle_MTL_Full_Declaration_Approval_Signature_Proper.pdf`: Signed final thesis report with official BRACU declaration pages.
+- `presentation_key_concepts.md` (and `.html`, `.docx`): Defense presentation key concepts, talking points, and Q&A crib sheet.
+- `qa_study_guide.md`: Comprehensive defense Q&A preparation guide covering deep learning theory, MTL tradeoffs, and thesis defense questions.
+- `thesis_review.md`: Peer-review feedback, Turnitin similarity audit, and revision checklist.
+
+### `final_models/`
+Pre-trained object detection and feature extraction weight checkpoints.
+- `yolov8n.pt`: YOLOv8-nano weights used for real-time cow detection and bounding-box localization in raw footage.
+
+### `P2 Samples/`
+Reference materials, prior sample defense posters, and official CSE400 formatting templates from BRAC University.
+
+### `scripts/`
+Automation utilities for batch experiments and metric aggregation.
+- `aggregate.py`: Collects training logs and performance metrics across member workspaces and generates consolidated summary tables.
+- `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.
+- `run_all_training.py`: Orchestrates multi-gpu batch execution of all task training scripts.
+
+### `thesis template/`
+Clean, official CSE400 LaTeX template skeleton used as the foundation for the thesis formatting.
+
+### `videos/`
+Test video files and sample inference output clips demonstrating real-time bounding box detection, tracking, and multitask predictions.
+
+### `workspaces/`
+Member-specific experimental sandboxes containing model training scripts, loss curves, evaluation outputs, and PyTorch `.pth` model checkpoints.
+- `workspaces/hasin/`: Hasin's experimental sandbox (ResNet-18 baseline and MTL implementations, loss curves, evaluation results for ID, BCS, behavior, and lameness).
+- `workspaces/nusrat/`: Nusrat's sandbox focusing on temporal MTL architectures, CBAM attention mechanisms, and video inference scripts.
+- `workspaces/shouvik/`: Shouvik's sandbox with standalone task training runs and comparative benchmarks.
+- `workspaces/bithi/` & `workspaces/namira/`: Additional team member ablation and experimental directories.
