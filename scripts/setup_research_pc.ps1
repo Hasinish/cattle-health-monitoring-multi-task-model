@@ -1,8 +1,8 @@
 # ==============================================================================
-# SETUP RESEARCH PC - DATASET DOWNLOAD & RESTORATION SCRIPT
+# SETUP RESEARCH PC - MASTER DATASET RESTORATION PROTOCOL
 # ==============================================================================
 # Run this script in PowerShell on the Research PC (RTX 5090)
-# It creates the directory structure, downloads repos, and guides extraction.
+# It downloads, extracts, and indexes all datasets directly into datasets/
 
 $ErrorActionPreference = "Continue"
 
@@ -10,11 +10,11 @@ Write-Host "======================================================" -ForegroundC
 Write-Host "  P3 RESEARCH PC AUTOMATED RESTORATION PROTOCOL       " -ForegroundColor Yellow
 Write-Host "======================================================" -ForegroundColor Cyan
 
-# 1. Base Directories relative to repo root
 $REPO_ROOT = Split-Path -Parent $PSScriptRoot
 $DATASETS_DIR = "$REPO_ROOT\datasets"
 
-Write-Host "`n[STEP 1/6] Creating directory structure at $DATASETS_DIR..." -ForegroundColor Green
+# 1. Ensure directories exist
+Write-Host "`n[STEP 1/3] Initializing directory tree..." -ForegroundColor Green
 $folders = @(
     "$DATASETS_DIR\bcs\dryad_bcs",
     "$DATASETS_DIR\bcs\sciencedb_bcs",
@@ -31,58 +31,28 @@ foreach ($f in $folders) {
     }
 }
 
-# 2. Lameness (Git Clone - Instant)
-Write-Host "`n[STEP 2/6] Restoring CattleLameness (Git)..." -ForegroundColor Green
-$lameTarget = "$DATASETS_DIR\lameness\CattleLameness"
-if (-not (Test-Path "$lameTarget\.git")) {
-    git clone https://github.com/fahimsohan/CattleLameness $lameTarget
-} else {
-    Write-Host "  CattleLameness already exists. Skipping clone." -ForegroundColor Yellow
+# 2. Run Unified Python Pipeline
+Write-Host "`n[STEP 2/3] Executing Unified Master Restoration Pipeline..." -ForegroundColor Green
+$masterScript = "$REPO_ROOT\scripts\download_all.py"
+
+python $masterScript --all
+
+# 3. Final Verification
+Write-Host "`n[STEP 3/3] Verifying Training Readiness..." -ForegroundColor Green
+python -c "
+from pathlib import Path
+root = Path(r'$DATASETS_DIR')
+checks = {
+    'Lameness CSV': root / 'lameness' / 'lameness_index.csv',
+    'Behavior CSV': root / 'behavior' / 'behavior_index.csv',
+    'ID CSV': root / 'id' / 'id_index.csv',
+    'BCS CSV': root / 'bcs' / 'bcs_index.csv'
 }
-
-# 3. Preprocess Lameness Frames
-$lameScript = "$REPO_ROOT\context\preprocess_lameness.py"
-if (Test-Path $lameScript) {
-    Write-Host "  Running lameness frame extraction..." -ForegroundColor Cyan
-    python $lameScript
-}
-
-# 4. MmCows via Kaggle CLI
-Write-Host "`n[STEP 3/6] Checking Kaggle CLI for MmCows..." -ForegroundColor Green
-$kaggleJson = "$env:USERPROFILE\.kaggle\kaggle.json"
-if (Test-Path $kaggleJson) {
-    Write-Host "  Found kaggle.json! Downloading MmCows in background..." -ForegroundColor Cyan
-    kaggle datasets download -d hienvuvg/mmcows -p "$DATASETS_DIR\behavior\mmcows" --unzip
-    
-    $behScript = "$REPO_ROOT\context\preprocess_mmcows_behavior.py"
-    if (Test-Path $behScript) {
-        Write-Host "  Running behavior indexer..." -ForegroundColor Cyan
-        python $behScript
-    }
-} else {
-    Write-Host "  WARNING: kaggle.json not found at $kaggleJson!" -ForegroundColor Red
-    Write-Host "  Please place your kaggle.json in $env:USERPROFILE\.kaggle\ and rerun," -ForegroundColor Yellow
-    Write-Host "  Or download manually from: https://kaggle.com/datasets/hienvuvg/mmcows" -ForegroundColor Yellow
-}
-
-# 5. Open URLs for Manual Large Downloads
-Write-Host "`n[STEP 4/6] Opening Browser tabs for remaining downloads..." -ForegroundColor Green
-Write-Host "  Opening Dryad BCS download..." -ForegroundColor Cyan
-Start-Process "https://datadryad.org/dataset/doi:10.5061/dryad.tqjq2bw4s"
-
-Write-Host "  Opening OpenCows2020 download..." -ForegroundColor Cyan
-Start-Process "https://datasetninja.com/opencows2020"
-
-Write-Host "  Opening ScienceDB BCS download..." -ForegroundColor Cyan
-Start-Process "https://scidb.cn/en/detail?dataSetId=16b8bdaf31ee4c8b9891fc7e9df6e41c"
+for name, p in checks.items():
+    status = '[READY]' if p.exists() else '[PENDING]'
+    print(f'  {status:<10} {name:<15}: {p}')
+"
 
 Write-Host "`n======================================================" -ForegroundColor Cyan
-Write-Host "  INSTRUCTIONS FOR UNPACKING DOWNLOADED ZIPS:         " -ForegroundColor Yellow
+Write-Host "  SETUP COMPLETE! YOU CAN NOW LAUNCH MULTI-TASK TRAINING" -ForegroundColor Green
 Write-Host "======================================================" -ForegroundColor Cyan
-Write-Host "1. Dryad ZIP -> Extract into: $DATASETS_DIR\bcs\dryad_bcs\"
-Write-Host "   Then run: python $REPO_ROOT\context\preprocess_bcs.py"
-Write-Host "`n2. OpenCows2020 ZIP -> Extract into: $DATASETS_DIR\id\opencow2020-DatasetNinja\"
-Write-Host "   Then run: python $REPO_ROOT\context\preprocess_id.py"
-Write-Host "`n3. ScienceDB ZIP -> Extract into: $DATASETS_DIR\bcs\sciencedb_bcs\"
-Write-Host "   Then run: python $REPO_ROOT\context\preprocess_sciencedb_bcs.py"
-Write-Host "======================================================`n" -ForegroundColor Cyan

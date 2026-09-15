@@ -5,7 +5,12 @@ from pathlib import Path
 from collections import defaultdict, Counter
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DATASET_ROOT = REPO_ROOT / "datasets" / "behavior" / "mmcows" / "cropped_bboxes" / "cropped_bboxes" / "behaviors"
+candidate_roots = [
+    REPO_ROOT / "datasets" / "behavior" / "mmcows" / "cropped_bboxes" / "cropped_bboxes" / "behaviors",
+    REPO_ROOT / "datasets" / "behavior" / "mmcows" / "cropped_bboxes" / "behaviors",
+    REPO_ROOT / "datasets" / "behavior" / "mmcows" / "behaviors"
+]
+DATASET_ROOT = next((p for p in candidate_roots if p.exists()), candidate_roots[0])
 OUTPUT_CSV = REPO_ROOT / "datasets" / "behavior" / "behavior_index.csv"
 VALID_CLASSES = ['1','2','3','4','5','6','7']
 TRAIN_RATIO = 0.70
