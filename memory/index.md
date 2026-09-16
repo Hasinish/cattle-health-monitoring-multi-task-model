@@ -50,6 +50,13 @@ Dataset preprocessing routines, member work splits, and original problem context
 
 ### `docs/`
 Presentation guides, defense preparation notes, and review summaries.
+- `audits/`: Detailed dataset forensic investigations, anti-leakage manifests, and cross-validation architectures.
+  - `candidate_lameness_datasets_audit.md`: Deep forensic audit of 4 potential alternative lameness datasets (Russello 2026, Wu/NWAFU, whsu2s, Duan 2025).
+  - `cattle_lameness_audit_report.md`: Forensic audit of the CattleLameness dataset (50 clips, 42 cattle, ezgif container footprints, cross-split leakage identification).
+  - `cattle_lameness_grouping_report.md`: Anti-leakage clustering architecture, multi-clip group resolution (8 groups, 16 clips), and balanced 5-fold StratifiedGroupKFold cross-validation specification.
+- `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
+  - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-17_lameness_investigation.md`: Complete forensic audit log covering CattleLameness leakage discovery, 42-group resolution, and candidate dataset audit.
 - `cattle_thesis_p2_preview.md`: Markdown preview summary of P2 thesis content.
 - `deep_analysis.md`: Detailed architectural and statistical deep dive into experimental results.
 - `detailed_p2_info.md`: Supplementary technical documentation for Phase 2.
@@ -58,6 +65,18 @@ Presentation guides, defense preparation notes, and review summaries.
 - `presentation_key_concepts.md` (and `.html`, `.docx`): Defense presentation key concepts, talking points, and Q&A crib sheet.
 - `qa_study_guide.md`: Comprehensive defense Q&A preparation guide covering deep learning theory, MTL tradeoffs, and thesis defense questions.
 - `thesis_review.md`: Peer-review feedback, Turnitin similarity audit, and revision checklist.
+
+### `.agents/` & Root Rules
+- `AGENTS.md`: Root workspace rules governing continuous research logging, manifest preservation, and dual-device git synchronization.
+  - `rules/research_logging.md`: Strict agent operational rule enforcing documentation of all audits and experiments into `docs/research_log/`.
+
+### `datasets/` (Git-ignored large data directory)
+Local storage for raw and preprocessed multimodal cattle benchmark data.
+- `lameness/`:
+  - `cattle_lameness_manifest.csv`: 50-clip master manifest defining filename, class, source URLs, proposed group IDs, confidence scores, evidence, and 5-fold cross-validation assignments.
+  - `lameness_index.csv`: Extracted frame index mapping 9,950 frames across 50 video clips to labels and splits.
+  - `frames/`: Directory containing 9,950 resized 224x224 RGB video frames extracted from CattleLameness clips.
+  - `CattleLameness/`: Cloned source repository containing raw 500x500 MP4 clips across `Data/Lame` and `Data/Normal`.
 
 ### `final_models/`
 Pre-trained object detection and feature extraction weight checkpoints.
@@ -69,6 +88,7 @@ Reference materials, prior sample defense posters, and official CSE400 formattin
 ### `scripts/`
 Automation utilities for batch experiments, metric aggregation, dataset restoration, and environment setup.
 - `aggregate.py`: Collects training logs and performance metrics across member workspaces and generates consolidated summary tables.
+- `build_leakage_safe_manifest.py`: Audits CattleLameness clips, applies heuristic & perceptual clustering, generates StratifiedGroupKFold assignments, and exports `cattle_lameness_manifest.csv`.
 - `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.
 - `run_all_training.py`: Orchestrates multi-gpu batch execution of all task training scripts.
 - `download_all.py`: Master dataset pipeline orchestrating restoration and indexing across all 4 thesis tasks directly into `datasets/`.

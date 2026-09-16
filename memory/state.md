@@ -10,12 +10,24 @@
 - [x] Purge 36+ GB raw behavior videos, zip archives, and cache to reclaim local disk space
 - [x] Automate Dryad BCS download launcher & watcher in `scripts/download_all.py` (commit `f543f16`)
 - [x] Export comprehensive Antigravity customization replication repository to `D:\custom-antigravity` and push to remote (`https://github.com/Hasinish/custom-antigravity.git`)
+- [x] Install local laptop dataset dependencies (opencv-python, pandas, tqdm, kagglehub, huggingface_hub, scikit-learn)
+- [x] Fix extraction syntax bug in `scripts/download_mmcows.py`
+- [x] Complete forensic CattleLameness dataset audit & leakage investigation (`docs/audits/cattle_lameness_audit_report.md`)
+- [x] Build leakage-safe CattleLameness manifest (`datasets/lameness/cattle_lameness_manifest.csv`) & 5-fold evaluation architecture (`docs/audits/cattle_lameness_grouping_report.md`)
+- [x] Complete forensic audit of 4 candidate lameness datasets (`docs/audits/candidate_lameness_datasets_audit.md`)
+- [x] Establish research log hub (`docs/research_log/`) and automated persistence rules (`.agents/rules/research_logging.md`, `AGENTS.md`)
+- [ ] Choose lameness implementation path: Russello 2026 trajectory encoder vs CattleLameness 5-fold CV
 - [ ] Place Dryad BCS archive (`Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`
+- [ ] Restore datasets locally on laptop (`python scripts/download_all.py`)
 - [ ] Connect to Research PC (RTX 5090) and run master restoration (`git pull; python scripts/download_all.py --all`)
 - [ ] Launch PCGrad multi-task training run
 - [ ] Prepare P3 draft submission by September 26
 
-## Last Session (Convo dba0f4b9-4e4d-469f-870d-b0601e3fb7ef)
+## Last Session (Convo 6522ab9b-43bd-4ef9-97e2-2228a4cfe879)
+- Conducted forensic audit of Mendeley CattleLameness dataset (50 clips, 9,950 frames) and exposed critical train/test leakage (`N (9).mp4` vs `N (3).mp4`).
+- Generated 42-group leak-safe 5-fold cross-validation manifest (`datasets/lameness/cattle_lameness_manifest.csv`).
+- Audited 4 candidate repos: recommended Russello 2026 (98 cows, 272 trajectories), rejected Wu NWAFU (static pose), whsu2s (missing data), and Duan 2025 (closed).
+- Built centralized research log repository (`docs/research_log/`) and created workspace rules (`.agents/rules/research_logging.md`, `AGENTS.md`) to enforce perpetual tracking.
 - Analyzed P2 Hostile Review (`P2_hostile_review.md`) and diagnosed root causes of negative transfer, threshold leakage, and unit mismatches.
 - Created and committed automated restoration script `scripts/setup_research_pc.ps1` and `scripts/download_all.py`.
 - Created and committed `scripts/pcgrad.py` implementing Projecting Conflicting Gradients (NeurIPS 2020).

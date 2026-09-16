@@ -1,0 +1,51 @@
+filename,class,source_url,proposed_group_id,confidence,evidence,proposed_fold,duration,fps,resolution
+L (1).mp4,lame,https://www.youtube.com/watch?v=NMfoeqsbSa0,GRP_LAME_01,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",2,4.0,29.97,500x500
+L (2).mp4,lame,https://youtube.com/shorts/CXi6rtvqvEU?si=9pS94qzNq6z5rRiM,GRP_LAME_02,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",1,6.5,60.0,500x500
+L (3).mp4,lame,https://youtube.com/shorts/-pFmPSLWQO4?si=wawJh1QVbERKStN_,GRP_LAME_03,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",4,4.6,30.0,500x500
+L (4).mp4,lame,https://youtube.com/shorts/7TSo4g9yeS8?si=qGEdZcSFpjRRYvsq,GRP_LAME_04,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",2,5.66,29.5,500x500
+L (5).mp4,lame,https://youtube.com/shorts/EuQ06yYNh70?si=PR8O2NVB7riYrC3M,GRP_LAME_05,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",1,6.1,60.0,500x500
+L (6).mp4,lame,https://youtu.be/pLa-thOWK5E?si=UOArs_xTLEAIV5UC,GRP_LAME_06,medium,"Medium confidence visual similarity: solid dark cow in low-light concrete barn, boundary diff = 34.9, pHash dist = 24.",4,7.1,30.0,500x500
+L (7).mp4,lame,https://youtu.be/RXkYdPIVyrg?si=VSXM4UFg_sP1MKam,GRP_LAME_07,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",5,5.68,60.0,500x500
+L (8).mp4,lame,https://youtube.com/shorts/fo8bdQteCGM?si=kl3zkNlQ4d8shYaF,GRP_LAME_08,confirmed,"Temporal continuation and identical cow markings: boundary diff = 14.2, hist corr = 0.912, same pasture pen.",1,6.01,29.97,500x500
+L (9).mp4,lame,https://youtube.com/shorts/Qdl5ZvGOBp4?si=PY9eB-kBI9QrcT61,GRP_LAME_09,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",5,7.6,30.0,500x500
+L (10).mp4,lame,https://youtube.com/shorts/c2xvLyejH2A?si=3jg96CKKCkv7dYC3,GRP_LAME_10,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",4,4.17,29.97,500x500
+L (11).mp4,lame,,GRP_LAME_11,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",5,10.13,29.92,500x500
+L (12).mp4,lame,,GRP_LAME_12,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",3,7.98,60.0,500x500
+L (13).mp4,lame,,GRP_LAME_13,high,"High visual & frame similarity: 60 FPS, hist corr = 0.937, identical cow coat markings in milking parlor exit.",2,5.13,60.0,500x500
+L (14).mp4,lame,,GRP_LAME_14,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",5,7.45,29.92,500x500
+L (15).mp4,lame,,GRP_LAME_15,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",3,4.47,29.97,500x500
+L (16).mp4,lame,,GRP_LAME_16,low,"Low confidence match: hist corr = 0.892, BGR diff = 15.9, similar outdoor pen but different angle/framerate (60 vs 30).",3,6.59,59.94,500x500
+L (17).mp4,lame,,GRP_LAME_16,low,"Low confidence match: hist corr = 0.892, BGR diff = 15.9, similar outdoor pen but different angle/framerate (60 vs 30).",3,4.17,30.0,500x500
+L (18).mp4,lame,,GRP_LAME_08,confirmed,"Temporal continuation and identical cow markings: boundary diff = 14.2, hist corr = 0.912, same pasture pen.",1,5.0,29.97,500x500
+L (19).mp4,lame,,GRP_LAME_06,medium,"Medium confidence visual similarity: solid dark cow in low-light concrete barn, boundary diff = 34.9, pHash dist = 24.",4,3.61,29.92,500x500
+L (20).mp4,lame,,GRP_LAME_20,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",5,5.9,30.0,500x500
+L (21).mp4,lame,,GRP_LAME_21,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",3,5.03,60.0,500x500
+L (22).mp4,lame,,GRP_LAME_22,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",1,8.67,30.0,500x500
+L (23).mp4,lame,,GRP_LAME_23,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",2,4.7,30.0,500x500
+L (24).mp4,lame,,GRP_LAME_24,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",4,6.54,29.5,500x500
+L (25).mp4,lame,,GRP_LAME_13,high,"High visual & frame similarity: 60 FPS, hist corr = 0.937, identical cow coat markings in milking parlor exit.",2,5.57,59.94,500x500
+N (1).mp4,normal,https://youtube.com/shorts/ntSw904m8rY?si=4gMggvi6Spq0o_zO,GRP_NORM_01,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",5,2.43,60.0,500x500
+N (2).mp4,normal,https://youtu.be/icEm_s9Ku_Q?si=QMahMSnz3nKwptQK,GRP_NORM_02,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",3,4.09,29.58,500x500
+N (3).mp4,normal,https://youtube.com/shorts/ntAGV4SQ0Fw?si=4IiZFH8c1jlbhxKW,GRP_NORM_03,confirmed,Exact source URL match: https://youtube.com/shorts/ntAGV4SQ0Fw (Source #3 & #9 in video_sources.txt).,3,5.2,30.0,500x500
+N (4).mp4,normal,https://youtube.com/shorts/T408rP1Nlck?si=FeT0jGsagwYbpvZl,GRP_NORM_04,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",4,4.0,29.0,500x500
+N (5).mp4,normal,https://youtu.be/4PF_-QHZ5rM?si=G-9htBNOI9ikZBjb,GRP_NORM_05,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",4,7.11,28.7,500x500
+N (6).mp4,normal,https://youtube.com/shorts/sVViydUNkdE?si=DGpVAdNsqoFGZlHE,GRP_NORM_06,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",4,8.2,25.0,500x500
+N (7).mp4,normal,https://youtu.be/4pm4UMxkm90?si=_VD7pDdWR3DOhkji,GRP_NORM_07,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",1,5.17,30.0,500x500
+N (8).mp4,normal,https://youtu.be/MK09R0CK3sE?si=tGOusRjliRFO9VTq,GRP_NORM_08,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",2,5.52,25.0,500x500
+N (9).mp4,normal,https://youtube.com/shorts/ntAGV4SQ0Fw?si=1KqB9frbi08wIrYC,GRP_NORM_03,confirmed,Exact source URL match: https://youtube.com/shorts/ntAGV4SQ0Fw (Source #3 & #9 in video_sources.txt).,3,5.37,30.0,500x500
+N (10).mp4,normal,https://youtu.be/izzguC1uoWI?si=YeUcDsIgZ78rgm6w,GRP_NORM_10,confirmed,"Independent animal/clip based on distinct visual appearance, background, and movement.",3,6.37,30.0,500x500
+N (11).mp4,normal,,GRP_NORM_11,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",4,5.08,25.0,500x500
+N (12).mp4,normal,,GRP_NORM_12,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",3,5.07,29.17,500x500
+N (13).mp4,normal,,GRP_NORM_13,medium,"Medium confidence visual match: hist corr = 0.925, BGR diff = 21.8, same indoor barn lighting and Holstein patch.",5,4.46,29.58,500x500
+N (14).mp4,normal,,GRP_NORM_14,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",2,3.8,30.0,500x500
+N (15).mp4,normal,,GRP_NORM_15,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",4,5.25,29.92,500x500
+N (16).mp4,normal,,GRP_NORM_16,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",1,6.84,29.97,500x500
+N (17).mp4,normal,,GRP_NORM_17,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",5,5.07,30.0,500x500
+N (18).mp4,normal,,GRP_NORM_18,high,"High visual & temporal similarity: 60 FPS, BGR diff = 11.5, boundary diff = 30.0, identical Jersey cow.",2,1.85,60.0,500x500
+N (19).mp4,normal,,GRP_NORM_19,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",5,4.7,30.0,500x500
+N (20).mp4,normal,,GRP_NORM_20,high,"High visual similarity: hist corr = 0.984, BGR diff = 9.8, identical Holstein coat pattern on dirt track.",1,8.24,29.97,500x500
+N (21).mp4,normal,,GRP_NORM_21,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",2,4.97,30.0,500x500
+N (22).mp4,normal,,GRP_NORM_13,medium,"Medium confidence visual match: hist corr = 0.925, BGR diff = 21.8, same indoor barn lighting and Holstein patch.",5,8.2,30.0,500x500
+N (23).mp4,normal,,GRP_NORM_18,high,"High visual & temporal similarity: 60 FPS, BGR diff = 11.5, boundary diff = 30.0, identical Jersey cow.",2,1.35,60.0,500x500
+N (24).mp4,normal,,GRP_NORM_20,high,"High visual similarity: hist corr = 0.984, BGR diff = 9.8, identical Holstein coat pattern on dirt track.",1,12.28,29.97,500x500
+N (25).mp4,normal,,GRP_NORM_25,high,"Independent animal/clip based on distinct visual appearance, background, and movement.",1,3.16,25.0,500x500

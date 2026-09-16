@@ -1,5 +1,23 @@
-# Large Datasets
-datasets/
+# Large Datasets (ignore images, videos, frames, archives; track manifests & csvs)
+datasets/**
+!datasets/**/
+!datasets/**/*.csv
+!datasets/**/*.json
+*.mp4
+*.avi
+*.mov
+*.jpg
+*.jpeg
+*.png
+*.zip
+*.tar
+*.gz
+datasets/**/frames/
+datasets/**/raw/
+datasets/**/CattleLameness/
+
+# Scratchpad and temporary inspection files
+scratch/
 
 # Python Cache
 __pycache__/
