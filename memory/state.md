@@ -16,6 +16,7 @@
 - [x] Build leakage-safe CattleLameness manifest (`datasets/lameness/cattle_lameness_manifest.csv`) & 5-fold evaluation architecture (`docs/audits/cattle_lameness_grouping_report.md`)
 - [x] Complete forensic audit of 4 candidate lameness datasets (`docs/audits/candidate_lameness_datasets_audit.md`)
 - [x] Establish research log hub (`docs/research_log/`) and automated persistence rules (`.agents/rules/research_logging.md`, `AGENTS.md`)
+- [x] Organize and categorize `docs/` directory into structured subdirectories (`audits`, `research_log`, `defense`, `thesis`, `deliverables`, `results`)
 - [ ] Choose lameness implementation path: Russello 2026 trajectory encoder vs CattleLameness 5-fold CV
 - [ ] Place Dryad BCS archive (`Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`
 - [ ] Restore datasets locally on laptop (`python scripts/download_all.py`)

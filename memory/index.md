@@ -49,7 +49,8 @@ Dataset preprocessing routines, member work splits, and original problem context
 - `preprocess_sciencedb_bcs.py`: Preprocessing script for ScienceDB thermal/RGB cattle dataset.
 
 ### `docs/`
-Presentation guides, defense preparation notes, and review summaries.
+Structured project documentation, defense resources, forensic audits, and official deliverables.
+- `README.md`: Master directory guide for the organized `docs/` workspace.
 - `audits/`: Detailed dataset forensic investigations, anti-leakage manifests, and cross-validation architectures.
   - `candidate_lameness_datasets_audit.md`: Deep forensic audit of 4 potential alternative lameness datasets (Russello 2026, Wu/NWAFU, whsu2s, Duan 2025).
   - `cattle_lameness_audit_report.md`: Forensic audit of the CattleLameness dataset (50 clips, 42 cattle, ezgif container footprints, cross-split leakage identification).
@@ -57,14 +58,20 @@ Presentation guides, defense preparation notes, and review summaries.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
   - `2026-09-17_lameness_investigation.md`: Complete forensic audit log covering CattleLameness leakage discovery, 42-group resolution, and candidate dataset audit.
-- `cattle_thesis_p2_preview.md`: Markdown preview summary of P2 thesis content.
-- `deep_analysis.md`: Detailed architectural and statistical deep dive into experimental results.
-- `detailed_p2_info.md`: Supplementary technical documentation for Phase 2.
-- `extracted_results.txt`: Tabulated benchmark metrics across all model runs and task heads.
-- `P2_Report_Cattle_MTL_Full_Declaration_Approval_Signature_Proper.pdf`: Signed final thesis report with official BRACU declaration pages.
-- `presentation_key_concepts.md` (and `.html`, `.docx`): Defense presentation key concepts, talking points, and Q&A crib sheet.
-- `qa_study_guide.md`: Comprehensive defense Q&A preparation guide covering deep learning theory, MTL tradeoffs, and thesis defense questions.
-- `thesis_review.md`: Peer-review feedback, Turnitin similarity audit, and revision checklist.
+- `defense/`: Oral examination preparation guides, presentation notes, and formatted crib sheets.
+  - `presentation_key_concepts.md` (and `.html`, `.docx`): Defense presentation key concepts, talking points, and Q&A crib sheet.
+  - `qa_study_guide.md`: Comprehensive defense Q&A preparation guide covering deep learning theory, MTL tradeoffs, and thesis defense questions.
+  - `style_template.html`: CSS formatting template for HTML export styling.
+- `thesis/`: Thesis manuscript reviews, chapter summaries, and deep technical documentation.
+  - `cattle_thesis_p2_preview.md`: Markdown preview summary of P2 thesis content.
+  - `detailed_p2_info.md`: Supplementary technical documentation for Phase 2.
+  - `deep_analysis.md`: Detailed architectural and statistical deep dive into experimental results.
+  - `thesis_review.md`: Peer-review feedback, Turnitin similarity audit, and revision checklist.
+- `deliverables/`: Official final compiled presentation posters and signed submission documents.
+  - `P2_Report_Cattle_MTL_Full_Declaration_Approval_Signature_Proper.pdf`: Signed final thesis report with official BRACU declaration pages.
+  - `T25301094_P2 Poster.pdf`: Compiled presentation poster for the P2 thesis defense exhibition.
+- `results/`: Raw model logs and extracted performance dumps.
+  - `extracted_results.txt`: Tabulated benchmark metrics across all model runs and task heads.
 
 ### `.agents/` & Root Rules
 - `AGENTS.md`: Root workspace rules governing continuous research logging, manifest preservation, and dual-device git synchronization.

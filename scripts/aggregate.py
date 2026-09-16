@@ -1,7 +1,7 @@
 import os
 import glob
 
-output_file = os.path.join("docs", "detailed_p2_info.md")
+output_file = os.path.join("docs", "thesis", "detailed_p2_info.md")
 workspace_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Define the order of files to aggregate
@@ -12,7 +12,7 @@ sections = [
         "context/context2_behavior.txt"
     ]),
     ("2. PRESENTATION & KEY CONCEPTS", [
-        "docs/presentation_key_concepts.md"
+        "docs/defense/presentation_key_concepts.md"
     ]),
     ("3. INDIVIDUAL CONTEXT 3 REPORTS", glob.glob(os.path.join(workspace_dir, "context", "Context3_*.txt"))),
     ("4. ALL RAW RESULTS", glob.glob(os.path.join(workspace_dir, "workspaces", "*", "*_results.txt"))),
