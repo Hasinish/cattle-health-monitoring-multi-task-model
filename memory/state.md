@@ -7,8 +7,11 @@
 - [x] Download & extract Mendeley CattleLameness dataset (9,950 frames extracted, index CSV generated)
 - [x] Download & extract 213,686 MmCows behavior images via Hugging Face (`cropped_bboxes.zip`) directly to `datasets/behavior/`
 - [x] Complete OpenCows2020 dataset download & indexing (4,736 images indexed across 46 classes via Kagglehub)
+- [x] Purge 36+ GB raw behavior videos, zip archives, and cache to reclaim local disk space
+- [x] Automate Dryad BCS download launcher & watcher in `scripts/download_all.py` (commit `f543f16`)
+- [ ] Export comprehensive Antigravity customization replication guide (skills, rules, LaTeX preview, Socratic tutor, memory structure) for other PC
 - [ ] Place Dryad BCS archive (`Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`
-- [ ] Connect to Research PC (RTX 5090) at 1:00 AM and run dataset restoration
+- [ ] Connect to Research PC (RTX 5090) and run master restoration (`git pull; python scripts/download_all.py --all`)
 - [ ] Launch PCGrad multi-task training run
 - [ ] Prepare P3 draft submission by September 26
 
@@ -17,10 +20,11 @@
 - Created and committed automated restoration script `scripts/setup_research_pc.ps1` and `scripts/download_all.py`.
 - Created and committed `scripts/pcgrad.py` implementing Projecting Conflicting Gradients (NeurIPS 2020).
 - Successfully restored CattleLameness (9,950 frames), MmCows behavior (213,686 frames), and OpenCows2020 (4,736 frames).
-- 3 out of 4 datasets 100% restored and indexed! Only Dryad BCS remaining.
+- Cleaned up 36+ GB of raw behavior videos/archives.
+- Built automated browser launcher and download watcher for Dryad BCS in `download_all.py` (pushed to `origin/main`).
 
 ## Current Blockers & Notes
-- Dryad BCS pending `Total_sorted_DGE_images.zip` from https://datadryad.org/stash/dataset/doi:10.5061/dryad.tqjq2bw4s.
-- Lab slot starts at 1:00 AM (Wed-Thu 1 AM to 1 PM). Local pipeline is tested and proven ready for deployment to Research PC.
+- Dryad BCS pending stream download via browser from https://datadryad.org/downloads/file_stream/2391628.
+- Creating full customization replication guide for Research PC / secondary device setup.
 
 
