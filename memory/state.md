@@ -18,19 +18,23 @@
 - [x] Establish research log hub (`docs/research_log/`) and automated persistence rules (`.agents/rules/research_logging.md`, `AGENTS.md`)
 - [x] Organize and categorize `docs/` directory into structured subdirectories (`audits`, `research_log`, `defense`, `thesis`, `deliverables`, `results`)
 - [x] Finalize P3 task scope: focus on 3 core RGB tasks (BCS, Behavior, Cow ID); lameness removed from primary P3 MTL model
-- [ ] Place Dryad BCS archive (`Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`
+- [ ] Download & restore ScienceDB BCS dataset (Primary, 53,566 RGB images) to `datasets/bcs/sciencedb_bcs/` and run `preprocess_sciencedb_bcs.py`
+- [ ] Place Dryad BCS archive (Secondary / Comparison, `Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`
 - [ ] Restore datasets locally on laptop (`python scripts/download_all.py`)
 - [ ] Connect to Research PC (RTX 5090) and run master restoration (`git pull; python scripts/download_all.py --all`)
 - [ ] Launch PCGrad 3-task training run (BCS, Behavior, Cow ID)
 - [ ] Prepare P3 draft submission by September 26
 
 ## Active P3 Task Scope
-- **Primary Tasks (RGB Vision)**:
-  1. Body Condition Scoring (BCS — Dryad)
-  2. Behavior Recognition (MmCows)
-  3. Individual Cow Identification (Cow ID — OpenCows2020)
+- **1. Body Condition Scoring (BCS)**:
+  - **Primary**: ScienceDB (53,566 RGB images across 5 classes: 3.25, 3.5, 3.75, 4.0, 4.25)
+  - **Secondary / Comparison**: Dryad (5,923 Depth Grayscale Edge images across integer scores 1–5)
+- **2. Behavior Recognition**:
+  - **Primary**: MmCows (213,686 bounding-box crops across 5 behaviors)
+- **3. Individual Cow Identification**:
+  - **Primary**: OpenCows2020 (4,736 images across 46 cow classes)
 - **Lameness Status**:
-  - Removed from primary Phase 3 multi-task experiment
+  - Excluded from primary Phase 3 multi-task experiment
   - CattleLameness retained for historical Phase 2 documentation and audit/leakage evidence only
   - Russello 2026 retained as a possible future pose/keypoint-based extension
 
@@ -51,7 +55,8 @@
 - Restored dynamic real-time Modal billing monitor daemon (`scripts/billing_monitor.py`) and auto-generated `BILLING.md` dashboard tracking all 4 accounts (pushed to `custom-antigravity` commit `ff5a941`).
 
 ## Current Blockers & Notes
-- Dryad BCS pending stream download via browser from https://datadryad.org/downloads/file_stream/2391628.
+- ScienceDB BCS download needed: https://scidb.cn/en/detail?dataSetId=16b8bdaf31ee4c8b9891fc7e9df6e41c (Primary BCS dataset, ~26 GB).
+- Dryad BCS pending stream download via browser from https://datadryad.org/downloads/file_stream/2391628 (Secondary BCS dataset).
 - Research PC ready to bootstrap using `Hasinish/custom-antigravity` and `cattle-health-monitoring-multi-task-model`.
 
 

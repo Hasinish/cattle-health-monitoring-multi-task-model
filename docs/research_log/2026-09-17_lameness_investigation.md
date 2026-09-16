@@ -84,9 +84,11 @@ To evaluate alternatives and address synthetic/watermarked web-scraped footage, 
 Lameness has been removed from the primary Phase 3 multi-task experiment.
 
 The main P3 tasks are now:
-1. **Body Condition Scoring (BCS)**
-2. **Behavior Recognition**
-3. **Individual Cow Identification (Cow ID)**
+1. **Body Condition Scoring (BCS)**:
+   - **Primary**: ScienceDB (53,566 RGB rear-view images across 5 classes)
+   - **Secondary / Cross-Domain Comparison**: Dryad (5,923 Depth Grayscale Edge maps)
+2. **Behavior Recognition** (Primary: MmCows — 213,686 bounding-box crops)
+3. **Individual Cow Identification (Cow ID)** (Primary: OpenCows2020 — 4,736 images across 46 classes)
 
 CattleLameness is retained only as:
 - a historical Phase 2 dataset
@@ -121,5 +123,6 @@ The initial grouping/CV plan for CattleLameness and the prospective integration 
 ## 6. Immediate Next Steps
 - [x] Document forensic audit and candidate repository evaluations.
 - [x] Supersede lameness integration; finalize P3 multi-task scope (BCS, Behavior, Cow ID).
-- [ ] Place Dryad BCS archive (`Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`.
+- [ ] Download & restore ScienceDB BCS dataset (Primary, https://scidb.cn/en/detail?dataSetId=16b8bdaf31ee4c8b9891fc7e9df6e41c) to `datasets/bcs/sciencedb_bcs/` and run `preprocess_sciencedb_bcs.py`.
+- [ ] Place Dryad BCS archive (Secondary / Comparison, `Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`.
 - [ ] Finalize data loaders and PCGrad multi-task training script for the 3 core RGB tasks.
