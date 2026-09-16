@@ -8,7 +8,7 @@
 ---
 
 ## 1. Executive Summary
-Conducted an exhaustive forensic audit on the current Mendeley CattleLameness dataset (50 clips) and 4 candidate academic repositories. Uncovered severe train/test data leakage in the existing `context/preprocess_lameness.py` pipeline, where clips `N (9).mp4` (Train) and `N (3).mp4` (Test) originated from the exact same YouTube clip (`ntAGV4SQ0Fw`). Resolved all 50 clips into 42 distinct animal/source groups and generated a leak-proof 5-fold StratifiedGroupKFold cross-validation manifest. Furthermore, investigated 4 candidate lameness datasets: selected Russello 2026 (98 unique cows, 272 trajectories) as our primary candidate, while rejecting Wu NWAFU (static pose only), whsu2s (missing repository data), and Duan 2025 (closed/private data).
+Conducted an exhaustive forensic audit on the current Mendeley CattleLameness dataset (50 clips) and 4 candidate academic repositories. Uncovered severe train/test data leakage in the existing `context/preprocess_lameness.py` pipeline, where clips `N (9).mp4` (Train) and `N (3).mp4` (Test) originated from the exact same YouTube clip (`ntAGV4SQ0Fw`). The automated grouping produced a provisional 42-group manifest matching the dataset authors' reported count of 42 cattle, but subsequent manual inspection showed that some visual identity judgments were unreliable. Several normal-class clips were also identified as CGI/Blender footage. Therefore, the grouping manifest is preserved as a historical forensic artifact and is NOT considered validated ground truth for final Phase 3 training. Furthermore, investigated 4 candidate lameness datasets: Russello 2026 was identified as the strongest publicly available candidate, while rejecting Wu NWAFU (static pose only), whsu2s (missing repository data), and Duan 2025 (closed/private data). Subsequently, lameness was removed from the primary Phase 3 multi-task experiment to focus on RGB-native tasks (BCS, Behavior, Cow ID).
 
 ---
 
@@ -16,9 +16,12 @@ Conducted an exhaustive forensic audit on the current Mendeley CattleLameness da
 
 ### 2.1 Dataset Inventory & Characteristics
 - **Total Videos**: 50 MP4 files (25 Lame, 25 Normal).
-- **Source**: Web-scraped clips from YouTube and TikTok, standardized using `ezgif.com` into 500x500 square crops at 25-30 FPS.
-- **Frame Count**: 9,950 total extracted frames (5,050 Lame, 4,900 Normal).
-- **Visual Artifacts**: Heavy watermarks (ezgif.com, TikTok handles), variable aspect ratio stretching, synthetic Blender animations (e.g., `L (19).mp4`), and inconsistent camera angles.
+- **Source**: Web-scraped clips from YouTube and TikTok, standardized using `ezgif.com` into 500x500 square crops.
+- **Framerates (FPS)**: Variable framerates ranging from 25.00 FPS up to 60.00 FPS (e.g., `L (2).mp4`, `L (5).mp4`, and `L (7).mp4` are 60.00 FPS).
+- **Frame Count**: 9,950 total extracted frames:
+  - **Lame**: 5,900 frames (59.30%)
+  - **Normal**: 4,050 frames (40.70%)
+- **Visual Artifacts**: Heavy watermarks (ezgif.com, TikTok handles), variable aspect ratio stretching, synthetic Blender animations, and inconsistent camera angles.
 
 ### 2.2 Leakage Discovery in Existing Splitting Code
 Inspection of `context/preprocess_lameness.py` revealed that video assignment was conducted via random index modulo arithmetic without cow identity tracking:
@@ -31,68 +34,92 @@ Inspection of `context/preprocess_lameness.py` revealed that video assignment wa
   - `N (4).mp4` and `N (5).mp4` (same cow/milking parlor walkway)
   - `N (12).mp4` and `N (13).mp4` (same pasture recording)
 
-### 2.3 Master Grouping & Leakage-Safe Manifest
-A dedicated grouping algorithm (`scripts/build_leakage_safe_manifest.py`) resolved the 50 clips into **42 distinct animal/source groups**:
-- **Lame Class**: 21 unique groups (17 single-video, 4 multi-video groups).
-- **Normal Class**: 21 unique groups (18 single-video, 3 multi-video groups).
-- **Cross-Validation Split**: Configured a 5-fold `StratifiedGroupKFold` split ensuring:
-  - Zero animal/source leakage across folds (all clips from a group reside exclusively in one fold).
+### 2.3 Provisional Grouping & Evaluation Protocol
+An automated grouping script (`scripts/build_leakage_safe_manifest.py`) grouped the 50 clips into 42 provisional clusters matching the authors' reported 42-cow count:
+- **Lame Class**: 21 provisional groups (17 single-video, 4 multi-video groups).
+- **Normal Class**: 21 provisional groups (18 single-video, 3 multi-video groups).
+- **Proposed Evaluation Protocol**: A 5-fold `StratifiedGroupKFold` split:
+  - The proposed grouped folds reduce known source-level leakage, but because exact animal identities are not reliably available, zero animal-level leakage cannot be guaranteed.
   - Exactly 5 Lame clips and 5 Normal clips in every fold (total 10 clips per test fold).
-- **Master Manifest**: Exported to `datasets/lameness/cattle_lameness_manifest.csv`.
+- **Manifest Location**: `datasets/lameness/cattle_lameness_manifest.csv`.
+
+> [!IMPORTANT]
+> **STATUS: PROVISIONAL / HISTORICAL ONLY.**  
+> This manifest is not approved for final Phase 3 training. The exact clip-to-animal grouping has not been independently verified. The manifest may still be useful for documenting known duplicate/source leakage, but it must not be treated as validated cow identity ground truth.
+
+### 2.4 Manual Synthetic / CGI Findings
+Manual visual inspection of the video sequences identified multiple synthetic clips:
+- `N (7).mp4` — CGI
+- `N (21).mp4` — same/related CGI from a different angle
+- `N (6).mp4` — CGI with artificial grass/sky-style background
+- `N (8).mp4` — CGI / synthetic footage
+- `N (9).mp4` — 3D Blender footage
+
+These findings further reduce confidence in CattleLameness as a valid real-world gait benchmark.
 
 ---
 
 ## 3. Part II: Forensic Audit of 4 Candidate Lameness Datasets
 
-To establish a gold-standard benchmark and eliminate synthetic/watermarked web-scraped clips, four candidate repositories were forensically evaluated:
+To evaluate alternatives and address synthetic/watermarked web-scraped footage, four candidate repositories were forensically investigated:
 
 ### 3.1 Candidate Evaluation Matrix
 
 | Candidate | Status | Samples / Sequence Count | Unique Cows | Modality | Ground Truth Lameness | Verdict & Rationale |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Russello 2026** (`hrussel/lstm-lameness-detection`) | **ACCEPTED (Primary)** | 272 trajectories | **98 cows** | 2D Keypoints (17 T-LEAP points) | Scores 1-4 (143 Normal, 129 Lame) | **RECOMMENDED**: Clean, public, documented cow IDs, leak-free StratifiedGroupKFold. Ready to use. |
+| **Russello 2026** (`hrussel/lstm-lameness-detection`) | **STRONGEST CANDIDATE (Pose-Only)** | 272 trajectories | **98 cows** | 2D Keypoints (17 T-LEAP points) | Scores 1-4 (143 Normal, 129 Lame) | **Strongest public candidate**. Documented cow IDs and animal-disjoint evaluation. Pose trajectories only (no RGB video). |
 | **Wu Dairy Cow** (`wusaisa/Dairy-cow-dataset`) | **REJECTED** | 1,941 JPG images | Unknown | Static RGB + 16-point pose TXT | None (0) | **UNUSABLE**: Static pose estimation dataset for cow detection. Zero gait/lameness labels. |
 | **whsu2s** (`whsu2s/Lameness-Detection`) | **REJECTED** | 0 videos / 0 JSONs in repo | 64 cows claimed | None (Data not pushed) | Mobility scores 0-3 | **UNUSABLE**: Repository only contains thesis text and label CSV. Video/skeleton data never pushed to GitHub. |
 | **Duan et al. 2025** (Frontiers in Vet Sci) | **REJECTED** | 1,280 samples | Unknown | Overhead RGB-D | Multi-feature classification | **UNAVAILABLE**: Closed-source / private dataset requiring author inquiry. |
 
-### 3.2 Deep Dive: Russello 2026 (`hrussel/lstm-lameness-detection`)
+### 3.2 Findings on Russello 2026 (`hrussel/lstm-lameness-detection`)
 - **Repository Size**: 23 MB.
-- **Data Files**:
-  - `data/videos_keypoints/*.csv`: 272 coordinate trajectory CSVs.
-  - `data/videos_lameness_scores.csv`: Video-level mapping with Cow ID, locomotion score (1=Sound, 2-4=Lame), and binary label.
-  - `data/video_information.csv`: Frame counts (avg 100-300 frames per pass) and capture metadata.
-- **Evaluation Standard**: Utilizes `StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)` grouped by `cow_id`.
-- **Note on Modality**: Contains extracted coordinate sequences rather than raw RGB MP4s. Can be modeled directly using 1D-CNN / BiLSTM or transformed into spatial coordinate heatmaps for ResNet-18.
+- **Evaluation Protocol**: Russello 2026 was the strongest publicly available lameness candidate identified in this audit. Its released evaluation code uses animal-disjoint `StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)` based on cow IDs, which substantially reduces animal-level leakage risk.
+- **Data Modality**: Contains 272 2D coordinate trajectory CSVs (`data/videos_keypoints/*.csv`) rather than raw RGB video clips.
 
 ---
 
-## 4. Architectural Decisions & Strategic Roadmap
+## 4. Current Phase 3 Decision
 
-### Option A: Russello 2026 Keypoint Trajectory Pipeline (Gold Standard)
-- Add a lightweight trajectory encoder (BiLSTM or 1D-CNN) alongside the multi-task ResNet-18 backbone.
-- Alternatively, render 2D keypoint trajectory skeleton frames to feed standard visual backbones.
-- **Pros**: Perfectly leak-proof, peer-reviewed, zero watermarks/CGI.
+Lameness has been removed from the primary Phase 3 multi-task experiment.
 
-### Option B: CattleLameness RGB 5-Fold Cross-Validation (Robust Baseline)
-- Update `context/preprocess_lameness.py` and PyTorch DataLoader to read fold assignments directly from `datasets/lameness/cattle_lameness_manifest.csv`.
-- Discard random modulo splits permanently.
-- **Pros**: Direct raw image features compatible with existing ResNet-18 multi-task architecture.
+The main P3 tasks are now:
+1. **Body Condition Scoring (BCS)**
+2. **Behavior Recognition**
+3. **Individual Cow Identification (Cow ID)**
+
+CattleLameness is retained only as:
+- a historical Phase 2 dataset
+- evidence of dataset-quality problems
+- evidence of evaluation leakage risk
+- an optional future stress-test if needed
+
+Russello 2026 remains the strongest public lameness candidate identified during the audit. However, the released Russello data consist of pose/keypoint trajectories rather than raw RGB video. Because the main P3 multi-task architecture is currently focused on RGB-based tasks, Russello is not being integrated into the primary P3 model.
+
+Possible future uses:
+- supplementary lameness experiment
+- future multimodal extension
+- future work section
+
+### Status Update / Superseding Decision
+The initial grouping/CV plan for CattleLameness and the prospective integration of Russello trajectories were superseded by the decision to remove lameness from the primary Phase 3 multi-task experiment. This narrows the scope of Phase 3 to RGB-native vision tasks with validated ground truth.
 
 ---
 
 ## 5. Artifacts and Generated Deliverables
-1. **Manifest File**:
-   - `datasets/lameness/cattle_lameness_manifest.csv`: 50-video leakage-safe master manifest with 42 groups and 5 stratified folds.
+1. **Provisional Manifest File**:
+   - [cattle_lameness_manifest.csv](../../datasets/lameness/cattle_lameness_manifest.csv): 50-video provisional manifest with 42 groups and 5 stratified folds (Historical / Non-validated).
 2. **Manifest Generation Script**:
-   - `scripts/build_leakage_safe_manifest.py`: Script executing video metadata extraction, grouping logic, and StratifiedGroupKFold.
+   - [build_leakage_safe_manifest.py](../../scripts/build_leakage_safe_manifest.py): Script executing metadata extraction, heuristic grouping, and StratifiedGroupKFold.
 3. **Comprehensive Audit Reports**:
-   - `docs/audits/cattle_lameness_audit_report.md`: Detailed audit of CattleLameness dataset and leakage diagnosis.
-   - `docs/audits/cattle_lameness_grouping_report.md`: Deep dive into the 42 groups, visual evidence, and fold distributions.
-   - `docs/audits/candidate_lameness_datasets_audit.md`: Full comparative audit of the 4 candidate repositories.
+   - [cattle_lameness_audit_report.md](../audits/cattle_lameness_audit_report.md): Detailed audit of CattleLameness dataset and leakage diagnosis.
+   - [cattle_lameness_grouping_report.md](../audits/cattle_lameness_grouping_report.md): Analysis of the provisional 42 groups, visual evidence, and fold distributions.
+   - [candidate_lameness_datasets_audit.md](../audits/candidate_lameness_datasets_audit.md): Full comparative audit of the 4 candidate repositories.
 
 ---
 
 ## 6. Immediate Next Steps
-- [ ] Review decision between Option A (Russello keypoint trajectories) vs Option B (CattleLameness grouped RGB 5-fold CV).
-- [ ] Update `context/preprocess_lameness.py` to enforce `cattle_lameness_manifest.csv`.
-- [ ] Commit research log, audit docs, and manifest scripts to Git repository.
+- [x] Document forensic audit and candidate repository evaluations.
+- [x] Supersede lameness integration; finalize P3 multi-task scope (BCS, Behavior, Cow ID).
+- [ ] Place Dryad BCS archive (`Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`.
+- [ ] Finalize data loaders and PCGrad multi-task training script for the 3 core RGB tasks.

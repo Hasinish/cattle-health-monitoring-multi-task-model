@@ -17,12 +17,22 @@
 - [x] Complete forensic audit of 4 candidate lameness datasets (`docs/audits/candidate_lameness_datasets_audit.md`)
 - [x] Establish research log hub (`docs/research_log/`) and automated persistence rules (`.agents/rules/research_logging.md`, `AGENTS.md`)
 - [x] Organize and categorize `docs/` directory into structured subdirectories (`audits`, `research_log`, `defense`, `thesis`, `deliverables`, `results`)
-- [ ] Choose lameness implementation path: Russello 2026 trajectory encoder vs CattleLameness 5-fold CV
+- [x] Finalize P3 task scope: focus on 3 core RGB tasks (BCS, Behavior, Cow ID); lameness removed from primary P3 MTL model
 - [ ] Place Dryad BCS archive (`Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`
 - [ ] Restore datasets locally on laptop (`python scripts/download_all.py`)
 - [ ] Connect to Research PC (RTX 5090) and run master restoration (`git pull; python scripts/download_all.py --all`)
-- [ ] Launch PCGrad multi-task training run
+- [ ] Launch PCGrad 3-task training run (BCS, Behavior, Cow ID)
 - [ ] Prepare P3 draft submission by September 26
+
+## Active P3 Task Scope
+- **Primary Tasks (RGB Vision)**:
+  1. Body Condition Scoring (BCS — Dryad)
+  2. Behavior Recognition (MmCows)
+  3. Individual Cow Identification (Cow ID — OpenCows2020)
+- **Lameness Status**:
+  - Removed from primary Phase 3 multi-task experiment
+  - CattleLameness retained for historical Phase 2 documentation and audit/leakage evidence only
+  - Russello 2026 retained as a possible future pose/keypoint-based extension
 
 ## Last Session (Convo 6522ab9b-43bd-4ef9-97e2-2228a4cfe879)
 - Conducted forensic audit of Mendeley CattleLameness dataset (50 clips, 9,950 frames) and exposed critical train/test leakage (`N (9).mp4` vs `N (3).mp4`).
