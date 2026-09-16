@@ -58,7 +58,6 @@ Presentation guides, defense preparation notes, and review summaries.
 - `presentation_key_concepts.md` (and `.html`, `.docx`): Defense presentation key concepts, talking points, and Q&A crib sheet.
 - `qa_study_guide.md`: Comprehensive defense Q&A preparation guide covering deep learning theory, MTL tradeoffs, and thesis defense questions.
 - `thesis_review.md`: Peer-review feedback, Turnitin similarity audit, and revision checklist.
-- `antigravity_customization_transfer_guide.md`: Master replication guide containing exact configurations, skills, and code to reproduce Hasin's full custom Antigravity environment on any PC.
 
 ### `final_models/`
 Pre-trained object detection and feature extraction weight checkpoints.
@@ -77,7 +76,6 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `download_opencows.py`: Fast Kagglehub downloader and normalizer for OpenCows2020 identification images.
 - `pcgrad.py`: NeurIPS 2020 Projecting Conflicting Gradients implementation for mitigating negative gradient interference across multitask heads.
 - `setup_research_pc.ps1`: 1-click lab PC bootstrap script for Git pull, virtual environment setup, and dependency installation.
-- `setup_antigravity_customizations.ps1`: Automated 1-click installer reproducing all global rules, LaTeX preview server, Socratic tutor skill, and IDE hotkeys on a new machine.
 
 ### `thesis template/`
 Clean, official CSE400 LaTeX template skeleton used as the foundation for the thesis formatting.
