@@ -66,11 +66,19 @@ def restore_id(url=None):
     subprocess.check_call(cmd)
 
 # -----------------------------------------------------------------------------
-# 4. BCS (Dryad BCS)
+# 4. BCS — PRIMARY: ScienceDB, SECONDARY: Dryad
 # -----------------------------------------------------------------------------
 DRYAD_STREAM_URL = "https://datadryad.org/downloads/file_stream/2391628"
 
-def restore_bcs():
+def restore_sciencedb(url=None):
+    script = REPO_ROOT / "scripts" / "download_sciencedb.py"
+    cmd = [sys.executable, str(script)]
+    if url:
+        cmd.extend(["--url", url])
+    print(f"Executing ScienceDB downloader: {script.name}...")
+    subprocess.check_call(cmd)
+
+def restore_dryad():
     bcs_target = DATASETS_DIR / "bcs" / "dryad_bcs"
     bcs_target.mkdir(parents=True, exist_ok=True)
     zip_path = bcs_target / "Total_sorted_DGE_images.zip"
@@ -132,8 +140,14 @@ def restore_bcs():
 
     script = REPO_ROOT / "context" / "preprocess_bcs.py"
     if script.exists():
-        print(f"Running BCS preprocessor: {script.name}...")
+        print(f"Running Dryad BCS preprocessor: {script.name}...")
         subprocess.check_call([sys.executable, str(script)])
+
+def restore_bcs(sciencedb_url=None):
+    print("\n--- [PRIMARY BCS] Restoring ScienceDB Dataset ---")
+    restore_sciencedb(sciencedb_url)
+    print("\n--- [SECONDARY BCS] Restoring Dryad Dataset ---")
+    restore_dryad()
 
 # -----------------------------------------------------------------------------
 # VERIFICATION
@@ -143,41 +157,46 @@ def verify_datasets():
     print("  VERIFYING RESTORED DATASETS & CSV INDICES")
     print("=" * 60)
     indices = {
-        "Lameness": DATASETS_DIR / "lameness" / "lameness_index.csv",
-        "Behavior": DATASETS_DIR / "behavior" / "behavior_index.csv",
-        "Cow ID": DATASETS_DIR / "id" / "id_index.csv",
-        "BCS": DATASETS_DIR / "bcs" / "bcs_index.csv",
+        "Behavior (MmCows)": DATASETS_DIR / "behavior" / "behavior_index.csv",
+        "Cow ID (OpenCows)": DATASETS_DIR / "id" / "id_index.csv",
+        "BCS (ScienceDB)": DATASETS_DIR / "bcs" / "sciencedb_bcs_index.csv",
+        "BCS (Dryad)": DATASETS_DIR / "bcs" / "bcs_index.csv",
+        "Lameness (Mendeley)": DATASETS_DIR / "lameness" / "lameness_index.csv",
     }
     for name, path in indices.items():
         if path.exists():
             with open(path, 'r', encoding='utf-8') as f:
                 lines = sum(1 for _ in f) - 1
-            print(f"  [OK] {name:<10}: {path} ({lines:,} samples indexed)")
+            print(f"  [OK] {name:<22}: {path.name} ({lines:,} samples indexed)")
         else:
-            print(f"  [PENDING] {name:<10}: CSV not found at {path}")
+            print(f"  [PENDING] {name:<22}: CSV not found at {path.name}")
 
 def main():
     parser = argparse.ArgumentParser(description="Master dataset restoration for Cattle Health Monitoring")
-    parser.add_argument("--all", action="store_true", help="Download and restore all datasets")
-    parser.add_argument("--task", choices=["lameness", "behavior", "id", "bcs"], help="Restore specific task dataset")
+    parser.add_argument("--all", action="store_true", help="Download and restore all active datasets")
+    parser.add_argument("--task", choices=["bcs", "sciencedb", "dryad", "behavior", "id", "lameness"], help="Restore specific task dataset")
     parser.add_argument("--id-url", type=str, default=None, help="Direct download URL for OpenCows2020 if needed")
+    parser.add_argument("--sciencedb-url", type=str, default=None, help="Direct download URL for ScienceDB dataset.rar")
     args = parser.parse_args()
 
     if not args.all and not args.task:
         parser.print_help()
         return
 
-    if args.all or args.task == "lameness":
-        run_step("LAMENESS DATASET RESTORATION", restore_lameness)
+    if args.all or args.task in ["bcs", "sciencedb"]:
+        run_step("BCS PRIMARY (SCIENCEDB) RESTORATION", lambda: restore_sciencedb(args.sciencedb_url))
+
+    if args.all or args.task in ["bcs", "dryad"]:
+        run_step("BCS SECONDARY (DRYAD) RESTORATION", restore_dryad)
 
     if args.all or args.task == "behavior":
-        run_step("BEHAVIOR (MMCOWS) DATASET RESTORATION", restore_behavior)
+        run_step("BEHAVIOR (MMCOWS) RESTORATION", restore_behavior)
 
     if args.all or args.task == "id":
         run_step("COW ID (OPENCOWS2020) RESTORATION", lambda: restore_id(args.id_url))
 
-    if args.all or args.task == "bcs":
-        run_step("BCS DATASET RESTORATION", restore_bcs)
+    if args.task == "lameness":
+        run_step("LAMENESS (HISTORICAL MENDELEY) RESTORATION", restore_lameness)
 
     verify_datasets()
 

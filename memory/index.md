@@ -98,7 +98,8 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `build_leakage_safe_manifest.py`: Audits CattleLameness clips, applies heuristic & perceptual clustering, generates StratifiedGroupKFold assignments, and exports `cattle_lameness_manifest.csv`.
 - `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.
 - `run_all_training.py`: Orchestrates multi-gpu batch execution of all task training scripts.
-- `download_all.py`: Master dataset pipeline orchestrating restoration and indexing across all 4 thesis tasks directly into `datasets/`.
+- `download_all.py`: Master dataset pipeline orchestrating restoration and indexing across all active thesis tasks directly into `datasets/`.
+- `download_sciencedb.py`: Direct downloader, resume-supported streamer, unrar extractor, and preprocessor for ScienceDB Cattle BCS dataset.
 - `download_mmcows.py`: High-speed Hugging Face automated downloader and extractor for MmCows behavior bounding boxes with automatic zip cleanup.
 - `download_opencows.py`: Fast Kagglehub downloader and normalizer for OpenCows2020 identification images.
 - `pcgrad.py`: NeurIPS 2020 Projecting Conflicting Gradients implementation for mitigating negative gradient interference across multitask heads.
