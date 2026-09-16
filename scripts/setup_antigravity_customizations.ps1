@@ -217,15 +217,92 @@ console.log('Chat preview server spawned in background.');
 '@
 Set-Content -Path (Join-Path $scratchDir "start_preview.js") -Value $startPreviewJs -Encoding UTF8
 
-# Copy chat_preview.js from local repo if available, or write base implementation
-$repoChatPreview = Join-Path $PSScriptRoot "..\docs\antigravity_customization_transfer_guide.md"
-$sourceChatPreview = Join-Path $userHome ".gemini\antigravity-ide\scratch\chat_preview.js"
+# Copy chat_preview.js directly from repository
+$repoChatPreview = Join-Path $PSScriptRoot "chat_preview.js"
 $targetChatPreview = Join-Path $scratchDir "chat_preview.js"
 
-if (Test-Path $sourceChatPreview) {
-    Copy-Item -Path $sourceChatPreview -Destination $targetChatPreview -Force
+if (Test-Path $repoChatPreview) {
+    Copy-Item -Path $repoChatPreview -Destination $targetChatPreview -Force
+    Write-Host "  [OK] Installed chat_preview.js to $targetChatPreview" -ForegroundColor Green
 } else {
-    Write-Host "Please ensure chat_preview.js is populated into $targetChatPreview from the transfer guide." -ForegroundColor Magenta
+    Write-Host "  [WARN] scripts/chat_preview.js not found in repo root!" -ForegroundColor Red
+}
+
+# Restore memory/personal_info.md in workspace if missing (since .gitignore prevents pushing it)
+$workspaceMemory = Join-Path $PSScriptRoot "..\memory"
+if (Test-Path $workspaceMemory) {
+    $workspacePersonalInfo = Join-Path $workspaceMemory "personal_info.md"
+    if (-not (Test-Path $workspacePersonalInfo)) {
+        Write-Host "Restoring memory/personal_info.md into workspace..." -ForegroundColor Yellow
+        $personalInfoContent = @'
+# personal_info.md
+
+## Identity
+Name: Hasin Ishrak
+Location: Dhaka & Cumilla, Bangladesh
+Fiverr: @hasinish
+Instagram (Art): @the_47_gallery
+Telegram Bot: @hasin_business_bot
+
+---
+
+## Education
+BSc Computer Science & Technology
+BRAC University, Dhaka
+CGPA: 3.985 (3.99) | Credits: 120
+Status: Final semester, graduating Fall 2026
+
+SSC: Cumilla Zilla School (2019) — GPA 5.00
+HSC: Cumilla Victoria Govt. College (2021) — GPA 5.00
+
+---
+
+## Current Roles
+- Student Tutor — CSE110 (Intro to Java), BRAC University
+- Thesis researcher — Multi-task deep learning for cattle health and behavior monitoring
+  Supervisor: Dr. Md. Khalilur Rahman
+- Freelancer — Telegram bot developer on Fiverr
+
+---
+
+## Technical Skills
+Languages: Python, JavaScript, Java, PHP, C/C++
+Frontend: React, Next.js, Tailwind CSS
+Backend: Node.js, Express.js
+Databases: MongoDB, MySQL
+AI/ML: PyTorch, deep learning, ResNet-18
+Bot Dev: python-telegram-bot, Groq, Gemini, OpenAI, DeepSeek
+Tools: Git, Docker, RustDesk, Antigravity (agentic IDE)
+Remote: RustDesk (Research PC — RTX 4080/5090, i7-14700K, 64GB RAM at BRAC University lab)
+
+---
+
+## Projects
+FusionBoard (Group, Top-4 CSE471) — MERN + Socket.IO + WebRTC + JWT + Google OAuth + Judge0 API
+SkillTree (SOLO) — MERN stack, gamified learning app
+BRACUSync / BRACU All-in-One (Group) — PHP/MySQL, Slack-inspired university platform
+Police Chaser 3D (Group) — OpenGL
+Code Execution Visualizer (Solo — In Progress) — Next.js 14 + TypeScript + Pyodide + Monaco Editor
+NEXUS Productivity App — React 19 + Vite + Tailwind + HTML5 Canvas
+Telegram Business Bot (@hasin_business_bot) — python-telegram-bot + Groq API
+Thesis: Cattle Health Monitoring (Group) — Multi-task deep learning, ResNet-18 / EfficientNet-B0
+
+---
+
+## Target Companies
+Brain Station 23, Therap BD, BJIT, Samsung R&D, ShopUp/SILQ, Augmedix, Pathao, Kaz, Enosis
+
+---
+
+## Personal
+- Has a girlfriend (family aware)
+- Perfectionist — retook a course that got 3.7
+- All-or-nothing thinker working on it
+- Works best under deadlines or when it feels like a creative/intellectual puzzle
+'@
+        Set-Content -Path $workspacePersonalInfo -Value $personalInfoContent -Encoding UTF8
+        Write-Host "  [OK] memory/personal_info.md restored in workspace!" -ForegroundColor Green
+    }
 }
 
 # 5. Write IDE Configuration (keybindings, tasks, settings)

@@ -182,8 +182,15 @@ console.log('Chat preview server spawned in background.');
 '@
 Set-Content -Path (Join-Path $scratchDir "start_preview.js") -Value $startPreviewJs -Encoding UTF8
 
-Write-Host "[SUCCESS] All base configs and directories initialized!" -ForegroundColor Green
-Write-Host "Now populate AGENTS.md, SKILL.md files, and chat_preview.js using the manual blocks below." -ForegroundColor Yellow
+# 7. chat_preview.js copy
+$repoChatPreview = Join-Path $PSScriptRoot "chat_preview.js"
+$targetChatPreview = Join-Path $scratchDir "chat_preview.js"
+if (Test-Path $repoChatPreview) {
+    Copy-Item -Path $repoChatPreview -Destination $targetChatPreview -Force
+}
+
+Write-Host "[SUCCESS] All Antigravity configurations, skills, and preview scripts initialized!" -ForegroundColor Green
+Write-Host "You can execute the ready-to-use script: 'scripts/setup_antigravity_customizations.ps1'" -ForegroundColor Cyan
 ```
 
 ---
