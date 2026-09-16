@@ -22,7 +22,10 @@
 - Successfully restored CattleLameness (9,950 frames), MmCows behavior (213,686 frames), and OpenCows2020 (4,736 frames).
 - Cleaned up 36+ GB of raw behavior videos/archives.
 - Built automated browser launcher and download watcher for Dryad BCS in `download_all.py` (pushed to `origin/main`).
-- Packaged complete custom Antigravity environment into dedicated GitHub repo `https://github.com/Hasinish/custom-antigravity.git` (20 files, 1-click installer).
+- Packaged complete custom Antigravity environment into dedicated private GitHub repo `https://github.com/Hasinish/custom-antigravity.git` (20 files, 1-click installer).
+- Packaged all 4 Modal compute accounts into `custom-antigravity/credentials/modal.toml` and updated `setup.ps1` for 1-click credential deployment across devices.
+- Created serverless dataset volume sync (`modal_sync_datasets.py`) and multi-task PCGrad training pipeline (`modal_train_pcgrad.py`) for Modal cloud execution.
+- Restored dynamic real-time Modal billing monitor daemon (`scripts/billing_monitor.py`) and auto-generated `BILLING.md` dashboard tracking all 4 accounts (pushed to `custom-antigravity` commit `ff5a941`).
 
 ## Current Blockers & Notes
 - Dryad BCS pending stream download via browser from https://datadryad.org/downloads/file_stream/2391628.
