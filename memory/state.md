@@ -18,7 +18,7 @@
 - [x] Establish research log hub (`docs/research_log/`) and automated persistence rules (`.agents/rules/research_logging.md`, `AGENTS.md`)
 - [x] Organize and categorize `docs/` directory into structured subdirectories (`audits`, `research_log`, `defense`, `thesis`, `deliverables`, `results`)
 - [x] Finalize P3 task scope: focus on 3 core RGB tasks (BCS, Behavior, Cow ID); lameness removed from primary P3 MTL model
-- [ ] Download & restore ScienceDB BCS dataset (Primary, 53,566 RGB images) to `datasets/bcs/sciencedb_bcs/` and run `preprocess_sciencedb_bcs.py`
+- [x] Download & restore ScienceDB BCS dataset (Primary, 53,566 RGB images) to `datasets/bcs/sciencedb_bcs/` and generate `sciencedb_bcs_index.csv`
 - [ ] Place Dryad BCS archive (Secondary / Comparison, `Total_sorted_DGE_images.zip` from doi:10.5061/dryad.tqjq2bw4s) and run `preprocess_bcs.py`
 - [ ] Restore datasets locally on laptop (`python scripts/download_all.py`)
 - [ ] Connect to Research PC (RTX 5090) and run master restoration (`git pull; python scripts/download_all.py --all`)
