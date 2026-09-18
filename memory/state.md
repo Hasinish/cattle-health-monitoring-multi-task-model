@@ -1,60 +1,63 @@
 # state.md — Current Workspace State
 
-## Active Goals & Todo
-- [x] Check workspace synchronization against remote repository (`origin/main`)
-- [x] Protect `personal_info.md` via `.gitignore` to prevent leaking private info
-- [x] Build automated dataset restoration script for research PC (`scripts/setup_research_pc.ps1`)
-- [x] Download & extract Mendeley CattleLameness dataset (9,950 frames extracted, index CSV generated)
-- [x] Download & extract 213,686 MmCows behavior images via Hugging Face (`cropped_bboxes.zip`) directly to `datasets/behavior/`
-- [x] Complete OpenCows2020 dataset download & indexing (4,736 images indexed across 46 classes via Kagglehub)
-- [x] Download & extract ScienceDB Cattle BCS dataset (53,566 RGB images, index CSV generated)
+## Phase 3 Roadmap Status
+- **Status**: CANONICAL / LOCKED FOR EXECUTION (`phase3_canonical_roadmap.md`)
+- **Core Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning and improve robustness across BCS, Behavior, and Re-ID compared with generic RGB representations?
+- **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
+
+## Active Goals & Todo (STEP 1: Data Registry & Clean Splits)
+- [x] Download & restore ScienceDB Cattle BCS dataset (Primary, 53,566 RGB images, index CSV generated)
+- [x] Download & restore 213,686 MmCows behavior images via Hugging Face (`cropped_bboxes.zip`)
+- [x] Download & index OpenCows2020 (4,736 images across 46 classes via Kagglehub - designated Legacy Baseline)
 - [x] Purge 36+ GB raw behavior videos, zip archives, and cache to reclaim local disk space
-- [x] Automate Dryad BCS download launcher & watcher in `scripts/download_all.py` (commit `f543f16`)
-- [x] Export comprehensive Antigravity customization replication repository to `D:\custom-antigravity` and push to remote
-- [x] Install local laptop dataset dependencies (opencv-python, pandas, tqdm, kagglehub, huggingface_hub, scikit-learn)
 - [x] Complete forensic CattleLameness dataset audit & leakage investigation (`docs/audits/cattle_lameness_audit_report.md`)
-- [x] Build leakage-safe CattleLameness manifest (`datasets/lameness/cattle_lameness_manifest.csv`) & 5-fold evaluation architecture
 - [x] Establish research log hub (`docs/research_log/`) and automated persistence rules (`.agents/rules/research_logging.md`, `AGENTS.md`)
-- [x] Finalize P3 task scope: focus on 3 core RGB tasks (BCS, Behavior, Cow ID); lameness removed from primary P3 MTL model
-- [ ] Place Dryad BCS archive (Secondary / Comparison, `Total_sorted_DGE_images.zip` in Downloads) and run `preprocess_bcs.py`
-- [ ] STEP 1: Audit and verify dataset splits for ScienceDB, MmCows, and OpenCows2020 (cow/session/source leakage)
-- [ ] STEP 2: Run clean Single-Task baselines on verified splits
-- [ ] STEP 3: Run clean 3-task Hard-Sharing MTL
-- [ ] STEP 4: Run Partial-Sharing MTL
-- [ ] STEP 5: Compare Single-Task vs Hard-Sharing vs Partial-Sharing and measure negative transfer
-- [ ] STEP 6: Optionally test PCGrad / GradNorm if it answers a useful question
+- [x] Finalize P3 task scope: BCS, Behavior, Cow ID/Re-ID; lameness removed from primary P3 MTL model
+- [x] Formulate & adopt 13-step Phase 3 Canonical Roadmap (`phase3_canonical_roadmap.md`)
+- [ ] Build canonical dataset registry (`datasets/dataset_registry.csv`)
+- [ ] Download and index MultiCamCows2024 (Primary Re-ID: 90 cows, 101,329 images, 3 cameras, 7 days)
+- [ ] Validate ScienceDB identity parser and verify cow-disjoint split (`datasets/bcs/sciencedb/`)
+- [ ] Rebuild MmCows grouped evaluation protocol with time-block / multi-view protection (`datasets/behavior/mmcows/folds/`)
+- [ ] Create MultiCamCows protocols: tracklet-disjoint, cross-day, cross-camera, open-set
+- [ ] Download/index Ruchay 2026 (primary external BCS benchmark)
+- [ ] Download/index SideViewCows2026 (external Re-ID benchmark)
+- [ ] Download/index BECA-D / BECA-L (scale & long-term Re-ID stress tests)
+- [ ] Verify CBVD-5 raw data and identity metadata (external behavior benchmark)
+- [ ] Run automated duplicate / near-duplicate audit across all primary datasets
+- [ ] STEP 2: Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md`)
+- [ ] STEP 3: Cache upstream cattle information (bbox, soft_mask, pose_coords, viewpoint)
+- [ ] STEP 4: Clean RGB single-task baselines
+- [ ] STEP 5: Localization / segmentation ablation
+- [ ] STEP 6: Anatomy / pose ablation
+- [ ] STEP 7: Viewpoint ablation
+- [ ] STEP 8: Temporal Behavior experiments (frame -> avg pool -> TCN -> GRU/LSTM -> pose seq -> fusion)
+- [ ] STEP 9: Build consolidated task-conditioned cattle-centered P3 architecture
+- [ ] STEP 10: Cross-domain / robustness evaluation
+- [ ] STEP 11: Revisit sharing / MTL (Single vs Hard vs Partial vs Adapters vs PCGrad/GradNorm)
+- [ ] STEP 12: Optional cattle-specific pretraining (stretch goal)
+- [ ] STEP 13: Final repeated runs (3 seeds) + thesis tables
 - [ ] Prepare P3 draft submission by September 26
 
-## Active P3 Task Scope
-- **Current Status**: Over 270,000 images are downloaded/indexed and ready for split validation. Dataset split integrity has NOT yet been fully verified.
+## Canonical Task & Dataset Stack
 - **1. Body Condition Scoring (BCS)**:
-  - **Primary**: ScienceDB (53,566 RGB images across 5 classes: 3.25, 3.5, 3.75, 4.0, 4.25 from 10,898 cows)
-  - **Secondary / Comparison**: Dryad (5,923 Depth Grayscale Edge images across folder classes '2', '3', '4', '5', '6')
+  - **Primary**: ScienceDB (53,566 RGB images across 5 classes: 3.25–4.25 from 10,898 project-parsed cows)
+  - **Primary External Validation**: Ruchay et al. RGB-D BCS (2026) (multi-breed, wide BCS range, different camera geometry)
+  - **Secondary External**: Dryad BCS (5,923 DGE images across discrete classes '2'-'6')
 - **2. Behavior Recognition**:
-  - **Primary**: MmCows (213,686 bounding-box crops across 7 active behavior classes: 1 to 7 from 16 cows)
-- **3. Individual Cow Identification**:
-  - **Primary**: OpenCows2020 (4,736 images across 46 cow classes, closed-set identification)
-- **Lameness Status**:
-  - Excluded from primary Phase 3 multi-task experiment
-  - CattleLameness retained for historical Phase 2 documentation and audit/leakage evidence only
-  - Russello 2026 retained as a possible future pose/keypoint-based extension
-
-## Last Session (Convo 6522ab9b-43bd-4ef9-97e2-2228a4cfe879)
-- Conducted forensic audit of Mendeley CattleLameness dataset (50 clips, 9,950 frames) and exposed critical train/test leakage (`N (9).mp4` vs `N (3).mp4`).
-- Generated 42-group leak-safe 5-fold cross-validation manifest (`datasets/lameness/cattle_lameness_manifest.csv`).
-- Audited 4 candidate repos: recommended Russello 2026 (98 cows, 272 trajectories), rejected Wu NWAFU, whsu2s, and Duan 2025.
-- Built centralized research log repository (`docs/research_log/`) and created workspace rules (`.agents/rules/research_logging.md`, `AGENTS.md`).
-- Restored CattleLameness (9,950 frames), MmCows behavior (213,686 frames), OpenCows2020 (4,736 frames), and ScienceDB BCS (53,566 frames).
-- Cleaned up 36+ GB of raw behavior videos/archives.
-- Built automated browser launcher and download watcher for Dryad BCS in `download_all.py`.
-- Packaged complete custom Antigravity environment into dedicated private GitHub repo `https://github.com/Hasinish/custom-antigravity.git`.
-- Corrected experimental order: split audit first, followed by single-task baselines, hard sharing, partial sharing, transfer evaluation, and optional PCGrad/GradNorm last.
+  - **Primary**: MmCows (213,686 bounding-box crops across 7 active classes from 16 cows, multi-camera CCTV)
+  - **Primary External Validation**: CBVD-5 (larger-herd external test)
+  - **Optional External**: CVB, XGain, Simmental 2026 (for compatible label intersections only)
+- **3. Individual Cow Identification / Re-Identification (Re-ID)**:
+  - **Primary (New Benchmark)**: MultiCamCows2024 (90 cows, 101,329 images, 3 cameras, 7 days, sequence-safe tracklets; replaces OpenCows2020)
+  - **Primary External Validation**: SideViewCows2026 (side-view re-identification with masks)
+  - **Long-term / Scale Stress**: BECA-L (appearance change over time), BECA-D (large population)
+  - **Legacy Baseline**: OpenCows2020 (retained for backward comparability only; random train/val split abandoned)
+- **Lameness Status**: Excluded from primary Phase 3 MTL; CattleLameness retained for historical P2 audit only.
 
 ## Current Blockers & Notes
-- Over 270,000 images are downloaded/indexed and ready for split validation. Indexing does not prove splits are leak-free.
-- Next immediate step is to audit and resolve split logic across ScienceDB, MmCows, and OpenCows2020.
-- OpenCows2020 train/val split currently uses random shuffling on sequential video frames, risking high near-duplicate leakage between train and val.
-- MmCows contains only 16 cows total, leaving validation (2 cows) and test (3 cows) vulnerable to subject-specific evaluation bias.
-- PCGrad/GradNorm are deferred to Step 6 and must not be treated as the current training plan.
+- Current immediate position is **STEP 1 — Data Registry and Clean Splits**. Model training is strictly blocked until Gate 1 is passed.
+- OpenCows2020 is superseded as primary Re-ID by MultiCamCows2024 to eliminate temporal near-duplicate frame leakage and support tracklet/cross-day/cross-camera protocols.
+- PCGrad/GradNorm are deferred to Step 11 as experimental controls, not primary thesis novelty.
+- Do not make changes to roadmap scope without recording justification in `docs/research_log/`.
 
 

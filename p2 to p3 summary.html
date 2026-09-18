@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P2 থেকে P3 — Cattle Health Monitoring Thesis Summary</title>
+<style>
+  :root{
+    --bg:#f7f8fb;
+    --card:#ffffff;
+    --text:#172033;
+    --muted:#5f6b7a;
+    --accent:#2f6fed;
+    --accent-soft:#eaf1ff;
+    --good:#0f8a5f;
+    --warn:#b36b00;
+    --bad:#b42318;
+    --border:#e6e9ef;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,"Segoe UI","Noto Sans Bengali","Noto Sans",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    line-height:1.7;
+  }
+  .wrap{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+  }
+  .hero{
+    background:linear-gradient(135deg,#eef4ff,#ffffff);
+    border:1px solid var(--border);
+    border-radius:18px;
+    padding:24px;
+    margin-bottom:18px;
+  }
+  h1,h2,h3{line-height:1.3;margin-top:0}
+  h1{font-size:clamp(28px,5vw,42px);margin-bottom:10px}
+  h2{
+    font-size:clamp(22px,4vw,30px);
+    margin-top:28px;
+    margin-bottom:12px;
+  }
+  h3{
+    font-size:18px;
+    margin-bottom:8px;
+  }
+  p{margin:0 0 14px}
+  .sub{color:var(--muted);font-size:15px}
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:20px;
+    margin:14px 0;
+  }
+  .note{
+    background:var(--accent-soft);
+    border-left:4px solid var(--accent);
+    padding:14px 16px;
+    border-radius:10px;
+    margin:14px 0;
+  }
+  .good{border-left-color:var(--good);background:#edf9f4}
+  .warn{border-left-color:var(--warn);background:#fff7e8}
+  .bad{border-left-color:var(--bad);background:#fff1f0}
+  .pipeline{
+    background:#111827;
+    color:#f8fafc;
+    padding:16px;
+    border-radius:14px;
+    font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+    white-space:pre-wrap;
+    overflow-x:auto;
+    line-height:1.6;
+    margin:14px 0;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+  }
+  .mini{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:15px;
+  }
+  .tag{
+    display:inline-block;
+    padding:4px 9px;
+    border-radius:999px;
+    background:var(--accent-soft);
+    color:#214fba;
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:8px;
+  }
+  .kicker{
+    font-size:13px;
+    font-weight:800;
+    color:var(--accent);
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .big{
+    font-size:20px;
+    font-weight:800;
+  }
+  .divider{
+    height:1px;
+    background:var(--border);
+    margin:24px 0;
+  }
+  ul{
+    margin:8px 0 12px 20px;
+    padding:0;
+  }
+  li{margin:6px 0}
+  .footer{
+    color:var(--muted);
+    font-size:13px;
+    text-align:center;
+    padding:24px 0 10px;
+  }
+  @media(max-width:700px){
+    .wrap{padding:14px}
+    .hero,.card{padding:16px}
+    .grid{grid-template-columns:1fr}
+    h2{margin-top:24px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section class="hero">
+    <div class="kicker">Team Summary</div>
+    <h1>P2-তে কী হলো, কী ভুল পেলাম, আর P3-তে আমরা কী করতে চাই</h1>
+    <p class="sub">
+      এটা আমি আমাদের পুরো P2 কাজ, dataset setup, split, results আর possible P3 direction আবার review করার পরে team-কে explain করার জন্য লিখছি।
+      Multiple high-reasoning AI review, repo audit, dataset inspection আর আমাদের discussion মিলিয়ে এখন directionটা অনেক বেশি clear।
+    </p>
+  </section>
+
+  <h2>1. P2-তে আমরা আসলে কী করেছিলাম?</h2>
+
+  <div class="card">
+    <p>
+      P2-তে আমরা একটা <strong>Multi-Task Learning (MTL)</strong> system বানিয়েছিলাম। একই shared CNN backbone থেকে 4টা আলাদা task predict করার চেষ্টা করেছি:
+      Body Condition Score, Behavior, Lameness আর Cow Identification।
+    </p>
+
+    <div class="pipeline">Raw cattle image
+        ↓
+Shared CNN backbone
+        ↓
+BCS | Behavior | Lameness | Cow ID</div>
+
+    <p>
+      মূল idea ছিল 4টা আলাদা model না বানিয়ে common visual features share করা। কিন্তু পরে আমরা বুঝেছি, সব task একই ধরনের visual information চায় না।
+    </p>
+  </div>
+
+  <h2>2. P2-তে সবচেয়ে বড় conceptual weakness কী ছিল?</h2>
+
+  <div class="card">
+    <p>
+      P2-তে আমরা model-কে <strong>raw cattle image</strong> দিয়েছি। সেই image-এর মধ্যে cow-এর পাশাপাশি grass, barn, floor, fence, light, camera background—সবকিছুই ছিল।
+    </p>
+
+    <p>
+      Model-কে আমরা explicitly বলিনি কোন pixelগুলো cow, cow-এর কোন অংশ hip, spine, leg, head, hoof, বা cow কোন angle থেকে দেখা হচ্ছে।
+      তাই model পুরো image-এর সব pixel থেকেই feature শিখেছে।
+    </p>
+
+    <div class="note warn">
+      সহজভাবে বললে, model-কে আমরা বলিনি <strong>“এই অংশটা cow, আর এই অংশগুলো background”</strong>।
+      তাই prediction করার সময় model cow-এর body feature শিখতে পারত, কিন্তু একই সাথে grass, floor, barn, light বা camera angle-এর মতো background pattern-ও ব্যবহার করতে পারত।
+      তখন model হয়তো cow-কে বুঝে prediction করছে না; বরং image-এর সাথে বারবার দেখা কিছু visual pattern মনে রেখে prediction করছে।
+    </div>
+
+    <p>
+      তাই P2-তে model-এর জন্য পুরো image-টাই input ছিল। Cow-এর body, background, floor, fence—সব pixel একসাথে training-এ গেছে।
+      আমরা আলাদা করে cow-এর shape, body parts বা anatomy identify করে দিইনি।
+      P3-তে আমরা এই জায়গাটাই improve করতে চাই: আগে model-কে <strong>cow কোথায় এবং cow-এর body structure কী</strong> সেটা বুঝতে সাহায্য করব, তারপর health-related prediction করাব।
+    </p>
+  </div>
+
+  <h2>3. কেন shared MTL-এ problem হলো?</h2>
+
+  <div class="grid">
+    <div class="mini">
+      <span class="tag">BCS</span>
+      <h3>Body Condition</h3>
+      <p>এখানে hip, rump, spine, body shape আর fat condition গুরুত্বপূর্ণ।</p>
+    </div>
+    <div class="mini">
+      <span class="tag">Behavior</span>
+      <h3>Activity / Posture</h3>
+      <p>এখানে head position, body posture, movement, feeding বা lying context গুরুত্বপূর্ণ।</p>
+    </div>
+    <div class="mini">
+      <span class="tag">Cow ID</span>
+      <h3>Identity</h3>
+      <p>এখানে coat pattern, appearance আর identity-specific visual feature বেশি গুরুত্বপূর্ণ।</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <p>
+      এই taskগুলো অনেক different feature চায়। কিন্তু আমরা এগুলোকে অনেকটা একই shared backbone দিয়ে force করেছি।
+      পরে result-এ দেখি <strong>negative transfer</strong> হয়েছে—এক task-এর জন্য useful feature অন্য task-এর performance খারাপ করেছে।
+    </p>
+
+    <div class="note bad">
+      P2-তে BCS এবং Behavior—দুটোতেই joint MTL training-এর পরে single-task baseline-এর তুলনায় performance খারাপ হয়েছিল।
+    </div>
+
+    <p>
+      তাই P2 থেকে একটা important lesson হলো:
+      <strong>সব cattle vision task একইভাবে feature share করলে automatically benefit হয় না।</strong>
+    </p>
+  </div>
+
+  <h2>4. Lameness কেন main P3 থেকে বাদ দিচ্ছি?</h2>
+
+  <div class="card">
+    <p>
+      P2-তে যে lameness dataset ব্যবহার করেছিলাম, পরে সেটা আবার properly inspect করে দেখি data অনেক inconsistent।
+    </p>
+
+    <p>
+      একেক video-তে একেক cow, একেক camera angle, কখনো side view, কখনো rear বা diagonal view, আবার কিছু video-তে camera নিজেই move করছে।
+      Cow সবসময় straight line-এ walk করছে না, body crop হয়ে যাচ্ছে, legs পুরো দেখা যাচ্ছে না, perspective-ও consistent না।
+    </p>
+
+    <p>
+      সবচেয়ে বড় concern হলো dataset-এর কিছু clip real cattle footage-ও না; কিছু video CGI / Blender / synthetic-looking ছিল।
+      তাই এই data দিয়ে lameness-এর strong scientific claim করা safe না।
+    </p>
+
+    <div class="note">
+      তাই আমরা <strong>lameness problem বাদ দিচ্ছি না</strong>। আমরা শুধু এই weak and inconsistent dataset দিয়ে main P3 experiment করছি না।
+      Better quality lameness data future extension হিসেবে রাখা যাবে।
+    </div>
+  </div>
+
+  <h2>5. P3-তে primary 3টা task কী থাকবে?</h2>
+
+  <div class="card">
+    <p>
+      Dataset name শুধু বললে team-এর সবাই বুঝবে না, তাই plain language-এ:
+    </p>
+
+    <div class="grid">
+      <div class="mini">
+        <span class="tag">Task 1</span>
+        <h3>Body Condition Scoring</h3>
+        <p>
+          আমাদের main BCS dataset-এ প্রায় <strong>53 হাজার rear-view dairy cow image</strong> আছে।
+          প্রতিটা image-এর body condition score label আছে।
+          এই dataset-এর নাম <strong>ScienceDB BCS</strong>।
+        </p>
+      </div>
+
+      <div class="mini">
+        <span class="tag">Task 2</span>
+        <h3>Behavior Recognition</h3>
+        <p>
+          আমাদের main behavior dataset-এ প্রায় <strong>2.13 লাখ surveillance cattle image</strong> আছে।
+          সেখানে walking, standing, feeding, drinking, lying ইত্যাদি 7টা behavior class আছে।
+          Dataset-এর নাম <strong>MmCows</strong>।
+        </p>
+      </div>
+
+      <div class="mini">
+        <span class="tag">Task 3</span>
+        <h3>Individual Cow Identification</h3>
+        <p>
+          আমাদের main identification dataset-এ <strong>46টা individual cow</strong>-এর প্রায় <strong>4.7 হাজার image</strong> আছে।
+          Model-এর কাজ কোন cow কোন identity সেটা predict করা।
+          Dataset-এর নাম <strong>OpenCows2020</strong>।
+        </p>
+      </div>
+    </div>
+
+    <p style="margin-top:14px">
+      এছাড়া আরেকটা ছোট BCS dataset আছে <strong>Dryad</strong>, যেটা secondary comparison বা external evaluation-এ ব্যবহার করা যেতে পারে।
+    </p>
+  </div>
+
+  <h2>6. P3-তে শুধু cleaner MTL করলেই কি uniqueness হবে?</h2>
+
+  <div class="card">
+    <p>
+      Panel-এর main criticism ছিল: <strong>“Where is the novelty bro, you’re just merging 3/4 models?”</strong>
+    </p>
+
+    <p>
+      তাই P3-তে শুধু lameness বাদ দিয়ে 3-task MTL করলে system clean হবে, কিন্তু uniqueness problem পুরো solve নাও হতে পারে।
+      এই জায়গা থেকেই আমাদের নতুন cattle-centered idea এসেছে।
+    </p>
+  </div>
+
+  <h2>7. New idea: Model-কে শুধু pixels না, cow-এর structure বুঝতে শেখানো</h2>
+
+  <div class="card">
+    <div class="pipeline">Original cattle image
+        ↓
+Cow Segmentation / Object Understanding
+        ↓
+Cattle Anatomy / Keypoints / Pose
+        ↓
+Viewpoint / Angle Awareness
+        ↓
+Cattle-Centered Representation
+        ↓
+BCS | Behavior | Cow ID</div>
+
+    <p>
+      মূল idea হলো health prediction-এর আগে model-কে cattle-specific understanding দেওয়া।
+      Model যেন আগে বুঝে <strong>cow কোথায়</strong>, তারপর <strong>cow-এর body structure কী</strong>, তারপর <strong>কোন angle থেকে cow-কে দেখা হচ্ছে</strong>।
+    </p>
+  </div>
+
+  <h2>8. Step 1 — Segmentation</h2>
+
+  <div class="card">
+    <p>
+      Segmentation মানে আমরা শুধু background delete করব—এমন না।
+      বরং model-কে explicitly শেখাব কোন region cow।
+    </p>
+
+    <p>
+      আরও interesting option হলো শুধু cow না, দরকার হলে background-এর important object-ও segment করা।
+      যেমন feeder, water trough, floor area, pen boundary—এগুলো Behavior task-এর জন্য useful context হতে পারে।
+    </p>
+
+    <div class="pipeline">RGB image
+   ↓
+Segment / identify:
+- Cow
+- Feeder
+- Water area
+- Other useful context
+   ↓
+Health model gets structured visual guidance</div>
+
+    <p>
+      অর্থাৎ goal হলো <strong>background blind করা না</strong>; goal হলো image-এর কোন part কী, সেটা model-কে clearer structure হিসেবে দেওয়া।
+    </p>
+  </div>
+
+  <h2>9. Step 2 — Anatomy / Pose Learning</h2>
+
+  <div class="card">
+    <p>
+      Cow detect করার পরে আমরা model-কে body anatomy শিখাতে চাই।
+      যেমন head, spine, shoulder, hip, rump, knee, hock, hoof, leg, body contour—এই ধরনের anatomical landmark।
+    </p>
+
+    <p>
+      Public cattle pose/keypoint datasets আছে যেখানে 16–20টার মতো body keypoint annotate করা হয়েছে।
+      এগুলো ব্যবহার করে anatomy-aware representation শেখানো সম্ভব।
+    </p>
+
+    <div class="note good">
+      এতে model শুধু “cow-looking texture” না, body structure আর pose-এর geometry-ও শিখতে পারে।
+    </div>
+  </div>
+
+  <h2>10. Step 3 — Viewpoint / Angle Awareness</h2>
+
+  <div class="card">
+    <p>
+      একই cow-এর body part rear view আর side view-তে একইভাবে visible না।
+      তাই angle জানা থাকলে model anatomy-কে better interpret করতে পারে।
+    </p>
+
+    <p>
+      Rear view-তে hip, rump, spine BCS-এর জন্য useful হতে পারে।
+      Side view-তে legs, torso, posture Behavior-এর জন্য বেশি useful হতে পারে।
+    </p>
+
+    <div class="pipeline">Possible viewpoint classes:
+Front
+Rear
+Left Side
+Right Side
+Diagonal</div>
+
+    <p>
+      Viewpoint model output downstream health model-এর সাথে feature বা embedding হিসেবে দেওয়া যেতে পারে।
+    </p>
+  </div>
+
+  <h2>11. তাহলে P3-র stronger research contribution কী হতে পারে?</h2>
+
+  <div class="card">
+    <p class="big">
+      “Generic raw RGB backbone” থেকে “cattle-centered visual representation”-এ যাওয়া।
+    </p>
+
+    <p>
+      অর্থাৎ contribution শুধু multiple task এক model-এ আনা না।
+      আমরা আগে segmentation, anatomy আর viewpoint দিয়ে cattle-specific representation বানাব, তারপর BCS, Behavior আর Identification করব।
+    </p>
+
+    <div class="note good">
+      এটা panel-এর “just merged models” criticism-এর stronger answer হতে পারে।
+    </div>
+  </div>
+
+  <h2>12. আমরা কীভাবে prove করব কোন component useful?</h2>
+
+  <div class="card">
+    <p>
+      আমরা ablation study করতে পারি:
+    </p>
+
+    <div class="pipeline">Model A → Raw RGB only
+
+Model B → RGB + Segmentation
+
+Model C → RGB + Segmentation + Anatomy
+
+Model D → RGB + Segmentation + Anatomy + Viewpoint</div>
+
+    <p>
+      তারপর BCS, Behavior আর Cow ID—সব task-এ compare করব।
+      তাহলে আমরা শুধু final accuracy দেখব না; বরং কোন extra component আসলে কতটা value দিল সেটা দেখাতে পারব।
+    </p>
+  </div>
+
+  <h2>13. Dataset audit থেকে আর কী শিখেছি?</h2>
+
+  <div class="card">
+    <p>
+      <strong>BCS dataset</strong> এখন ভালো অবস্থায় আছে। Cow identity অনুযায়ী train/validation/test আলাদা রাখা হয়েছে।
+    </p>
+
+    <p>
+      <strong>Behavior dataset</strong> cow-wise split করা হয়েছে, কিন্তু dataset-এ unique cow মাত্র 16টা।
+      তাই robust evaluation-এর জন্য multiple cow-level split বা fold দরকার হতে পারে।
+    </p>
+
+    <p>
+      <strong>Cow ID dataset</strong>-এ একটা important issue পাওয়া গেছে:
+      training set-এর consecutive video frames randomভাবে train আর validation-এ ভাগ হয়ে যেতে পারে।
+      তাই near-duplicate frame দুই জায়গায় চলে যাওয়ার risk আছে।
+      এই split আমরা P3-তে ঠিক করব।
+    </p>
+  </div>
+
+  <h2>14. এখন আমাদের practical plan কী?</h2>
+
+  <div class="card">
+    <div class="pipeline">1. Cow-ID train/validation leakage fix
+2. Behavior evaluation protocol improve
+3. Latest cattle segmentation datasets/models audit
+4. Latest cattle anatomy/keypoint datasets/models audit
+5. Latest viewpoint/angle datasets audit
+6. Better/new BCS, Behavior, ID datasets search
+7. Feasibility + novelty check
+8. Final architecture lock
+9. Clean single-task baselines
+10. Hard-sharing MTL baseline
+11. Cattle-centered / improved MTL model
+12. Ablation study
+13. Multi-seed final experiments
+14. Thesis analysis + writing</div>
+  </div>
+
+  <h2>15. Team-এর জন্য এক লাইনের summary</h2>
+
+  <div class="note good">
+    <strong>
+      P2-তে আমরা raw cattle image-এর সব pixel সরাসরি CNN-এ দিয়ে 4-task MTL করেছিলাম; পরে negative transfer, weak lameness data, leakage risk আর raw-image shortcut problem ধরা পড়ে।
+      P3-তে cleaner 3-task setup রাখার পাশাপাশি segmentation, cattle anatomy আর viewpoint awareness দিয়ে model-কে cattle-centered understanding দেওয়ার direction investigate করছি, যাতে contribution শুধু model merge করা না হয়ে একটা genuinely cattle-specific visual representation হয়।
+    </strong>
+  </div>
+
+  <div class="footer">
+    Internal team summary — P2 → P3 research direction
+  </div>
+
+</div>
+</body>
+</html>

@@ -48,15 +48,22 @@ Dataset preprocessing routines, member work splits, and original problem context
 - `preprocess_mmcows_behavior.py`: Data loader and bounding-box crop generator for MMCows behavior dataset.
 - `preprocess_sciencedb_bcs.py`: Preprocessing script for ScienceDB thermal/RGB cattle dataset.
 
+### `phase3_canonical_roadmap.md` & `docs/phase3_canonical_roadmap.md`
+Master canonical 13-step roadmap locked for Phase 3 execution. Formulates the core thesis question: *"Which cattle-specific visual priors (localization, soft masks, anatomy/pose, viewpoint) are useful for which downstream task, and what information should each task preserve or suppress?"* Locks downstream scope to BCS (ScienceDB; Ruchay 2026 external), Behavior (MmCows; CBVD-5 external), and Re-ID (MultiCamCows2024 replacing OpenCows2020; SideViewCows2026 external). Outlines a strict 13-step progression from Step 1 data registry to final 3-seed benchmark tables.
+
 ### `docs/`
 Structured project documentation, defense resources, forensic audits, and official deliverables.
 - `README.md`: Master directory guide for the organized `docs/` workspace.
+- `phase3_canonical_roadmap.md`: Canonical Phase 3 execution roadmap mirror.
 - `audits/`: Detailed dataset forensic investigations, anti-leakage manifests, and cross-validation architectures.
   - `candidate_lameness_datasets_audit.md`: Deep forensic audit of 4 potential alternative lameness datasets (Russello 2026, Wu/NWAFU, whsu2s, Duan 2025).
   - `cattle_lameness_audit_report.md`: Forensic audit of the CattleLameness dataset (50 clips, 42 cattle, ezgif container footprints, cross-split leakage identification).
   - `cattle_lameness_grouping_report.md`: Anti-leakage clustering architecture, multi-clip group resolution (8 groups, 16 clips), and balanced 5-fold StratifiedGroupKFold cross-validation specification.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-19_phase3_canonical_roadmap.md`: Formal log adopting the 13-step Phase 3 Canonical Roadmap and MultiCamCows2024 Re-ID replacement.
+  - `2026-09-18_cattle_centered_anatomy_aware_direction.md`: Proposed research direction on segmentation-guided, anatomy-aware, and viewpoint-aware representation learning.
+  - `2026-09-18_dataset_split_integrity_audit.md`: Forensic audit of ScienceDB, MmCows, and OpenCows2020 split integrity and leakage risks.
   - `2026-09-17_lameness_investigation.md`: Complete forensic audit log covering CattleLameness leakage discovery, 42-group resolution, and candidate dataset audit.
 - `defense (p2)/`: Oral examination preparation guides, presentation notes, and formatted crib sheets for Phase 2.
   - `presentation_key_concepts.md` (and `.html`, `.docx`): Defense presentation key concepts, talking points, and Q&A crib sheet.
