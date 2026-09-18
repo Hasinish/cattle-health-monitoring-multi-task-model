@@ -33,4 +33,6 @@ Every log entry MUST contain the following sections:
 ## Historical Log Index
 | Date | Title / Topic | Primary Outcome / Decision | Key Artifacts |
 | :--- | :--- | :--- | :--- |
+| **2026-09-18** | [Primary Task Dataset Split Integrity & Leakage Audit](2026-09-18_dataset_split_integrity_audit.md) | Audited ScienceDB, MmCows, and OpenCows2020 splits. Identified OpenCows2020 train/val sequence leakage from random frame shuffling. Verified 7 active MmCows behavior classes and discrete '2'-'6' Dryad classes. Codified 6-step experiment sequence (PCGrad deferred to Step 6). | `2026-09-18_dataset_split_integrity_audit.md`, `memory/state.md` |
 | **2026-09-17** | [Lameness Dataset Forensic Audit & Leakage Resolution](2026-09-17_lameness_investigation.md) | Discovered severe source leakage and dataset-quality problems in CattleLameness. A provisional 42-group manifest was created but later marked historical after manual review found unreliable grouping assumptions and CGI/Blender clips. Russello 2026 was identified as the strongest public lameness candidate, but lameness was subsequently removed from the primary Phase 3 multi-task experiment. | `cattle_lameness_manifest.csv`, `cattle_lameness_audit_report.md`, `candidate_lameness_datasets_audit.md` |
+
