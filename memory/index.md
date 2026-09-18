@@ -94,7 +94,8 @@ Local storage for raw and preprocessed multimodal cattle benchmark data.
 
 ### `final_models/`
 Pre-trained object detection and feature extraction weight checkpoints.
-- `yolov8n.pt`: YOLOv8-nano weights used for real-time cow detection and bounding-box localization in raw footage.
+- `p2 archive/`: Archive folder for legacy Phase 2 model weights.
+  - `yolov8n.pt`: Legacy YOLOv8-nano weights from Phase 2 cow detection / localization pipeline.
 
 ### `P2 Samples/`
 Reference materials, prior sample defense posters, and official CSE400 formatting templates from BRAC University.
