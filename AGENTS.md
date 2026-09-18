@@ -22,3 +22,6 @@
 4. **Git Hygiene & Dual-Device Sync**:
    - Ensure all documentation, logs, manifests, and scripts are committed to Git so the local laptop and the BRACU Lab Research PC (RTX 5090) stay in 100% lockstep.
    - Never commit `scratch/` or raw GB-scale video/image folders.
+
+5. **Antigravity Customization & Rules Sync**:
+   - Whenever workspace rules, `.agents/rules/`, or global agent instructions are modified, immediately mirror them to `D:\custom-antigravity`, commit, and push to GitHub.

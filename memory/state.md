@@ -59,5 +59,8 @@
 - OpenCows2020 is superseded as primary Re-ID by MultiCamCows2024 to eliminate temporal near-duplicate frame leakage and support tracklet/cross-day/cross-camera protocols.
 - PCGrad/GradNorm are deferred to Step 11 as experimental controls, not primary thesis novelty.
 - Do not make changes to roadmap scope without recording justification in `docs/research_log/`.
+- Legacy `final_models/yolov8n.pt` archived to `final_models/p2 archive/yolov8n.pt`.
+- Global Antigravity sync rule instituted: any change to agent rules, internals, skills, or templates automatically mirrors and pushes to `D:\custom-antigravity`.
+
 
 
