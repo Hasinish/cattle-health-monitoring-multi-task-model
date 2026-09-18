@@ -1,7 +1,11 @@
 # Workspace Rules — Cattle Health Monitoring Multi-Task Model
 
 ## Research Logging & Audit Preservation
-1. **Mandatory Research Logging**:
+1. **Mandatory Research Log Reading on Startup**:
+   - At the beginning of EVERY conversation or before proposing ANY dataset changes, architecture designs, or experiment setups, the AI assistant **MUST read `docs/research_log/README.md` and the latest entry in `docs/research_log/`**.
+   - NEVER propose rejected datasets (e.g., Wu NWAFU, whsu2s, Duan 2025) or superseded tasks (e.g., lameness in primary Phase 3 MTL) documented in the research logs.
+
+2. **Mandatory Research Logging**:
    - Every forensic audit, leakage analysis, dataset investigation, ablation study, or model experiment must be documented in `docs/research_log/YYYY-MM-DD_<topic>.md`.
    - Update `docs/research_log/README.md` index table whenever a new research log is created.
    - Comprehensive audit reports belong in `docs/audits/`.

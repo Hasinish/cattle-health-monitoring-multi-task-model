@@ -1,4 +1,7 @@
-# Rule: Mandatory Research Logging, Manifest Preservation, and State Tracking
+## 0. Mandatory Research Log Reading on Startup
+At the start of every session or before proposing any dataset, model architecture, or experimental setup:
+1. **The AI assistant MUST read `docs/research_log/README.md` and the most recent entry in `docs/research_log/`**.
+2. **Never propose rejected datasets or superseded tasks** that have already been audited and decided in the research logs (e.g., Wu NWAFU, whsu2s, or lameness in primary P3 MTL).
 
 ## 1. Research Logging Protocol
 Whenever you conduct any technical investigation, forensic dataset audit, data leakage diagnosis, hyperparameter search, or architectural pivot:
