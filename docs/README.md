@@ -17,8 +17,8 @@ Perpetual, timestamped research and investigation logs.
 - `README.md`: Research logging protocols, guidelines, and historical log index.
 - `2026-09-17_lameness_investigation.md`: Consolidated log of the 2026-09-17 lameness leakage fix and candidate evaluations.
 
-### 3. `defense/`
-Presentation preparation, oral exam study guides, talking points, and defense crib sheets.
+### 3. `defense (p2)/`
+Presentation preparation, oral exam study guides, talking points, and defense crib sheets for Phase 2.
 - `presentation_key_concepts.md`: Core defense presentation talking points and architectural explanations.
 - `presentation_key_concepts.docx`: Formatted Microsoft Word version of key presentation concepts.
 - `presentation_key_concepts.html`: HTML rendered version of key presentation concepts.
@@ -34,7 +34,7 @@ Thesis manuscript reviews, chapter summaries, in-depth architectural breakdowns,
 
 ### 5. `deliverables/`
 Official compiled presentation posters, signed declaration pages, and final submission PDFs.
-- `P2_Report_Cattle_MTL_Full_Declaration_Approval_Signature_Proper.pdf`: Signed final thesis report with official BRACU declaration and approval pages.
+- `T25301094_P2_Report.pdf`: Final Phase 2 thesis report document ready for department archiving.
 - `T25301094_P2 Poster.pdf`: Compiled presentation poster for the P2 thesis defense exhibition.
 
 ### 6. `results/`

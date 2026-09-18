@@ -58,7 +58,7 @@ Structured project documentation, defense resources, forensic audits, and offici
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
   - `2026-09-17_lameness_investigation.md`: Complete forensic audit log covering CattleLameness leakage discovery, 42-group resolution, and candidate dataset audit.
-- `defense/`: Oral examination preparation guides, presentation notes, and formatted crib sheets.
+- `defense (p2)/`: Oral examination preparation guides, presentation notes, and formatted crib sheets for Phase 2.
   - `presentation_key_concepts.md` (and `.html`, `.docx`): Defense presentation key concepts, talking points, and Q&A crib sheet.
   - `qa_study_guide.md`: Comprehensive defense Q&A preparation guide covering deep learning theory, MTL tradeoffs, and thesis defense questions.
   - `style_template.html`: CSS formatting template for HTML export styling.
@@ -67,8 +67,8 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `detailed_p2_info.md`: Supplementary technical documentation for Phase 2.
   - `deep_analysis.md`: Detailed architectural and statistical deep dive into experimental results.
   - `thesis_review.md`: Peer-review feedback, Turnitin similarity audit, and revision checklist.
-- `deliverables/`: Official final compiled presentation posters and signed submission documents.
-  - `P2_Report_Cattle_MTL_Full_Declaration_Approval_Signature_Proper.pdf`: Signed final thesis report with official BRACU declaration pages.
+- `deliverables/`: Official final compiled presentation posters and thesis submission PDFs.
+  - `T25301094_P2_Report.pdf`: Final Phase 2 thesis report document ready for department archiving.
   - `T25301094_P2 Poster.pdf`: Compiled presentation poster for the P2 thesis defense exhibition.
 - `results/`: Raw model logs and extracted performance dumps.
   - `extracted_results.txt`: Tabulated benchmark metrics across all model runs and task heads.

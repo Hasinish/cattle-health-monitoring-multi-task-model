@@ -12,7 +12,7 @@ sections = [
         "context/context2_behavior.txt"
     ]),
     ("2. PRESENTATION & KEY CONCEPTS", [
-        "docs/defense/presentation_key_concepts.md"
+        "docs/defense (p2)/presentation_key_concepts.md"
     ]),
     ("3. INDIVIDUAL CONTEXT 3 REPORTS", glob.glob(os.path.join(workspace_dir, "context", "Context3_*.txt"))),
     ("4. ALL RAW RESULTS", glob.glob(os.path.join(workspace_dir, "workspaces", "*", "*_results.txt"))),
