@@ -110,6 +110,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `run_all_training.py`: Orchestrates multi-gpu batch execution of all task training scripts.
 - `download_all.py`: Master dataset pipeline orchestrating restoration and indexing across all active thesis tasks directly into `datasets/`.
 - `download_sciencedb.py`: Direct downloader, resume-supported streamer, unrar extractor, and preprocessor for ScienceDB Cattle BCS dataset.
+- `fast_download_sciencedb.py`: High-speed multi-threaded (16-stream parallel) resumable chunk downloader and extractor for ScienceDB Cattle BCS dataset to bypass GFW throttling.
 - `download_mmcows.py`: High-speed Hugging Face automated downloader and extractor for MmCows behavior bounding boxes with automatic zip cleanup.
 - `download_opencows.py`: Fast Kagglehub downloader and normalizer for OpenCows2020 identification images.
 - `pcgrad.py`: NeurIPS 2020 Projecting Conflicting Gradients implementation for mitigating negative gradient interference across multitask heads.
