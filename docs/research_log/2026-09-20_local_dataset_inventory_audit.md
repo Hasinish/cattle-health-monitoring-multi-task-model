@@ -60,5 +60,13 @@ Previous documentation in `memory/state.md` marked ScienceDB BCS as downloaded a
 ---
 
 ## 6. Next Steps
-1. Proceed with Step 1: build canonical `datasets/dataset_registry.csv` incorporating verified metadata and availability statuses.
-2. Maintain active tracking of the MultiCamCows2024 upstream download endpoint.
+1. Maintain active tracking of the MultiCamCows2024 upstream download endpoint.
+2. Formulate audit plan for Dryad BCS class/image count discrepancy.
+
+---
+
+## 7. Canonical Dataset Registry Creation (`datasets/dataset_registry.csv`)
+- Generated canonical registry `datasets/dataset_registry.csv` using deterministic script `scripts/build_dataset_registry.py`.
+- Formally registers all 13 Phase 3 candidate and benchmark datasets across 28 schema fields (including machine-awareness columns `local_status_1050ti` and `local_verified_date`).
+- Verified local statuses: ScienceDB (`METADATA_ONLY`), Dryad BCS (`AVAILABLE`), MmCows (`AVAILABLE`), OpenCows2020 (`AVAILABLE`), MultiCamCows2024 (`NOT_FOUND` / `BLOCKED`), and all un-downloaded external benchmarks (`NOT_FOUND`).
+- Shape validated: 13 rows, 28 columns. Zero speculative values; unverified fields recorded strictly as `NA`.

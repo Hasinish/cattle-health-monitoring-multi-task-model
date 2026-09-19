@@ -84,8 +84,9 @@ Structured project documentation, defense resources, forensic audits, and offici
 - `AGENTS.md`: Root workspace rules governing continuous research logging, manifest preservation, and dual-device git synchronization.
   - `rules/research_logging.md`: Strict agent operational rule enforcing documentation of all audits and experiments into `docs/research_log/`.
 
-### `datasets/` (Git-ignored large data directory)
-Local storage for raw and preprocessed multimodal cattle benchmark data.
+### `datasets/` (Tracked manifests and registry; raw large data directories git-ignored)
+Canonical benchmark data and task registries.
+- `dataset_registry.csv`: Canonical Phase 3 dataset registry cataloging all 13 candidate and benchmark datasets across 28 schema fields, distinguishing scientific roles from local physical machine availability (`local_status_1050ti`).
 - `lameness/`:
   - `cattle_lameness_manifest.csv`: 50-clip master manifest defining filename, class, source URLs, proposed group IDs, confidence scores, evidence, and 5-fold cross-validation assignments.
   - `lameness_index.csv`: Extracted frame index mapping 9,950 frames across 50 video clips to labels and splits.
@@ -103,6 +104,7 @@ Reference materials, prior sample defense posters, and official CSE400 formattin
 ### `scripts/`
 Automation utilities for batch experiments, metric aggregation, dataset restoration, and environment setup.
 - `aggregate.py`: Collects training logs and performance metrics across member workspaces and generates consolidated summary tables.
+- `build_dataset_registry.py`: Deterministic generation script for `datasets/dataset_registry.csv` compiling Phase 3 datasets, roles, and local physical status.
 - `build_leakage_safe_manifest.py`: Audits CattleLameness clips, applies heuristic & perceptual clustering, generates StratifiedGroupKFold assignments, and exports `cattle_lameness_manifest.csv`.
 - `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.
 - `run_all_training.py`: Orchestrates multi-gpu batch execution of all task training scripts.
