@@ -99,6 +99,11 @@ Canonical benchmark data and task registries.
   - `external/ruchay2026/`:
     - `ruchay2026_manifest.csv`: 25,700-sample deterministic manifest of Ruchay et al. 2026 RGB-D BCS benchmark (1,025 cows, 4 sessions, 10 ordinal classes 2.75–5.00).
     - `Dataset.xlsx`: Official metadata file from Zenodo record 20290988.
+  - `bcs_index.csv`: 5,940-row legacy index mapping all Dryad DGE images to labels and cow IDs.
+  - `dryad/`:
+    - `manifest.csv`: 5,940-row master manifest mapping all DGE TIFFs across classes 2–7, biological cow numbers, session tags, and SHA256 hashes.
+    - `cow_audit.csv`: 54-biological-cow census cataloging session counts, BCS trajectories, and image totals.
+    - `audit_report.md`: Forensic report reconciling 5,923 vs 5,940 discrepancy and proving validity of Class 7.
 - `behavior/`:
   - `behavior_index.csv`: 213,686-row master index mapping crops to 7 active classes and legacy split.
   - `mmcows/`:
@@ -129,6 +134,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `build_sciencedb_splits.py`: ScienceDB identity audit, de-leakage grouping (5,662 passage clusters), and stratified train/val/test split builder.
 - `build_mmcows_splits.py`: MmCows provenance audit, synchronized multi-camera protection, canonical baseline split, and 4-Fold GroupKFold suite generator.
 - `verify_mmcows_splits.py`: Standalone assertion and verification suite checking MmCows file existence, 100% cow disjointness, multi-camera event protection, and path resolution.
+- `build_dryad_manifest.py`: Dryad BCS discrepancy audit, biological cow parser (54 cows), master manifest generator, and bcs_index.csv updater.
 - `build_leakage_safe_manifest.py`: Audits CattleLameness clips, applies heuristic & perceptual clustering, generates StratifiedGroupKFold assignments, and exports `cattle_lameness_manifest.csv`.
 - `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.
 - `run_all_training.py`: Orchestrates multi-gpu batch execution of all task training scripts.

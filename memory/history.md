@@ -1,4 +1,10 @@
 # Session Summary — 2026-09-20
+- Completed Dryad Cattle BCS Discrepancy Audit (`docs/research_log/2026-09-20_dryad_bcs_discrepancy_audit.md`).
+- Fully reconciled the discrepancy between the older ~5,923 expectation and 5,940 physical files: proved that legacy `preprocess_bcs.py` hardcoded classes 2–6 (5,923 imgs) to fit a 5-class head and silently dropped class folder '7' (17 imgs from `Cow_52`).
+- Proved Class 7 is 100% authentic Criollo beef cattle data on the 1–9 Wagner scale (Winkler & Boucheron, NMSU, Dryad DOI: 10.5061/dryad.tqjq2bw4s); `Cow_52` was also recorded at BCS 6 (`Cow_52_29`).
+- Reconstructed 54 biological cows (`Cow_1`..`Cow_55`, `Cow_39` absent) across 148 session folders; exposed cross-session animal identity leakage if splitting by folder name instead of biological cow.
+- Verified 100% image readability (all 5,940 are valid 224x224 RGB DGE TIFFs) and 0 cross-cow duplicate leakage.
+- Exported master manifest `datasets/bcs/dryad/manifest.csv` (5,940 rows), `cow_audit.csv` (54 cows), `audit_report.md`, and updated legacy `datasets/bcs/bcs_index.csv` (5,940 rows).
 - Completed MmCows Behavior Grouped Evaluation Protocol and Leakage Audit (`docs/research_log/2026-09-20_mmcows_grouped_protocol_and_leakage_audit.md`).
 - Verified that 213,686 image crops stem from 16 genuine biological Holstein dairy cows recorded across 4 synchronized CCTV cameras over 21.0 hours (NeurIPS 2024 Spotlight, Purdue NEIS Lab).
 - Protected 87.15% synchronized multi-camera events (64,830 / 74,388 events) and 15s contiguous periodic time blocks via strict cow-disjoint grouping.
