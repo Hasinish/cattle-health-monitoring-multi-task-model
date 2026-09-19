@@ -87,6 +87,11 @@ Structured project documentation, defense resources, forensic audits, and offici
 ### `datasets/` (Tracked manifests and registry; raw large data directories git-ignored)
 Canonical benchmark data and task registries.
 - `dataset_registry.csv`: Canonical Phase 3 dataset registry cataloging all 13 candidate and benchmark datasets across 28 schema fields, distinguishing scientific roles from local physical machine availability (`local_status_1050ti`).
+- `bcs/`:
+  - `sciencedb_bcs_index.csv`: 53,566-row index for Primary BCS task (100% verified locally in `datasets/bcs/sciencedb_bcs/dataset/`).
+  - `external/ruchay2026/`:
+    - `ruchay2026_manifest.csv`: 25,700-sample deterministic manifest of Ruchay et al. 2026 RGB-D BCS benchmark (1,025 cows, 4 sessions, 10 ordinal classes 2.75–5.00).
+    - `Dataset.xlsx`: Official metadata file from Zenodo record 20290988.
 - `lameness/`:
   - `cattle_lameness_manifest.csv`: 50-clip master manifest defining filename, class, source URLs, proposed group IDs, confidence scores, evidence, and 5-fold cross-validation assignments.
   - `lameness_index.csv`: Extracted frame index mapping 9,950 frames across 50 video clips to labels and splits.

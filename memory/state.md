@@ -20,7 +20,7 @@
 - [ ] Validate ScienceDB identity parser and verify cow-disjoint split (`datasets/bcs/sciencedb/`) once raw data restored
 - [ ] Rebuild MmCows grouped evaluation protocol with time-block / multi-view protection (`datasets/behavior/mmcows/folds/`)
 - [ ] Create MultiCamCows protocols: tracklet-disjoint, cross-day, cross-camera, open-set
-- [ ] Download/index Ruchay 2026 (primary external BCS benchmark)
+- [x] Retrieve & index Ruchay 2026 metadata (Zenodo record 20290988 verified; 25,700 samples, 1,025 cows; manifest generated in datasets/bcs/external/ruchay2026/; 77.74 GB raw archives on Zenodo)
 - [ ] Audit Dryad BCS local count/class discrepancy (5,940 TIFFs across classes 2–7 vs ~5,923 expected across classes 2–6)
 - [ ] Download/index SideViewCows2026 (external Re-ID benchmark)
 - [ ] Download/index BECA-D / BECA-L (scale & long-term Re-ID stress tests)
@@ -82,7 +82,7 @@
   - Scientific Role: Intended primary Re-ID dataset
   - Local Status: **NOT present locally**. 0 files/archives.
   - Upstream Status: Current official download attempt blocked upstream (connection reset verified locally and via Modal cloud). Status is **BLOCKED**, not complete.
-- **Ruchay 2026**: Not present locally.
+- **Ruchay 2026**: Metadata and 25,700-sample manifest verified locally in `datasets/bcs/external/ruchay2026/`; raw 77.74 GB RGB-D zip archives remain on Zenodo (DOI: 10.5281/zenodo.20290988).
 - **CBVD-5**: Not present locally (only a single 21 MB demo clip exists in `workspaces/nusrat/`; does not count as dataset availability).
 - **SideViewCows2026**: Not present locally.
 - **BECA-D / BECA-L**: Not present locally.
