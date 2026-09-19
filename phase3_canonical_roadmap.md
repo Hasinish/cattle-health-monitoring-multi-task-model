@@ -2,7 +2,7 @@
 
 **Project:** Vision-Based AI for Cattle Health Monitoring  
 **Roadmap status:** CANONICAL / LOCKED FOR EXECUTION  
-**Last updated:** 2026-09-19 — execution-plan clarification  
+**Last updated:** 2026-09-20 — ScienceDB identity/leakage audit incorporated  
 **Purpose:** Single source of truth for the coding/research agent.  
 **Important:** Do not restart the project from zero. Do not silently change the scope without recording the decision in the research log.
 
@@ -84,14 +84,23 @@ These can only be reconsidered after the core roadmap is stable.
 Role:
 - Main training dataset
 - Main in-domain BCS benchmark
-- Cow-disjoint evaluation
+- Passage-disjoint / sequence-safe evaluation
+
+Verified 2026-09-20:
+- 53,566 images
+- true biological cow IDs are not released in the available dataset metadata
+- the former project claim of 10,898 cows was invalid because passage/frame identifiers were parsed as biological identities
+- 5,662 reconstructed passage/sequence clusters are the defensible grouping units for split protection
+- the legacy split placed 247 of 261 stereo passage blocks (94.64%) across multiple partitions
+- the replacement split has zero passage-cluster overlap and zero exact-duplicate leakage across train/val/test
 
 Main strengths:
 - Large image count
-- Large project-parsed identity count
-- Multiple collection locations
+- Passage/sequence structure can be reconstructed for leakage-resistant grouping
+- Multiple coarse acquisition/source groups are recoverable
 
 Main weakness:
+- No verified biological cow identity across visits/days
 - Narrow BCS range
 - Mostly rear-view imagery
 
@@ -286,20 +295,35 @@ Never guess metadata.
 
 ## 4.1 ScienceDB split
 
-Required:
+**Status: VERIFIED / UPDATED 2026-09-20**
 
-- cow-disjoint train/val/test
-- zero cow overlap
-- retain current safe split if verified
-- audit parsed identity semantics
-- if location metadata can be reconstructed, prepare a leave-location-out experiment
+The identity audit showed that the released ScienceDB data do **not** contain trustworthy biological cow IDs. Therefore ScienceDB must not be described as cow-disjoint.
+
+Required protocol:
+
+- passage-disjoint / sequence-safe train/val/test
+- reconstructed passage/sequence clusters are the maximal defensible independent grouping unit
+- zero passage/sequence overlap across train/val/test
+- duplicate-linked sequences must remain in the same partition
+- do not claim cross-cow generalization from ScienceDB
+- do not infer biological identity from filename prefixes
 
 Required checks:
 
 ```text
-train_cows ∩ val_cows = ∅
-train_cows ∩ test_cows = ∅
-val_cows ∩ test_cows = ∅
+train_passages ∩ val_passages = ∅
+train_passages ∩ test_passages = ∅
+val_passages ∩ test_passages = ∅
+```
+
+Verified split:
+
+```text
+5,662 passage clusters
+train: 3,963 clusters / 37,126 images
+val:     849 clusters /  8,099 images
+test:    850 clusters /  8,341 images
+seed: 42
 ```
 
 Required outputs:
@@ -314,12 +338,15 @@ datasets/bcs/sciencedb/split_report.md
 
 Acceptance criteria:
 
-- [ ] zero cow overlap
-- [ ] split seed recorded
-- [ ] class distribution recorded
-- [ ] unique-cow count verified or clearly marked project-parsed
-- [ ] duplicate/near-duplicate audit run
-- [ ] location/farm metadata status documented
+- [x] parsed identity semantics audited
+- [x] former 10,898-cow claim rejected
+- [x] zero passage/sequence overlap
+- [x] split seed recorded
+- [x] class distribution recorded
+- [x] exact duplicate leakage prevented
+- [ ] perceptual near-duplicate audit completed across finalized primary datasets
+- [x] biological cow-ID limitation documented
+- [x] source/location metadata status documented
 
 ---
 
@@ -1390,10 +1417,10 @@ Do not create a second competing memory system.
 
 Proceed to perception/baselines only if:
 
-- [ ] ScienceDB clean
+- [x] ScienceDB passage-disjoint / sequence-safe split verified
 - [ ] MmCows grouped evaluation defined
-- [ ] MultiCamCows indexed and protocols generated
-- [ ] leakage checks pass
+- [ ] MultiCamCows indexed and protocols generated, or a documented contingency is adopted if upstream access remains unavailable
+- [ ] required duplicate / near-duplicate and protocol leakage checks pass
 
 ---
 
@@ -1466,16 +1493,16 @@ Do not spend paid GPU time debugging basic script failures that can be reproduce
 
 Immediate priority order:
 
-1. [ ] Download/index MultiCamCows2024
-2. [ ] Build canonical dataset registry
-3. [ ] Validate ScienceDB identity parser / existing split
-4. [ ] Rebuild MmCows grouped evaluation protocol
-5. [ ] Create MultiCam tracklet/cross-day/cross-camera/open-set protocols
-6. [ ] Download/index Ruchay 2026
+1. [x] Build canonical dataset registry
+2. [x] Audit ScienceDB identity semantics and replace the invalid cow split with a passage-disjoint split
+3. [x] Retrieve/index Ruchay 2026 metadata and manifest
+4. [ ] Rebuild MmCows grouped evaluation protocol with cow, time-block, and synchronized-view protection
+5. [ ] Retry/download/index MultiCamCows2024 when upstream access permits
+6. [ ] Create MultiCam tracklet/cross-day/cross-camera/open-set protocols once data are available
 7. [ ] Download/index SideViewCows2026
 8. [ ] Download/index BECA-D / BECA-L
-9. [ ] Verify CBVD-5 raw data and identity metadata
-10. [ ] Run automatic duplicate / near-duplicate audit
+9. [ ] Verify/index CBVD-5 raw data and identity metadata
+10. [ ] Run automatic duplicate / near-duplicate audit across finalized primary datasets
 
 ---
 
