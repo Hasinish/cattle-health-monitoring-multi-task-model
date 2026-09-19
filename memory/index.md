@@ -61,6 +61,9 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `cattle_lameness_grouping_report.md`: Anti-leakage clustering architecture, multi-clip group resolution (8 groups, 16 clips), and balanced 5-fold StratifiedGroupKFold cross-validation specification.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-20_opencows2020_legacy_reid_audit.md`: Forensic audit of OpenCows2020 legacy Re-ID protocol, proving lack of sequence recoverability from provenance, exposing 1,023 adjacent-frame leaks in legacy random shuffle, and verifying contiguous block rebuild.
+  - `2026-09-20_dryad_bcs_discrepancy_audit.md`: Discrepancy audit reconciling 5,923 vs 5,940 physical TIFFs, validating Class 7 as authentic Criollo beef data, and establishing 54-cow census.
+  - `2026-09-20_mmcows_grouped_protocol_and_leakage_audit.md`: Audit of MmCows behavior dataset, proving biological cow IDs (16 cows), protecting 87.15% multi-camera synchronized events, and creating 4-Fold GroupKFold suite.
   - `2026-09-20_sciencedb_identity_audit_and_leakage_free_split.md`: Forensic audit of ScienceDB identity parser, disproving 10,898 cows claim, exposing 94.6% stereo leakage in legacy split, and building leak-free 5,662-passage split.
   - `2026-09-20_sciencedb_roadmap_correction.md`: Formal roadmap correction replacing ScienceDB cow-disjoint wording with passage-disjoint / sequence-safe evaluation and setting MmCows grouped evaluation as the next Step 1 action.
   - `2026-09-20_local_dataset_inventory_audit.md`: Physical inventory audit on GTX 1050 Ti machine and canonical dataset registry creation.
@@ -113,6 +116,12 @@ Canonical benchmark data and task registries.
     - `folds/`:
       - `fold_0.csv`, `fold_1.csv`, `fold_2.csv`, `fold_3.csv`: 4-Fold GroupKFold cross-validation suite (each 213,686 rows) evaluating 100% of cows with guaranteed 7-class positive coverage.
     - `split_report.md`: Comprehensive audit report verifying 16 biological cows, 4 CCTV cameras, and 0 multi-camera / time-block leakage.
+- `id/`:
+  - `id_index.csv`: 4,736-row backward-compatible index mapping OpenCows2020 images to 46 cow classes and leak-free splits.
+  - `opencow2020/`:
+    - `manifest.csv`: 4,736-row master manifest mapping all images to cow ID, frame ID, official split, new split, SHA256, width, and height.
+    - `train.csv` (3,586 rows), `val.csv` (654 rows), `test.csv` (496 rows): Contiguous frame-block split manifests with duplicate harmonization.
+    - `split_report.md`: Forensic audit report detailing legacy split leakage (1,023 adjacent-frame leaks) and contiguous block rebuild.
 - `lameness/`:
   - `cattle_lameness_manifest.csv`: 50-clip master manifest defining filename, class, source URLs, proposed group IDs, confidence scores, evidence, and 5-fold cross-validation assignments.
   - `lameness_index.csv`: Extracted frame index mapping 9,950 frames across 50 video clips to labels and splits.
@@ -135,6 +144,8 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `build_mmcows_splits.py`: MmCows provenance audit, synchronized multi-camera protection, canonical baseline split, and 4-Fold GroupKFold suite generator.
 - `verify_mmcows_splits.py`: Standalone assertion and verification suite checking MmCows file existence, 100% cow disjointness, multi-camera event protection, and path resolution.
 - `build_dryad_manifest.py`: Dryad BCS discrepancy audit, biological cow parser (54 cows), master manifest generator, and bcs_index.csv updater.
+- `build_opencows_splits.py`: OpenCows2020 legacy Re-ID protocol builder, duplicate harmonizer, manifest generator, and split report author.
+- `verify_opencows_splits.py`: Standalone verification script asserting OpenCows2020 46 cows across all splits, 0 duplicate leakage, official test set integrity, and path resolution.
 - `build_leakage_safe_manifest.py`: Audits CattleLameness clips, applies heuristic & perceptual clustering, generates StratifiedGroupKFold assignments, and exports `cattle_lameness_manifest.csv`.
 - `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.
 - `run_all_training.py`: Orchestrates multi-gpu batch execution of all task training scripts.

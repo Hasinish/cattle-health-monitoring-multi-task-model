@@ -1,3 +1,14 @@
+# Session Summary — 2026-09-20 (OpenCows2020 Legacy Re-ID Protocol Rebuild)
+- Audited OpenCows2020 (4,736 images across 46 identities) and proved that sequence / tracklet structure cannot be recovered from provenance (frame numbers are unordered crops; consecutive MAE is identical to random pairs within cow).
+- Quantified massive data leakage in legacy `context/preprocess_id.py` random split: 1,023 adjacent-frame pairs ($|f_1 - f_2| = 1$), 2,942 near-frame pairs ($|f_1 - f_2| \le 5$), 1,760 near-duplicate pairs (MAE < 15), and 3 exact duplicate pairs (identical SHA256) crossed train and val.
+- Preserved the official benchmark `identification-test` set (496 images, 46 cows) 100% untouched.
+- Rebuilt training-side train/val via contiguous frame blocks + duplicate harmonization: Train=3,586, Val=654, Test=496 (total 4,736 images across 46 cows).
+- Eliminated all duplicate leakage (0 hash overlap across any split) and reduced adjacent-frame transitions from 1,023 down to 48 (single boundary transition per cow).
+- Created `datasets/id/opencow2020/manifest.csv`, `train.csv`, `val.csv`, `test.csv`, `split_report.md`, and updated `datasets/id/id_index.csv`.
+- Created `scripts/build_opencows_splits.py` and standalone verification `scripts/verify_opencows_splits.py` (100% pass).
+- Updated `datasets/dataset_registry.csv` and documented findings in `docs/research_log/2026-09-20_opencows2020_legacy_reid_audit.md`.
+- Maintained OpenCows2020 strictly as a **LEGACY BASELINE ONLY**; MultiCamCows2024 remains intended primary Re-ID.
+
 # Session Summary — 2026-09-20
 - Completed Dryad Cattle BCS Discrepancy Audit (`docs/research_log/2026-09-20_dryad_bcs_discrepancy_audit.md`).
 - Fully reconciled the discrepancy between the older ~5,923 expectation and 5,940 physical files: proved that legacy `preprocess_bcs.py` hardcoded classes 2–6 (5,923 imgs) to fit a 5-class head and silently dropped class folder '7' (17 imgs from `Cow_52`).
