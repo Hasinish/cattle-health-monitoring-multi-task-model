@@ -67,8 +67,8 @@ ROWS = [
         "viewpoint_available": "Rear",
         "modalities": "RGB",
         "label_schema": "Discrete ordinal (3.25, 3.5, 3.75, 4.0, 4.25)",
-        "notes": "Primary in-domain BCS dataset. Raw data NOT present on this machine; sciencedb_bcs_index.csv (53,566 rows) paths are stale/broken locally.",
-        "local_status_1050ti": "METADATA_ONLY",
+        "notes": "Primary in-domain BCS dataset. 53,566 images across 5 classes verified locally. sciencedb_bcs_index.csv paths validated.",
+        "local_status_1050ti": "AVAILABLE",
         "local_verified_date": "2026-09-20",
     },
     {

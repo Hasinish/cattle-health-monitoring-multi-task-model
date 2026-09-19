@@ -16,7 +16,7 @@
 - [x] Conduct read-only physical filesystem inventory audit (`docs/research_log/2026-09-20_local_dataset_inventory_audit.md`)
 - [x] Build canonical dataset registry (`datasets/dataset_registry.csv` generated; 13 datasets, 28 fields, local physical statuses cataloged)
 - [ ] Download and index MultiCamCows2024 (BLOCKED — upstream download currently unavailable; intended primary Re-ID)
-- [ ] Download & restore ScienceDB Cattle BCS raw images (Primary BCS; raw files NOT present on this machine, index paths stale)
+- [x] Download & restore ScienceDB Cattle BCS raw images (53,566 images across 5 classes restored via 24-thread fast downloader & 7-Zip; index validated)
 - [ ] Validate ScienceDB identity parser and verify cow-disjoint split (`datasets/bcs/sciencedb/`) once raw data restored
 - [ ] Rebuild MmCows grouped evaluation protocol with time-block / multi-view protection (`datasets/behavior/mmcows/folds/`)
 - [ ] Create MultiCamCows protocols: tracklet-disjoint, cross-day, cross-camera, open-set
@@ -59,8 +59,9 @@
 ## Current Local Availability on this Machine (Physical Verification Baseline)
 - **ScienceDB BCS**:
   - Scientific Role: Primary BCS dataset
-  - Local Status: **NOT present locally**. Raw images do not exist on this machine.
-  - Manifest: `datasets/bcs/sciencedb_bcs_index.csv` exists with 53,566 rows, but all paths are stale/broken locally.
+  - Local Status: **AVAILABLE**. Fully restored and verified locally (`datasets/bcs/sciencedb_bcs/dataset/`).
+  - Physical Counts: 53,566 RGB images (and 53,566 XML annotation files) across 5 classes: 3.25 (7,536), 3.50 (13,256), 3.75 (14,255), 4.00 (12,556), 4.25 (5,963).
+  - Manifest: `datasets/bcs/sciencedb_bcs_index.csv` validated (53,566 rows; 100% of sample paths verified existing on disk).
 - **Dryad BCS**:
   - Scientific Role: Secondary external BCS validation
   - Local Status: **Raw data present locally** (`datasets/bcs/dryad_bcs/Total_sorted_DGE_images/`).
