@@ -2,7 +2,7 @@
 
 **Project:** Vision-Based AI for Cattle Health Monitoring  
 **Roadmap status:** CANONICAL / LOCKED FOR EXECUTION  
-**Last updated:** 2026-09-19  
+**Last updated:** 2026-09-19 — execution-plan clarification  
 **Purpose:** Single source of truth for the coding/research agent.  
 **Important:** Do not restart the project from zero. Do not silently change the scope without recording the decision in the research log.
 
@@ -475,6 +475,19 @@ Include difficult examples:
 - existing cattle detectors
 - general modern detector/segmenter if cattle-specific model is insufficient
 
+Provisional pretrained candidates to audit first (not selected in advance):
+- detector/bounding-box prompt → SAM 2 / SAM 2.1 mask generation
+- Grounded-SAM-style pipeline for automatic cow localization + mask generation
+- pretrained YOLO instance-segmentation model as a faster baseline
+- cattle-specific CattleEyeView-derived segmentation checkpoint if a verified usable checkpoint is available
+- conventional Mask R-CNN/Detectron2 baseline only if needed for comparison
+
+Selection rule:
+- test the same representative images across candidates
+- compare mask usability, failure rate, speed, and difficult-view behavior
+- do not assume the heaviest model is best
+- freeze the selected upstream model/checkpoint before downstream ablations
+
 ### Pose
 - SuperAnimal-Quadruped
 - CattleEyeView-aligned pose model
@@ -569,6 +582,54 @@ Acceptance criteria:
 
 ---
 
+## Operational implementation plan for cattle perception
+
+This clarifies execution without changing the scientific roadmap.
+
+**First modeling task after Gate 1:** build and validate the cattle-perception pipeline before official downstream task training.
+
+```text
+image / video
+    ↓
+cow localization
+    ↓
+segmentation / soft mask
+    ↓
+anatomy / pose / keypoints
+    ↓
+coarse viewpoint
+    ↓
+cache reproducible cattle-centered outputs
+```
+
+Execution strategy:
+
+1. Develop and debug the perception pipeline on a small representative subset first.
+2. Prefer pretrained/frozen tools; do not train segmentation or pose from scratch unless the feasibility audit shows that existing tools fail.
+3. Once a perception component is accepted, freeze its exact code/config/checkpoint/version.
+4. Copy the same frozen perception code/checkpoints to the BCS, Behavior, and Re-ID execution environments.
+5. Each task environment may download only its own task datasets and generate its own local perception cache.
+6. A shared cloud dataset store is optional, not required for the initial parallel execution plan.
+7. All downstream ablations must reuse the same cached upstream outputs for that dataset/version.
+8. Smoke-test scripts on low-cost/local hardware before paid cloud or high-end GPU runs.
+
+Storage/versioning rule:
+
+```text
+Git
+→ code + configs + manifests + split files + small logs/results
+
+Persistent GPU/cloud volume or local disk
+→ datasets + cached masks/pose/viewpoint + large checkpoints
+
+Research PC backup
+→ final/best checkpoints + final manifests/results
+```
+
+Do not put large datasets or large `.pt` / `.pth` checkpoints directly in normal Git history.
+
+---
+
 # 7. STEP 4 — Clean RGB Single-Task Baselines
 
 **Status:** BLOCKED BY STEP 1
@@ -646,6 +707,16 @@ Acceptance criteria:
 - [ ] checkpoint stored
 - [ ] metrics stored
 - [ ] no external test set used for hyperparameter tuning
+
+Parallel execution is allowed after Gate 1 and the shared perception pipeline is frozen:
+
+```text
+BCS environment      → ScienceDB / BCS datasets
+Behavior environment → MmCows / behavior datasets
+Re-ID environment    → MultiCamCows2024 / Re-ID datasets
+```
+
+These environments should use the same Git-tracked code and the same frozen upstream perception versions, while keeping task datasets and large caches local to the relevant environment.
 
 ---
 
@@ -1371,6 +1442,22 @@ Do not begin MTL until:
 
 ---
 
+# 20.1 Operational Compute / Storage Plan
+
+This is an execution note, not a scientific contribution.
+
+Current practical strategy:
+
+- use the low-end local GPU for smoke tests, path checks, tensor-shape checks, checkpoint/resume tests, metric tests, and 1–2 epoch tiny-subset runs
+- reserve stronger GPUs / paid cloud for real preprocessing, full training, ablations, and final repeated runs
+- keep one task per cloud environment where practical to simplify data movement
+- use persistent volumes for large checkpoints/caches and Git for reproducible code/config state
+- back up final/best checkpoints and final results outside the cloud environment
+
+Do not spend paid GPU time debugging basic script failures that can be reproduced locally.
+
+---
+
 # 21. Current Exact Position
 
 ## Current state
@@ -1487,3 +1574,20 @@ The thesis investigates:
 > **What information should a cattle vision model preserve, what should it ignore, and how does that change across morphology, behavior, and identity tasks?**
 
 This roadmap remains the canonical plan until evidence from an experiment or dataset audit justifies a documented change.
+
+---
+
+# 25. High-Reasoning Review Resource — GPT-6 Astra
+
+The user currently has approximately **12 GPT-6 Astra messages** available as a scarce thesis-support resource.
+
+Use Astra selectively for high-value review tasks rather than routine coding/chat. Priority uses:
+
+- full Phase 3 roadmap / methodology red-team review
+- cattle-perception module design review (segmentation + anatomy/pose + viewpoint)
+- dataset split / leakage audit review
+- experiment design and ablation sanity checks
+- interpretation of final results and unsupported-claim detection
+- final paper / defense review
+
+Do not treat Astra output as ground truth. Any suggested change to the canonical roadmap must still be justified by evidence, logged, and treated as a proposed update before adoption.
