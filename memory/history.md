@@ -1,9 +1,10 @@
 # Session Summary — 2026-09-20 (OpenCows2020 Legacy Re-ID Protocol Rebuild)
 - Audited OpenCows2020 (4,736 images across 46 identities) and proved that sequence / tracklet structure cannot be recovered from provenance (frame numbers are unordered crops; consecutive MAE is identical to random pairs within cow).
-- Quantified massive data leakage in legacy `context/preprocess_id.py` random split: 1,023 adjacent-frame pairs ($|f_1 - f_2| = 1$), 2,942 near-frame pairs ($|f_1 - f_2| \le 5$), 1,760 near-duplicate pairs (MAE < 15), and 3 exact duplicate pairs (identical SHA256) crossed train and val.
+- Quantified extensive random within-identity mixing in legacy `context/preprocess_id.py` random split: 1,023 frame-index adjacent pairs ($|f_1 - f_2| = 1$), 2,942 near frame-index pairs ($|f_1 - f_2| \le 5$), 1,760 visually similar pairs (MAE < 15), and 3 exact-duplicate pairs (identical SHA256) crossed train and val.
 - Preserved the official benchmark `identification-test` set (496 images, 46 cows) 100% untouched.
-- Rebuilt training-side train/val via contiguous frame blocks + duplicate harmonization: Train=3,586, Val=654, Test=496 (total 4,736 images across 46 cows).
-- Eliminated all duplicate leakage (0 hash overlap across any split) and reduced adjacent-frame transitions from 1,023 down to 48 (single boundary transition per cow).
+- Rebuilt training-side train/val via contiguous frame-index heuristic + duplicate harmonization: Train=3,586, Val=654, Test=496 (total 4,736 images across 46 cows).
+- Eliminated exact-duplicate leakage (0 duplicate hash overlap across any split) and reduced frame-index adjacency crossings from 1,023 down to 48 (single boundary transition per cow).
+- Explicitly documented that true tracklet/temporal leakage cannot be verified because provenance is unavailable.
 - Created `datasets/id/opencow2020/manifest.csv`, `train.csv`, `val.csv`, `test.csv`, `split_report.md`, and updated `datasets/id/id_index.csv`.
 - Created `scripts/build_opencows_splits.py` and standalone verification `scripts/verify_opencows_splits.py` (100% pass).
 - Updated `datasets/dataset_registry.csv` and documented findings in `docs/research_log/2026-09-20_opencows2020_legacy_reid_audit.md`.

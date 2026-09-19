@@ -9,14 +9,15 @@
 ## Executive Summary
 
 1. **Official Test Set Preservation**: The official `identification-test` benchmark partition (496 images across all 46 cows) is preserved **100% intact and untouched**.
-2. **Old Split Flaw & De-Leakage**: The legacy `context/preprocess_id.py` script applied `random.shuffle()` to frames within each cow, causing severe temporal leakage:
-   - **1,023 adjacent-frame pairs** ($|f_1 - f_2| = 1$) crossed between train and validation.
-   - **2,942 near-frame pairs** ($|f_1 - f_2| \le 5$) crossed between train and validation.
+2. **Old Split Flaw (Random Within-Identity Mixing)**: The legacy `context/preprocess_id.py` script applied `random.shuffle()` to frames within each cow, causing extensive within-identity mixing:
+   - **1,023 frame-index adjacent pairs** ($|f_1 - f_2| = 1$) crossed between train and validation.
+   - **2,942 near frame-index pairs** ($|f_1 - f_2| \le 5$) crossed between train and validation.
    - **3 exact-duplicate image pairs** (identical SHA256 hashes) crossed between train and validation.
-3. **Rebuilt Protocol**: Rebuilt using **Contiguous Frame-Block Partitioning** (first ~85% of sorted frames to Train, remaining ~15% to Val) combined with **Exact-Duplicate Harmonization**.
-   - Adjacent frame transitions reduced from 1,023 down to 48 (single boundary transition per cow).
-   - Exact duplicate leakage between train and val eliminated to **0**.
-   - Exact duplicate leakage between train/val and test is **0**.
+3. **Rebuilt Protocol**: Rebuilt using a **Contiguous Frame-Index Heuristic** (first ~85% of sorted frames to Train, remaining ~15% to Val) combined with **Exact-Duplicate Harmonization**.
+   - Frame-index adjacency crossings reduced from 1,023 down to 48 (single boundary transition per cow).
+   - Exact-duplicate leakage between train and val eliminated to **0**.
+   - Exact-duplicate leakage between train/val and test is **0**.
+   - **Provenance Limitation**: True tracklet/temporal leakage cannot be verified because provenance is unavailable.
 
 ---
 
@@ -62,8 +63,9 @@ A full cryptographic audit of all 4,736 images identified **8 duplicate hash gro
 
 ### Limitation & Scientific Honesty
 Because true tracklet boundaries cannot be recovered without inventing fake provenance, we explicitly document this limitation:
+- True tracklet/temporal leakage cannot be verified because provenance is unavailable.
 - OpenCows2020 cannot provide a verifiable camera-disjoint or tracklet-disjoint evaluation.
-- The contiguous frame-block split is the **strongest defensible heuristic** available on this dataset, eliminating random frame hopping.
+- The contiguous frame-index split is a **heuristic** to eliminate random within-identity mixing, not a proven sequence-safe or leakage-free partition.
 - **OpenCows2020 remains strictly a LEGACY BASELINE**. MultiCamCows2024 remains the intended primary Re-ID benchmark once upstream server access is restored.
 
 ---
@@ -72,6 +74,6 @@ Because true tracklet boundaries cannot be recovered without inventing fake prov
 
 - [x] All 46 cow identities present in Train, Validation, and Test partitions.
 - [x] Official identification-test benchmark partition (496 images) is 100% preserved.
-- [x] Zero exact duplicate hash leakage between any partition.
+- [x] Zero exact-duplicate overlap between any partition.
 - [x] Reusable manifests generated (`manifest.csv`, `train.csv`, `val.csv`, `test.csv`).
 - [x] Legacy `datasets/id/id_index.csv` updated for pipeline compatibility.

@@ -1,7 +1,7 @@
 """
 Standalone verification script for OpenCows2020 legacy Re-ID evaluation protocol.
 Performs rigorous audit of manifests, splits, identity distribution, path resolution,
-and cryptographic/adjacent-frame leakage.
+and cryptographic duplicate overlap / frame-index adjacency crossing.
 """
 
 import sys
@@ -98,7 +98,7 @@ def verify():
     if manifest_test_paths != official_test_files:
         errors.append("Test set does not match official identification-test files 1-to-1")
 
-    # 5. Cryptographic duplicate leakage check
+    # 5. Cryptographic exact-duplicate overlap check
     t_hashes = set(r["sha256"] for r in train_rows)
     v_hashes = set(r["sha256"] for r in val_rows)
     te_hashes = set(r["sha256"] for r in test_rows)
@@ -108,24 +108,24 @@ def verify():
     vte_inter = v_hashes.intersection(te_hashes)
 
     if len(tv_inter) > 0:
-        errors.append(f"Exact duplicate leakage between train and val: {len(tv_inter)} hashes")
+        errors.append(f"Exact-duplicate overlap between train and val: {len(tv_inter)} hashes")
     if len(tte_inter) > 0:
-        errors.append(f"Exact duplicate leakage between train and test: {len(tte_inter)} hashes")
+        errors.append(f"Exact-duplicate overlap between train and test: {len(tte_inter)} hashes")
     if len(vte_inter) > 0:
-        errors.append(f"Exact duplicate leakage between val and test: {len(vte_inter)} hashes")
+        errors.append(f"Exact-duplicate overlap between val and test: {len(vte_inter)} hashes")
 
-    # 6. Adjacent frame leakage check (|f_train - f_val| == 1)
-    adj_leaks = 0
+    # 6. Frame-index adjacency crossing check (|f_train - f_val| == 1)
+    adj_crossings = 0
     for cid in range(1, 47):
         t_fids = set(int(r["frame_id"]) for r in train_rows if int(r["cow_id"]) == cid)
         v_fids = set(int(r["frame_id"]) for r in val_rows if int(r["cow_id"]) == cid)
         for tf in t_fids:
             if (tf - 1) in v_fids or (tf + 1) in v_fids:
-                adj_leaks += 1
+                adj_crossings += 1
 
-    print(f"Adjacent frame transitions across train/val: {adj_leaks} (expected <= 48, down from 1,023 in legacy split)")
-    if adj_leaks > 48:
-        errors.append(f"Adjacent frame leakage exceeds expected single boundary transitions: {adj_leaks}")
+    print(f"Frame-index adjacency crossings across train/val: {adj_crossings} (expected <= 48 single boundary crossings, down from 1,023 under random mixing)")
+    if adj_crossings > 48:
+        errors.append(f"Frame-index adjacency crossings exceed expected single boundary transitions: {adj_crossings}")
 
     # 7. id_index.csv alignment check
     manifest_map = {r["image_path"]: r for r in manifest_rows}
@@ -147,9 +147,10 @@ def verify():
         print("[PASS] All 4,736 images verified.")
         print("[PASS] All 46 identities present in Train, Val, and Test.")
         print("[PASS] Official identification-test benchmark set (496 images) is 100% preserved.")
-        print("[PASS] Zero exact duplicate hash leakage between any partition.")
-        print(f"[PASS] Adjacent frame leakage reduced from 1,023 down to {adj_leaks}.")
+        print("[PASS] Zero exact-duplicate overlap between any partition.")
+        print(f"[PASS] Frame-index adjacency crossings reduced from 1,023 down to {adj_crossings} (contiguous frame-index heuristic).")
         print("[PASS] id_index.csv is 100% aligned with manifest.csv.")
+        print("[NOTE] True tracklet/temporal leakage cannot be verified because provenance is unavailable.")
         print("[SUCCESS] OpenCows2020 protocol is fully verified and reproducible!")
         return True
 

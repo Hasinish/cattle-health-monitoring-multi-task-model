@@ -61,7 +61,7 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `cattle_lameness_grouping_report.md`: Anti-leakage clustering architecture, multi-clip group resolution (8 groups, 16 clips), and balanced 5-fold StratifiedGroupKFold cross-validation specification.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
-  - `2026-09-20_opencows2020_legacy_reid_audit.md`: Forensic audit of OpenCows2020 legacy Re-ID protocol, proving lack of sequence recoverability from provenance, exposing 1,023 adjacent-frame leaks in legacy random shuffle, and verifying contiguous block rebuild.
+  - `2026-09-20_opencows2020_legacy_reid_audit.md`: Forensic audit of OpenCows2020 legacy Re-ID protocol, proving lack of sequence recoverability from provenance, exposing 1,023 frame-index adjacency crossings in legacy random shuffle, and verifying contiguous heuristic rebuild.
   - `2026-09-20_dryad_bcs_discrepancy_audit.md`: Discrepancy audit reconciling 5,923 vs 5,940 physical TIFFs, validating Class 7 as authentic Criollo beef data, and establishing 54-cow census.
   - `2026-09-20_mmcows_grouped_protocol_and_leakage_audit.md`: Audit of MmCows behavior dataset, proving biological cow IDs (16 cows), protecting 87.15% multi-camera synchronized events, and creating 4-Fold GroupKFold suite.
   - `2026-09-20_sciencedb_identity_audit_and_leakage_free_split.md`: Forensic audit of ScienceDB identity parser, disproving 10,898 cows claim, exposing 94.6% stereo leakage in legacy split, and building leak-free 5,662-passage split.
@@ -117,11 +117,11 @@ Canonical benchmark data and task registries.
       - `fold_0.csv`, `fold_1.csv`, `fold_2.csv`, `fold_3.csv`: 4-Fold GroupKFold cross-validation suite (each 213,686 rows) evaluating 100% of cows with guaranteed 7-class positive coverage.
     - `split_report.md`: Comprehensive audit report verifying 16 biological cows, 4 CCTV cameras, and 0 multi-camera / time-block leakage.
 - `id/`:
-  - `id_index.csv`: 4,736-row backward-compatible index mapping OpenCows2020 images to 46 cow classes and leak-free splits.
+  - `id_index.csv`: 4,736-row backward-compatible index mapping OpenCows2020 images to 46 cow classes and contiguous frame-index splits.
   - `opencow2020/`:
     - `manifest.csv`: 4,736-row master manifest mapping all images to cow ID, frame ID, official split, new split, SHA256, width, and height.
-    - `train.csv` (3,586 rows), `val.csv` (654 rows), `test.csv` (496 rows): Contiguous frame-block split manifests with duplicate harmonization.
-    - `split_report.md`: Forensic audit report detailing legacy split leakage (1,023 adjacent-frame leaks) and contiguous block rebuild.
+    - `train.csv` (3,586 rows), `val.csv` (654 rows), `test.csv` (496 rows): Contiguous frame-index split manifests with duplicate harmonization (0 exact-duplicate overlap).
+    - `split_report.md`: Forensic audit report detailing legacy random within-identity mixing (1,023 frame-index adjacency crossings) and contiguous heuristic rebuild.
 - `lameness/`:
   - `cattle_lameness_manifest.csv`: 50-clip master manifest defining filename, class, source URLs, proposed group IDs, confidence scores, evidence, and 5-fold cross-validation assignments.
   - `lameness_index.csv`: Extracted frame index mapping 9,950 frames across 50 video clips to labels and splits.

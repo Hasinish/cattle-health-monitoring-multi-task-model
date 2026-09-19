@@ -337,7 +337,7 @@ ROWS = [
         "viewpoint_available": "Mixed (side, rear, oblique)",
         "modalities": "RGB",
         "label_schema": "46 cow classes",
-        "notes": "Legacy Re-ID baseline. Retained for backward comparability only; random train/val split abandoned. 4,736 images across 46 cows. Rebuilt via contiguous frame block + duplicate harmonization (train: 3586, val: 654, test: 496 official preserved). Zero duplicate leakage.",
+        "notes": "Legacy Re-ID baseline. Retained for backward comparability only; random train/val split abandoned. 4,736 images across 46 cows. Rebuilt via contiguous frame-index heuristic + duplicate harmonization (train: 3586, val: 654, test: 496 official preserved). Zero exact-duplicate overlap; true tracklet/temporal leakage cannot be verified because provenance is unavailable.",
         "local_status_1050ti": "AVAILABLE",
         "local_verified_date": "2026-09-20",
     },

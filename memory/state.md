@@ -20,7 +20,7 @@
 - [x] Download & restore ScienceDB Cattle BCS raw images (53,566 images across 5 classes restored via 24-thread fast downloader & 7-Zip; index validated)
 - [x] Validate ScienceDB identity parser and build leakage-safe passage-disjoint split (`datasets/bcs/sciencedb/`; 5,662 passage clusters, 0 leakage)
 - [x] Rebuild MmCows grouped evaluation protocol with time-block / multi-view protection (`datasets/behavior/mmcows/folds/`; 213,686 crops, 16 cows, canonical split + 4-fold GroupKFold suite, 0 leakage)
-- [x] Audit and rebuild OpenCows2020 legacy Re-ID evaluation protocol (`datasets/id/opencow2020/`; 4,736 images, 46 cows; official test 496 preserved; train: 3,586, val: 654; contiguous frame block + duplicate harmonization; 0 duplicate leakage)
+- [x] Audit and rebuild OpenCows2020 legacy Re-ID evaluation protocol (`datasets/id/opencow2020/`; 4,736 images, 46 cows; official test 496 preserved; train: 3,586, val: 654; contiguous frame-index heuristic + duplicate harmonization; 0 exact-duplicate overlap; true tracklet/temporal leakage unrecoverable from provenance)
 - [ ] Create MultiCamCows protocols: tracklet-disjoint, cross-day, cross-camera, open-set (BLOCKED upstream)
 - [x] Retrieve & index Ruchay 2026 metadata (Zenodo record 20290988 verified; 25,700 samples, 1,025 cows; manifest generated in datasets/bcs/external/ruchay2026/; 77.74 GB raw archives on Zenodo)
 - [x] Audit Dryad BCS local count/class discrepancy (5,940 TIFFs verified across classes 2–7; older ~5,923 count omitted Class 7 [17 imgs from Cow_52]; 54 biological cows census; manifest generated; bcs_index.csv updated)
@@ -55,7 +55,7 @@
   - **Primary (New Benchmark)**: MultiCamCows2024 (90 cows, 101,329 images, 3 cameras, 7 days, sequence-safe tracklets; replaces OpenCows2020)
   - **Primary External Validation**: SideViewCows2026 (side-view re-identification with masks)
   - **Long-term / Scale Stress**: BECA-L (appearance change over time), BECA-D (large population)
-  - **Legacy Baseline**: OpenCows2020 (retained for backward comparability only; random train/val split abandoned; contiguous frame block + duplicate harmonization protocol verified)
+  - **Legacy Baseline**: OpenCows2020 (retained for backward comparability only; random train/val split abandoned; contiguous frame-index heuristic + duplicate harmonization protocol verified)
 - **Lameness Status**: Excluded from primary Phase 3 MTL; CattleLameness retained for historical P2 audit only.
 
 ## Current Local Availability on this Machine (Physical Verification Baseline)
@@ -79,7 +79,7 @@
   - Scientific Role: Legacy Re-ID benchmark only
   - Local Status: **Locally present** (`datasets/id/opencow2020-DatasetNinja/`).
   - Physical Counts: 4,736 images across 46 identities (4,240 in `identification-train/img/`, 496 in `identification-test/img/`).
-  - Protocol Status: `datasets/id/opencow2020/manifest.csv` (4,736 rows), `train.csv` (3,586), `val.csv` (654), `test.csv` (496 official preserved), `split_report.md`, and updated `id_index.csv` (4,736 rows). 0 duplicate leakage; adjacent transitions reduced from 1,023 to 48.
+  - Protocol Status: `datasets/id/opencow2020/manifest.csv` (4,736 rows), `train.csv` (3,586), `val.csv` (654), `test.csv` (496 official preserved), `split_report.md`, and updated `id_index.csv` (4,736 rows). 0 exact-duplicate overlap; frame-index adjacency crossings reduced from 1,023 to 48. True tracklet/temporal leakage cannot be verified because provenance is unavailable.
 - **MultiCamCows2024**:
   - Scientific Role: Intended primary Re-ID dataset
   - Local Status: **NOT present locally**. 0 files/archives.
@@ -96,15 +96,16 @@
 
 ## Last Session (Convo 27375138-e032-457f-a2a6-753e72f4a342)
 - Audited OpenCows2020 source provenance and proved that true sequence / tracklet structure cannot be recovered (frame numbers are unordered crops; consecutive MAE is identical to random pairs within cow).
-- Quantified severe leakage in old `preprocess_id.py` random split: 1,023 adjacent-frame leaks, 1,760 near-duplicate leaks, and 3 exact duplicate pairs crossing train/val.
+- Quantified random within-identity mixing in old `preprocess_id.py` random split: 1,023 frame-index adjacency crossings, 1,760 visually similar pairs, and 3 exact-duplicate pairs crossing train/val.
 - Preserved official `identification-test` set (496 images, 46 cows) 100% untouched.
-- Rebuilt training-side train/val via contiguous frame blocks + duplicate harmonization: Train=3,586, Val=654, Test=496 (total 4,736). Zero duplicate leakage; adjacent transitions reduced from 1,023 to 48.
+- Rebuilt training-side train/val via contiguous frame-index heuristic + duplicate harmonization: Train=3,586, Val=654, Test=496 (total 4,736). Zero exact-duplicate overlap; frame-index adjacency crossings reduced from 1,023 to 48.
+- Explicitly documented that true tracklet/temporal leakage cannot be verified because provenance is unavailable.
 - Created `datasets/id/opencow2020/manifest.csv`, `train.csv`, `val.csv`, `test.csv`, `split_report.md`, updated `id_index.csv`.
 - Created `scripts/build_opencows_splits.py` and standalone verification `scripts/verify_opencows_splits.py` (100% pass).
 - Updated `datasets/dataset_registry.csv` and documented findings in `docs/research_log/2026-09-20_opencows2020_legacy_reid_audit.md`.
 
 ## Current Blockers & Notes
-- Current immediate position is **STEP 1 — Data Registry and Clean Splits**. ScienceDB, MmCows, Dryad BCS, and OpenCows2020 legacy protocol are 100% verified, leak-free, and locked.
+- Current immediate position is **STEP 1 — Data Registry and Clean Splits**. ScienceDB (passage-disjoint), MmCows (cow-disjoint), Dryad BCS (cow-disjoint), and OpenCows2020 legacy protocol (contiguous frame-index heuristic, 0 duplicate overlap) are verified and locked.
 - MultiCamCows2024 official download is blocked upstream by server-side connection resets on `data.bris.ac.uk/datasets/`; remains intended primary Re-ID.
 - OpenCows2020 remains strictly a **LEGACY BASELINE ONLY**.
 - Model training remains blocked until Step 1 Gate is fully cleared.
