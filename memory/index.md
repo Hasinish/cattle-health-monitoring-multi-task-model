@@ -62,6 +62,7 @@ Structured project documentation, defense resources, forensic audits, and offici
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
   - `2026-09-20_sciencedb_identity_audit_and_leakage_free_split.md`: Forensic audit of ScienceDB identity parser, disproving 10,898 cows claim, exposing 94.6% stereo leakage in legacy split, and building leak-free 5,662-passage split.
+  - `2026-09-20_sciencedb_roadmap_correction.md`: Formal roadmap correction replacing ScienceDB cow-disjoint wording with passage-disjoint / sequence-safe evaluation and setting MmCows grouped evaluation as the next Step 1 action.
   - `2026-09-20_local_dataset_inventory_audit.md`: Physical inventory audit on GTX 1050 Ti machine and canonical dataset registry creation.
   - `2026-09-19_phase3_canonical_roadmap.md`: Formal log adopting the 13-step Phase 3 Canonical Roadmap and MultiCamCows2024 Re-ID replacement.
   - `2026-09-18_cattle_centered_anatomy_aware_direction.md`: Proposed research direction on segmentation-guided, anatomy-aware, and viewpoint-aware representation learning.
