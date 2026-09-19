@@ -6,7 +6,7 @@
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
 ## Active Goals & Todo (STEP 1: Data Registry & Clean Splits)
-- **Immediate next action:** Rebuild MmCows grouped evaluation protocol with cow-disjoint folds plus time-block / synchronized multi-view protection.
+- **Immediate next action:** Create Re-ID evaluation protocols (MultiCamCows2024 / OpenCows2020) and audit Dryad BCS local count/class discrepancy.
 - [x] Download & restore 213,686 MmCows behavior images via Hugging Face (213,686 indexed crops valid in `behaviors/`; 427,390 total local JPGs; raw videos purged)
 - [x] Download & index OpenCows2020 (4,736 images across 46 classes via Kagglehub - designated Legacy Baseline)
 - [x] Purge 36+ GB raw behavior videos, zip archives, and cache to reclaim local disk space
@@ -19,7 +19,7 @@
 - [ ] Download and index MultiCamCows2024 (BLOCKED — upstream download currently unavailable; intended primary Re-ID)
 - [x] Download & restore ScienceDB Cattle BCS raw images (53,566 images across 5 classes restored via 24-thread fast downloader & 7-Zip; index validated)
 - [x] Validate ScienceDB identity parser and build leakage-safe passage-disjoint split (`datasets/bcs/sciencedb/`; 5,662 passage clusters, 0 leakage)
-- [ ] Rebuild MmCows grouped evaluation protocol with time-block / multi-view protection (`datasets/behavior/mmcows/folds/`)
+- [x] Rebuild MmCows grouped evaluation protocol with time-block / multi-view protection (`datasets/behavior/mmcows/folds/`; 213,686 crops, 16 cows, canonical split + 4-fold GroupKFold suite, 0 leakage)
 - [ ] Create MultiCamCows protocols: tracklet-disjoint, cross-day, cross-camera, open-set
 - [x] Retrieve & index Ruchay 2026 metadata (Zenodo record 20290988 verified; 25,700 samples, 1,025 cows; manifest generated in datasets/bcs/external/ruchay2026/; 77.74 GB raw archives on Zenodo)
 - [ ] Audit Dryad BCS local count/class discrepancy (5,940 TIFFs across classes 2–7 vs ~5,923 expected across classes 2–6)
@@ -73,7 +73,7 @@
   - Scientific Role: Primary Behavior dataset
   - Local Status: **Raw cropped data present locally** (`datasets/behavior/mmcows/cropped_bboxes/`).
   - Physical Counts: 213,686 indexed behavior crops in `behaviors/` (100% valid/resolving). Total local JPG count is 427,390 due to additional `lying/` (83,620) and `standing/` (130,084) crop folders. Raw source videos and archive zip were previously purged. Do not redefine the behavior dataset as 427,390 samples.
-  - Index Status: `datasets/behavior/behavior_index.csv` valid and active (213,686 rows).
+  - Manifest & Protocol: `datasets/behavior/mmcows/manifest.csv` (213,686 rows), `provenance_audit.csv` (16 cows), canonical splits (`train.csv`, `val.csv`, `test.csv`), and 4-Fold GroupKFold suite (`folds/fold_[0-3].csv`) verified with zero cross-split leakage.
 - **OpenCows2020**:
   - Scientific Role: Legacy Re-ID benchmark only
   - Local Status: **Locally present** (`datasets/id/opencow2020-DatasetNinja/`).
@@ -94,7 +94,8 @@
 > **Multi-Environment Awareness**: Physical dataset availability may differ across machines and execution environments (e.g. this local laptop vs. Modal cloud volumes vs. the BRACU Lab Research PC with RTX 5090). Future agents MUST inspect physical files on disk before assuming a dataset is available locally.
 
 ## Current Blockers & Notes
-- Current immediate position is **STEP 1 — Data Registry and Clean Splits**. ScienceDB is now passage-disjoint and sequence-safe; the immediate next task is the MmCows grouped evaluation protocol. Model training remains blocked until Gate 1 is passed.
+- Current immediate position is **STEP 1 — Data Registry and Clean Splits**. Both ScienceDB (passage-disjoint / sequence-safe, 5,662 clusters) and MmCows (cow-disjoint, 16 biological cows, 4-fold GroupKFold) are 100% verified, leak-free, and locked.
+- Next immediate task is Re-ID evaluation protocols (MultiCamCows2024 / OpenCows2020) and auditing Dryad BCS discrepancy. Model training remains blocked until Gate 1 is passed.
 - MultiCamCows2024 official download is blocked upstream by server-side connection resets on `data.bris.ac.uk/datasets/`; remains intended primary Re-ID.
 - ScienceDB raw images (53,566 samples) are fully restored and verified locally; leakage-safe 5,662-passage split generated in `datasets/bcs/sciencedb/`.
 - OpenCows2020 is superseded as primary Re-ID by MultiCamCows2024 to eliminate temporal near-duplicate frame leakage and support tracklet/cross-day/cross-camera protocols.

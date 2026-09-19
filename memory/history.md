@@ -1,8 +1,13 @@
 # Session Summary — 2026-09-20
+- Completed MmCows Behavior Grouped Evaluation Protocol and Leakage Audit (`docs/research_log/2026-09-20_mmcows_grouped_protocol_and_leakage_audit.md`).
+- Verified that 213,686 image crops stem from 16 genuine biological Holstein dairy cows recorded across 4 synchronized CCTV cameras over 21.0 hours (NeurIPS 2024 Spotlight, Purdue NEIS Lab).
+- Protected 87.15% synchronized multi-camera events (64,830 / 74,388 events) and 15s contiguous periodic time blocks via strict cow-disjoint grouping.
+- Identified Class 5 (Licking) rarity (2,009 crops, 41.7:1 imbalance) with 5 cows having zero licking crops; constructed balanced 4-Fold GroupKFold cross-validation suite evaluating 100% of cows with guaranteed positive support for all 7 classes.
+- Exported master manifest `datasets/behavior/mmcows/manifest.csv` (213,686 rows), `provenance_audit.csv` (16 cows), canonical splits (`train.csv`, `val.csv`, `test.csv`), 4-fold suite (`folds/fold_[0-3].csv`), and `split_report.md`.
+- Implemented and passed all leak-free assertions in `scripts/build_mmcows_splits.py` and `scripts/verify_mmcows_splits.py` (0 identity overlap, 0 multi-cam leak, 100/100 sampled path resolution).
 - Conducted read-only physical filesystem inventory audit on GTX 1050 Ti machine (`docs/research_log/2026-09-20_local_dataset_inventory_audit.md`).
 - Clarified physical presence vs scientific roles: ScienceDB BCS marked `METADATA_ONLY` locally (raw files absent; stale 53,566-row index); MultiCamCows2024 marked `BLOCKED` upstream (connection reset verified locally and on Modal cloud); Dryad BCS verified locally (5,940 TIFFs across classes 2-7, discrepancy flagged for future audit); MmCows verified locally (213,686 active behavior crops valid and indexed; 427,390 total JPGs include auxiliary folders; raw videos purged); OpenCows2020 verified locally (4,736 images across 46 classes).
 - Created deterministic canonical dataset registry `datasets/dataset_registry.csv` via `scripts/build_dataset_registry.py` (13 datasets, 28 columns, machine-awareness fields `local_status_1050ti` and `local_verified_date`).
-- Marked roadmap task "Build canonical dataset registry" as completed in `memory/state.md`; preserved MultiCamCows2024 as `BLOCKED`.
 
 # Session Summary — 2026-09-19
 - Adopted and locked the 13-step Phase 3 Canonical Roadmap (`phase3_canonical_roadmap.md` and `docs/phase3_canonical_roadmap.md`).

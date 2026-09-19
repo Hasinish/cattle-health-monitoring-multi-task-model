@@ -99,6 +99,15 @@ Canonical benchmark data and task registries.
   - `external/ruchay2026/`:
     - `ruchay2026_manifest.csv`: 25,700-sample deterministic manifest of Ruchay et al. 2026 RGB-D BCS benchmark (1,025 cows, 4 sessions, 10 ordinal classes 2.75–5.00).
     - `Dataset.xlsx`: Official metadata file from Zenodo record 20290988.
+- `behavior/`:
+  - `behavior_index.csv`: 213,686-row master index mapping crops to 7 active classes and legacy split.
+  - `mmcows/`:
+    - `manifest.csv`: 213,686-row master manifest mapping all crops to cow ID, camera ID, epoch, ISO timestamp, time block, synchronized event ID, canonical split, and folds 0–3.
+    - `provenance_audit.csv`: Cow-level provenance audit table summarizing all 16 cows across 20 parameters.
+    - `train.csv` (148,401 rows), `val.csv` (25,134 rows), `test.csv` (40,151 rows): Leakage-safe canonical split manifests.
+    - `folds/`:
+      - `fold_0.csv`, `fold_1.csv`, `fold_2.csv`, `fold_3.csv`: 4-Fold GroupKFold cross-validation suite (each 213,686 rows) evaluating 100% of cows with guaranteed 7-class positive coverage.
+    - `split_report.md`: Comprehensive audit report verifying 16 biological cows, 4 CCTV cameras, and 0 multi-camera / time-block leakage.
 - `lameness/`:
   - `cattle_lameness_manifest.csv`: 50-clip master manifest defining filename, class, source URLs, proposed group IDs, confidence scores, evidence, and 5-fold cross-validation assignments.
   - `lameness_index.csv`: Extracted frame index mapping 9,950 frames across 50 video clips to labels and splits.
@@ -118,6 +127,8 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `aggregate.py`: Collects training logs and performance metrics across member workspaces and generates consolidated summary tables.
 - `build_dataset_registry.py`: Deterministic generation script for `datasets/dataset_registry.csv` compiling Phase 3 datasets, roles, and local physical status.
 - `build_sciencedb_splits.py`: ScienceDB identity audit, de-leakage grouping (5,662 passage clusters), and stratified train/val/test split builder.
+- `build_mmcows_splits.py`: MmCows provenance audit, synchronized multi-camera protection, canonical baseline split, and 4-Fold GroupKFold suite generator.
+- `verify_mmcows_splits.py`: Standalone assertion and verification suite checking MmCows file existence, 100% cow disjointness, multi-camera event protection, and path resolution.
 - `build_leakage_safe_manifest.py`: Audits CattleLameness clips, applies heuristic & perceptual clustering, generates StratifiedGroupKFold assignments, and exports `cattle_lameness_manifest.csv`.
 - `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.
 - `run_all_training.py`: Orchestrates multi-gpu batch execution of all task training scripts.

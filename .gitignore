@@ -3,6 +3,7 @@ datasets/**
 !datasets/**/
 !datasets/**/*.csv
 !datasets/**/*.json
+!datasets/**/*.md
 *.mp4
 *.avi
 *.mov
