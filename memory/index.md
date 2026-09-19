@@ -61,6 +61,8 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `cattle_lameness_grouping_report.md`: Anti-leakage clustering architecture, multi-clip group resolution (8 groups, 16 clips), and balanced 5-fold StratifiedGroupKFold cross-validation specification.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-20_sciencedb_identity_audit_and_leakage_free_split.md`: Forensic audit of ScienceDB identity parser, disproving 10,898 cows claim, exposing 94.6% stereo leakage in legacy split, and building leak-free 5,662-passage split.
+  - `2026-09-20_local_dataset_inventory_audit.md`: Physical inventory audit on GTX 1050 Ti machine and canonical dataset registry creation.
   - `2026-09-19_phase3_canonical_roadmap.md`: Formal log adopting the 13-step Phase 3 Canonical Roadmap and MultiCamCows2024 Re-ID replacement.
   - `2026-09-18_cattle_centered_anatomy_aware_direction.md`: Proposed research direction on segmentation-guided, anatomy-aware, and viewpoint-aware representation learning.
   - `2026-09-18_dataset_split_integrity_audit.md`: Forensic audit of ScienceDB, MmCows, and OpenCows2020 split integrity and leakage risks.
@@ -88,7 +90,11 @@ Structured project documentation, defense resources, forensic audits, and offici
 Canonical benchmark data and task registries.
 - `dataset_registry.csv`: Canonical Phase 3 dataset registry cataloging all 13 candidate and benchmark datasets across 28 schema fields, distinguishing scientific roles from local physical machine availability (`local_status_1050ti`).
 - `bcs/`:
-  - `sciencedb_bcs_index.csv`: 53,566-row index for Primary BCS task (100% verified locally in `datasets/bcs/sciencedb_bcs/dataset/`).
+  - `sciencedb_bcs_index.csv`: 53,566-row master index for Primary BCS task aligned with leak-free passage split.
+  - `sciencedb/`:
+    - `train.csv` (37,126 rows), `val.csv` (8,099 rows), `test.csv` (8,341 rows): 100% passage-disjoint split manifests.
+    - `identity_audit.csv`: Complete audit cataloging all 5,662 passage clusters and label distributions.
+    - `split_report.md`: Forensic audit report disproving 10,898 cows claim and documenting de-leakage methodology.
   - `external/ruchay2026/`:
     - `ruchay2026_manifest.csv`: 25,700-sample deterministic manifest of Ruchay et al. 2026 RGB-D BCS benchmark (1,025 cows, 4 sessions, 10 ordinal classes 2.75–5.00).
     - `Dataset.xlsx`: Official metadata file from Zenodo record 20290988.
@@ -110,6 +116,7 @@ Reference materials, prior sample defense posters, and official CSE400 formattin
 Automation utilities for batch experiments, metric aggregation, dataset restoration, and environment setup.
 - `aggregate.py`: Collects training logs and performance metrics across member workspaces and generates consolidated summary tables.
 - `build_dataset_registry.py`: Deterministic generation script for `datasets/dataset_registry.csv` compiling Phase 3 datasets, roles, and local physical status.
+- `build_sciencedb_splits.py`: ScienceDB identity audit, de-leakage grouping (5,662 passage clusters), and stratified train/val/test split builder.
 - `build_leakage_safe_manifest.py`: Audits CattleLameness clips, applies heuristic & perceptual clustering, generates StratifiedGroupKFold assignments, and exports `cattle_lameness_manifest.csv`.
 - `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.
 - `run_all_training.py`: Orchestrates multi-gpu batch execution of all task training scripts.

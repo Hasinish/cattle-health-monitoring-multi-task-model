@@ -17,7 +17,7 @@
 - [x] Build canonical dataset registry (`datasets/dataset_registry.csv` generated; 13 datasets, 28 fields, local physical statuses cataloged)
 - [ ] Download and index MultiCamCows2024 (BLOCKED — upstream download currently unavailable; intended primary Re-ID)
 - [x] Download & restore ScienceDB Cattle BCS raw images (53,566 images across 5 classes restored via 24-thread fast downloader & 7-Zip; index validated)
-- [ ] Validate ScienceDB identity parser and verify cow-disjoint split (`datasets/bcs/sciencedb/`) once raw data restored
+- [x] Validate ScienceDB identity parser and build leakage-safe passage-disjoint split (`datasets/bcs/sciencedb/`; 5,662 passage clusters, 0 leakage)
 - [ ] Rebuild MmCows grouped evaluation protocol with time-block / multi-view protection (`datasets/behavior/mmcows/folds/`)
 - [ ] Create MultiCamCows protocols: tracklet-disjoint, cross-day, cross-camera, open-set
 - [x] Retrieve & index Ruchay 2026 metadata (Zenodo record 20290988 verified; 25,700 samples, 1,025 cows; manifest generated in datasets/bcs/external/ruchay2026/; 77.74 GB raw archives on Zenodo)
@@ -42,7 +42,7 @@
 
 ## Canonical Task & Dataset Stack (Scientific Roles — UNCHANGED)
 - **1. Body Condition Scoring (BCS)**:
-  - **Primary (In-Domain)**: ScienceDB (53,566 RGB images across 5 classes: 3.25–4.25 from 10,898 project-parsed cows)
+  - **Primary (In-Domain)**: ScienceDB (53,566 RGB images across 5 classes: 3.25–4.25 from 5,662 independent passage clusters; true cow IDs not released by publisher)
   - **Primary External Validation**: Ruchay et al. RGB-D BCS (2026) (multi-breed, wide BCS range, different camera geometry)
   - **Secondary External**: Dryad BCS (5,923 DGE images across discrete classes '2'-'6')
 - **2. Behavior Recognition**:
@@ -95,7 +95,7 @@
 ## Current Blockers & Notes
 - Current immediate position is **STEP 1 — Data Registry and Clean Splits**. Model training is strictly blocked until Gate 1 is passed.
 - MultiCamCows2024 official download is blocked upstream by server-side connection resets on `data.bris.ac.uk/datasets/`; remains intended primary Re-ID.
-- ScienceDB raw images are absent on this laptop; required prior to Step 4 BCS baseline training.
+- ScienceDB raw images (53,566 samples) are fully restored and verified locally; leakage-safe 5,662-passage split generated in `datasets/bcs/sciencedb/`.
 - OpenCows2020 is superseded as primary Re-ID by MultiCamCows2024 to eliminate temporal near-duplicate frame leakage and support tracklet/cross-day/cross-camera protocols.
 - PCGrad/GradNorm are deferred to Step 11 as experimental controls, not primary thesis novelty.
 - Do not make changes to roadmap scope without recording justification in `docs/research_log/`.
