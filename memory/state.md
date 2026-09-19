@@ -6,6 +6,7 @@
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
 ## Active Goals & Todo (STEP 1: Data Registry & Clean Splits)
+- **Immediate next action:** Rebuild MmCows grouped evaluation protocol with cow-disjoint folds plus time-block / synchronized multi-view protection.
 - [x] Download & restore 213,686 MmCows behavior images via Hugging Face (213,686 indexed crops valid in `behaviors/`; 427,390 total local JPGs; raw videos purged)
 - [x] Download & index OpenCows2020 (4,736 images across 46 classes via Kagglehub - designated Legacy Baseline)
 - [x] Purge 36+ GB raw behavior videos, zip archives, and cache to reclaim local disk space
@@ -93,7 +94,7 @@
 > **Multi-Environment Awareness**: Physical dataset availability may differ across machines and execution environments (e.g. this local laptop vs. Modal cloud volumes vs. the BRACU Lab Research PC with RTX 5090). Future agents MUST inspect physical files on disk before assuming a dataset is available locally.
 
 ## Current Blockers & Notes
-- Current immediate position is **STEP 1 — Data Registry and Clean Splits**. Model training is strictly blocked until Gate 1 is passed.
+- Current immediate position is **STEP 1 — Data Registry and Clean Splits**. ScienceDB is now passage-disjoint and sequence-safe; the immediate next task is the MmCows grouped evaluation protocol. Model training remains blocked until Gate 1 is passed.
 - MultiCamCows2024 official download is blocked upstream by server-side connection resets on `data.bris.ac.uk/datasets/`; remains intended primary Re-ID.
 - ScienceDB raw images (53,566 samples) are fully restored and verified locally; leakage-safe 5,662-passage split generated in `datasets/bcs/sciencedb/`.
 - OpenCows2020 is superseded as primary Re-ID by MultiCamCows2024 to eliminate temporal near-duplicate frame leakage and support tracklet/cross-day/cross-camera protocols.
