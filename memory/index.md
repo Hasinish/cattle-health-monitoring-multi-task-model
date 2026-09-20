@@ -59,8 +59,11 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `candidate_lameness_datasets_audit.md`: Deep forensic audit of 4 potential alternative lameness datasets (Russello 2026, Wu/NWAFU, whsu2s, Duan 2025).
   - `cattle_lameness_audit_report.md`: Forensic audit of the CattleLameness dataset (50 clips, 42 cattle, ezgif container footprints, cross-split leakage identification).
   - `cattle_lameness_grouping_report.md`: Anti-leakage clustering architecture, multi-clip group resolution (8 groups, 16 clips), and balanced 5-fold StratifiedGroupKFold cross-validation specification.
+  - `phase3_near_duplicate_suspects.csv`: Exhaustive export of cross-partition near-duplicate suspect pairs with 64x64 grayscale MAE scores across ScienceDB, MmCows, and OpenCows2020.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-20_phase3_duplicate_nearduplicate_audit.md`: Automated exact (SHA-256) and perceptual near-duplicate (dHash/aHash, $d \le 6$) audit across all split-bearing Phase 3 datasets, exposing ScienceDB overlapping passage vulnerability.
+  - `2026-09-20_external_benchmarks_hydration_audit.md`: Hydration and verification audit for SideViewCows2026, BECA, and CBVD-5.
   - `2026-09-20_opencows2020_legacy_reid_audit.md`: Forensic audit of OpenCows2020 legacy Re-ID protocol, proving lack of sequence recoverability from provenance, exposing 1,023 frame-index adjacency crossings in legacy random shuffle, and verifying contiguous heuristic rebuild.
   - `2026-09-20_dryad_bcs_discrepancy_audit.md`: Discrepancy audit reconciling 5,923 vs 5,940 physical TIFFs, validating Class 7 as authentic Criollo beef data, and establishing 54-cow census.
   - `2026-09-20_mmcows_grouped_protocol_and_leakage_audit.md`: Audit of MmCows behavior dataset, proving biological cow IDs (16 cows), protecting 87.15% multi-camera synchronized events, and creating 4-Fold GroupKFold suite.
@@ -152,8 +155,10 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `download_all.py`: Master dataset pipeline orchestrating restoration and indexing across all active thesis tasks directly into `datasets/`.
 - `download_sciencedb.py`: Direct downloader, resume-supported streamer, unrar extractor, and preprocessor for ScienceDB Cattle BCS dataset.
 - `fast_download_sciencedb.py`: High-speed multi-threaded (16-stream parallel) resumable chunk downloader and extractor for ScienceDB Cattle BCS dataset to bypass GFW throttling.
-- `download_mmcows.py`: High-speed Hugging Face automated downloader and extractor for MmCows behavior bounding boxes with automatic zip cleanup.
-- `download_opencows.py`: Fast Kagglehub downloader and normalizer for OpenCows2020 identification images.
+- `audit_duplicate_leakage.py`: Reusable automated exact (SHA-256) and perceptual near-duplicate (Multi-Index Hashed 64-bit dHash/aHash) audit tool with pixel MAE verification across partitions.
+- `fast_download_sideviewcows.py`: Multi-threaded (16-thread) resumable chunk downloader and 7-Zip extractor for SideViewCows2026.
+- `fast_download_beca.py`: Multi-threaded (16-thread) resumable chunk downloader and extractor for BECA dataset.
+- `download_cbvd5.py`: Automated Kagglehub downloader and normalizer for CBVD-5 dataset.
 - `billing_monitor.py`: Real-time multi-account Modal billing monitor and dashboard updater. Discovers accounts, pulls metered/billed cost via Modal CLI, calculates remaining credit balances and GPU runtimes, and writes to `BILLING.md`.
 - `modal_billing.py`: Instant one-shot terminal summary runner for Modal billing.
 - `pcgrad.py`: NeurIPS 2020 Projecting Conflicting Gradients implementation for mitigating negative gradient interference across multitask heads.

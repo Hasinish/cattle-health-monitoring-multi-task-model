@@ -29,7 +29,8 @@
 - [x] Download & verify CBVD-5: 887 videos, 206,100 frames, 5,322 annotated label frames across 107 cows 100% downloaded and verified in `datasets/behavior/external/cbvd5/`.
 - [x] Update canonical `datasets/dataset_registry.csv` to mark SideViewCows2026, BECA-D, BECA-L, and CBVD-5 as `AVAILABLE`.
 - [x] Add multi-account Modal billing monitor and live dashboard generator (`scripts/billing_monitor.py`, `scripts/modal_billing.py`, `billing_monitor.py`, `BILLING.md`).
-- [ ] Run automated duplicate / near-duplicate audit across all primary datasets
+- [x] Run automated duplicate / near-duplicate audit across all primary datasets (ScienceDB: 0 exact, 88,944 near-duplicates, overlapping passage vulnerability found - split needs correction; MmCows: 0 exact, 0 cow overlap, clean; OpenCows: 0 exact, 1,239 near-duplicates, legacy baseline only; docs/research_log/2026-09-20_phase3_duplicate_nearduplicate_audit.md)
+- [ ] Correct ScienceDB passage-disjoint split into connected burst blocks prior to Step 4 training
 - [ ] STEP 2: Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md`)
 - [ ] STEP 3: Cache upstream cattle information (bbox, soft_mask, pose_coords, viewpoint)
 - [ ] STEP 4: Clean RGB single-task baselines
@@ -87,9 +88,9 @@
   - Local Status: **NOT present locally**. 0 files/archives.
   - Upstream Status: Current official download attempt blocked upstream (connection reset verified locally and via Modal cloud). Status is **BLOCKED**, not complete.
 - **Ruchay 2026**: Metadata and 25,700-sample manifest verified locally in `datasets/bcs/external/ruchay2026/`; raw 77.74 GB RGB-D zip archives remain on Zenodo (DOI: 10.5281/zenodo.20290988).
-- **CBVD-5**: Not present locally (only a single 21 MB demo clip exists in `workspaces/nusrat/`; does not count as dataset availability).
-- **SideViewCows2026**: Not present locally.
-- **BECA-D / BECA-L**: Not present locally.
+- **CBVD-5**: AVAILABLE locally (`datasets/behavior/external/cbvd5/`; 887 videos, 206,100 frames, 5,322 annotated label frames across 107 cows).
+- **SideViewCows2026**: AVAILABLE locally (`datasets/id/external/sideviewcows2026/`; 80,260 images + 80,260 binary segmentation masks across 110 cows).
+- **BECA-D / BECA-L**: AVAILABLE locally (`datasets/id/external/beca/`; 29,061 images across 5,661 cows in BECA-D and 103 longitudinally tracked cows in BECA-L).
 - **CattleEyeView / SuperAnimal / MOO**: Not present locally.
 - **CattleLameness**: Locally present (50 MP4s in `CattleLameness/Data/` + 9,950 frames in `frames/`). Historical Phase 2 material only; remains strictly excluded from core Phase 3 MTL.
 
@@ -97,19 +98,19 @@
 > **Multi-Environment Awareness**: Physical dataset availability may differ across machines and execution environments (e.g. this local laptop vs. Modal cloud volumes vs. the BRACU Lab Research PC with RTX 5090). Future agents MUST inspect physical files on disk before assuming a dataset is available locally.
 
 ## Last Session (Convo 27375138-e032-457f-a2a6-753e72f4a342)
-- Audited OpenCows2020 source provenance and proved that true sequence / tracklet structure cannot be recovered (frame numbers are unordered crops; consecutive MAE is identical to random pairs within cow).
-- Quantified random within-identity mixing in old `preprocess_id.py` random split: 1,023 frame-index adjacency crossings, 1,760 visually similar pairs, and 3 exact-duplicate pairs crossing train/val.
-- Preserved official `identification-test` set (496 images, 46 cows) 100% untouched.
-- Rebuilt training-side train/val via contiguous frame-index heuristic + duplicate harmonization: Train=3,586, Val=654, Test=496 (total 4,736). Zero exact-duplicate overlap; frame-index adjacency crossings reduced from 1,023 to 48.
-- Explicitly documented that true tracklet/temporal leakage cannot be verified because provenance is unavailable.
-- Created `datasets/id/opencow2020/manifest.csv`, `train.csv`, `val.csv`, `test.csv`, `split_report.md`, updated `id_index.csv`.
-- Created `scripts/build_opencows_splits.py` and standalone verification `scripts/verify_opencows_splits.py` (100% pass).
-- Updated `datasets/dataset_registry.csv` and documented findings in `docs/research_log/2026-09-20_opencows2020_legacy_reid_audit.md`.
+- Downloaded, verified, and extracted all external validation benchmarks: SideViewCows2026 (23.33 GB, 80,260 images + masks), BECA (18.91 GB, 29,061 images), and CBVD-5 (10.84 GB, 887 videos, 206,100 frames, 5,322 annotated label frames). Updated `datasets/dataset_registry.csv` (`AVAILABLE`).
+- Conducted exhaustive exact (SHA-256) and perceptual near-duplicate (dHash/aHash, Hamming dist <= 6) leakage audit across all split-bearing Phase 3 datasets:
+  - **ScienceDB Cattle BCS (53,566 images)**: 0 exact cross-duplicates; 88,944 near-duplicate cross-partition suspects flagged. Discovered critical vulnerability: `GS_1818` (val) and `GS_1823` (train) are consecutive frames of the same video passage shifted by 1 frame (MAE 0.25). ScienceDB split **NEEDS CORRECTION** before Step 4 training by grouping passages into connected burst blocks.
+  - **MmCows Behavior (213,686 images)**: 0 exact cross-duplicates. 100% cow disjointness verified across canonical split (11 train, 2 val, 3 test cows) and all 4 GroupKFold splits (`overlap: set()`). Split is **CLEAN & LOCKED**.
+  - **OpenCows2020 (4,736 images)**: 0 exact cross-duplicates; 1,239 near-duplicates. 100% of suspects cross partitions within the same cow identity due to author video strip and frame randomization. Split is permanently designated **LEGACY BASELINE ONLY**.
+- Documented findings in `docs/research_log/2026-09-20_phase3_duplicate_nearduplicate_audit.md`.
 
 ## Current Blockers & Notes
-- Current immediate position is **STEP 1 — Data Registry and Clean Splits**. ScienceDB (passage-disjoint), MmCows (cow-disjoint), Dryad BCS (cow-disjoint), and OpenCows2020 legacy protocol (contiguous frame-index heuristic, 0 duplicate overlap) are verified and locked.
-- MultiCamCows2024 official download is blocked upstream by server-side connection resets on `data.bris.ac.uk/datasets/`; remains intended primary Re-ID.
-- OpenCows2020 remains strictly a **LEGACY BASELINE ONLY**.
+- Current immediate position is **STEP 1 — Data Registry and Clean Splits**.
+- Step 1 remains open because:
+  1. MultiCamCows2024 remains BLOCKED upstream by server-side connection resets on `data.bris.ac.uk/datasets/`.
+  2. ScienceDB passage-disjoint split requires burst-block clustering correction prior to Step 4 model training.
+- MmCows behavior split (canonical + 4-fold GroupKFold) is 100% clean and locked.
 - Model training remains blocked until Step 1 Gate is fully cleared.
 - Antigravity sync rule: changes mirrored to `D:\custom-antigravity`.
 
