@@ -65,7 +65,15 @@ This is an empirical feasibility audit only; no commitment is made yet to includ
 
 ## 4. Key Scientific Findings & Visual Inspection
 
-A persistent manual visual-validation record covering the contact-sheet review samples was recorded in `artifacts/perception_audit/pose_manual_review.csv` (N=60 reviews across 30 unique samples and 2 models; `review_source = ChatGPT-assisted visual review + human verified`).
+A persistent manual visual-validation record covering the contact-sheet review samples was recorded in `artifacts/perception_audit/pose_manual_review.csv` (N=60 reviews across 30 unique samples and 2 models; `review_source = Human visual review (user), ChatGPT-assisted review organization`).
+
+### Review-Set Selection Bias & Scope Caveat
+The 30 unique visually reviewed samples in the contact sheets are **not representative** of the full datasets across classes and settings:
+* **ScienceDB**: `sample_0001`–`sample_0010` are all from class `BCS_3.25` (rear chute).
+* **MmCows**: `sample_0101`–`sample_0110` are all from class `Behavior_Lying` (overhead/angled CCTV).
+* **SideViewCows2026**: `sample_0201`–`sample_0210` are all from setting `ReID_parlor` (milking parlor side view).
+
+These manual observations must **not** be extrapolated to unreviewed classes or settings (e.g., standing/feeding/walking behaviors in MmCows, barn alleys or snapshot settings in SideView, or other BCS score classes in ScienceDB). The visual inspection conclusions below apply strictly to these reviewed subsets.
 
 ### Ground-Truth & Metric Caveats:
 * **No Keypoint Ground Truth**: ScienceDB, MmCows, and SideViewCows2026 do not provide verified keypoint annotations; therefore, no PCK, OKS, or pose mAP can be claimed.
@@ -73,22 +81,23 @@ A persistent manual visual-validation record covering the contact-sheet review s
 * **Mask Containment is a Geometric Sanity Check**: The `keypoints-inside-mask rate` on SideView confirms keypoints land roughly on cow pixels, not that specific joints are correctly localized.
 
 ### Dataset-Specific Observations:
-1. **ScienceDB (BCS rear view)**:
-   * Visual inspection indicates outputs were frequently anatomically implausible or scattered across the rump and chute bars.
+1. **ScienceDB (BCS rear view — Reviewed Subset: `BCS_3.25`, N=10)**:
+   * In the reviewed 10-sample ScienceDB subset, all non-failure outputs were judged **visually bad and anatomically unreliable** (rated `clearly_wrong` across all 8 returned pairs; 1 upstream detector failure, 1 internal detector failure).
    * Rear-view pose appears weak for capturing cattle anatomy from this perspective. The model hallucinates cranial points (`lower_jaw`, `upper_jaw`) on cows whose heads are occluded behind their bodies.
    * The SuperAnimal schema completely lacks hip/pin/hook bone keypoints (*tuber coxae*, *tuber ischiadicum*) or pelvic depression markers, which are the primary anatomical landmarks needed for BCS.
-   * **Visual Assessment**: Zero-shot pose is not recommended for downstream BCS based on visual inspection.
+   * **Visual Assessment**: In the reviewed 10-sample ScienceDB subset, zero-shot pose is judged anatomically unreliable and not recommended for downstream BCS.
 
-2. **MmCows (Behavior postures)**:
-   * Visual inspection indicates mixed and fragile outputs.
-   * While successful outputs sometimes capture coarse posture for standing or walking cattle, keypoints are frequently unreliable under stall bars and lying occlusions.
-   * Curled lying cows and cows behind heavy stall bars trigger a 22% internal detector failure rate (`pose_detector_failure`).
-   * **Visual Assessment**: Outputs are fragile with significant failure modes on occluded/lying postures.
+2. **MmCows (Behavior postures — Reviewed Subset: `Behavior_Lying`, N=10)**:
+   * The reviewed MmCows visual subset contained only lying examples (`sample_0101`–`sample_0110`).
+   * 5 of the 10 samples (50%) suffered `upstream_localization_failure` because RT-DETR-L missed curled lying cows in low-contrast bedding.
+   * In the 5 samples where pose outputs were returned, outputs were judged **visually bad and anatomically unreliable** in the reviewed examples (rated `clearly_wrong` across all 5 returned pairs). Points collapsed or were distorted under stall bars and straw bedding.
+   * **Visual Assessment**: In the reviewed MmCows lying subset, zero-shot pose outputs were visually bad and anatomically unreliable. These manual observations should not be extrapolated to unreviewed standing/walking behaviors.
 
-3. **SideViewCows2026 (Re-ID)**:
-   * SideView outputs appeared more anatomically plausible than ScienceDB or MmCows, aligning generally with visible body contours (though occasional drift and background limb errors remain).
+3. **SideViewCows2026 (Re-ID — Reviewed Subset: `ReID_parlor`, N=10)**:
+   * The reviewed SideView subset contained only parlor examples (`sample_0201`–`sample_0210`).
+   * SideView was the **only group that looked genuinely plausible** under human visual inspection. Across returned outputs, 12 reviews were rated `plausible` and 6 rated `partially_plausible` (minor limb drift onto parlor stall rails), with 2 detector failures on a partial cow entering the chute.
    * Geometric sanity check confirms 72.7% (HRNet) and 77.2% (ResNet) of predicted points fall within the ground-truth cow mask.
-   * **Visual Assessment**: SideView outputs appeared more anatomically plausible and are promising for downstream ablation; downstream utility must still be tested in Step 6.
+   * **Visual Assessment**: SideView parlor outputs appeared visually plausible and are promising for downstream ablation; downstream utility must still be tested in Step 6, and parlor observations should not be extrapolated to unreviewed barn/snapshot settings.
 
 4. **Model Comparison**:
    * **ResNet-50 vs HRNet-W32**: ResNet-50 produced higher raw confidence and slightly higher mask containment, but these do not establish higher pose accuracy. Both share identical 81.0% operational success rates. ResNet-50 is designated as the provisional candidate for Step 6 pose ablation.

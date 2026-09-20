@@ -1,61 +1,61 @@
 sample_id,dataset,model,review_source,visual_rating,notes
-sample_0001,ScienceDB,HRNet-W32,ChatGPT-assisted visual review + human verified,partially_plausible,Coarse rear limb and tail base roughly placed; cranial and facial keypoints misplaced on dorsal rump.
-sample_0001,ScienceDB,ResNet-50,ChatGPT-assisted visual review + human verified,partially_plausible,Slightly higher raw confidence on rear limbs; cranial points remain anatomically implausible on rear view.
-sample_0002,ScienceDB,HRNet-W32,ChatGPT-assisted visual review + human verified,clearly_wrong,Keypoints scattered erratically across rump and chute bars; facial points placed on rear anatomy.
-sample_0002,ScienceDB,ResNet-50,ChatGPT-assisted visual review + human verified,clearly_wrong,Higher confidence but anatomically implausible keypoint placement on rear-facing cow.
-sample_0003,ScienceDB,HRNet-W32,ChatGPT-assisted visual review + human verified,partially_plausible,Hindquarters roughly localized; cranial points placed implausibly on dorsal ridge.
-sample_0003,ScienceDB,ResNet-50,ChatGPT-assisted visual review + human verified,partially_plausible,Similar coarse rear localization; lacking pelvic anatomical markers needed for BCS.
-sample_0004,ScienceDB,HRNet-W32,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L did not detect cow in rear-view chute; no crop provided.
-sample_0004,ScienceDB,ResNet-50,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L did not detect cow in rear-view chute; no crop provided.
-sample_0005,ScienceDB,HRNet-W32,ChatGPT-assisted visual review + human verified,pose_detector_failure,SuperAnimal internal Faster R-CNN detector found 0 cows inside crop.
-sample_0005,ScienceDB,ResNet-50,ChatGPT-assisted visual review + human verified,pose_detector_failure,SuperAnimal internal Faster R-CNN detector found 0 cows inside crop.
-sample_0006,ScienceDB,HRNet-W32,ChatGPT-assisted visual review + human verified,partially_plausible,Rear limbs roughly tracked; cranial points drift onto upper back.
-sample_0006,ScienceDB,ResNet-50,ChatGPT-assisted visual review + human verified,partially_plausible,Rear limb positions plausible; cranial points remain anatomically inconsistent.
-sample_0007,ScienceDB,HRNet-W32,ChatGPT-assisted visual review + human verified,clearly_wrong,Severe perspective collapse; keypoints clustered erratically with low confidence.
-sample_0007,ScienceDB,ResNet-50,ChatGPT-assisted visual review + human verified,clearly_wrong,Higher confidence but scattered placements; fails to capture rear anatomy.
-sample_0008,ScienceDB,HRNet-W32,ChatGPT-assisted visual review + human verified,clearly_wrong,Keypoints scattered across chute frame and floor; anatomically implausible.
-sample_0008,ScienceDB,ResNet-50,ChatGPT-assisted visual review + human verified,clearly_wrong,Points scattered on metal chute and background; implausible.
-sample_0009,ScienceDB,HRNet-W32,ChatGPT-assisted visual review + human verified,partially_plausible,Hind leg and tail roughly localized; dorsal and cranial points drift.
-sample_0009,ScienceDB,ResNet-50,ChatGPT-assisted visual review + human verified,partially_plausible,Coarse rear structure present; lacks hook/pin bone keypoints for BCS.
-sample_0010,ScienceDB,HRNet-W32,ChatGPT-assisted visual review + human verified,clearly_wrong,Severe keypoint displacement across rump; cranial points hallucinated on back.
-sample_0010,ScienceDB,ResNet-50,ChatGPT-assisted visual review + human verified,clearly_wrong,Keypoints scattered across dorsal area; anatomically implausible for BCS.
-sample_0101,MmCows,HRNet-W32,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L missed curled lying cow on straw bedding.
-sample_0101,MmCows,ResNet-50,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L missed curled lying cow on straw bedding.
-sample_0102,MmCows,HRNet-W32,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L missed curled lying cow on straw bedding.
-sample_0102,MmCows,ResNet-50,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L missed curled lying cow on straw bedding.
-sample_0103,MmCows,HRNet-W32,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L missed curled lying cow in dark cubicle.
-sample_0103,MmCows,ResNet-50,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L missed curled lying cow in dark cubicle.
-sample_0104,MmCows,HRNet-W32,ChatGPT-assisted visual review + human verified,partially_plausible,Coarse lying posture captured; lower limbs partially occluded by straw.
-sample_0104,MmCows,ResNet-50,ChatGPT-assisted visual review + human verified,partially_plausible,Coarse lying body orientation captured; limb precision limited by bedding.
-sample_0105,MmCows,HRNet-W32,ChatGPT-assisted visual review + human verified,clearly_wrong,Keypoints collapsed and scattered erratically across cubicle floor.
-sample_0105,MmCows,ResNet-50,ChatGPT-assisted visual review + human verified,clearly_wrong,Points scattered across straw bedding; fails to represent lying body.
-sample_0106,MmCows,HRNet-W32,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L missed lying cow in low-contrast cubicle.
-sample_0106,MmCows,ResNet-50,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L missed lying cow in low-contrast cubicle.
-sample_0107,MmCows,HRNet-W32,ChatGPT-assisted visual review + human verified,partially_plausible,Lying body roughly tracked; limb points partially drifted behind metal stall bars.
-sample_0107,MmCows,ResNet-50,ChatGPT-assisted visual review + human verified,partially_plausible,Coarse lying posture captured; stall bar occlusions degrade limb keypoints.
-sample_0108,MmCows,HRNet-W32,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L missed lying cow on straw bedding.
-sample_0108,MmCows,ResNet-50,ChatGPT-assisted visual review + human verified,upstream_localization_failure,RT-DETR-L missed lying cow on straw bedding.
-sample_0109,MmCows,HRNet-W32,ChatGPT-assisted visual review + human verified,partially_plausible,Coarse spine and body orientation captured; limbs partially occluded by divider.
-sample_0109,MmCows,ResNet-50,ChatGPT-assisted visual review + human verified,partially_plausible,Main body posture captured; limb points unreliable under stall occlusion.
-sample_0110,MmCows,HRNet-W32,ChatGPT-assisted visual review + human verified,clearly_wrong,Low confidence; keypoints placed erratically across bedding without coherent posture.
-sample_0110,MmCows,ResNet-50,ChatGPT-assisted visual review + human verified,clearly_wrong,Points scattered across cubicle bedding; fails to reflect anatomy.
-sample_0201,SideViewCows2026,HRNet-W32,ChatGPT-assisted visual review + human verified,plausible,Good side-view limb, spine, and cranial alignment; well within mask contour.
-sample_0201,SideViewCows2026,ResNet-50,ChatGPT-assisted visual review + human verified,plausible,Strong side-view skeletal structure; hooves, knees, and spine well aligned.
-sample_0202,SideViewCows2026,HRNet-W32,ChatGPT-assisted visual review + human verified,plausible,Clean side-view anatomy; legs and dorsal line properly positioned.
-sample_0202,SideViewCows2026,ResNet-50,ChatGPT-assisted visual review + human verified,plausible,High confidence; anatomically coherent limb and dorsal keypoints.
-sample_0203,SideViewCows2026,HRNet-W32,ChatGPT-assisted visual review + human verified,partially_plausible,Coarse body structure captured; minor leg drift onto milking stall frame.
-sample_0203,SideViewCows2026,ResNet-50,ChatGPT-assisted visual review + human verified,partially_plausible,Coarse structure captured; slight limb displacement near stall gate.
-sample_0204,SideViewCows2026,HRNet-W32,ChatGPT-assisted visual review + human verified,plausible,Strong anatomical coherence across legs, spine, and head.
-sample_0204,SideViewCows2026,ResNet-50,ChatGPT-assisted visual review + human verified,plausible,Clear side-view skeleton; limbs and dorsal line well positioned.
-sample_0205,SideViewCows2026,HRNet-W32,ChatGPT-assisted visual review + human verified,plausible,Anatomically sound side-view structure; legs and spine aligned.
-sample_0205,SideViewCows2026,ResNet-50,ChatGPT-assisted visual review + human verified,plausible,Plausible side-view keypoints; high agreement with cow body contour.
-sample_0206,SideViewCows2026,HRNet-W32,ChatGPT-assisted visual review + human verified,partially_plausible,Body and front legs aligned; hind limb points show minor background drift.
-sample_0206,SideViewCows2026,ResNet-50,ChatGPT-assisted visual review + human verified,partially_plausible,Main body structure captured; minor hind leg drift onto background floor.
-sample_0207,SideViewCows2026,HRNet-W32,ChatGPT-assisted visual review + human verified,partially_plausible,Distant parlor view; coarse posture captured but limb points show lower precision.
-sample_0207,SideViewCows2026,ResNet-50,ChatGPT-assisted visual review + human verified,partially_plausible,Coarse side posture captured; lower limb precision reduced by distance.
-sample_0208,SideViewCows2026,HRNet-W32,ChatGPT-assisted visual review + human verified,pose_detector_failure,SuperAnimal internal detector failed on partial cow entering parlor chute.
-sample_0208,SideViewCows2026,ResNet-50,ChatGPT-assisted visual review + human verified,pose_detector_failure,SuperAnimal internal detector failed on partial cow entering parlor chute.
-sample_0209,SideViewCows2026,HRNet-W32,ChatGPT-assisted visual review + human verified,plausible,Clean side-view anatomy; hooves, knees, and back well placed.
-sample_0209,SideViewCows2026,ResNet-50,ChatGPT-assisted visual review + human verified,plausible,Strong side-view skeletal structure; limbs and dorsal line well aligned.
-sample_0210,SideViewCows2026,HRNet-W32,ChatGPT-assisted visual review + human verified,plausible,Strong anatomical structure across full side profile; hooves and spine well aligned.
-sample_0210,SideViewCows2026,ResNet-50,ChatGPT-assisted visual review + human verified,plausible,Anatomically coherent keypoint structure; high overlap with GT mask contour.
+sample_0001,ScienceDB,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable on rear view; cranial and facial points placed implausibly on dorsal rump.
+sample_0001,ScienceDB,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable on rear view; higher raw confidence does not prevent cranial points placing on rump.
+sample_0002,ScienceDB,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; points scattered erratically across rump and chute bars.
+sample_0002,ScienceDB,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; higher confidence but scattered and implausible keypoints on rear-facing cow.
+sample_0003,ScienceDB,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; cranial points placed implausibly on dorsal ridge; lacks pelvic BCS landmarks.
+sample_0003,ScienceDB,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; lacks pelvic anatomical markers needed for BCS; points placed implausibly.
+sample_0004,ScienceDB,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L did not detect cow in rear-view chute; no crop provided.
+sample_0004,ScienceDB,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L did not detect cow in rear-view chute; no crop provided.
+sample_0005,ScienceDB,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,pose_detector_failure,SuperAnimal internal Faster R-CNN detector found 0 cows inside crop.
+sample_0005,ScienceDB,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,pose_detector_failure,SuperAnimal internal Faster R-CNN detector found 0 cows inside crop.
+sample_0006,ScienceDB,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable on rear view; cranial points drift onto upper back.
+sample_0006,ScienceDB,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable on rear view; cranial points remain anatomically inconsistent.
+sample_0007,ScienceDB,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; severe perspective collapse and scattered points.
+sample_0007,ScienceDB,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; scattered placements fail to capture rear anatomy.
+sample_0008,ScienceDB,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; points scattered across chute frame and floor.
+sample_0008,ScienceDB,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; points scattered on metal chute and background.
+sample_0009,ScienceDB,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; dorsal/cranial points drift; lacks pelvic BCS landmarks.
+sample_0009,ScienceDB,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; lacks hook/pin bone keypoints for BCS.
+sample_0010,ScienceDB,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; severe keypoint displacement across dorsal rump.
+sample_0010,ScienceDB,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; keypoints scattered across dorsal area without coherent anatomy.
+sample_0101,MmCows,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L missed curled lying cow on straw bedding.
+sample_0101,MmCows,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L missed curled lying cow on straw bedding.
+sample_0102,MmCows,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L missed curled lying cow on straw bedding.
+sample_0102,MmCows,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L missed curled lying cow on straw bedding.
+sample_0103,MmCows,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L missed curled lying cow in dark cubicle.
+sample_0103,MmCows,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L missed curled lying cow in dark cubicle.
+sample_0104,MmCows,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable in reviewed lying sample; points collapsed and distorted by straw bedding.
+sample_0104,MmCows,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable in reviewed lying sample; limb points distorted and bedding-occluded.
+sample_0105,MmCows,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; points collapsed and scattered across cubicle floor.
+sample_0105,MmCows,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; points scattered across straw bedding without representing lying body.
+sample_0106,MmCows,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L missed lying cow in low-contrast cubicle.
+sample_0106,MmCows,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L missed lying cow in low-contrast cubicle.
+sample_0107,MmCows,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable in reviewed lying sample; points heavily distorted behind stall bars and bedding.
+sample_0107,MmCows,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable in reviewed lying sample; stall bar occlusions severely degrade limb keypoints.
+sample_0108,MmCows,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L missed lying cow on straw bedding.
+sample_0108,MmCows,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,upstream_localization_failure,RT-DETR-L missed lying cow on straw bedding.
+sample_0109,MmCows,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable in reviewed lying sample; points unreliable and distorted under stall occlusion.
+sample_0109,MmCows,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable in reviewed lying sample; limb points unreliable under stall occlusion.
+sample_0110,MmCows,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; points placed erratically across bedding without coherent anatomy.
+sample_0110,MmCows,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,clearly_wrong,Visually bad / anatomically unreliable; points scattered across cubicle bedding.
+sample_0201,SideViewCows2026,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view limb, spine, and cranial alignment; well within mask contour.
+sample_0201,SideViewCows2026,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view skeletal structure; hooves, knees, and spine well aligned.
+sample_0202,SideViewCows2026,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view anatomy; legs and dorsal line properly positioned.
+sample_0202,SideViewCows2026,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view anatomy; coherent limb and dorsal keypoints.
+sample_0203,SideViewCows2026,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,partially_plausible,Coarse body structure captured; minor leg drift onto milking stall frame.
+sample_0203,SideViewCows2026,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,partially_plausible,Coarse structure captured; slight limb displacement near stall gate.
+sample_0204,SideViewCows2026,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view anatomy across legs, spine, and head.
+sample_0204,SideViewCows2026,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view skeleton; limbs and dorsal line well positioned.
+sample_0205,SideViewCows2026,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view anatomy; legs and spine aligned.
+sample_0205,SideViewCows2026,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view keypoints; high agreement with cow body contour.
+sample_0206,SideViewCows2026,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,partially_plausible,Body and front legs aligned; hind limb points show minor background drift.
+sample_0206,SideViewCows2026,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,partially_plausible,Main body structure captured; minor hind leg drift onto background floor.
+sample_0207,SideViewCows2026,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,partially_plausible,Distant parlor view; coarse posture captured but limb points show lower precision.
+sample_0207,SideViewCows2026,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,partially_plausible,Coarse side posture captured; lower limb precision reduced by distance.
+sample_0208,SideViewCows2026,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,pose_detector_failure,SuperAnimal internal detector failed on partial cow entering parlor chute.
+sample_0208,SideViewCows2026,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,pose_detector_failure,SuperAnimal internal detector failed on partial cow entering parlor chute.
+sample_0209,SideViewCows2026,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view anatomy; hooves, knees, and back well placed.
+sample_0209,SideViewCows2026,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view skeletal structure; limbs and dorsal line well aligned.
+sample_0210,SideViewCows2026,HRNet-W32,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view anatomy across full side profile; hooves and spine well aligned.
+sample_0210,SideViewCows2026,ResNet-50,Human visual review (user), ChatGPT-assisted review organization,plausible,Genuinely plausible side-view keypoints; high overlap with GT mask contour.
