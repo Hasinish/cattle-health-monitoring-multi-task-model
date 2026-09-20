@@ -389,23 +389,27 @@ SideViewCows2026 provides verified binary ground-truth segmentation masks. We co
 
 ---
 
-### 3.6 Dataset-Specific Findings
+### 3.6 Dataset-Specific Findings & Visual Inspection
+
+A persistent manual visual-validation record covering the contact-sheet review samples was recorded in `artifacts/perception_audit/pose_manual_review.csv` (N=60 reviews across 30 unique samples and 2 models; `review_source = ChatGPT vision review + human spot-check pending`).
 
 #### 1. ScienceDB — Body Condition Scoring (BCS)
-* **Rear-View Perspective Shift**: ScienceDB consists of rear-view chute images where the cow faces away from the camera. SuperAnimal-Quadruped was trained almost exclusively on side-profile and front-quarter quadrupeds.
-* **Low Confidence & Hallucination**: HRNet-W32 produces a mean raw confidence of only **0.1324** (with 79.0% of keypoints falling below the 0.2 analysis threshold). The highest-confidence points predicted by HRNet are muzzle parts (`lower_jaw`: 0.271, `upper_jaw`: 0.199) on cows whose heads are completely occluded by their own backs.
+* **Rear-View Perspective Shift**: ScienceDB consists of rear-view chute images where the cow faces away from the camera. SuperAnimal-Quadruped was trained predominantly on side-profile and front-quarter quadrupeds.
+* **Low Confidence & Hallucination**: HRNet-W32 produces a mean raw confidence of only **0.1324** (with 79.0% of keypoints falling below the 0.2 analysis threshold). The highest-confidence points predicted by HRNet are muzzle parts (`lower_jaw`: 0.271, `upper_jaw`: 0.199) on cows whose heads are completely occluded by their own bodies.
+* **Visual Inspection Observations**: Visual inspection indicates that outputs were frequently anatomically implausible or scattered across the rump and chute frame. Rear-view pose appears weak for capturing cattle anatomy from this perspective.
 * **Missing Anatomical Landmarks for BCS**: Crucially, the SuperAnimal schema **does not contain hip/pin/hook bone keypoints** (*tuber coxae*, *tuber ischiadicum*) or pelvic depression markers, which are the primary anatomical features used by veterinarians to assess Body Condition Score.
-* **Conclusion for BCS**: Zero-shot quadruped pose **does NOT provide meaningful anatomical information for rear-view cattle BCS**.
+* **Conclusion for BCS**: Visual inspection suggests that zero-shot quadruped pose outputs are frequently anatomically implausible on rear-view chute images and do not capture relevant BCS landmarks.
 
 #### 2. MmCows — Behavior Recognition
 * **Detector Sensitivity to Occlusion & Posture**: 22% of MmCows images suffered `pose_detector_failure` because SuperAnimal's internal detector failed to find the cow inside the RT-DETR-L crop. These failures occurred predominantly in curled lying cows on straw bedding and cows heavily occluded by vertical stall bars.
-* **Standing vs. Non-Standard Postures**: For standing and walking cows, keypoint coordinates for hooves, knees, and spine are stable (mean confidence 0.2287 HRNet, 0.3607 ResNet). For feeding head-down, licking, and lying postures, keypoint confidence drops noticeably.
-* **Conclusion for Behavior**: Zero-shot pose captures broad posture when the cow is fully visible and standing, but exhibits significant failure rates on curled/occluded behaviors.
+* **Visual Inspection Observations**: Visual inspection indicates mixed and fragile outputs. While successful outputs sometimes capture coarse posture for standing or walking cattle, keypoints are frequently unreliable under stall bars and lying occlusions.
+* **Conclusion for Behavior**: Zero-shot pose captures broad posture when the cow is fully visible and standing, but outputs are fragile and exhibit significant failure rates on curled/occluded behaviors.
 
 #### 3. SideViewCows2026 — Cow Re-ID
-* **Strong Side-View Geometric Consistency**: Side-view parlor and barn images match SuperAnimal's training distribution well. Mean raw confidence reached **0.4093** (HRNet) and **0.4838** (ResNet).
-* **Mask Sanity Check**: **72.7% (HRNet)** and **77.2% (ResNet)** of predicted keypoints fall inside the verified ground-truth cow segmentation mask. Keypoints along the dorsal ridge (`back_middle`, `back_base`) and limbs (`front_right_paw`, `front_right_thai`, `back_left_paw`) show high consistency.
-* **Conclusion for Re-ID**: Pose provides stable side-view anatomical structural information that could potentially complement appearance features. Whether this structural signal improves downstream Re-ID performance requires formal ablation in Step 6.
+* **Side-View Visual Plausibility**: Side-view parlor and barn images match SuperAnimal's training distribution more closely. Mean raw confidence reached **0.4093** (HRNet) and **0.4838** (ResNet).
+* **Geometric Sanity Check**: **72.7% (HRNet)** and **77.2% (ResNet)** of predicted keypoints fall inside the verified ground-truth cow segmentation mask. This is strictly a geometric sanity check, not a measure of anatomical pose accuracy.
+* **Visual Inspection Observations**: SideView outputs appeared more anatomically plausible than ScienceDB or MmCows, with limb and spine keypoints generally aligning with visible body contours, though occasional drift and background limb errors remain.
+* **Conclusion for Re-ID**: SideView outputs appeared more anatomically plausible and are promising for downstream ablation; however, downstream utility must still be tested in Step 6.
 
 ---
 
@@ -414,7 +418,8 @@ SideViewCows2026 provides verified binary ground-truth segmentation masks. We co
 1. **Failure Robustness**: Both backbones achieved an identical **81.0% operational success rate** (243/300) and **0% technical crashes**, governed by the upstream RT-DETR-L detector (5.7% misses) and the internal Faster R-CNN detector (13.3% misses).
 2. **Confidence Calibration**: ResNet-50 consistently outputs higher raw confidence scores than HRNet-W32 across all three datasets (ScienceDB: 0.2878 vs 0.1324; MmCows: 0.3607 vs 0.2287; SideView: 0.4838 vs 0.4093).
 3. **Geometric Containment**: ResNet-50 achieved a slightly higher `keypoints-inside-mask rate` on SideView (77.2% vs 72.7%).
-4. **Latency & VRAM**: Both models execute in ~490–520 ms per crop on local hardware (GTX 1050 Ti) with ~1.5 GB peak VRAM.
+4. **Accuracy Caveat**: ResNet-50 produced higher raw confidence and slightly higher mask containment, but these do not establish higher pose accuracy. Raw confidence is not pose accuracy, and keypoints-inside-mask is only a geometric sanity check.
+5. **Latency & VRAM**: Both models execute in ~490–520 ms per crop on local hardware (GTX 1050 Ti) with ~1.5 GB peak VRAM.
 
 ---
 
@@ -422,10 +427,12 @@ SideViewCows2026 provides verified binary ground-truth segmentation masks. We co
 
 **VERDICT: ZERO-SHOT POSE FEASIBILITY IS TASK-DEPENDENT (PARTIAL).**
 
-1. **BCS (ScienceDB)**: **UNSUITABLE / NOT RECOMMENDED**. Zero-shot quadruped pose models do not generalize to rear-view chute perspectives and lack the pelvic/lumbar anatomical keypoints (*tuber coxae*, *tuber ischiadicum*) necessary for Body Condition Scoring.
-2. **Behavior (MmCows)**: **MARGINAL**. Posture keypoints are detectable for standing/walking cattle, but suffer a 22% internal detector failure rate on lying and stall-occluded cows.
-3. **Re-ID (SideViewCows2026)**: **FEASIBLE**. Side-view anatomical keypoints are stable and exhibit >77% mask containment.
-4. **Model Selection**: **ResNet-50** is designated as the preferred pose backbone over HRNet-W32 due to higher raw confidence and better geometric mask containment.
-5. **Gate Status**: Step 2.3 is complete. Proceed to Step 2.4 (Viewpoint / Orientation feasibility audit) per `phase3_canonical_roadmap.md`.
+1. **Ground-Truth Limitation**: ScienceDB, MmCows, and SideViewCows2026 do not provide verified keypoint ground truth. Therefore, no PCK, OKS, or pose mAP can be claimed. Raw confidence is NOT pose accuracy, and keypoints-inside-mask rate is strictly a geometric sanity check.
+2. **BCS (ScienceDB)**: **NOT RECOMMENDED FOR DOWNSTREAM BCS BASED ON VISUAL INSPECTION**. Visual inspection indicates outputs are frequently anatomically implausible on rear views, and keypoints relevant to veterinary BCS (pins, hooks) are absent from the schema.
+3. **Behavior (MmCows)**: **MIXED / FRAGILE**. Visual inspection suggests coarse posture is sometimes captured, but keypoints are frequently unreliable under stall bars and lying occlusions, with a 22% internal detector failure rate.
+4. **Re-ID (SideViewCows2026)**: **PROVISIONAL / PROMISING FOR ABLATION**. SideView outputs appeared more anatomically plausible and show ~73–77% mask containment (geometric sanity check). Whether pose actually benefits Re-ID must be tested in Step 6 ablation.
+5. **Model Selection**: ResNet-50 produced higher raw confidence and slightly higher mask containment, making it the provisional candidate for Step 6 pose ablation; however, higher confidence and mask containment do not establish higher pose accuracy.
+6. **Gate Status**: Step 2.3 is complete. Proceed to Step 2.4 (Viewpoint / Orientation feasibility audit) per `phase3_canonical_roadmap.md`.
+
 
 

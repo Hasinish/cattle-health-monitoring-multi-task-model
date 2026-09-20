@@ -63,32 +63,44 @@ This is an empirical feasibility audit only; no commitment is made yet to includ
 
 ---
 
-## 4. Key Scientific Findings
+## 4. Key Scientific Findings & Visual Inspection
 
+A persistent manual visual-validation record covering the contact-sheet review samples was recorded in `artifacts/perception_audit/pose_manual_review.csv` (N=60 reviews across 30 unique samples and 2 models; `review_source = ChatGPT vision review + human spot-check pending`).
+
+### Ground-Truth & Metric Caveats:
+* **No Keypoint Ground Truth**: ScienceDB, MmCows, and SideViewCows2026 do not provide verified keypoint annotations; therefore, no PCK, OKS, or pose mAP can be claimed.
+* **Raw Confidence != Accuracy**: Higher confidence indicates internal model activation strength, not ground-truth anatomical accuracy.
+* **Mask Containment is a Geometric Sanity Check**: The `keypoints-inside-mask rate` on SideView confirms keypoints land roughly on cow pixels, not that specific joints are correctly localized.
+
+### Dataset-Specific Observations:
 1. **ScienceDB (BCS rear view)**:
-   * Zero-shot pose fails to capture meaningful anatomical markers for rear-view cattle.
-   * Keypoints suffer low confidence (mean 0.1324 HRNet, 0.2878 ResNet) and the model hallucinates cranial points (`lower_jaw`, `upper_jaw`) on cows whose heads are occluded behind their bodies.
-   * The SuperAnimal schema completely lacks hip/pin/hook bone keypoints (*tuber coxae*, *tuber ischiadicum*) or pelvic hollow markers, which are required for BCS assessment.
-   * **Verdict**: Zero-shot pose is NOT usable for BCS.
+   * Visual inspection indicates outputs were frequently anatomically implausible or scattered across the rump and chute bars.
+   * Rear-view pose appears weak for capturing cattle anatomy from this perspective. The model hallucinates cranial points (`lower_jaw`, `upper_jaw`) on cows whose heads are occluded behind their bodies.
+   * The SuperAnimal schema completely lacks hip/pin/hook bone keypoints (*tuber coxae*, *tuber ischiadicum*) or pelvic depression markers, which are the primary anatomical landmarks needed for BCS.
+   * **Visual Assessment**: Zero-shot pose is not recommended for downstream BCS based on visual inspection.
 
 2. **MmCows (Behavior postures)**:
-   * Standing and walking cows yield coherent limb and spine keypoints.
+   * Visual inspection indicates mixed and fragile outputs.
+   * While successful outputs sometimes capture coarse posture for standing or walking cattle, keypoints are frequently unreliable under stall bars and lying occlusions.
    * Curled lying cows and cows behind heavy stall bars trigger a 22% internal detector failure rate (`pose_detector_failure`).
-   * **Verdict**: Marginal utility; limited by detector occlusion failures.
+   * **Visual Assessment**: Outputs are fragile with significant failure modes on occluded/lying postures.
 
 3. **SideViewCows2026 (Re-ID)**:
-   * Side views closely match SuperAnimal training distributions, yielding high confidence (mean 0.4838 ResNet).
+   * SideView outputs appeared more anatomically plausible than ScienceDB or MmCows, aligning generally with visible body contours (though occasional drift and background limb errors remain).
    * Geometric sanity check confirms 72.7% (HRNet) and 77.2% (ResNet) of predicted points fall within the ground-truth cow mask.
-   * **Verdict**: Feasible for side-view structural feature extraction; downstream benefit to Re-ID remains to be ablated in Step 6.
+   * **Visual Assessment**: SideView outputs appeared more anatomically plausible and are promising for downstream ablation; downstream utility must still be tested in Step 6.
 
-4. **Model Selection**:
-   * **ResNet-50** outperforms HRNet-W32 in confidence calibration and geometric mask containment, while matching operational success (81.0%).
+4. **Model Comparison**:
+   * **ResNet-50 vs HRNet-W32**: ResNet-50 produced higher raw confidence and slightly higher mask containment, but these do not establish higher pose accuracy. Both share identical 81.0% operational success rates. ResNet-50 is designated as the provisional candidate for Step 6 pose ablation.
 
 ---
 
 ## 5. Artifacts & Outputs
 
 * Script: `scripts/audit_pose_feasibility.py`
+* Manual Review Record: `artifacts/perception_audit/pose_manual_review.csv` (N=60 reviews across 30 samples)
+* Contact Sheets: `docs/audits/assets/pose_visual_review/*.jpg`
+* Visual Review Index: `docs/audits/phase3_pose_visual_review_index.md`
 * Results CSVs:
   - `artifacts/perception_audit/pose_results_expanded_hrnet_w32.csv`
   - `artifacts/perception_audit/pose_results_expanded_resnet_50.csv`
@@ -97,3 +109,4 @@ This is an empirical feasibility audit only; no commitment is made yet to includ
   - `artifacts/perception_audit/pose_keypoints_expanded_resnet_50.csv`
 * Schema JSON: `artifacts/perception_audit/superanimal_quadruped_schema.json`
 * Composites: `docs/audits/assets/perception_audit/pose_*.jpg`
+
