@@ -1,3 +1,13 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 1 MmCows vs CBVD-5 Primary Behavior Assessment)
+
+- Conducted exhaustive forensic comparison of MmCows vs. CBVD-5 across 10 dimensions to address user visual quality concerns regarding blurry MmCows crops.
+- Proved that while CBVD-5 video frames are 1080p, its individual cow bounding boxes are 2.5x smaller in area (median 156x167 px) than MmCows crops (median 390x370 px).
+- Proved CBVD-5 contains ZERO biological cow ID annotations (actor ID = 1 hardcoded everywhere), making cow-disjoint evaluation impossible and precluding identity-vs-behavior shortcut analysis.
+- Identified that CBVD-5 lacks walking and licking behaviors, uses multi-label rumination/posture combinations, and exhibits 100% video overlap between official val and test splits.
+- Generated 14-pair side-by-side visual comparison pack (`docs/audits/phase3_behavior_dataset_manual_comparison.md`) with 42 review images (1.0 MB) in `docs/audits/assets/behavior_dataset_comparison/`.
+- Published formal research log (`docs/research_log/2026-09-20_mmcows_vs_cbvd5_primary_behavior_assessment.md`).
+- Decisively recommended Option A: Retain MmCows as Primary and CBVD-5 as External Validation. Step 1 remains in progress pending user decision.
+
 # Session Summary — 2026-09-20 (Phase 3 Manual Visual Verification Pack Generated)
 
 - Engineered `scripts/build_manual_dataset_visual_verification.py` to create a deterministic manual human visual inspection pack across ScienceDB (BCS), MmCows (Behavior), and SideViewCows2026 (Re-ID) prior to beginning Step 2.

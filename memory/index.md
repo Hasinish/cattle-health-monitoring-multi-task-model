@@ -62,8 +62,11 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `phase3_near_duplicate_suspects.csv`: Exhaustive export of cross-partition near-duplicate suspect pairs with 64x64 grayscale MAE scores across ScienceDB, MmCows, and OpenCows2020.
   - `phase3_manual_dataset_visual_verification.md`: Curated 48-check visual verification document embedding resized thumbnails and 3-panel composites for human visual sanity checking across ScienceDB, MmCows, and SideViewCows2026.
   - `assets/manual_dataset_verification/`: Directory of 48 compact, Git-friendly review images (1.4 MB total) including 16 ScienceDB rear-view thumbnails, 16 MmCows behavior crops, and 16 SideView 3-panel composites (`[RGB | Binary Mask | Contour Overlay]`).
+  - `phase3_behavior_dataset_manual_comparison.md`: 14-pair side-by-side manual visual comparison document evaluating MmCows vs. CBVD-5 across matching/unique behaviors, crop resolutions, and scene context.
+  - `assets/behavior_dataset_comparison/`: Directory of 42 review images (1.0 MB total) containing paired MmCows crops, CBVD-5 crops, and full-scene 1080p thumbnails with bounding box overlays.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-20_mmcows_vs_cbvd5_primary_behavior_assessment.md`: Forensic assessment comparing MmCows and CBVD-5 for primary behavior role across 10 dimensions, proving CBVD has zero cow IDs, median 156x167px crops, lacks walking/licking, and recommending Option A (keep MmCows primary, preserve CBVD-5 as external).
   - `2026-09-20_sideviewcows2026_protocol_and_leakage_audit.md`: Protocol generation and leakage audit for SideViewCows2026, building 4 canonical protocols, recovering 3,604 recording sessions, verifying 0 duplicate and 0 adjacent-frame leakage, and clearing Gate 1.
   - `2026-09-20_multicam_contingency_assessment.md`: Forensic assessment of MultiCamCows2024 upstream block, evaluating SideViewCows2026, BECA-L, BECA-D, and OpenCows2020, and adopting SideViewCows2026 as primary Re-ID benchmark under approved contingency.
   - `2026-09-20_sciencedb_burst_group_split_repair.md`: Forensic repair of ScienceDB Cattle BCS split into 5,653 unified burst groups, eliminating 1-frame-shifted video burst leakage (e.g., `GS_1818` vs `GS_1823`) with verified 0 cross-burst overlap.
@@ -176,6 +179,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `repair_sciencedb_splits.py`: ScienceDB burst-group repair script merging 1-frame-shifted video passages into 5,653 connected burst groups via DSU and creating 70/15/15 stratified split.
 - `build_sideview_reid_protocols.py`: SideViewCows2026 session recovery and 4-protocol generator with 7-stage progress bar and leakage audit.
 - `build_manual_dataset_visual_verification.py`: Deterministic generator for manual human visual inspection pack across ScienceDB, MmCows, and SideViewCows2026 with 4-stage progress UI and 3-panel mask composites.
+- `audit_behavior_dataset_candidates.py`: Forensic audit script comparing MmCows vs. CBVD-5 across 10 dimensions, scanning video properties, analyzing crop sizes, generating 14 paired comparison review assets, and producing evaluation guides.
 - `fast_download_sideviewcows.py`: Multi-threaded (16-thread) resumable chunk downloader and 7-Zip extractor for SideViewCows2026.
 - `fast_download_beca.py`: Multi-threaded (16-thread) resumable chunk downloader and extractor for BECA dataset.
 - `download_cbvd5.py`: Automated Kagglehub downloader and normalizer for CBVD-5 dataset.
