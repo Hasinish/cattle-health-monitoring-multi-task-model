@@ -1,3 +1,15 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 2.1 Cattle Localization Feasibility Audit)
+
+- Executed Step 2.1 (Cattle Detection / Localization Feasibility Audit) across ScienceDB (BCS), MmCows (Behavior), and SideViewCows2026 (Re-ID).
+- Built reproducible audit script `scripts/audit_localization_feasibility.py` evaluating three pretrained architectures: YOLOv8s (11.2M params), Faster R-CNN ResNet-50 FPN v2 (43.7M params), and RT-DETR-L (32.0M params).
+- Ran initial 90-image smoke test and expanded 300-image audit (100 images per primary dataset; seed=42) on local GTX 1050 Ti.
+- Forensic finding: YOLOv8s suffered a catastrophic 37.0% failure rate on ScienceDB rear-view chute images and MmCows behavior crops due to COCO pasture broadside bias.
+- Forensic finding: RT-DETR-L (94.3% recall, 94.3ms latency) and Faster R-CNN v2 (95.0% recall, 470.8ms latency) achieve near-perfect localization without fine-tuning.
+- Identified multi-cow background clutter in pens (76–87% of images) requiring primary-cow selection heuristics in downstream representation caching.
+- Identified that only 5 of 300 images (1.67%) were missed by all three models (extreme entrance/exit occlusions and 2.68:1 extreme horizontal lying crops).
+- Decisively recommended RT-DETR-L as the primary upstream localizer (5x faster than Faster R-CNN).
+- Generated 120 4-panel visual composites in `docs/audits/assets/perception_audit/`, authored `docs/audits/phase3_perception_feasibility.md` (Step 2.1 section), published research log `docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md`. Step 2.1 COMPLETE!
+
 # Session Summary — 2026-09-20 (Phase 3 Step 1 MmCows vs CBVD-5 Agent Visual Inspection)
 
 - Executed direct multimodal agent visual inspection of 20 MmCows crops and 20 CBVD-5 crops + scenes using native vision model.

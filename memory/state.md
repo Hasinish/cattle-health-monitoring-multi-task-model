@@ -5,8 +5,9 @@
 - **Core Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning and improve robustness across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED)
-- **Immediate next action:** STEP 2 — Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md`).
+## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE)
+- **Immediate next action:** STEP 2.2 — Cattle segmentation feasibility audit (SAM 2 / SAM 2.1 prompted by RT-DETR-L boxes).
+- [x] STEP 2.1: Cattle detection / localization feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated YOLOv8s, Faster R-CNN v2, RT-DETR-L; proved YOLOv8s 37% failure rate on rear-view chute and tight crops; selected RT-DETR-L [94.3% recall, 94ms latency] as primary upstream localizer; docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md)
 - [x] Download & restore 213,686 MmCows behavior images via Hugging Face (213,686 indexed crops valid in `behaviors/`; 427,390 total local JPGs; raw videos purged)
 - [x] Download & index OpenCows2020 (4,736 images across 46 classes via Kagglehub - designated Legacy Baseline)
 - [x] Purge 36+ GB raw behavior videos, zip archives, and cache to reclaim local disk space
@@ -34,7 +35,7 @@
 - [x] Generate manual human visual-verification pack for primary Phase 3 datasets (ScienceDB 16, MmCows 16, SideView 16; 48 checks + 3-panel composites generated deterministically via `scripts/build_manual_dataset_visual_verification.py`; `docs/audits/phase3_manual_dataset_visual_verification.md`)
 - [x] Audit MmCows vs. CBVD-5 for Primary Behavior role (`docs/research_log/2026-09-20_mmcows_vs_cbvd5_primary_behavior_assessment.md`; 14-pair manual side-by-side pack at `docs/audits/phase3_behavior_dataset_manual_comparison.md`; recommended Option A: keep MmCows Primary, preserve CBVD-5 as External Validation)
 - [x] Complete multimodal agent visual inspection of 20 MmCows and 20 CBVD-5 samples (`docs/audits/phase3_behavior_agent_visual_inspection.md`; confirmed 19/20 MmCows usable, exposed CBVD-5 wide-angle crop resolution deficit [median 156px vs 390px] and temporal label inconsistency; visually validated prior audit claims; recommended retaining Option A)
-- [ ] STEP 2: Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md`)
+- [ ] STEP 2: Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md` — Step 2.1 Localization COMPLETE; Step 2.2 Segmentation, Step 2.3 Pose, Step 2.4 Viewpoint pending)
 - [ ] STEP 3: Cache upstream cattle information (bbox, soft_mask, pose_coords, viewpoint)
 - [ ] STEP 4: Clean RGB single-task baselines
 - [ ] STEP 5: Localization / segmentation ablation
@@ -112,24 +113,18 @@
 > [!IMPORTANT]
 > **Multi-Environment Awareness**: Physical dataset availability may differ across machines and execution environments (e.g. this local laptop vs. Modal cloud volumes vs. the BRACU Lab Research PC with RTX 5090). Future agents MUST inspect physical files on disk before assuming a dataset is available locally.
 
-## Last Session (Convo 27375138-e032-457f-a2a6-753e72f4a342)
-- Built and executed `scripts/repair_sciencedb_splits.py` to repair the ScienceDB Cattle BCS dataset split. Clustered overlapping 1-frame-shifted video bursts (including GS_1818/GS_1823) into 5,653 connected burst groups via Disjoint Set Union (threshold: dHash/aHash <= 2, pixel MAE <= 5.0). Generated 70/15/15 stratified split (train: 37,045, val: 8,481, test: 8,040). Verified 0 exact cross-duplicates and 0 cross-burst overlap. Promoted to canonical `datasets/bcs/sciencedb/`.
-- Conducted forensic suitability audit of accessible Re-ID datasets (`docs/research_log/2026-09-20_multicam_contingency_assessment.md`). Formulated Strategy 1 (SideViewCows2026 as primary Re-ID, BECA-L as external longitudinal, BECA-D as external scale stress).
-- User formally APPROVED the MultiCam contingency on 2026-09-20. Updated canonical roadmap and dataset registry roles.
-- Engineered `scripts/build_sideview_reid_protocols.py` with 7-stage clean progress UI. Recovered 3,604 discrete recording sessions (`dt <= 60s`). Generated and verified 4 canonical evaluation protocols (Cross-setting, Longitudinal, Open-set 77/11/22 cows, Closed-set 70/15/15 parlor + barn/snapshots). Verified exact duplicate uniqueness, identity-disjointness, and session-safe separation with no leakage detected under the implemented checks; perceptual near-duplicate audit on 10,094 sampled session anchors found min distance of 7 bits. Promoted deliverables to `datasets/id/sideviewcows2026/`.
-- Cleared Gate 1! Completed Step 1 (Data Registry and Clean Splits).
-- Built deterministic manual visual verification generator (`scripts/build_manual_dataset_visual_verification.py`). Generated 48 compact visual checks across ScienceDB (16), MmCows (16), and SideViewCows2026 (16 with 3-panel RGB|Mask|Overlay composites) at `docs/audits/phase3_manual_dataset_visual_verification.md` with 1.4 MB asset thumbnails in `docs/audits/assets/manual_dataset_verification/`. Tested and verified.
-- Conducted exhaustive forensic comparison of MmCows vs. CBVD-5 for Primary Behavior role (`scripts/audit_behavior_dataset_candidates.py`). Proved CBVD-5 has ZERO biological cow IDs (actor ID = 1 dummy value), median crop size 156x167px (2.5x smaller than MmCows), lacks walking/licking, and official AVA splits leak 100% of val/test videos. Built 14-pair side-by-side visual comparison guide (`docs/audits/phase3_behavior_dataset_manual_comparison.md`) and published comprehensive research log (`docs/research_log/2026-09-20_mmcows_vs_cbvd5_primary_behavior_assessment.md`). Decisively recommended Option A: Retain MmCows as Primary and CBVD-5 as External Validation. Step 1 remains in progress pending user sign-off.
+## Last Session (Convo e78aa1ac-ddc7-4c32-8bab-f25894ade0df)
+- Built and executed `scripts/audit_localization_feasibility.py` for Step 2.1 (Cattle Detection / Localization Feasibility Audit).
+- Ran initial 90-image smoke test and expanded 300-image audit (100 ScienceDB, 100 MmCows, 100 SideViewCows2026; seed=42) across YOLOv8s, Faster R-CNN v2, and RT-DETR-L.
+- Proved YOLOv8s suffers a severe 37% failure rate on rear-view chute and tight crops.
+- Proved RT-DETR-L (94.3% recall, 94ms latency) and Faster R-CNN v2 (95.0% recall, 470ms latency) achieve near-perfect cattle localization without fine-tuning.
+- Decisively recommended RT-DETR-L as the primary upstream localizer for Phase 3 representation caching.
+- Generated 120 4-panel visual composites in `docs/audits/assets/perception_audit/`, created `docs/audits/phase3_perception_feasibility.md`, and published research log `docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md`. Step 2.1 COMPLETE!
 
 ## Current Blockers & Notes
-- **STEP 1 IS 100% COMPLETE**.
-- **GATE 1 IS CLEARED & LOCKED**.
-- Current immediate position is **STEP 2 — Cattle-Perception Feasibility Audit**.
-- Next deliverable: `docs/audits/phase3_perception_feasibility.md`.
-- All primary splits locked:
-  - ScienceDB BCS: Repaired and locked; no leakage detected under implemented checks (`datasets/bcs/sciencedb/`).
-  - MmCows behavior: Grouped evaluation locked; no leakage detected under implemented checks (`datasets/behavior/mmcows/folds/`).
-  - SideViewCows2026 Re-ID: Protocols locked; no leakage detected under implemented checks (`datasets/id/sideviewcows2026/`).
-  - OpenCows2020: Contiguous heuristic rebuild locked as legacy benchmark.
+- **STEP 1 IS 100% COMPLETE & LOCKED (Gate 1 Cleared)**.
+- **STEP 2.1 (Localization Feasibility) IS 100% COMPLETE**.
+- Current immediate position is **STEP 2.2 — Cattle Segmentation Feasibility Audit (SAM 2 / SAM 2.1 prompted by RT-DETR boxes)**.
+- Deliverable updated: `docs/audits/phase3_perception_feasibility.md` (Localization section complete; Segmentation next).
 - Antigravity sync rule: changes mirrored to `D:\custom-antigravity`.
 

@@ -44,6 +44,7 @@ __pycache__/
 
 # Model Checkpoints
 *.pth
+*.pt
 
 # Paper substitution scripts & outputs
 fetch_abstracts.py
