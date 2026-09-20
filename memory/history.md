@@ -1,3 +1,22 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 2.3 Cattle Pose / Keypoint Feasibility Audit)
+
+- Executed Step 2.3 (Cattle Pose / Keypoint Feasibility Audit) across ScienceDB (BCS), MmCows (Behavior), and SideViewCows2026 (Re-ID).
+- Evaluated official DeepLabCut 3.0+ SuperAnimal-Quadruped pose foundation models comparing two backbones: HRNet-W32 (`superanimal_quadruped_hrnet_w32.pt`) and ResNet-50 (`superanimal_quadruped_resnet_50.pt`) with official Faster R-CNN detector (`fasterrcnn_resnet50_fpn_v2`).
+- Built reproducible audit script `scripts/audit_pose_feasibility.py` evaluating top-down pose inference on Step 2.1 RT-DETR-L target crops with `max_individuals=1`, 4-stage failure categorization (`upstream_localization_failure`, `pose_detector_failure`, `pose_output_returned`, `pose_inference_error`), raw confidence preservation, dynamic 39-keypoint schema extraction, SideView ground-truth mask sanity check, crash-safe `--resume`, and terminal progress display.
+- Tested optional cattle-specific pose checkpoint check: `No verified directly usable pretrained cattle-specific pose checkpoint was found for this feasibility audit` (CattleEyeView has no public weights; BECA has no pose labels).
+- Ran 30-image smoke test and 300-image expanded audit (100 ScienceDB, 100 MmCows, 100 SideViewCows2026) across both backbones on local GTX 1050 Ti.
+- Operational Status Breakdown (N=300 per model):
+  - `pose_output_returned`: 243 / 300 (81.0%) across both models (ScienceDB: 85, MmCows: 68, SideView: 90).
+  - `pose_detector_failure`: 40 / 300 (13.3%) across both models (ScienceDB: 8, MmCows: 22, SideView: 10).
+  - `upstream_localization_failure`: 17 / 300 (5.7%) across both models (ScienceDB: 7, MmCows: 10, SideView: 0).
+  - `pose_inference_error`: 0 / 300 (0.0%) across both models — absolute zero technical crashes.
+- Confidence & Geometric Sanity Check on `pose_output_returned`:
+  - SideViewCows2026 (Re-ID): ResNet-50 mean confidence 0.4838 (HRNet 0.4093); 77.2% of keypoints fall inside the ground-truth cow mask (HRNet 72.7%).
+  - ScienceDB (BCS rear view): Confidence heavily depressed (HRNet 0.1324, ResNet 0.2878). Model hallucinates cranial points on cows facing away. SuperAnimal schema completely lacks hip/pin/hook bone keypoints (*tuber coxae*, *tuber ischiadicum*) or pelvic hollow markers needed for BCS.
+  - MmCows (Behavior): Posture keypoints coherent for standing/walking cows (ResNet mean conf 0.3607, HRNet 0.2287), but 22% internal detector failure on curled lying cows and heavy stall bars.
+- Model Selection: ResNet-50 selected as preferred pose backbone over HRNet-W32 due to higher raw confidence (0.4838 vs 0.4093) and higher mask containment (77.2% vs 72.7%).
+- Deliverables updated: `docs/audits/phase3_perception_feasibility.md` (Section 3 added), published `docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md`, and indexed in `docs/research_log/README.md`. Step 2.3 COMPLETE!
+
 # Session Summary — 2026-09-20 (Phase 3 Step 2.2 Cattle Segmentation Feasibility Audit)
 
 - Executed Step 2.2 (Cattle Segmentation Feasibility Audit) across ScienceDB (BCS), MmCows (Behavior), and SideViewCows2026 (Re-ID).

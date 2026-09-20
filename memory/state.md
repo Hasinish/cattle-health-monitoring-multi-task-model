@@ -5,8 +5,9 @@
 - **Core Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning and improve robustness across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE | STEP 2.2: COMPLETE)
-- **Immediate next action:** STEP 2.3 — Cattle keypoint / pose estimation feasibility audit.
+## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE | STEP 2.2: COMPLETE | STEP 2.3: COMPLETE)
+- **Immediate next action:** STEP 2.4 — Cattle Viewpoint / Orientation Feasibility Audit.
+- [x] STEP 2.3: Cattle pose / keypoint feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated official DeepLabCut SuperAnimal-Quadruped HRNet-W32 and ResNet-50 backbones on RT-DETR-L target crops; 81.0% operational success [243/300], 13.3% pose_detector_failure [40/300], 5.7% upstream_localization_failure [17/300], 0% crashes; proved zero-shot pose NOT feasible for BCS due to rear-view chute angle and missing pelvic/pin/hook bone keypoints; marginal for Behavior due to 22% detector failure on lying/stall cows; feasible for Re-ID side views with 77.2% keypoints-inside-mask rate; selected ResNet-50 over HRNet-W32; docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md)
 - [x] STEP 2.2: Cattle segmentation feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated RT-DETR-L -> SAM 2.1 small [Mean IoU 0.9216 / Dice 0.9530 on SideView GT; 0.0252 delta from Oracle GT box; 93/100 segmented on ScienceDB, 90/100 on MmCows] vs YOLO26s-seg [Mean IoU 0.8660, 38% missed on ScienceDB, 27% on MmCows]; confirmed pretrained segmentation feasible without fine-tuning; docs/research_log/2026-09-20_cattle_segmentation_feasibility_audit.md)
 - [x] STEP 2.1: Cattle detection / localization feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated YOLOv8s, Faster R-CNN v2, RT-DETR-L; proved YOLOv8s 37% non-detection rate on rear-view chute and tight crops; designated RT-DETR-L [94.3% raw detection rate, 94ms latency] as provisional primary candidate for Step 2.2; docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md)
 - [x] Download & restore 213,686 MmCows behavior images via Hugging Face (213,686 indexed crops valid in `behaviors/`; 427,390 total local JPGs; raw videos purged)
@@ -36,7 +37,7 @@
 - [x] Generate manual human visual-verification pack for primary Phase 3 datasets (ScienceDB 16, MmCows 16, SideView 16; 48 checks + 3-panel composites generated deterministically via `scripts/build_manual_dataset_visual_verification.py`; `docs/audits/phase3_manual_dataset_visual_verification.md`)
 - [x] Audit MmCows vs. CBVD-5 for Primary Behavior role (`docs/research_log/2026-09-20_mmcows_vs_cbvd5_primary_behavior_assessment.md`; 14-pair manual side-by-side pack at `docs/audits/phase3_behavior_dataset_manual_comparison.md`; recommended Option A: keep MmCows Primary, preserve CBVD-5 as External Validation)
 - [x] Complete multimodal agent visual inspection of 20 MmCows and 20 CBVD-5 samples (`docs/audits/phase3_behavior_agent_visual_inspection.md`; confirmed 19/20 MmCows usable, exposed CBVD-5 wide-angle crop resolution deficit [median 156px vs 390px] and temporal label inconsistency; visually validated prior audit claims; recommended retaining Option A)
-- [ ] STEP 2: Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md` — Step 2.1 Localization COMPLETE; Step 2.2 Segmentation, Step 2.3 Pose, Step 2.4 Viewpoint pending)
+- [ ] STEP 2: Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md` — Step 2.1 Localization COMPLETE; Step 2.2 Segmentation COMPLETE; Step 2.3 Pose COMPLETE; Step 2.4 Viewpoint pending)
 - [ ] STEP 3: Cache upstream cattle information (bbox, soft_mask, pose_coords, viewpoint)
 - [ ] STEP 4: Clean RGB single-task baselines
 - [ ] STEP 5: Localization / segmentation ablation
@@ -78,11 +79,10 @@
   - Local Status: **AVAILABLE & FULLY INDEXED** (`datasets/bcs/dryad_bcs/Total_sorted_DGE_images/`).
   - Physical Counts: 5,940 TIFF files verified across class folders 2 through 7 (100% valid 224x224 RGB DGE images; 54 biological cows, 148 sessions).
   - Index Status: `datasets/bcs/dryad/manifest.csv` (5,940 rows), `cow_audit.csv` (54 cows), and `datasets/bcs/bcs_index.csv` (5,940 rows) fully populated and verified.
-  - Discrepancy Note: Discrepancy fully resolved (`docs/research_log/2026-09-20_dryad_bcs_discrepancy_audit.md`). Older ~5,923 count omitted Class 7 (17 images from Cow_52). Class 7 is 100% authentic Criollo beef data on 1–9 Wagner scale. Zero cross-cow duplicate leakage.
 - **MmCows**:
   - Scientific Role: Primary Behavior dataset
   - Local Status: **Raw cropped data present locally** (`datasets/behavior/mmcows/cropped_bboxes/`).
-  - Physical Counts: 213,686 indexed behavior crops in `behaviors/` (100% valid/resolving). Total local JPG count is 427,390 due to additional `lying/` (83,620) and `standing/` (130,084) crop folders. Raw source videos and archive zip were previously purged. Do not redefine the behavior dataset as 427,390 samples.
+  - Physical Counts: 213,686 indexed behavior crops in `behaviors/` (100% valid/resolving). Total local JPG count is 427,390 due to additional `lying/` (83,620) and `standing/` (130,084) crop folders.
   - Manifest & Protocol: `datasets/behavior/mmcows/manifest.csv` (213,686 rows), `provenance_audit.csv` (16 cows), canonical splits (`train.csv`, `val.csv`, `test.csv`), and 4-Fold GroupKFold suite (`folds/fold_[0-3].csv`) verified with no cross-split leakage detected under the implemented checks.
 - **SideViewCows2026**:
   - Scientific Role: Primary Re-ID dataset (Approved Contingency)
@@ -101,7 +101,7 @@
   - Scientific Role: Legacy Re-ID benchmark only
   - Local Status: **Locally present** (`datasets/id/opencow2020-DatasetNinja/`).
   - Physical Counts: 4,736 images across 46 identities (4,240 in `identification-train/img/`, 496 in `identification-test/img/`).
-  - Protocol Status: `datasets/id/opencow2020/manifest.csv` (4,736 rows), `train.csv` (3,586), `val.csv` (654), `test.csv` (496 official preserved), `split_report.md`, and updated `id_index.csv` (4,736 rows). 0 exact-duplicate overlap; frame-index adjacency crossings reduced from 1,023 to 48. True tracklet/temporal leakage cannot be verified because provenance is unavailable.
+  - Protocol Status: `datasets/id/opencow2020/manifest.csv` (4,736 rows), `train.csv` (3,586), `val.csv` (654), `test.csv` (496 official preserved), `split_report.md`, and updated `id_index.csv` (4,736 rows).
 - **MultiCamCows2024**:
   - Scientific Role: Intended primary Re-ID dataset (Contingency-excluded)
   - Local Status: **NOT present locally**. 0 files/archives.
@@ -115,17 +115,18 @@
 > **Multi-Environment Awareness**: Physical dataset availability may differ across machines and execution environments (e.g. this local laptop vs. Modal cloud volumes vs. the BRACU Lab Research PC with RTX 5090). Future agents MUST inspect physical files on disk before assuming a dataset is available locally.
 
 ## Last Session (Convo e78aa1ac-ddc7-4c32-8bab-f25894ade0df)
-- Built and executed `scripts/audit_localization_feasibility.py` for Step 2.1 (Cattle Detection / Localization Feasibility Audit).
-- Ran initial 90-image smoke test and expanded 300-image audit (100 ScienceDB, 100 MmCows, 100 SideViewCows2026; seed=42) across YOLOv8s, Faster R-CNN v2, and RT-DETR-L.
-- Proved YOLOv8s suffers a 37% non-detection rate on rear-view chute and tight crops.
-- Proved RT-DETR-L (94.3% raw detection rate, 94ms latency) and Faster R-CNN v2 (95.0% raw detection rate, 470ms latency) achieve robust cattle localization without fine-tuning.
-- Designated RT-DETR-L as the provisional primary candidate for Step 2.2 representation caching due to its balanced speed/performance profile.
-- Generated 120 4-panel visual composites in `docs/audits/assets/perception_audit/`, created `docs/audits/phase3_perception_feasibility.md`, and published research log `docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md`. Step 2.1 COMPLETE!
+- Completed Step 2.2 (Cattle Segmentation Feasibility Audit: RT-DETR-L -> SAM 2.1 small vs YOLO26s-seg).
+- Completed Step 2.3 (Cattle Pose / Keypoint Feasibility Audit: DeepLabCut SuperAnimal-Quadruped HRNet-W32 and ResNet-50 across the 300-image expanded sample).
+- Discovered that zero-shot pose is NOT feasible for BCS (ScienceDB rear views depress confidence to 0.13-0.28, hallucinate occluded cranial points, and lack pelvic/pin/hook bone keypoints needed for BCS).
+- Discovered that zero-shot pose has marginal utility for Behavior (MmCows; 22% internal detector failure on curled/stall-occluded cows).
+- Confirmed zero-shot pose is feasible for Re-ID side views (SideViewCows2026; 77.2% keypoints-inside-mask rate). Selected ResNet-50 over HRNet-W32.
+- Updated `docs/audits/phase3_perception_feasibility.md`, created research log `docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md`, and indexed in `docs/research_log/README.md`.
 
 ## Current Blockers & Notes
 - **STEP 1 IS 100% COMPLETE & LOCKED (Gate 1 Cleared)**.
 - **STEP 2.1 (Localization Feasibility) IS 100% COMPLETE**.
-- Current immediate position is **STEP 2.2 — Cattle Segmentation Feasibility Audit (SAM 2 / SAM 2.1 prompted by RT-DETR boxes)**.
-- Deliverable updated: `docs/audits/phase3_perception_feasibility.md` (Localization section complete; Segmentation next).
+- **STEP 2.2 (Segmentation Feasibility) IS 100% COMPLETE**.
+- **STEP 2.3 (Pose Feasibility) IS 100% COMPLETE**.
+- **Current immediate position is STEP 2.4 — Cattle Viewpoint / Orientation Feasibility Audit**.
+- Deliverable updated: `docs/audits/phase3_perception_feasibility.md` (Localization, Segmentation, and Pose complete; Viewpoint next).
 - Antigravity sync rule: changes mirrored to `D:\custom-antigravity`.
-
