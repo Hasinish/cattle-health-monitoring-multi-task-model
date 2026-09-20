@@ -165,46 +165,54 @@ Use only for compatible label intersections.
 
 ## 2.3 Cow ID / Re-ID
 
-### New primary
-**MultiCamCows2024**
-
-Role:
-- Main Re-ID training/evaluation dataset
-- Tracklet-aware evaluation
-- Cross-day evaluation
-- Cross-camera evaluation
-- Open-set/metric-learning experiments
-
-Why it replaces OpenCows2020 as primary:
-- 90 cows
-- 101,329 images
-- 3 cameras
-- 7 days
-- Real tracklets
-- Better suited to leakage-safe sequence-aware evaluation
-
-### External Re-ID validation
+### Primary Benchmark (Approved Contingency)
 **SideViewCows2026**
 
 Role:
-- Cross-setting / cross-view test
-- Masks available
-- Strong domain-shift benchmark
+- Main Re-ID training and evaluation benchmark
+- Nested cross-setting evaluation (parlor fixed entrance gallery -> barn handheld video query -> snapshots unconstrained query)
+- Long-term temporal evaluation (>279 days span)
+- Open-set and closed-set metric-learning experiments
+- Ground-truth segmentation mask ablation (80,260 verified binary masks)
 
-### Long-term / large-scale complements
+Why it replaces MultiCamCows2024 as primary under approved contingency:
+- MultiCamCows2024 was the intended primary dataset (90 cows, 101k images, 3 ceiling cameras, 7 days). However, its official distribution endpoint (`https://data.bris.ac.uk/datasets/tar/2inu67jru7a6821kkgehxg3cv2.zip`) remained completely inaccessible due to persistent server-side connection resets from both local and Modal cloud environments.
+- On 2026-09-20, an evidence-based contingency assessment (`docs/research_log/2026-09-20_multicam_contingency_assessment.md`) proved SideViewCows2026 provides scale parity (110 biological cattle, 80,260 images, mean 730 imgs/cow), long temporal depth (>9 months), and 80,260 ground-truth binary segmentation masks that directly test Phase 3's core hypothesis (segmentation-guided cattle representations).
+- Formally approved by Hasin on 2026-09-20.
+
+Status:
+- 100% downloaded and verified locally (`datasets/id/external/sideviewcows2026/`).
+- Deterministic protocol generation and leakage audit pending in Step 1.
+
+### Primary External Longitudinal Re-ID Validation
 **BECA-L**
-- Long-term appearance change
 
+Role:
+- Out-of-domain longitudinal appearance change test (7+ continuous months, 134 capture dates)
+- Cross-cowshed generalization (cowshed 0 vs 2 vs 3)
+- Viewpoint/domain shift stress test (top-down dorsal beef cattle vs side-view dairy cattle)
+- 103 biological beef cattle, 12,172 images
+
+### External Large-Scale / Population Stress Benchmark
 **BECA-D**
-- Large identity population
-- Pretraining / scale stress test
 
-### Legacy comparison
+Role:
+- Extreme-scale identity retrieval test across 5,661 unseen individuals (16,889 images)
+- Evaluates open-set feature generalization to large populations
+
+### Historical / Contingency-Excluded Intended Primary
+**MultiCamCows2024**
+
+Role:
+- Intended primary Re-ID benchmark in original Phase 3 design
+- Currently BLOCKED / excluded from active Phase 3 execution due to upstream archive connection resets
+- Preserved in project records; may be re-evaluated if upstream access is ever restored
+
+### Legacy Comparison
 **OpenCows2020**
-- Keep for backward comparability
-- Do not keep as main Re-ID dataset
-- Preserve official test
-- Random frame train/val split must not be used
+- Retained strictly as a legacy literature baseline for backward comparability
+- Not used as primary Re-ID dataset due to unrecoverable tracklet provenance and author frame randomization
+- Preserve official 496-image test set
 
 ---
 
@@ -407,56 +415,61 @@ Acceptance criteria:
 
 ---
 
-## 4.3 MultiCamCows2024 split
+## 4.3 SideViewCows2026 split (Primary Re-ID — Approved Contingency)
 
-Create at least four protocols:
+Status: In Progress (Pending deterministic protocol generation and leakage audit in Step 1).
 
-### Protocol A — Tracklet-disjoint
+Create at least four evaluation protocols across the 110 individuals and 80,260 images (+ 80,260 binary masks):
 
-Same identity may appear in train/query, but the same tracklet may never cross partitions.
+### Protocol A — Cross-setting domain shift (Primary Benchmark Protocol)
+- **Gallery**: Fixed camera `parlor` entrance frames (controlled lighting, consistent framing).
+- **Query 1**: Handheld video frames in `barn` (motion blur, varying camera angles).
+- **Query 2**: Unconstrained `snapshots` (outdoor/indoor, varied postures including lying down).
 
-### Protocol B — Cross-day
+### Protocol B — Longitudinal / cross-temporal
+- Exploit `time_offset_s` (>279 days span): earlier capture interval (e.g., first 100 days) -> later capture interval (subsequent months).
 
-Earlier day(s) → later day(s).
+### Protocol C — Open-set / identity-disjoint
+- 80 identities for training representation / metric learning -> 30 held-out identities for zero-shot gallery/query retrieval.
 
-### Protocol C — Cross-camera
-
-Train/gallery on camera subset → query on held-out camera.
-
-### Protocol D — Open-set / identity-disjoint
-
-Held-out identities for embedding generalization.
+### Protocol D — Closed-set identification
+- Standard 110-class metric evaluation.
 
 Required manifest:
-
 ```text
 image_path
-cow_id
-camera_id
-day
-tracklet_id
-frame_index
-source_video
+mask_path
+individual_id
+subset
+frame_no
+time_offset_s
+width
+height
+sha256
 ```
 
 Required outputs:
-
 ```text
-datasets/reid/multicamcows2024/manifest.csv
-datasets/reid/multicamcows2024/protocol_tracklet.csv
-datasets/reid/multicamcows2024/protocol_cross_day.csv
-datasets/reid/multicamcows2024/protocol_cross_camera.csv
-datasets/reid/multicamcows2024/protocol_open_set.csv
-datasets/reid/multicamcows2024/split_report.md
+datasets/id/sideviewcows2026/manifest.csv
+datasets/id/sideviewcows2026/protocol_cross_setting.csv
+datasets/id/sideviewcows2026/protocol_longitudinal.csv
+datasets/id/sideviewcows2026/protocol_open_set.csv
+datasets/id/sideviewcows2026/protocol_closed_set.csv
+datasets/id/sideviewcows2026/split_report.md
 ```
 
 Acceptance criteria:
+- [ ] 0 image overlap across train/gallery/query partitions
+- [ ] exact duplicate (SHA-256) and perceptual near-duplicate audit run
+- [ ] open-set protocol strictly identity-disjoint
+- [ ] segmentation masks verified and matched 1-to-1 with images
+- [ ] sequence provenance recorded
 
-- [ ] zero tracklet leakage
-- [ ] day metadata verified
-- [ ] camera metadata verified
-- [ ] open-set protocol identity-disjoint
-- [ ] exact and perceptual duplicate audit run
+### 4.3.1 MultiCamCows2024 Contingency Record (Historical)
+- MultiCamCows2024 was the originally intended primary Re-ID benchmark (90 cows, 101k images, 3 ceiling cameras, 7 days).
+- Official distribution endpoint (`data.bris.ac.uk`) failed with persistent connection resets from both local and cloud environments.
+- On 2026-09-20, Hasin formally approved the contingency recommendation (`docs/research_log/2026-09-20_multicam_contingency_assessment.md`) adopting SideViewCows2026 as primary Re-ID.
+- Preserved in project records; re-evaluation deferred unless upstream access is restored.
 
 ---
 
@@ -479,7 +492,7 @@ Recommended sample:
 
 - 100–300 ScienceDB images
 - 100–300 MmCows images
-- 100–300 MultiCamCows images
+- 100–300 SideViewCows2026 images
 
 Include difficult examples:
 
@@ -584,7 +597,7 @@ Recommended structure:
 data/processed/perception/
     sciencedb/
     mmcows/
-    multicamcows2024/
+    sideviewcows2026/
 ```
 
 Each cache must store:
@@ -740,7 +753,7 @@ Parallel execution is allowed after Gate 1 and the shared perception pipeline is
 ```text
 BCS environment      → ScienceDB / BCS datasets
 Behavior environment → MmCows / behavior datasets
-Re-ID environment    → MultiCamCows2024 / Re-ID datasets
+Re-ID environment    → SideViewCows2026 / Re-ID datasets
 ```
 
 These environments should use the same Git-tracked code and the same frozen upstream perception versions, while keeping task datasets and large caches local to the relevant environment.
@@ -1119,16 +1132,15 @@ Do not force ambiguous mappings.
 Primary:
 
 ```text
-Train / develop: MultiCamCows2024
-External: SideViewCows2026
+Train / develop: SideViewCows2026 (Approved Contingency)
+External: BECA-L (Longitudinal) & BECA-D (Population Scale)
 ```
 
-Additional:
+Additional / Historical:
 
 ```text
-BECA-L
-BECA-D
-OpenCows2020 legacy
+OpenCows2020 (legacy literature comparison only)
+MultiCamCows2024 (blocked upstream; excluded from primary execution)
 ```
 
 Questions:
@@ -1417,10 +1429,10 @@ Do not create a second competing memory system.
 
 Proceed to perception/baselines only if:
 
-- [x] ScienceDB passage-disjoint / sequence-safe split verified
-- [ ] MmCows grouped evaluation defined
-- [ ] MultiCamCows indexed and protocols generated, or a documented contingency is adopted if upstream access remains unavailable
-- [ ] required duplicate / near-duplicate and protocol leakage checks pass
+- [x] ScienceDB burst-group-disjoint / sequence-safe split verified (repaired 2026-09-20; 0 cross-burst leakage)
+- [x] MmCows grouped evaluation defined (canonical split + 4-fold GroupKFold suite verified 2026-09-20; 0 cow overlap)
+- [ ] SideViewCows2026 protocols generated and duplicate audit passed (MultiCamCows2024 contingency adopted 2026-09-20)
+- [ ] required duplicate / near-duplicate and protocol leakage checks pass across all primary splits
 
 ---
 
@@ -1493,16 +1505,16 @@ Do not spend paid GPU time debugging basic script failures that can be reproduce
 
 Immediate priority order:
 
-1. [x] Build canonical dataset registry
-2. [x] Audit ScienceDB identity semantics and replace the invalid cow split with a passage-disjoint split
+1. [x] Build canonical dataset registry (`datasets/dataset_registry.csv` verified)
+2. [x] Audit ScienceDB identity semantics and repair burst-group split (`datasets/bcs/sciencedb/` verified leak-free)
 3. [x] Retrieve/index Ruchay 2026 metadata and manifest
-4. [ ] Rebuild MmCows grouped evaluation protocol with cow, time-block, and synchronized-view protection
-5. [ ] Retry/download/index MultiCamCows2024 when upstream access permits
-6. [ ] Create MultiCam tracklet/cross-day/cross-camera/open-set protocols once data are available
-7. [ ] Download/index SideViewCows2026
-8. [ ] Download/index BECA-D / BECA-L
-9. [ ] Verify/index CBVD-5 raw data and identity metadata
-10. [ ] Run automatic duplicate / near-duplicate audit across finalized primary datasets
+4. [x] Rebuild MmCows grouped evaluation protocol with cow, time-block, and synchronized-view protection (`datasets/behavior/mmcows/folds/` verified)
+5. [x] Document MultiCamCows2024 upstream blocker and formally adopt SideViewCows2026 contingency (`docs/research_log/2026-09-20_multicam_contingency_assessment.md`)
+6. [x] Download/index SideViewCows2026 (80,260 images + masks verified on disk)
+7. [x] Download/index BECA-D / BECA-L (29,061 images verified on disk)
+8. [x] Verify/index CBVD-5 raw data and identity metadata (887 videos, 206,100 frames verified on disk)
+9. [x] Run automatic duplicate / near-duplicate audit across ScienceDB, MmCows, OpenCows
+10. [ ] Build and verify deterministic SideViewCows2026 primary Re-ID protocols and run duplicate/near-duplicate audit
 
 ---
 
@@ -1512,19 +1524,18 @@ The coding agent should NOT start model architecture work yet.
 
 Immediate task:
 
-> **Build the Phase 3 dataset foundation.**
+> **Build and verify the SideViewCows2026 primary Re-ID evaluation protocol.**
 
 Required next deliverables:
 
 ```text
-datasets/dataset_registry.csv
+datasets/dataset_registry.csv (updated roles)
 
-datasets/bcs/sciencedb/
-datasets/behavior/mmcows/
-datasets/reid/multicamcows2024/
+datasets/bcs/sciencedb/ (repaired & locked)
+datasets/behavior/mmcows/ (locked)
+datasets/id/sideviewcows2026/ (protocol manifests + audit)
 
-docs/audits/phase3_dataset_foundation.md
-docs/research_log/YYYY-MM-DD_phase3_dataset_foundation.md
+docs/research_log/2026-09-20_sideviewcows2026_protocol_and_leakage_audit.md
 ```
 
 Then update:

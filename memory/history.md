@@ -1,3 +1,16 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 1 MultiCamCows Contingency Adoption & Re-ID Roles Locked)
+
+- User formally APPROVED the MultiCamCows2024 contingency proposed in `docs/research_log/2026-09-20_multicam_contingency_assessment.md`.
+- Formally adopted approved Re-ID dataset roles across the canonical Phase 3 roadmap and registries:
+  - **SideViewCows2026**: PRIMARY Re-ID dataset (replaces MultiCam under approved contingency; 80,260 images + 80,260 binary segmentation masks across 110 biological cows; protocol generation pending).
+  - **BECA-L**: Primary external longitudinal Re-ID benchmark (103 beef cattle, 12,172 images, 134 dates over 7+ months, top-down dorsal view).
+  - **BECA-D**: External large-scale / population stress benchmark (5,661 beef cattle, 16,889 images, 3 shots/cow).
+  - **OpenCows2020**: LEGACY benchmark only (retained strictly for literature comparison; random split replaced by contiguous frame-index heuristic + duplicate harmonization).
+  - **MultiCamCows2024**: BLOCKED / contingency-excluded for current Phase 3 execution due to persistent upstream connection resets (`data.bris.ac.uk`). Preserved in historical records.
+- Updated canonical documents: `phase3_canonical_roadmap.md`, `docs/phase3_canonical_roadmap.md`, `datasets/dataset_registry.csv`, `memory/state.md`, `memory/index.md`, and `docs/research_log/README.md`.
+- Cleaned all stale references to ScienceDB in `memory/state.md` (burst-group repair is 100% complete and locked).
+- Maintained Gate 1 as OPEN pending implementation and verification of deterministic SideViewCows2026 protocols.
+
 # Session Summary — 2026-09-20 (Phase 3 Step 1 ScienceDB Burst Split Repair Script)
 
 - Engineered `scripts/repair_sciencedb_splits.py` to repair the ScienceDB Cattle BCS dataset split by clustering overlapping video burst passages into leak-free connected burst groups.

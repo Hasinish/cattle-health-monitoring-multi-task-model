@@ -49,7 +49,7 @@ Dataset preprocessing routines, member work splits, and original problem context
 - `preprocess_sciencedb_bcs.py`: Preprocessing script for ScienceDB thermal/RGB cattle dataset.
 
 ### `phase3_canonical_roadmap.md` & `docs/phase3_canonical_roadmap.md`
-Master canonical 13-step roadmap locked for Phase 3 execution. Formulates the core thesis question: *"Which cattle-specific visual priors (localization, soft masks, anatomy/pose, viewpoint) are useful for which downstream task, and what information should each task preserve or suppress?"* Locks downstream scope to BCS (ScienceDB; Ruchay 2026 external), Behavior (MmCows; CBVD-5 external), and Re-ID (MultiCamCows2024 replacing OpenCows2020; SideViewCows2026 external). Outlines a strict 13-step progression from Step 1 data registry to final 3-seed benchmark tables.
+Master canonical 13-step roadmap locked for Phase 3 execution. Formulates the core thesis question: *"Which cattle-specific visual priors (localization, soft masks, anatomy/pose, viewpoint) are useful for which downstream task, and what information should each task preserve or suppress?"* Locks downstream scope to BCS (ScienceDB; Ruchay 2026 external), Behavior (MmCows; CBVD-5 external), and Re-ID (SideViewCows2026 as primary under approved contingency; BECA-L longitudinal external; BECA-D scale stress external; OpenCows2020 legacy baseline; MultiCamCows2024 contingency-excluded). Outlines a strict 13-step progression from Step 1 data registry to final 3-seed benchmark tables.
 
 ### `docs/`
 Structured project documentation, defense resources, forensic audits, and official deliverables.
@@ -62,6 +62,8 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `phase3_near_duplicate_suspects.csv`: Exhaustive export of cross-partition near-duplicate suspect pairs with 64x64 grayscale MAE scores across ScienceDB, MmCows, and OpenCows2020.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-20_multicam_contingency_assessment.md`: Forensic assessment of MultiCamCows2024 upstream block, evaluating SideViewCows2026, BECA-L, BECA-D, and OpenCows2020, and adopting SideViewCows2026 as primary Re-ID benchmark under approved contingency.
+  - `2026-09-20_sciencedb_burst_group_split_repair.md`: Forensic repair of ScienceDB Cattle BCS split into 5,653 unified burst groups, eliminating 1-frame-shifted video burst leakage (e.g., `GS_1818` vs `GS_1823`) with verified 0 cross-burst overlap.
   - `2026-09-20_phase3_duplicate_nearduplicate_audit.md`: Automated exact (SHA-256) and perceptual near-duplicate (dHash/aHash, $d \le 6$) audit across all split-bearing Phase 3 datasets, exposing ScienceDB overlapping passage vulnerability.
   - `2026-09-20_external_benchmarks_hydration_audit.md`: Hydration and verification audit for SideViewCows2026, BECA, and CBVD-5.
   - `2026-09-20_opencows2020_legacy_reid_audit.md`: Forensic audit of OpenCows2020 legacy Re-ID protocol, proving lack of sequence recoverability from provenance, exposing 1,023 frame-index adjacency crossings in legacy random shuffle, and verifying contiguous heuristic rebuild.
@@ -99,9 +101,10 @@ Canonical benchmark data and task registries.
 - `bcs/`:
   - `sciencedb_bcs_index.csv`: 53,566-row master index for Primary BCS task aligned with leak-free passage split.
   - `sciencedb/`:
-    - `train.csv` (37,126 rows), `val.csv` (8,099 rows), `test.csv` (8,341 rows): 100% passage-disjoint split manifests.
-    - `identity_audit.csv`: Complete audit cataloging all 5,662 passage clusters and label distributions.
-    - `split_report.md`: Forensic audit report disproving 10,898 cows claim and documenting de-leakage methodology.
+    - `train.csv` (37,045 rows), `val.csv` (8,481 rows), `test.csv` (8,040 rows): 100% burst-group-disjoint / sequence-safe split manifests.
+    - `burst_group_audit.csv`: Complete audit cataloging all 5,653 connected burst groups, member passages, and label distributions.
+    - `confirmed_burst_overlap_links.csv`: 9 confirmed overlapping burst pairs resolved via Disjoint Set Union.
+    - `split_report.md`: Forensic audit report documenting the burst-group clustering methodology and zero-leakage verification.
   - `external/ruchay2026/`:
     - `ruchay2026_manifest.csv`: 25,700-sample deterministic manifest of Ruchay et al. 2026 RGB-D BCS benchmark (1,025 cows, 4 sessions, 10 ordinal classes 2.75–5.00).
     - `Dataset.xlsx`: Official metadata file from Zenodo record 20290988.
@@ -125,6 +128,8 @@ Canonical benchmark data and task registries.
     - `manifest.csv`: 4,736-row master manifest mapping all images to cow ID, frame ID, official split, new split, SHA256, width, and height.
     - `train.csv` (3,586 rows), `val.csv` (654 rows), `test.csv` (496 rows): Contiguous frame-index split manifests with duplicate harmonization (0 exact-duplicate overlap).
     - `split_report.md`: Forensic audit report detailing legacy random within-identity mixing (1,023 frame-index adjacency crossings) and contiguous heuristic rebuild.
+  - `external/sideviewcows2026/`: 80,260 images + 80,260 binary segmentation masks across 110 biological cows in snapshots (607), parlor (54,393), and barn (25,260) subsets (Zenodo record 21605650). Designated Primary Re-ID dataset under approved contingency.
+  - `external/beca/`: BECA-D (16,889 images across 5,661 beef cattle; external scale stress benchmark) and BECA-L (12,172 images across 103 beef cattle tracked over 7+ months across 134 dates; primary external longitudinal Re-ID benchmark).
 - `lameness/`:
   - `cattle_lameness_manifest.csv`: 50-clip master manifest defining filename, class, source URLs, proposed group IDs, confidence scores, evidence, and 5-fold cross-validation assignments.
   - `lameness_index.csv`: Extracted frame index mapping 9,950 frames across 50 video clips to labels and splits.
@@ -144,6 +149,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `aggregate.py`: Collects training logs and performance metrics across member workspaces and generates consolidated summary tables.
 - `build_dataset_registry.py`: Deterministic generation script for `datasets/dataset_registry.csv` compiling Phase 3 datasets, roles, and local physical status.
 - `build_sciencedb_splits.py`: ScienceDB identity audit, de-leakage grouping (5,662 passage clusters), and stratified train/val/test split builder.
+- `repair_sciencedb_splits.py`: ScienceDB burst-group clustering via DSU (dHash/aHash <= 2, pixel MAE <= 5.0), repaired 5,653 burst groups, stratified 70/15/15 train/val/test splits, and verified zero cross-burst overlap.
 - `build_mmcows_splits.py`: MmCows provenance audit, synchronized multi-camera protection, canonical baseline split, and 4-Fold GroupKFold suite generator.
 - `verify_mmcows_splits.py`: Standalone assertion and verification suite checking MmCows file existence, 100% cow disjointness, multi-camera event protection, and path resolution.
 - `build_dryad_manifest.py`: Dryad BCS discrepancy audit, biological cow parser (54 cows), master manifest generator, and bcs_index.csv updater.
