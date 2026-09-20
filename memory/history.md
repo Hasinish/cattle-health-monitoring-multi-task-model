@@ -1,3 +1,16 @@
+# Session Summary — 2026-09-20 (Phase 3 Duplicate Audit & Cold Turkey System Purge)
+
+- Conducted exhaustive exact (SHA-256) and perceptual near-duplicate (Multi-Index Hashed dHash/aHash, $d \le 6$) leakage audit across all split-bearing Phase 3 datasets:
+  - **ScienceDB Cattle BCS (53,566 images)**: 0 exact cross-duplicates; 88,944 near-duplicate cross-partition suspects flagged. Discovered critical vulnerability: `GS_1818` (val) and `GS_1823` (train) are consecutive frames of the same video passage shifted by 1 frame (MAE 0.25). Split **NEEDS CORRECTION** before Step 4 training by clustering passages into connected temporal burst blocks.
+  - **MmCows Behavior (213,686 images)**: 0 exact cross-duplicates. 100% cow disjointness verified across canonical split (11 train, 2 val, 3 test cows) and all 4 GroupKFold splits (`overlap: set()`). Split is **CLEAN & LOCKED**.
+  - **OpenCows2020 (4,736 images)**: 0 exact cross-duplicates; 1,239 near-duplicates (100% within same cow identity due to author randomization). Designated **LEGACY BASELINE ONLY**.
+- Documented findings in `docs/research_log/2026-09-20_phase3_duplicate_nearduplicate_audit.md` and updated `docs/research_log/README.md`.
+- Performed forensic audit and complete eradication of Cold Turkey Blocker from host system:
+  - Verified background services, active processes, and main installation directories were already deleted.
+  - Found and purged lingering browser extensions in Google Chrome (`pganeibhckoanndahmnfggfoeofncnii`) and Microsoft Edge (`jfphahkinplobmabmgjmjgflbhjjddeb`).
+  - Purged user registry key `HKCU:\Software\Cold Turkey`.
+  - Executed elevated registry cleanup removing orphaned `HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{6498E673-B9C2-4544-A722-1E854B5B573E}_is1` and `HKLM:\Software\Cold Turkey`. Verified 100% removal across all system hives.
+
 # Session Summary — 2026-09-20 (Modal Billing Monitor & BILLING.md Integration)
 
 - Added real-time multi-account Modal billing monitor and dashboard generator identical to `modal-qwen`.
