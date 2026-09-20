@@ -25,3 +25,8 @@
 
 5. **Antigravity Customization & Rules Sync**:
    - Whenever workspace rules, `.agents/rules/`, or global agent instructions are modified, immediately mirror them to `D:\custom-antigravity`, commit, and push to GitHub.
+
+6. **Cloud & Modal Cost Optimization**:
+   - Strictly use minimal container resources: `cpu=1.0, memory=2048` (or 1024) for downloads, data transfers, and extraction. NEVER attach GPUs or allocate excessive CPUs/RAM for pure network I/O.
+   - Always implement periodic `volume.commit()` checkpoints (e.g. every 60s) for long-running downloads so partial progress is saved and resumable if interrupted.
+   - Default to lowest-cost GPU tier (e.g. `gpu="T4"`) for all smoke tests and feasibility runs.

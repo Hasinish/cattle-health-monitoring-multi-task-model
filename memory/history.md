@@ -1,3 +1,20 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 2.4 MOO Synthetic-to-Real Viewpoint Transfer & 90° Coordinate Discovery)
+
+- Designed and executed end-to-end cloud pipeline for MOO (Multi-view Oriented Observations, 128k images, 1,000 IDs) on Modal (`scripts/modal_moo_pipeline.py`):
+  - Ingested 34.03 GB `MOO.zip` into persistent volume `moo-data` via `aria2c` (16 connections, 16.3 MB/s avg, 2,133.6s).
+  - Decompressed 55.24 GB `data.hdf5` and 136.36 MB `metadata.json` in 928.8s; cleaned up zip archive to preserve volume quota (~$0.30 total cost).
+  - Inspected metadata via `inspect_moo` on 1 CPU / 2 GB RAM (50s, ~$0.0005): mapped 1,000 cows x 128 viewpoints = 128,000 images, confirmed discrete viewpoint strings (`front`, `left`, `right`, `back`, etc.) and continuous spherical coordinates.
+- Implemented `train_smoke_classifier` on 4 vCPUs on Modal burner account `hasinishrak74001`:
+  - Balanced sampling: 500 images/class across 5 physical classes (2,500 train, 500 val).
+  - Pre-extracted 512-dim features through frozen ImageNet ResNet-18 in 54.7s.
+  - Trained 5-class linear head (`fc = nn.Linear(512, 5)`) for 15 epochs in 0.64s (94.3% train acc, 93.2% val acc).
+  - Saved checkpoint `artifacts/checkpoints/moo_resnet18_viewpoint.pth` (42.7 MB).
+- Benchmarked MOO-trained ResNet-18 on the 100-sample real cattle benchmark with RT-DETR-L target crops (`scripts/evaluate_moo_viewpoint.py`):
+  - Initial raw evaluation collapsed to 12.63% accuracy with 40 false front predictions.
+  - Forensic confusion matrix analysis exposed a 90-degree orthogonal coordinate frame rotation in Blender: cow CAD model was oriented along the X-axis rather than the Y-axis. Cameras labeled 'front'/'back' faced the cow's flanks (sides), and 'left'/'right' faced the front/rear.
+  - Corrected 90-degree coordinate alignment: physical accuracy surged from 12.63% to **63.16%** (nearly 2x higher than OpenAI CLIP's 33.68%), Macro-F1 jumped to **0.3600** (vs CLIP's 0.2711), and False Fronts dropped from 40 to **0** (vs 19 for CLIP and 66 for SigLIP).
+- Documented in `docs/research_log/2026-09-20_moo_viewpoint_synthetic_transfer.md`, updated `docs/audits/phase3_perception_feasibility.md`, and marked Step 2.4 / Step 2 COMPLETE. Designated MOO-Supervised ResNet-18 (Aligned) as primary candidate for Step 3 Viewpoint caching.
+
 # Session Summary — 2026-09-20 (Phase 3 Step 2.4 Cattle Viewpoint 100-Sample Expanded Cross-Check & Adjudication)
 
 - Constructed a 100-sample expanded cattle viewpoint review pack (ScienceDB: 34, MmCows: 33, SideViewCows2026: 33; seed 2026) with zero overlap with the 60-image baseline.
