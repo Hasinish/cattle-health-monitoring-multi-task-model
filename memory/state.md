@@ -47,7 +47,7 @@
 
 ## Canonical Task & Dataset Stack (Scientific Roles)
 - **1. Body Condition Scoring (BCS)**:
-  - **Primary (In-Domain)**: ScienceDB (53,566 RGB images across 5 classes: 3.25–4.25 from 5,653 repaired connected burst groups; 100% leak-free & burst-group disjoint; true cow IDs not released by publisher)
+  - **Primary (In-Domain)**: ScienceDB (53,566 RGB images across 5 classes: 3.25–4.25 from 5,653 repaired connected burst groups; burst-group disjoint with no leakage detected under the implemented checks; true cow IDs not released by publisher)
   - **Primary External Validation**: Ruchay et al. RGB-D BCS (2026) (multi-breed, wide BCS range, different camera geometry)
   - **Secondary External**: Dryad BCS (5,940 DGE images across discrete classes '2'-'7')
 - **2. Behavior Recognition**:
@@ -55,7 +55,7 @@
   - **Primary External Validation**: CBVD-5 (larger-herd external test)
   - **Optional External**: CVB, XGain, Simmental 2026 (for compatible label intersections only)
 - **3. Individual Cow Identification / Re-Identification (Re-ID)**:
-  - **Primary (Approved Contingency)**: SideViewCows2026 (110 cows, 80,260 images + 80,260 binary masks, parlor/barn/snapshots nested settings, >9 months span; replaces MultiCam under approved contingency; protocol generation pending)
+  - **Primary (Approved Contingency)**: SideViewCows2026 (110 cows, 80,260 images + 80,260 binary masks, parlor/barn/snapshots nested settings, >9 months span; replaces MultiCam under approved contingency; COMPLETE & VERIFIED)
   - **Primary External Validation (Longitudinal)**: BECA-L (103 beef cattle, 12,172 images, 134 dates over 7+ months, top-down dorsal view, 3 cowsheds)
   - **External Scale Stress**: BECA-D (5,661 beef cattle, 16,889 images, 3 shots/cow)
   - **Contingency-Excluded Intended Primary**: MultiCamCows2024 (90 cows, 101,329 images; blocked upstream by persistent server connection resets; preserved in project records)
@@ -78,12 +78,12 @@
   - Scientific Role: Primary Behavior dataset
   - Local Status: **Raw cropped data present locally** (`datasets/behavior/mmcows/cropped_bboxes/`).
   - Physical Counts: 213,686 indexed behavior crops in `behaviors/` (100% valid/resolving). Total local JPG count is 427,390 due to additional `lying/` (83,620) and `standing/` (130,084) crop folders. Raw source videos and archive zip were previously purged. Do not redefine the behavior dataset as 427,390 samples.
-  - Manifest & Protocol: `datasets/behavior/mmcows/manifest.csv` (213,686 rows), `provenance_audit.csv` (16 cows), canonical splits (`train.csv`, `val.csv`, `test.csv`), and 4-Fold GroupKFold suite (`folds/fold_[0-3].csv`) verified with zero cross-split leakage.
+  - Manifest & Protocol: `datasets/behavior/mmcows/manifest.csv` (213,686 rows), `provenance_audit.csv` (16 cows), canonical splits (`train.csv`, `val.csv`, `test.csv`), and 4-Fold GroupKFold suite (`folds/fold_[0-3].csv`) verified with no cross-split leakage detected under the implemented checks.
 - **SideViewCows2026**:
   - Scientific Role: Primary Re-ID dataset (Approved Contingency)
   - Local Status: **AVAILABLE** (`datasets/id/external/sideviewcows2026/`).
   - Physical Counts: 80,260 images + 80,260 binary segmentation masks across 110 biological cows (parlor: 54,393, barn: 25,260, snapshots: 607).
-  - Protocol Status: **COMPLETE & VERIFIED** (`datasets/id/sideviewcows2026/`). 4 canonical protocols generated and audited: `protocol_cross_setting.csv`, `protocol_longitudinal.csv`, `protocol_open_set.csv`, `protocol_closed_set.csv`, `leakage_audit.csv`, and `split_report.md`. Verified 0 exact duplicates, 0 adjacent-frame leakage (3,604 discrete recording sessions), 0 cow overlap in open-set, and min perceptual distance 7 bits.
+  - Protocol Status: **COMPLETE & VERIFIED** (`datasets/id/sideviewcows2026/`). 4 canonical protocols generated and audited: `protocol_cross_setting.csv`, `protocol_longitudinal.csv`, `protocol_open_set.csv`, `protocol_closed_set.csv`, `leakage_audit.csv`, and `split_report.md`. Exact duplicate, identity-disjointness, mask matching, and session separation verified with no leakage detected under the implemented checks; perceptual near-duplicate audit on 10,094 sampled session anchors found min distance of 7 bits.
 - **BECA-L**:
   - Scientific Role: Primary external longitudinal Re-ID validation benchmark
   - Local Status: **AVAILABLE** (`datasets/id/external/beca/BECA-L/`).
@@ -113,7 +113,7 @@
 - Built and executed `scripts/repair_sciencedb_splits.py` to repair the ScienceDB Cattle BCS dataset split. Clustered overlapping 1-frame-shifted video bursts (including GS_1818/GS_1823) into 5,653 connected burst groups via Disjoint Set Union (threshold: dHash/aHash <= 2, pixel MAE <= 5.0). Generated 70/15/15 stratified split (train: 37,045, val: 8,481, test: 8,040). Verified 0 exact cross-duplicates and 0 cross-burst overlap. Promoted to canonical `datasets/bcs/sciencedb/`.
 - Conducted forensic suitability audit of accessible Re-ID datasets (`docs/research_log/2026-09-20_multicam_contingency_assessment.md`). Formulated Strategy 1 (SideViewCows2026 as primary Re-ID, BECA-L as external longitudinal, BECA-D as external scale stress).
 - User formally APPROVED the MultiCam contingency on 2026-09-20. Updated canonical roadmap and dataset registry roles.
-- Engineered `scripts/build_sideview_reid_protocols.py` with 7-stage clean progress UI. Recovered 3,604 discrete recording sessions (`dt <= 60s`). Generated and verified 4 canonical evaluation protocols (Cross-setting, Longitudinal, Open-set 77/11/22 cows, Closed-set 70/15/15 parlor + barn/snapshots). Verified 0 duplicate hashes, 0 adjacent-frame leakage, 0 identity leakage, and min perceptual distance 7 bits. Promoted deliverables to `datasets/id/sideviewcows2026/`.
+- Engineered `scripts/build_sideview_reid_protocols.py` with 7-stage clean progress UI. Recovered 3,604 discrete recording sessions (`dt <= 60s`). Generated and verified 4 canonical evaluation protocols (Cross-setting, Longitudinal, Open-set 77/11/22 cows, Closed-set 70/15/15 parlor + barn/snapshots). Verified exact duplicate uniqueness, identity-disjointness, and session-safe separation with no leakage detected under the implemented checks; perceptual near-duplicate audit on 10,094 sampled session anchors found min distance of 7 bits. Promoted deliverables to `datasets/id/sideviewcows2026/`.
 - Cleared Gate 1! Completed Step 1 (Data Registry and Clean Splits).
 
 ## Current Blockers & Notes
@@ -122,9 +122,9 @@
 - Current immediate position is **STEP 2 — Cattle-Perception Feasibility Audit**.
 - Next deliverable: `docs/audits/phase3_perception_feasibility.md`.
 - All primary splits locked:
-  - ScienceDB BCS: 100% repaired and locked (`datasets/bcs/sciencedb/`).
-  - MmCows behavior: 100% clean and locked (`datasets/behavior/mmcows/folds/`).
-  - SideViewCows2026 Re-ID: 100% clean and locked (`datasets/id/sideviewcows2026/`).
-  - OpenCows2020: 100% contiguous heuristic rebuild locked as legacy benchmark.
+  - ScienceDB BCS: Repaired and locked; no leakage detected under implemented checks (`datasets/bcs/sciencedb/`).
+  - MmCows behavior: Grouped evaluation locked; no leakage detected under implemented checks (`datasets/behavior/mmcows/folds/`).
+  - SideViewCows2026 Re-ID: Protocols locked; no leakage detected under implemented checks (`datasets/id/sideviewcows2026/`).
+  - OpenCows2020: Contiguous heuristic rebuild locked as legacy benchmark.
 - Antigravity sync rule: changes mirrored to `D:\custom-antigravity`.
 

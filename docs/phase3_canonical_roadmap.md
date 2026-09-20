@@ -439,7 +439,7 @@ Four canonical evaluation protocols across 110 individuals, 80,260 images, and 8
 ### Protocol D — Closed-set identification
 - Standard 110-class metric identification with sequence-safe recording protection (`dt <= 60s` session clustering; 3,604 sessions).
 - Chronological partition: in-domain parlor (70% train: 40,745 images, 15% val: 7,373 images, 15% test_parlor: 6,275 images) + out-of-domain test sets (test_barn: 25,260 images, test_snapshots: 607 images).
-- Strict assertion: zero adjacent-frame video burst leakage.
+- Strict assertion: no adjacent-frame video burst leakage detected under the implemented checks.
 
 Required manifest:
 ```text
@@ -466,10 +466,10 @@ datasets/id/sideviewcows2026/split_report.md
 
 Acceptance criteria:
 - [x] 0 image overlap across train/gallery/query partitions
-- [x] exact duplicate (SHA-256) and perceptual near-duplicate audit run (0 exact duplicates, min perceptual distance 7 bits)
+- [x] exact duplicate (SHA-256) and perceptual near-duplicate audit run (0 exact duplicates, min perceptual distance 7 bits on 10,094 sampled session anchors; no leakage detected under implemented checks)
 - [x] open-set protocol strictly identity-disjoint (77 Train / 11 Val / 22 Test cows, 0 overlap)
 - [x] segmentation masks verified and matched 1-to-1 with images (80,260 masks, 0 stem mismatches)
-- [x] sequence provenance recorded (3,604 discrete recording sessions; zero adjacent-frame leakage)
+- [x] sequence provenance recorded (3,604 discrete recording sessions; no adjacent-frame leakage detected under the implemented checks)
 
 ### 4.3.1 MultiCamCows2024 Contingency Record (Historical)
 - MultiCamCows2024 was the originally intended primary Re-ID benchmark (90 cows, 101k images, 3 ceiling cameras, 7 days).
@@ -481,7 +481,7 @@ Acceptance criteria:
 
 # 5. STEP 2 — Cattle-Perception Feasibility Audit
 
-**Status:** BLOCKED BY STEP 1
+**Status:** READY / CURRENT (Gate 1 Cleared)
 
 ## Goal
 
