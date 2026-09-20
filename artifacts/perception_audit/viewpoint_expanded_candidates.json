@@ -1,0 +1,1202 @@
+[
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.25\\GS_2361_8.jpg",
+    "category_or_subset": "BCS_3.25",
+    "provenance_group": "GS_burst_1506",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 3.25,
+      "passage_id": "GS_2361"
+    },
+    "sample_id": "vp2_0001"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.25\\GS_2331_8.jpg",
+    "category_or_subset": "BCS_3.25",
+    "provenance_group": "GS_burst_1473",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 3.25,
+      "passage_id": "GS_2331"
+    },
+    "sample_id": "vp2_0002"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.25\\GS_3070_4.jpg",
+    "category_or_subset": "BCS_3.25",
+    "provenance_group": "GS_burst_2294",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 3.25,
+      "passage_id": "GS_3070"
+    },
+    "sample_id": "vp2_0003"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.25\\YM_1857_1.jpg",
+    "category_or_subset": "BCS_3.25",
+    "provenance_group": "YM_burst_0952",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 3.25,
+      "passage_id": "YM_1857"
+    },
+    "sample_id": "vp2_0004"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.25\\YM_1704_1.jpg",
+    "category_or_subset": "BCS_3.25",
+    "provenance_group": "YM_burst_0783",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 3.25,
+      "passage_id": "YM_1704"
+    },
+    "sample_id": "vp2_0005"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.25\\YM_862_1.jpg",
+    "category_or_subset": "BCS_3.25",
+    "provenance_group": "YM_burst_1903",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 3.25,
+      "passage_id": "YM_862"
+    },
+    "sample_id": "vp2_0006"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.5\\GS_1857_4.jpg",
+    "category_or_subset": "BCS_3.5",
+    "provenance_group": "GS_burst_0951",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 3.5,
+      "passage_id": "GS_1857"
+    },
+    "sample_id": "vp2_0007"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.5\\GS_886_4.jpg",
+    "category_or_subset": "BCS_3.5",
+    "provenance_group": "GS_burst_3213",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 3.5,
+      "passage_id": "GS_886"
+    },
+    "sample_id": "vp2_0008"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.5\\GS_1781_4.jpg",
+    "category_or_subset": "BCS_3.5",
+    "provenance_group": "GS_burst_0870",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 3.5,
+      "passage_id": "GS_1781"
+    },
+    "sample_id": "vp2_0009"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.5\\YM_1259_1.jpg",
+    "category_or_subset": "BCS_3.5",
+    "provenance_group": "YM_burst_0290",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 3.5,
+      "passage_id": "YM_1259"
+    },
+    "sample_id": "vp2_0010"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.5\\YM_1422_8.jpg",
+    "category_or_subset": "BCS_3.5",
+    "provenance_group": "YM_burst_0471",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 3.5,
+      "passage_id": "YM_1422"
+    },
+    "sample_id": "vp2_0011"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.5\\YM_1011_1.jpg",
+    "category_or_subset": "BCS_3.5",
+    "provenance_group": "YM_burst_0016",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 3.5,
+      "passage_id": "YM_1011"
+    },
+    "sample_id": "vp2_0012"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.75\\GS_2597_8.jpg",
+    "category_or_subset": "BCS_3.75",
+    "provenance_group": "GS_burst_1767",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 3.75,
+      "passage_id": "GS_2597"
+    },
+    "sample_id": "vp2_0013"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.75\\GS_281_1.jpg",
+    "category_or_subset": "BCS_3.75",
+    "provenance_group": "GS_burst_2004",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 3.75,
+      "passage_id": "GS_281"
+    },
+    "sample_id": "vp2_0014"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.75\\GS_3294_5.jpg",
+    "category_or_subset": "BCS_3.75",
+    "provenance_group": "GS_burst_2542",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 3.75,
+      "passage_id": "GS_3294"
+    },
+    "sample_id": "vp2_0015"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.75\\YM_1765_2.jpg",
+    "category_or_subset": "BCS_3.75",
+    "provenance_group": "YM_burst_0850",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 3.75,
+      "passage_id": "YM_1765"
+    },
+    "sample_id": "vp2_0016"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.75\\YM_654_2.jpg",
+    "category_or_subset": "BCS_3.75",
+    "provenance_group": "YM_burst_1672",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 3.75,
+      "passage_id": "YM_654"
+    },
+    "sample_id": "vp2_0017"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.0\\GS_472_2.jpg",
+    "category_or_subset": "BCS_4.0",
+    "provenance_group": "GS_burst_2754",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 4.0,
+      "passage_id": "GS_472"
+    },
+    "sample_id": "vp2_0018"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.0\\GS_3317_2.jpg",
+    "category_or_subset": "BCS_4.0",
+    "provenance_group": "GS_burst_2568",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 4.0,
+      "passage_id": "GS_3317"
+    },
+    "sample_id": "vp2_0019"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.0\\GS_2821_2.jpg",
+    "category_or_subset": "BCS_4.0",
+    "provenance_group": "GS_burst_2017",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 4.0,
+      "passage_id": "GS_2821"
+    },
+    "sample_id": "vp2_0020"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.0\\YM_1356_1.jpg",
+    "category_or_subset": "BCS_4.0",
+    "provenance_group": "YM_burst_0397",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 4.0,
+      "passage_id": "YM_1356"
+    },
+    "sample_id": "vp2_0021"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.0\\YM_819_2.jpg",
+    "category_or_subset": "BCS_4.0",
+    "provenance_group": "YM_burst_1855",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 4.0,
+      "passage_id": "YM_819"
+    },
+    "sample_id": "vp2_0022"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.0\\YM_206_8.jpg",
+    "category_or_subset": "BCS_4.0",
+    "provenance_group": "YM_burst_1175",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 4.0,
+      "passage_id": "YM_206"
+    },
+    "sample_id": "vp2_0023"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.25\\GS_2916_4.jpg",
+    "category_or_subset": "BCS_4.25",
+    "provenance_group": "GS_burst_2122",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 4.25,
+      "passage_id": "GS_2916"
+    },
+    "sample_id": "vp2_0024"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.25\\GS_1119_2.jpg",
+    "category_or_subset": "BCS_4.25",
+    "provenance_group": "GS_burst_0135",
+    "metadata_dict": {
+      "farm_source": "GS_Gansu",
+      "bcs_label": 4.25,
+      "passage_id": "GS_1119"
+    },
+    "sample_id": "vp2_0025"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.25\\YM_13_2.jpg",
+    "category_or_subset": "BCS_4.25",
+    "provenance_group": "YM_burst_0334",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 4.25,
+      "passage_id": "YM_13"
+    },
+    "sample_id": "vp2_0026"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.25\\YM_246_1.jpg",
+    "category_or_subset": "BCS_4.25",
+    "provenance_group": "YM_burst_1219",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 4.25,
+      "passage_id": "YM_246"
+    },
+    "sample_id": "vp2_0027"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.25\\YM_723_8.jpg",
+    "category_or_subset": "BCS_4.25",
+    "provenance_group": "YM_burst_1749",
+    "metadata_dict": {
+      "farm_source": "YM_Farm2",
+      "bcs_label": 4.25,
+      "passage_id": "YM_723"
+    },
+    "sample_id": "vp2_0028"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.25\\L-i1330.jpg",
+    "category_or_subset": "BCS_3.25",
+    "provenance_group": "STEREO_blk_26",
+    "metadata_dict": {
+      "farm_source": "STEREO_Farm3",
+      "bcs_label": 3.25,
+      "passage_id": "STEREO_blk_26"
+    },
+    "sample_id": "vp2_0029"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.5\\L-i10816.jpg",
+    "category_or_subset": "BCS_3.5",
+    "provenance_group": "STEREO_blk_216",
+    "metadata_dict": {
+      "farm_source": "STEREO_Farm3",
+      "bcs_label": 3.5,
+      "passage_id": "STEREO_blk_216"
+    },
+    "sample_id": "vp2_0030"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.75\\R-i8702.jpg",
+    "category_or_subset": "BCS_3.75",
+    "provenance_group": "STEREO_blk_174",
+    "metadata_dict": {
+      "farm_source": "STEREO_Farm3",
+      "bcs_label": 3.75,
+      "passage_id": "STEREO_blk_174"
+    },
+    "sample_id": "vp2_0031"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\3.75\\R-i3630.jpg",
+    "category_or_subset": "BCS_3.75",
+    "provenance_group": "STEREO_blk_72",
+    "metadata_dict": {
+      "farm_source": "STEREO_Farm3",
+      "bcs_label": 3.75,
+      "passage_id": "STEREO_blk_72"
+    },
+    "sample_id": "vp2_0032"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.0\\L-i6293.jpg",
+    "category_or_subset": "BCS_4.0",
+    "provenance_group": "STEREO_blk_125",
+    "metadata_dict": {
+      "farm_source": "STEREO_Farm3",
+      "bcs_label": 4.0,
+      "passage_id": "STEREO_blk_125"
+    },
+    "sample_id": "vp2_0033"
+  },
+  {
+    "dataset": "ScienceDB",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb_bcs\\dataset\\4.25\\R-i11023.jpg",
+    "category_or_subset": "BCS_4.25",
+    "provenance_group": "STEREO_blk_220",
+    "metadata_dict": {
+      "farm_source": "STEREO_Farm3",
+      "bcs_label": 4.25,
+      "passage_id": "STEREO_blk_220"
+    },
+    "sample_id": "vp2_0034"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\7\\1690330451_19-14-11_3_3.jpg",
+    "category_or_subset": "Behavior_Lying",
+    "provenance_group": "cow_3_cam_3",
+    "metadata_dict": {
+      "cow_id": 3,
+      "camera_id": 3,
+      "behavior": "Lying"
+    },
+    "sample_id": "vp2_0035"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\7\\1690294961_09-22-41_13_1.jpg",
+    "category_or_subset": "Behavior_Lying",
+    "provenance_group": "cow_13_cam_1",
+    "metadata_dict": {
+      "cow_id": 13,
+      "camera_id": 1,
+      "behavior": "Lying"
+    },
+    "sample_id": "vp2_0036"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\7\\1690335761_20-42-41_2_1.jpg",
+    "category_or_subset": "Behavior_Lying",
+    "provenance_group": "cow_2_cam_1",
+    "metadata_dict": {
+      "cow_id": 2,
+      "camera_id": 1,
+      "behavior": "Lying"
+    },
+    "sample_id": "vp2_0037"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\7\\1690298591_10-23-11_11_2.jpg",
+    "category_or_subset": "Behavior_Lying",
+    "provenance_group": "cow_11_cam_2",
+    "metadata_dict": {
+      "cow_id": 11,
+      "camera_id": 2,
+      "behavior": "Lying"
+    },
+    "sample_id": "vp2_0038"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\7\\1690316036_15-13-56_1_2.jpg",
+    "category_or_subset": "Behavior_Lying",
+    "provenance_group": "cow_1_cam_2",
+    "metadata_dict": {
+      "cow_id": 1,
+      "camera_id": 2,
+      "behavior": "Lying"
+    },
+    "sample_id": "vp2_0039"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\2\\1690294136_09-08-56_16_1.jpg",
+    "category_or_subset": "Behavior_Standing",
+    "provenance_group": "cow_16_cam_1",
+    "metadata_dict": {
+      "cow_id": 16,
+      "camera_id": 1,
+      "behavior": "Standing"
+    },
+    "sample_id": "vp2_0040"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\2\\1690329146_18-52-26_8_4.jpg",
+    "category_or_subset": "Behavior_Standing",
+    "provenance_group": "cow_8_cam_4",
+    "metadata_dict": {
+      "cow_id": 8,
+      "camera_id": 4,
+      "behavior": "Standing"
+    },
+    "sample_id": "vp2_0041"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\2\\1690335686_20-41-26_4_4.jpg",
+    "category_or_subset": "Behavior_Standing",
+    "provenance_group": "cow_4_cam_4",
+    "metadata_dict": {
+      "cow_id": 4,
+      "camera_id": 4,
+      "behavior": "Standing"
+    },
+    "sample_id": "vp2_0042"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\2\\1690338086_21-21-26_13_4.jpg",
+    "category_or_subset": "Behavior_Standing",
+    "provenance_group": "cow_13_cam_4",
+    "metadata_dict": {
+      "cow_id": 13,
+      "camera_id": 4,
+      "behavior": "Standing"
+    },
+    "sample_id": "vp2_0043"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\2\\1690320956_16-35-56_5_2.jpg",
+    "category_or_subset": "Behavior_Standing",
+    "provenance_group": "cow_5_cam_2",
+    "metadata_dict": {
+      "cow_id": 5,
+      "camera_id": 2,
+      "behavior": "Standing"
+    },
+    "sample_id": "vp2_0044"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\4\\1690302596_11-29-56_8_2.jpg",
+    "category_or_subset": "Behavior_Feeding_head_down",
+    "provenance_group": "cow_8_cam_2",
+    "metadata_dict": {
+      "cow_id": 8,
+      "camera_id": 2,
+      "behavior": "Feeding_head_down"
+    },
+    "sample_id": "vp2_0045"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\4\\1690314836_14-53-56_5_2.jpg",
+    "category_or_subset": "Behavior_Feeding_head_down",
+    "provenance_group": "cow_5_cam_2",
+    "metadata_dict": {
+      "cow_id": 5,
+      "camera_id": 2,
+      "behavior": "Feeding_head_down"
+    },
+    "sample_id": "vp2_0046"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\4\\1690322636_17-03-56_5_4.jpg",
+    "category_or_subset": "Behavior_Feeding_head_down",
+    "provenance_group": "cow_5_cam_4",
+    "metadata_dict": {
+      "cow_id": 5,
+      "camera_id": 4,
+      "behavior": "Feeding_head_down"
+    },
+    "sample_id": "vp2_0047"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\4\\1690276976_04-22-56_10_4.jpg",
+    "category_or_subset": "Behavior_Feeding_head_down",
+    "provenance_group": "cow_10_cam_4",
+    "metadata_dict": {
+      "cow_id": 10,
+      "camera_id": 4,
+      "behavior": "Feeding_head_down"
+    },
+    "sample_id": "vp2_0048"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\4\\1690329821_19-03-41_12_4.jpg",
+    "category_or_subset": "Behavior_Feeding_head_down",
+    "provenance_group": "cow_12_cam_4",
+    "metadata_dict": {
+      "cow_id": 12,
+      "camera_id": 4,
+      "behavior": "Feeding_head_down"
+    },
+    "sample_id": "vp2_0049"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\3\\1690284356_06-25-56_7_4.jpg",
+    "category_or_subset": "Behavior_Feeding_head_up",
+    "provenance_group": "cow_7_cam_4",
+    "metadata_dict": {
+      "cow_id": 7,
+      "camera_id": 4,
+      "behavior": "Feeding_head_up"
+    },
+    "sample_id": "vp2_0050"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\3\\1690316486_15-21-26_7_1.jpg",
+    "category_or_subset": "Behavior_Feeding_head_up",
+    "provenance_group": "cow_7_cam_1",
+    "metadata_dict": {
+      "cow_id": 7,
+      "camera_id": 1,
+      "behavior": "Feeding_head_up"
+    },
+    "sample_id": "vp2_0051"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\3\\1690285901_06-51-41_4_1.jpg",
+    "category_or_subset": "Behavior_Feeding_head_up",
+    "provenance_group": "cow_4_cam_1",
+    "metadata_dict": {
+      "cow_id": 4,
+      "camera_id": 1,
+      "behavior": "Feeding_head_up"
+    },
+    "sample_id": "vp2_0052"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\3\\1690328666_18-44-26_12_4.jpg",
+    "category_or_subset": "Behavior_Feeding_head_up",
+    "provenance_group": "cow_12_cam_4",
+    "metadata_dict": {
+      "cow_id": 12,
+      "camera_id": 4,
+      "behavior": "Feeding_head_up"
+    },
+    "sample_id": "vp2_0053"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\3\\1690309811_13-30-11_13_4.jpg",
+    "category_or_subset": "Behavior_Feeding_head_up",
+    "provenance_group": "cow_13_cam_4",
+    "metadata_dict": {
+      "cow_id": 13,
+      "camera_id": 4,
+      "behavior": "Feeding_head_up"
+    },
+    "sample_id": "vp2_0054"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\1\\1690300016_10-46-56_10_1.jpg",
+    "category_or_subset": "Behavior_Walking",
+    "provenance_group": "cow_10_cam_1",
+    "metadata_dict": {
+      "cow_id": 10,
+      "camera_id": 1,
+      "behavior": "Walking"
+    },
+    "sample_id": "vp2_0055"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\1\\1690320071_16-21-11_9_2.jpg",
+    "category_or_subset": "Behavior_Walking",
+    "provenance_group": "cow_9_cam_2",
+    "metadata_dict": {
+      "cow_id": 9,
+      "camera_id": 2,
+      "behavior": "Walking"
+    },
+    "sample_id": "vp2_0056"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\1\\1690274411_03-40-11_9_4.jpg",
+    "category_or_subset": "Behavior_Walking",
+    "provenance_group": "cow_9_cam_4",
+    "metadata_dict": {
+      "cow_id": 9,
+      "camera_id": 4,
+      "behavior": "Walking"
+    },
+    "sample_id": "vp2_0057"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\1\\1690273496_03-24-56_13_2.jpg",
+    "category_or_subset": "Behavior_Walking",
+    "provenance_group": "cow_13_cam_2",
+    "metadata_dict": {
+      "cow_id": 13,
+      "camera_id": 2,
+      "behavior": "Walking"
+    },
+    "sample_id": "vp2_0058"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\1\\1690289531_07-52-11_5_2.jpg",
+    "category_or_subset": "Behavior_Walking",
+    "provenance_group": "cow_5_cam_2",
+    "metadata_dict": {
+      "cow_id": 5,
+      "camera_id": 2,
+      "behavior": "Walking"
+    },
+    "sample_id": "vp2_0059"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\6\\1690280081_05-14-41_8_2.jpg",
+    "category_or_subset": "Behavior_Drinking",
+    "provenance_group": "cow_8_cam_2",
+    "metadata_dict": {
+      "cow_id": 8,
+      "camera_id": 2,
+      "behavior": "Drinking"
+    },
+    "sample_id": "vp2_0060"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\6\\1690326401_18-06-41_3_3.jpg",
+    "category_or_subset": "Behavior_Drinking",
+    "provenance_group": "cow_3_cam_3",
+    "metadata_dict": {
+      "cow_id": 3,
+      "camera_id": 3,
+      "behavior": "Drinking"
+    },
+    "sample_id": "vp2_0061"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\6\\1690327586_18-26-26_15_2.jpg",
+    "category_or_subset": "Behavior_Drinking",
+    "provenance_group": "cow_15_cam_2",
+    "metadata_dict": {
+      "cow_id": 15,
+      "camera_id": 2,
+      "behavior": "Drinking"
+    },
+    "sample_id": "vp2_0062"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\6\\1690301786_11-16-26_10_3.jpg",
+    "category_or_subset": "Behavior_Drinking",
+    "provenance_group": "cow_10_cam_3",
+    "metadata_dict": {
+      "cow_id": 10,
+      "camera_id": 3,
+      "behavior": "Drinking"
+    },
+    "sample_id": "vp2_0063"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\5\\1690282391_05-53-11_7_3.jpg",
+    "category_or_subset": "Behavior_Licking",
+    "provenance_group": "cow_7_cam_3",
+    "metadata_dict": {
+      "cow_id": 7,
+      "camera_id": 3,
+      "behavior": "Licking"
+    },
+    "sample_id": "vp2_0064"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\5\\1690328831_18-47-11_7_4.jpg",
+    "category_or_subset": "Behavior_Licking",
+    "provenance_group": "cow_7_cam_4",
+    "metadata_dict": {
+      "cow_id": 7,
+      "camera_id": 4,
+      "behavior": "Licking"
+    },
+    "sample_id": "vp2_0065"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\5\\1690340261_21-57-41_15_3.jpg",
+    "category_or_subset": "Behavior_Licking",
+    "provenance_group": "cow_15_cam_3",
+    "metadata_dict": {
+      "cow_id": 15,
+      "camera_id": 3,
+      "behavior": "Licking"
+    },
+    "sample_id": "vp2_0066"
+  },
+  {
+    "dataset": "MmCows",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\behavior\\mmcows\\cropped_bboxes\\behaviors\\5\\1690282796_05-59-56_7_1.jpg",
+    "category_or_subset": "Behavior_Licking",
+    "provenance_group": "cow_7_cam_1",
+    "metadata_dict": {
+      "cow_id": 7,
+      "camera_id": 1,
+      "behavior": "Licking"
+    },
+    "sample_id": "vp2_0067"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\436\\436_0040.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0436_sess_002",
+    "metadata_dict": {
+      "individual_id": 436,
+      "subset": "parlor",
+      "frame_no": 40
+    },
+    "sample_id": "vp2_0068"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\406\\406_0034.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0406_sess_003",
+    "metadata_dict": {
+      "individual_id": 406,
+      "subset": "parlor",
+      "frame_no": 34
+    },
+    "sample_id": "vp2_0069"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\733\\733_0190.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0733_sess_015",
+    "metadata_dict": {
+      "individual_id": 733,
+      "subset": "parlor",
+      "frame_no": 190
+    },
+    "sample_id": "vp2_0070"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\375\\375_0152.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0375_sess_005",
+    "metadata_dict": {
+      "individual_id": 375,
+      "subset": "parlor",
+      "frame_no": 152
+    },
+    "sample_id": "vp2_0071"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\828\\828_0214.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0828_sess_016",
+    "metadata_dict": {
+      "individual_id": 828,
+      "subset": "parlor",
+      "frame_no": 214
+    },
+    "sample_id": "vp2_0072"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\444\\444_0037.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0444_sess_004",
+    "metadata_dict": {
+      "individual_id": 444,
+      "subset": "parlor",
+      "frame_no": 37
+    },
+    "sample_id": "vp2_0073"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\823\\823_0012.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0823_sess_001",
+    "metadata_dict": {
+      "individual_id": 823,
+      "subset": "parlor",
+      "frame_no": 12
+    },
+    "sample_id": "vp2_0074"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\680\\680_0155.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0680_sess_007",
+    "metadata_dict": {
+      "individual_id": 680,
+      "subset": "parlor",
+      "frame_no": 155
+    },
+    "sample_id": "vp2_0075"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\955\\955_0413.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0955_sess_023",
+    "metadata_dict": {
+      "individual_id": 955,
+      "subset": "parlor",
+      "frame_no": 413
+    },
+    "sample_id": "vp2_0076"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\737\\737_0132.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0737_sess_008",
+    "metadata_dict": {
+      "individual_id": 737,
+      "subset": "parlor",
+      "frame_no": 132
+    },
+    "sample_id": "vp2_0077"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\934\\934_0298.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0934_sess_019",
+    "metadata_dict": {
+      "individual_id": 934,
+      "subset": "parlor",
+      "frame_no": 298
+    },
+    "sample_id": "vp2_0078"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\442\\442_0333.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0442_sess_022",
+    "metadata_dict": {
+      "individual_id": 442,
+      "subset": "parlor",
+      "frame_no": 333
+    },
+    "sample_id": "vp2_0079"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\parlor\\images\\545\\545_0243.jpg",
+    "category_or_subset": "ReID_parlor",
+    "provenance_group": "parlor_cow_0545_sess_013",
+    "metadata_dict": {
+      "individual_id": 545,
+      "subset": "parlor",
+      "frame_no": 243
+    },
+    "sample_id": "vp2_0080"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\529\\529_0809.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0529_sess_002",
+    "metadata_dict": {
+      "individual_id": 529,
+      "subset": "barn",
+      "frame_no": 809
+    },
+    "sample_id": "vp2_0081"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\633\\633_0299.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0633_sess_001",
+    "metadata_dict": {
+      "individual_id": 633,
+      "subset": "barn",
+      "frame_no": 299
+    },
+    "sample_id": "vp2_0082"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\826\\826_0280.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0826_sess_001",
+    "metadata_dict": {
+      "individual_id": 826,
+      "subset": "barn",
+      "frame_no": 280
+    },
+    "sample_id": "vp2_0083"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\684\\684_0243.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0684_sess_001",
+    "metadata_dict": {
+      "individual_id": 684,
+      "subset": "barn",
+      "frame_no": 243
+    },
+    "sample_id": "vp2_0084"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\124\\124_0197.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0124_sess_001",
+    "metadata_dict": {
+      "individual_id": 124,
+      "subset": "barn",
+      "frame_no": 197
+    },
+    "sample_id": "vp2_0085"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\475\\475_0091.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0475_sess_001",
+    "metadata_dict": {
+      "individual_id": 475,
+      "subset": "barn",
+      "frame_no": 91
+    },
+    "sample_id": "vp2_0086"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\733\\733_0257.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0733_sess_001",
+    "metadata_dict": {
+      "individual_id": 733,
+      "subset": "barn",
+      "frame_no": 257
+    },
+    "sample_id": "vp2_0087"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\594\\594_0847.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0594_sess_002",
+    "metadata_dict": {
+      "individual_id": 594,
+      "subset": "barn",
+      "frame_no": 847
+    },
+    "sample_id": "vp2_0088"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\217\\217_0081.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0217_sess_001",
+    "metadata_dict": {
+      "individual_id": 217,
+      "subset": "barn",
+      "frame_no": 81
+    },
+    "sample_id": "vp2_0089"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\433\\433_0272.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0433_sess_001",
+    "metadata_dict": {
+      "individual_id": 433,
+      "subset": "barn",
+      "frame_no": 272
+    },
+    "sample_id": "vp2_0090"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\503\\503_0088.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0503_sess_001",
+    "metadata_dict": {
+      "individual_id": 503,
+      "subset": "barn",
+      "frame_no": 88
+    },
+    "sample_id": "vp2_0091"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\680\\680_0227.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0680_sess_001",
+    "metadata_dict": {
+      "individual_id": 680,
+      "subset": "barn",
+      "frame_no": 227
+    },
+    "sample_id": "vp2_0092"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\barn\\images\\436\\436_0193.jpg",
+    "category_or_subset": "ReID_barn",
+    "provenance_group": "barn_cow_0436_sess_001",
+    "metadata_dict": {
+      "individual_id": 436,
+      "subset": "barn",
+      "frame_no": 193
+    },
+    "sample_id": "vp2_0093"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\snapshots\\images\\660\\660_0002.jpg",
+    "category_or_subset": "ReID_snapshots",
+    "provenance_group": "snap_cow_0660_sess_001",
+    "metadata_dict": {
+      "individual_id": 660,
+      "subset": "snapshots",
+      "frame_no": 2
+    },
+    "sample_id": "vp2_0094"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\snapshots\\images\\168\\168_0003.jpg",
+    "category_or_subset": "ReID_snapshots",
+    "provenance_group": "snap_cow_0168_sess_002",
+    "metadata_dict": {
+      "individual_id": 168,
+      "subset": "snapshots",
+      "frame_no": 3
+    },
+    "sample_id": "vp2_0095"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\snapshots\\images\\192\\192_0004.jpg",
+    "category_or_subset": "ReID_snapshots",
+    "provenance_group": "snap_cow_0192_sess_002",
+    "metadata_dict": {
+      "individual_id": 192,
+      "subset": "snapshots",
+      "frame_no": 4
+    },
+    "sample_id": "vp2_0096"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\snapshots\\images\\241\\241_0007.jpg",
+    "category_or_subset": "ReID_snapshots",
+    "provenance_group": "snap_cow_0241_sess_001",
+    "metadata_dict": {
+      "individual_id": 241,
+      "subset": "snapshots",
+      "frame_no": 7
+    },
+    "sample_id": "vp2_0097"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\snapshots\\images\\290\\290_0011.jpg",
+    "category_or_subset": "ReID_snapshots",
+    "provenance_group": "snap_cow_0290_sess_001",
+    "metadata_dict": {
+      "individual_id": 290,
+      "subset": "snapshots",
+      "frame_no": 11
+    },
+    "sample_id": "vp2_0098"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\snapshots\\images\\975\\975_0015.jpg",
+    "category_or_subset": "ReID_snapshots",
+    "provenance_group": "snap_cow_0975_sess_006",
+    "metadata_dict": {
+      "individual_id": 975,
+      "subset": "snapshots",
+      "frame_no": 15
+    },
+    "sample_id": "vp2_0099"
+  },
+  {
+    "dataset": "SideViewCows2026",
+    "source_image_path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\id\\external\\sideviewcows2026\\snapshots\\images\\680\\680_0003.jpg",
+    "category_or_subset": "ReID_snapshots",
+    "provenance_group": "snap_cow_0680_sess_001",
+    "metadata_dict": {
+      "individual_id": 680,
+      "subset": "snapshots",
+      "frame_no": 3
+    },
+    "sample_id": "vp2_0100"
+  }
+]
