@@ -150,12 +150,12 @@ The Step 2.2 audit evaluated whether off-the-shelf, pretrained segmentation can 
 1. **Quantitative Performance on SideViewCows2026 Ground Truth (N=100)**:
    - **RT-DETR-L -> SAM 2.1** (`sam2.1_s.pt` / `sam2.1_hiera_small`) achieved a **Mean IoU of 0.9216** (Median: 0.9613) and **Mean Dice of 0.9530** (Median: 0.9803).
    - 99.0% of images achieved IoU >= 0.50, and 96.0% achieved IoU >= 0.70.
-   - **Oracle Diagnostic Gap**: An oracle bounding box derived directly from ground-truth masks yielded Mean IoU 0.9468 and Mean Dice 0.9717. The narrow 0.0252 IoU delta confirms that RT-DETR-L boxes are sufficiently tight and accurate that SAM 2.1 boundary precision is preserved end-to-end.
+   - **Oracle Diagnostic Gap**: An oracle bounding box derived directly from ground-truth masks yielded Mean IoU 0.9468 and Mean Dice 0.9717. The small observed delta (0.0252 IoU) indicates that RT-DETR-L box prompts worked well with SAM 2.1 on this SideView sample.
 2. **Fast Baseline Comparison (YOLO26s-seg)**:
-   - Ultralytics `yolo26s-seg.pt` (cow class only) achieved Mean IoU 0.8660 and Mean Dice 0.9170 on SideView, but suffered severe miss rates in other environments: **38.0% missed on ScienceDB** and **27.0% missed on MmCows**, mirroring the localization failures of anchor-free YOLO in Step 2.1.
+   - Ultralytics `yolo26s-seg.pt` (cow class only) achieved Mean IoU 0.8660 and Mean Dice 0.9170 on SideView, but had substantially higher non-detection rates in other environments: **38.0% missed on ScienceDB** and **27.0% missed on MmCows**, mirroring the localization non-detection rates in Step 2.1.
 3. **Qualitative Usability on ScienceDB & MmCows (N=200)**:
-   - Whenever a bounding box was provided by RT-DETR-L, SAM 2.1 successfully segmented the cow in **100% of cases** (93/93 on ScienceDB, 90/90 on MmCows). Zero internal SAM failures were observed.
-   - On ScienceDB, SAM 2.1 cleanly excludes metal chute bars and barn floor textures while preserving dorsal ridges, pin bones, hook bones, and the tailhead necessary for BCS assessment.
+   - Whenever a bounding box was provided by RT-DETR-L, SAM 2.1 produced a mask in **100% of cases** (93/93 on ScienceDB, 90/90 on MmCows) with zero internal SAM failures.
+   - On ScienceDB, reviewed composites show SAM 2.1 cleanly excludes metal chute bars and barn floor textures while preserving dorsal ridges, pin bones, hook bones, and the tailhead necessary for BCS assessment.
 4. **Practicality**:
    - Total pipeline latency (`RT-DETR-L` + `SAM 2.1 small`) averages **475.0 ms/frame** on a low-end NVIDIA GTX 1050 Ti (4GB VRAM) with peak memory consumption under 1.4 GB. For offline Phase 3 feature/crop caching, this throughput (~2.1 FPS) is fully practical.
 
@@ -203,14 +203,14 @@ SideViewCows2026 contains verified pixel-level binary ground truth masks, enabli
 | **Miss Rate (0 detections)** | **0.0%** (0/100) | 0.0% (0/100) | 1.0% (1/100) |
 
 #### Diagnostic Analysis (Oracle vs RT-DETR):
-- The Oracle GT box achieves **0.9468 Mean IoU** and **0.9717 Mean Dice**, demonstrating that SAM 2.1 possesses near-human cattle contour demarcation capability out-of-the-box.
-- When fed bounding boxes from RT-DETR-L, performance is **0.9216 Mean IoU**, a marginal drop of only 2.5%. This proves that off-the-shelf RT-DETR-L localization is sufficiently precise to serve as a high-fidelity prompt for SAM 2.1.
+- The Oracle GT box achieves **0.9468 Mean IoU** and **0.9717 Mean Dice**, demonstrating that SAM 2.1 possesses strong cattle contour demarcation capability out-of-the-box.
+- When fed bounding boxes from RT-DETR-L, performance is **0.9216 Mean IoU**, a marginal difference of only 0.0252 IoU. This small observed gap indicates that RT-DETR-L box prompts worked well with SAM 2.1 on this SideView sample.
 
 ---
 
 ### 2.5 ScienceDB & MmCows Usability Analysis (No Ground Truth)
 
-ScienceDB and MmCows lack verified pixel ground truth masks; therefore, automated IoU/Dice was not synthesized. Systematic visual inspection across all samples established the following operational status breakdown:
+ScienceDB and MmCows lack verified pixel ground truth masks; therefore, automated IoU/Dice was not synthesized. The operational status breakdown across all samples is as follows:
 
 #### Operational Status Distribution (N=100 per dataset)
 
@@ -221,20 +221,22 @@ ScienceDB and MmCows lack verified pixel ground truth masks; therefore, automate
 | **MmCows** | **RT-DETR-L -> SAM 2.1** | **90 (90.0%)** | 10 (10.0%) | 0 (0.0%) |
 | MmCows | YOLO26s-seg | 73 (73.0%) | N/A | 27 (27.0%) |
 
-#### Visual Inspection Quality Categories (RT-DETR-L -> SAM 2.1)
+#### Visual Inspection Observations (RT-DETR-L -> SAM 2.1)
+
+Based on manual visual review of the saved composite samples in `docs/audits/assets/perception_audit/`:
 
 1. **ScienceDB (BCS rear view)**:
-   - **Usable (91.0%)**: Cow body, spine, hooks, pin bones, and tailhead are cleanly masked. Metal chute bars, head gates, and concrete floors are cleanly excluded.
-   - **Partial Mask (2.0%)**: Minor lower-leg cutoffs where heavy horizontal chute bars cross the lower hooves. Critical dorsal/pelvic anatomical regions remain intact.
-   - **Upstream Localization Failure (7.0%)**: 7 images where RT-DETR-L detected 0 cows due to extreme darkness or extreme close-up camera angles.
-   - **Background Leakage / Wrong Cow / Failed**: 0.0%.
+   - **Usable**: In the reviewed composites, cow bodies, spines, hooks, pin bones, and tailheads are cleanly masked. Metal chute bars, head gates, and concrete floors are cleanly excluded from the predicted masks.
+   - **Partial Mask**: Minor lower-leg cutoffs occur in some images where heavy horizontal chute bars cross lower hooves; critical dorsal and pelvic anatomical regions remain intact.
+   - **Upstream Localization Failure**: 7 images in the sample had 0 cows detected by RT-DETR-L due to extreme darkness or extreme close-up angles (no box provided to SAM 2.1).
+   - **Background Leakage / Wrong Cow**: Not observed in the reviewed composites.
 
 2. **MmCows (CCTV behavior)**:
-   - **Usable (84.0%)**: Clean body contours across standing, walking, drinking, feeding (head-up and head-down), and licking. Lying cows on straw bedding are cleanly delineated from floor straw.
-   - **Partial Mask (4.0%)**: Mild boundary erosion on distant, heavily curled cows in dark cubicles.
-   - **Wrong Cow (2.0%)**: In dense feeding alley scenes, the primary-cow heuristic (maximum box area) occasionally selected an adjacent foreground cow rather than the centrally active animal.
-   - **Upstream Localization Failure (10.0%)**: 10 images where RT-DETR-L missed curled lying cows in low-contrast bedding.
-   - **Background Leakage / Failed**: 0.0%.
+   - **Usable**: In the reviewed composites, clean body contours are observed across standing, walking, drinking, feeding, and licking postures. Lying cows on straw bedding are cleanly separated from floor straw.
+   - **Partial Mask**: Minor boundary erosion is observed on some distant curled cows in dark cubicles.
+   - **Wrong Cow**: In dense feeding alley scenes, the largest-box rule occasionally selected an adjacent foreground cow rather than the centrally active cow.
+   - **Upstream Localization Failure**: 10 images in the sample had 0 cows detected by RT-DETR-L (all in lying postures in low-contrast cubicles).
+   - **Background Leakage**: Not observed in the reviewed composites.
 
 ---
 
@@ -247,8 +249,8 @@ ScienceDB and MmCows lack verified pixel ground truth masks; therefore, automate
 2. **Upstream Detector Misses on Curled Lying Cows**:
    - All 10 MmCows upstream failures occurred in lying posture samples (`sample_0101`, `sample_0102`, `sample_0103`, `sample_0106`, `sample_0108`, `sample_0115`, `sample_0116`, `sample_0138`, `sample_0182`, `sample_0189`).
    - *Implication*: Curled cattle in low-contrast cubicles represent the primary remaining localization failure mode for COCO-pretrained detectors.
-3. **Single-Stage Segmentation (YOLO26s-seg) Fragility**:
-   - YOLO26s-seg failed to detect/segment cattle in 38% of ScienceDB images and 27% of MmCows images. Its reliance on standard anchor-free detection heads without deformable attention makes it brittle in non-standard camera viewpoints (rear chute, steep overhead CCTV).
+3. **Single-Stage Segmentation (YOLO26s-seg) Non-Detection Rate**:
+   - YOLO26s-seg had substantially higher non-detection rates in this audit (38.0% on ScienceDB, 27.0% on MmCows). Hypotheses for this difference include sensitivity to non-standard camera angles (rear chute, steep overhead CCTV) or architectural differences in feature aggregation, but causal reasons remain unproven without controlled ablations.
 
 ---
 
@@ -261,16 +263,16 @@ Measurements performed on local workstation (Intel i7, NVIDIA GeForce GTX 1050 T
 | **RT-DETR-L** (Detector) | GTX 1050 Ti | 94.3 ms | 92.1 ms | ~550 MB | Fully Feasible |
 | **SAM 2.1 small** (Segmenter) | GTX 1050 Ti | 380.7 ms | 378.7 ms | ~850 MB | Fully Feasible |
 | **Pipeline A (Total)** | GTX 1050 Ti | **475.0 ms** (~2.1 FPS) | **470.8 ms** | **~1.4 GB** | **Optimal for Step 3 Caching** |
-| **YOLO26s-seg** (Fast Baseline)| GTX 1050 Ti | 32.2 ms (~31.0 FPS) | 28.8 ms | ~150 MB | Fast, but accuracy unacceptable |
+| **YOLO26s-seg** (Fast Baseline)| GTX 1050 Ti | 32.2 ms (~31.0 FPS) | 28.8 ms | ~150 MB | Fast, but high non-detection rate |
 
-On the BRACU Lab Research PC (RTX 5090), Pipeline A is projected to execute at >30 FPS (<35 ms total), making large-scale dataset caching fast and frictionless.
+RTX 5090 performance has not yet been measured and is expected to be faster than the GTX 1050 Ti.
 
 ---
 
 ### 2.8 Step 2.2 Feasibility Verdict
 **VERDICT: PRETRAINED SEGMENTATION FEASIBILITY CONFIRMED.**
 
-1. **Pretrained SAM 2.1 is validated**: Zero fine-tuning is needed to achieve >0.92 IoU and clean separation of cattle from complex barn and chute backgrounds.
+1. **Pretrained SAM 2.1 is validated**: Zero fine-tuning was needed to achieve >0.92 Mean IoU on SideView ground truth and clean separation of cattle from complex barn and chute backgrounds.
 2. **Architecture Recommendation**: **RT-DETR-L -> SAM 2.1 small** is designated as the primary segmentation pipeline for Step 3 feature caching.
 3. **Gate Status**: Step 2.2 is complete. Proceed to Step 2.3 (Keypoint / Pose feasibility audit) per `phase3_canonical_roadmap.md`.
 
