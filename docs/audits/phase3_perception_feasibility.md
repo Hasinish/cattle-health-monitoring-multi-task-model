@@ -1,7 +1,7 @@
 # Phase 3 Cattle Perception Feasibility Audit
 
 **Document:** `docs/audits/phase3_perception_feasibility.md`  
-**Status:** STEP 2.1 COMPLETE (Localization Feasibility) | STEPS 2.2–2.4 PENDING  
+**Status:** STEPS 2.1–2.3 COMPLETE | STEP 2.4 IN PROGRESS (Taxonomy Verified, Zero-Shot Evaluated & Rejected, Operational Generator Pending) | STEP 2 OPEN  
 **Date:** 2026-09-20  
 **Hardware:** Local GTX 1050 Ti (4GB VRAM), PyTorch 2.5.1+cu121  
 
@@ -501,34 +501,62 @@ The 60 images were arranged into 6 high-resolution contact sheets (10 images per
 
 ### 4.5 Operational Strategy Assessment for Step 3 Viewpoint Generation
 
-To determine the most defensible method for producing `coarse_viewpoint` labels during Step 3 caching across ScienceDB, MmCows, and SideViewCows2026, four candidate operational options were evaluated:
+To determine the most defensible method for producing `coarse_viewpoint` labels during Step 3 caching across ScienceDB, MmCows, and SideViewCows2026, the roadmap-approved candidate options were evaluated:
 
 1. **Option 1 (Metadata / Domain Heuristics)**:
-   - *ScienceDB & SideView*: Constrained capture geometry yields strong domain priors (90% rear/rear-oblique in ScienceDB; 90% side in SideView). However, naive heuristics miss non-standard angles (`sample_0084` front-oblique, `sample_0215` parlor turn) and cannot identify ambiguous cases (`sample_0022`, `sample_0277`).
-   - *MmCows*: Completely fails. MmCows metadata contains zero viewpoint annotations; ceiling cameras capture loose-housing pens where cows move, feed, lie, and lick across all 360 degrees.
-   - *Verdict*: Insufficient as a general solution; usable only as a strong domain prior for fixed-chute setups.
+   - *ScienceDB & SideView*: Constrained capture geometry yields strong domain priors (90%+ rear/rear-oblique in ScienceDB chute passages; 90%+ side in SideView parlor/barn). However, naive heuristics miss non-standard angles (`sample_0084` front-oblique, `sample_0215` parlor turn) and cannot identify ambiguous cases (`sample_0022`, `sample_0277`).
+   - *MmCows*: Completely fails as a general solution. MmCows metadata contains zero viewpoint annotations; ceiling cameras capture loose-housing pens where cows move, feed, lie, and rotate across all 360 degrees.
+   - *Verdict*: Insufficient as a general solution across datasets; usable only as an auxiliary domain prior for fixed-chute setups.
 
 2. **Option 2 (Geometric Rules: Aspect Ratio / Mask Moments)**:
-   - *Degeneracy*: Bounding box aspect ratio ($w/h$) **cannot scientifically distinguish front vs. rear**. Both a cow facing directly toward the camera (`front`) and away (`rear`) present a narrow, tall/square cross-section ($w/h \approx 0.6 - 1.0$).
+   - *Degeneracy*: Bounding box aspect ratio ($w/h$) cannot scientifically distinguish front vs. rear. Both a cow facing directly toward the camera (`front`) and away (`rear`) present a narrow, tall/square cross-section ($w/h \approx 0.6 - 1.0$).
    - *Posture & Occlusion*: Lying postures, curled cows, and vertical stall bars corrupt aspect-ratio signals in MmCows.
    - *Verdict*: REJECTED as a standalone viewpoint classifier.
 
 3. **Option 3 (Pretrained Resources: MOO — Multi-view Oriented Observations, arXiv:2603.04314)**:
    - *What MOO Provides*: A synthetic dataset of 128,000 Blender-rendered cattle images across 1,000 synthetic identities with spherical viewpoint annotations (azimuth, elevation).
-   - *Pretrained Predictor Checkpoint*: **DOES NOT EXIST**. MOO provides no off-the-shelf orientation predictor model or weights.
-   - *Domain Gap*: Synthetic Blender cows in free space vs real chutes (ScienceDB), low-light stall-bar occlusions (MmCows), and industrial milking parlors (SideView).
-   - *Roadmap Constraint*: Training an orientation predictor from scratch on 128k synthetic images violates the Phase 3 core constraint against training models from scratch before core baselines.
-   - *Verdict*: REJECTED for Step 3 operational labeling.
+   - *Pretrained Predictor Checkpoint*: MOO has no ready pretrained viewpoint predictor or checkpoint verified in the repository.
+   - *Roadmap Alignment*: The canonical roadmap explicitly lists MOO synthetic viewpoint supervision as a planned candidate.
+   - *Status*: Utilizing MOO would require a separate supervised or synthetic-to-real transfer feasibility experiment. Because that experiment has not yet been run, MOO remains **UNTESTED**, rather than scientifically rejected.
 
-4. **Option 4 (Lightweight Classifier / Zero-Shot Vision-Language Foundation Model)**:
-   - *Supervised Training*: Possessing only 60 human-verified samples makes training a supervised CNN/ViT classifier prone to severe overfitting and domain memorization.
-   - *Zero-Shot Foundation Model (CLIP / SigLIP)*: Frozen vision-language models have broad semantic priors to distinguish body orientations (e.g. ranking prompts: *"a rear view of a cow"*, *"a side profile of a cow"*, *"a front view of a cow"*, *"an occluded or ambiguous cow"*) with zero training and zero parameter expansion.
-   - *Verdict*: RECOMMENDED AS PRIMARY CANDIDATE FOR EVALUATION.
+4. **Option 4 (Zero-Shot Vision-Language Foundation Models: CLIP / SigLIP)**:
+   - *Evaluation Setup*: Evaluated frozen zero-shot vision-language models (`openai/clip-vit-base-patch32`, `laion/CLIP-ViT-B-32-laion2B-s34B-b79K`, `google/siglip-base-patch16-224`) on the 100-sample cross-checked benchmark (`artifacts/perception_audit/viewpoint_expanded_agent_review_manifest.csv`) with RT-DETR-L target crops recovered via normalized path matching.
+   - *Method A (6-Class Explicit with 'unknown / ambiguous' prompt)*:
+     - **OpenAI CLIP**: Overall Accuracy 30.0%, Macro-F1 0.2468, 16 false `front` predictions.
+     - **OpenCLIP LAION-2B**: Overall Accuracy 6.0%, Macro-F1 0.0300.
+     - **Google SigLIP**: Overall Accuracy 5.0%, Macro-F1 0.0190.
+     - *Observation*: Under the tested explicit `unknown / ambiguous` prompting setup, OpenCLIP and SigLIP predicted `unknown / ambiguous` for the great majority of samples (~95%). This observation reflects the specific prompt configuration tested and must not be generalized to all VLMs.
+   - *Method B (5 Physical Classes + Margin Rejection)*:
+     - *Raw 5-Class Physical Performance (N=95 non-ambiguous physical samples, no rejection)*:
+       - **OpenAI CLIP**: Accuracy 33.68%, Macro-F1 0.2711, 19 false `front` predictions.
+       - **OpenCLIP LAION-2B**: Accuracy 15.79%, Macro-F1 0.1149, 13 false `front` predictions.
+       - **Google SigLIP**: Accuracy 12.63%, Macro-F1 0.0958, 66 false `front` predictions.
+     - *6-Class Performance with Margin Rejection ($\tau_{\text{margin}} = 0.10$, N=100)*:
+       - **OpenAI CLIP**: Overall Accuracy 27.0%, Ambiguous Recall 100.0% (5/5), False Ambiguous 50/95 (more than half of physical samples falsely rejected).
+       - **OpenCLIP LAION-2B**: Overall Accuracy 8.0%.
+       - **Google SigLIP**: Overall Accuracy 7.0%.
+   - *Verdict*: **REJECTED as an operational generator under the tested setup**. Frozen zero-shot VLMs without fine-tuning failed to provide reliable viewpoint predictions.
 
-5. **Camera ID Shortcut Leakage**:
-   - Camera ID must NEVER be used as a viewpoint proxy. In MmCows, cows rotate dynamically across all 360 degrees within each camera view. In ScienceDB/SideView, camera ID proxies leak background and sensor shortcuts, directly defeating the thesis hypothesis of eliminating background shortcuts.
+5. **Option 5 (Supervised Cattle-Specific Viewpoint Classifier)**:
+   - *Roadmap Alignment*: A supervised cattle-specific viewpoint classifier remains an allowed roadmap candidate ("simple classifier if needed").
+   - *Data Constraint*: The current 60-image manual review and 100-image cross-check labels are severely class-imbalanced (e.g., zero true `front` examples, only 2 `front-oblique` examples).
+   - *Status*: These existing review labels alone do not yet constitute a defensible balanced training set. Additional targeted labeling and/or synthetic MOO supervision would be needed before a proper supervised test. A supervised classifier remains an allowed candidate, currently **UNTESTED**.
 
-### 4.6 Current Status & Recommended Next Experiment
+6. **Camera ID Shortcut Leakage**:
+   - Camera ID must NEVER be treated as a viewpoint proxy. In MmCows, cows rotate dynamically across all 360 degrees within each camera view. In ScienceDB/SideView, camera ID proxies leak background and sensor shortcuts, directly defeating the thesis hypothesis of eliminating background shortcuts.
 
-The manual visual taxonomy review and operational strategy audit for Step 2.4 are complete and persisted. No classifier training or GPU inference has been performed. Step 2.4 and overall Step 2 remain open pending:
-- **Smallest Experiment Needed Next**: A lightweight zero-shot evaluation script (`scripts/audit_viewpoint_zeroshot.py`) testing whether frozen CLIP / SigLIP can correctly classify the 60 human-verified images in `artifacts/perception_audit/viewpoint_manual_review_manifest.csv` into the 6 coarse viewpoint classes without any training or fine-tuning.
+### 4.6 Step 2.4 Status & Scientific Summary
+
+1. **Taxonomy Feasibility**: The coarse viewpoint taxonomy (`rear`, `rear-oblique`, `side`, `front-oblique`, `front`, `unknown / ambiguous`) is visually usable and consistently definable on real cattle imagery across diverse datasets.
+2. **Zero-Shot Evaluation Outcome**: The tested zero-shot approach failed as an operational generator under both Method A (ambiguity-class collapse under the tested explicit ambiguous prompt setup) and Method B (low physical accuracy and high false-front / false-rejection rates). Therefore, frozen zero-shot CLIP/OpenCLIP/SigLIP are rejected as the Step 3 viewpoint generator under the tested setup.
+3. **Viewpoint Concept Preserved**: Rejecting the tested zero-shot generator does NOT reject the viewpoint hypothesis itself. Ground truth contains zero true `front` examples; while `front` recall cannot be evaluated, false-front predictions are documented.
+4. **Current Step 2.4 Component Status**:
+   - **Viewpoint Taxonomy**: FEASIBLE / DEFINABLE
+   - **Domain Heuristics**: INSUFFICIENT AS GENERAL SOLUTION (usable only as auxiliary prior for fixed chutes)
+   - **Simple Geometry / Aspect Ratio**: REJECTED AS STANDALONE CLASSIFIER
+   - **Zero-Shot CLIP / OpenCLIP / SigLIP**: REJECTED AS OPERATIONAL GENERATOR UNDER TESTED SETUP
+   - **MOO-Supervised Estimator**: UNTESTED
+   - **Supervised Cattle-Specific Classifier**: UNTESTED
+   - **Operational Viewpoint Generator**: NOT YET SELECTED
+5. **Next Step**: The next viewpoint decision must come from the remaining roadmap-approved candidates (e.g., evaluating synthetic MOO supervision or a simple supervised classifier with balanced data), rather than pretending zero-shot was the entire viewpoint plan. Step 2.4 and overall Step 2 remain open.
+
