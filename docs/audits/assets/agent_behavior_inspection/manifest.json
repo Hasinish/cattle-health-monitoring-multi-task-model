@@ -1,0 +1,598 @@
+{
+  "mmcows": [
+    {
+      "id": "MM-01",
+      "name": "Walking (Sharp / Aisle)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-01_1690272086_03-01-26_1_1.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-01_1690272086_03-01-26_1_1.jpg",
+      "class_name": "Walking",
+      "class_id": "1",
+      "cow_id": "1",
+      "camera_id": "1",
+      "orig_res": "547x519",
+      "split": "train",
+      "focus": "Inspect active forward limb stride and floor boundary clarity."
+    },
+    {
+      "id": "MM-02",
+      "name": "Walking (Distant / Motion Blur)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-02_1690272026_03-00-26_5_1.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-02_1690272026_03-00-26_5_1.jpg",
+      "class_name": "Walking",
+      "class_id": "1",
+      "cow_id": "5",
+      "camera_id": "1",
+      "orig_res": "294x409",
+      "split": "test",
+      "focus": "Evaluate motion blur on leg articulation and hoof boundary."
+    },
+    {
+      "id": "MM-03",
+      "name": "Standing (Clean Torso / Cam 1)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-03_1690276721_04-18-41_3_1.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-03_1690276721_04-18-41_3_1.jpg",
+      "class_name": "Standing",
+      "class_id": "2",
+      "cow_id": "3",
+      "camera_id": "1",
+      "orig_res": "485x125",
+      "split": "train",
+      "focus": "Standard four-leg standing posture with full body profile."
+    },
+    {
+      "id": "MM-04",
+      "name": "Standing (Cam 2 / Feed Alley)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-04_1690273766_03-29-26_8_2.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-04_1690273766_03-29-26_8_2.jpg",
+      "class_name": "Standing",
+      "class_id": "2",
+      "cow_id": "8",
+      "camera_id": "2",
+      "orig_res": "485x456",
+      "split": "train",
+      "focus": "Standing in alleyway from side-angle CCTV."
+    },
+    {
+      "id": "MM-05",
+      "name": "Standing (Cam 4 / Stall)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-05_1690271981_02-59-41_16_4.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-05_1690271981_02-59-41_16_4.jpg",
+      "class_name": "Standing",
+      "class_id": "2",
+      "cow_id": "16",
+      "camera_id": "4",
+      "orig_res": "640x256",
+      "split": "test",
+      "focus": "Standing in cubicle stall; check partition obstruction."
+    },
+    {
+      "id": "MM-06",
+      "name": "Feeding Head Up (Cow 4)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-06_1690284401_06-26-41_4_1.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-06_1690284401_06-26-41_4_1.jpg",
+      "class_name": "Feeding_head_up",
+      "class_id": "3",
+      "cow_id": "4",
+      "camera_id": "1",
+      "orig_res": "240x357",
+      "split": "train",
+      "focus": "Head lifted above trough; verify muzzle and neck angle."
+    },
+    {
+      "id": "MM-07",
+      "name": "Feeding Head Up (Cow 1)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-07_1690271876_02-57-56_1_2.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-07_1690271876_02-57-56_1_2.jpg",
+      "class_name": "Feeding_head_up",
+      "class_id": "3",
+      "cow_id": "1",
+      "camera_id": "2",
+      "orig_res": "252x198",
+      "split": "train",
+      "focus": "Secondary camera angle on head-up transition."
+    },
+    {
+      "id": "MM-08",
+      "name": "Feeding Head Down (Cow 5)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-08_1690271876_02-57-56_5_1.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-08_1690271876_02-57-56_5_1.jpg",
+      "class_name": "Feeding_head_down",
+      "class_id": "4",
+      "cow_id": "5",
+      "camera_id": "1",
+      "orig_res": "402x362",
+      "split": "test",
+      "focus": "Muzzle deep in feed bunk; check head visibility vs feed."
+    },
+    {
+      "id": "MM-09",
+      "name": "Feeding Head Down (Cow 12, Test)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-09_1690273166_03-19-26_12_1.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-09_1690273166_03-19-26_12_1.jpg",
+      "class_name": "Feeding_head_down",
+      "class_id": "4",
+      "cow_id": "12",
+      "camera_id": "1",
+      "orig_res": "397x274",
+      "split": "train",
+      "focus": "Independent held-out test cow feeding posture."
+    },
+    {
+      "id": "MM-10",
+      "name": "Licking (Cow 6 / Coat)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-10_1690293326_08-55-26_6_1.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-10_1690293326_08-55-26_6_1.jpg",
+      "class_name": "Licking",
+      "class_id": "5",
+      "cow_id": "6",
+      "camera_id": "1",
+      "orig_res": "240x200",
+      "split": "train",
+      "focus": "Rare self-grooming; inspect head turned back licking side coat."
+    },
+    {
+      "id": "MM-11",
+      "name": "Licking (Cow 10 / Stall Rail)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-11_1690330406_19-13-26_10_1.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-11_1690330406_19-13-26_10_1.jpg",
+      "class_name": "Licking",
+      "class_id": "5",
+      "cow_id": "10",
+      "camera_id": "1",
+      "orig_res": "141x205",
+      "split": "train",
+      "focus": "Muzzle licking stall hardware/rail; subtle contact action."
+    },
+    {
+      "id": "MM-12",
+      "name": "Drinking (Cow 7)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-12_1690280366_05-19-26_7_2.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-12_1690280366_05-19-26_7_2.jpg",
+      "class_name": "Drinking",
+      "class_id": "6",
+      "cow_id": "7",
+      "camera_id": "2",
+      "orig_res": "417x485",
+      "split": "val",
+      "focus": "Muzzle lowered into water drinker."
+    },
+    {
+      "id": "MM-13",
+      "name": "Drinking (Cow 2, Test)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-13_1690279496_05-04-56_2_4.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-13_1690279496_05-04-56_2_4.jpg",
+      "class_name": "Drinking",
+      "class_id": "6",
+      "cow_id": "2",
+      "camera_id": "4",
+      "orig_res": "931x719",
+      "split": "test",
+      "focus": "Drinking on held-out test cow."
+    },
+    {
+      "id": "MM-14",
+      "name": "Lying (Clean Cubicle / Cow 9)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-14_1690290716_08-11-56_9_3.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-14_1690290716_08-11-56_9_3.jpg",
+      "class_name": "Lying",
+      "class_id": "7",
+      "cow_id": "9",
+      "camera_id": "3",
+      "orig_res": "447x228",
+      "split": "train",
+      "focus": "Resting recumbent posture in cubicle bed."
+    },
+    {
+      "id": "MM-15",
+      "name": "Lying (Deep Stall / Cow 13, Val)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-15_1690271846_02-57-26_13_4.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-15_1690271846_02-57-26_13_4.jpg",
+      "class_name": "Lying",
+      "class_id": "7",
+      "cow_id": "13",
+      "camera_id": "4",
+      "orig_res": "308x205",
+      "split": "val",
+      "focus": "Validation cow resting under lower barn lighting."
+    },
+    {
+      "id": "MM-16",
+      "name": "Occlusion: Stall Metal Bars",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-16_1690272101_03-01-41_11_4.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-16_1690272101_03-01-41_11_4.jpg",
+      "class_name": "Lying",
+      "class_id": "7",
+      "cow_id": "11",
+      "camera_id": "4",
+      "orig_res": "352x240",
+      "split": "train",
+      "focus": "Severe foreground obstruction by stall metal divider pipes."
+    },
+    {
+      "id": "MM-17",
+      "name": "Night / Dim Lighting",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-17_1690326011_18-00-11_1_3.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-17_1690326011_18-00-11_1_3.jpg",
+      "class_name": "Lying",
+      "class_id": "7",
+      "cow_id": "1",
+      "camera_id": "3",
+      "orig_res": "389x220",
+      "split": "train",
+      "focus": "Low-light barn illumination; check camera ISO noise and contrast."
+    },
+    {
+      "id": "MM-18",
+      "name": "Multi-Camera Sync View A (Cam 1)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-18_1690271846_02-57-26_1_1.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-18_1690271846_02-57-26_1_1.jpg",
+      "class_name": "Feeding_head_down",
+      "class_id": "4",
+      "cow_id": "1",
+      "camera_id": "1",
+      "orig_res": "494x443",
+      "split": "train",
+      "focus": "Simultaneous view A of Cow 1 feeding at 02:57:26."
+    },
+    {
+      "id": "MM-19",
+      "name": "Multi-Camera Sync View B (Cam 2)",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-19_1690271846_02-57-26_1_2.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-19_1690271846_02-57-26_1_2.jpg",
+      "class_name": "Feeding_head_down",
+      "class_id": "4",
+      "cow_id": "1",
+      "camera_id": "2",
+      "orig_res": "234x189",
+      "split": "train",
+      "focus": "Simultaneous view B of Cow 1 feeding at 02:57:26 (same instant)."
+    },
+    {
+      "id": "MM-20",
+      "name": "Partial Crop / Tight Edge",
+      "asset_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\mm-20_1690275851_04-04-11_14_3.jpg",
+      "rel_path": "assets/agent_behavior_inspection/mm-20_1690275851_04-04-11_14_3.jpg",
+      "class_name": "Lying",
+      "class_id": "7",
+      "cow_id": "14",
+      "camera_id": "3",
+      "orig_res": "475x311",
+      "split": "train",
+      "focus": "Check framing boundaries and whether limbs or tail are clipped."
+    }
+  ],
+  "cbvd": [
+    {
+      "id": "CBVD-01",
+      "name": "Stand Only (Large Cow)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-01_crop_618_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-01_scene_618_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-01_crop_618_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-01_scene_618_00002.jpg",
+      "filename": "618_00002.jpg",
+      "video_id": "618",
+      "labels": [
+        "stand"
+      ],
+      "crop_res": "246x274",
+      "scene_res": "1920x1080",
+      "focus": "Inspect pure standing posture with large pixel area."
+    },
+    {
+      "id": "CBVD-02",
+      "name": "Stand Only (Small / Distant Cow)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-02_crop_623_00007.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-02_scene_623_00007.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-02_crop_623_00007.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-02_scene_623_00007.jpg",
+      "filename": "623_00007.jpg",
+      "video_id": "623",
+      "labels": [
+        "stand"
+      ],
+      "crop_res": "114x108",
+      "scene_res": "1920x1080",
+      "focus": "Inspect distant standing cow; check resolution degradation."
+    },
+    {
+      "id": "CBVD-03",
+      "name": "Lying Down (Pure Posture)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-03_crop_625_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-03_scene_625_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-03_crop_625_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-03_scene_625_00002.jpg",
+      "filename": "625_00002.jpg",
+      "video_id": "625",
+      "labels": [
+        "lying down"
+      ],
+      "crop_res": "200x158",
+      "scene_res": "1920x1080",
+      "focus": "Resting cow on barn floor; check body contour."
+    },
+    {
+      "id": "CBVD-04",
+      "name": "Lying Down (Crowded / Overlapping)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-04_crop_618_00003.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-04_scene_618_00003.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-04_crop_618_00003.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-04_scene_618_00003.jpg",
+      "filename": "618_00003.jpg",
+      "video_id": "618",
+      "labels": [
+        "lying down"
+      ],
+      "crop_res": "125x290",
+      "scene_res": "1920x1080",
+      "focus": "Lying down next to other resting cows in pen."
+    },
+    {
+      "id": "CBVD-05",
+      "name": "Foraging + Stand (Trough Feeding)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-05_crop_618_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-05_scene_618_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-05_crop_618_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-05_scene_618_00002.jpg",
+      "filename": "618_00002.jpg",
+      "video_id": "618",
+      "labels": [
+        "stand",
+        "foraging"
+      ],
+      "crop_res": "848x252",
+      "scene_res": "1920x1080",
+      "focus": "Cow standing and eating from feeding lane."
+    },
+    {
+      "id": "CBVD-06",
+      "name": "Foraging (Head Down at Ground)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-06_crop_618_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-06_scene_618_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-06_crop_618_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-06_scene_618_00002.jpg",
+      "filename": "618_00002.jpg",
+      "video_id": "618",
+      "labels": [
+        "stand",
+        "foraging"
+      ],
+      "crop_res": "848x252",
+      "scene_res": "1920x1080",
+      "focus": "Cow foraging near bottom edge of camera view."
+    },
+    {
+      "id": "CBVD-07",
+      "name": "Drinking Water (Trough)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-07_crop_689_00003.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-07_scene_689_00003.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-07_crop_689_00003.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-07_scene_689_00003.jpg",
+      "filename": "689_00003.jpg",
+      "video_id": "689",
+      "labels": [
+        "stand",
+        "drinking water"
+      ],
+      "crop_res": "344x460",
+      "scene_res": "1920x1080",
+      "focus": "Muzzle at water trough; check water tank context."
+    },
+    {
+      "id": "CBVD-08",
+      "name": "Drinking Water (Distant Cow)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-08_crop_689_00003.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-08_scene_689_00003.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-08_crop_689_00003.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-08_scene_689_00003.jpg",
+      "filename": "689_00003.jpg",
+      "video_id": "689",
+      "labels": [
+        "stand",
+        "drinking water"
+      ],
+      "crop_res": "344x460",
+      "scene_res": "1920x1080",
+      "focus": "Check drinking action clarity from a distance."
+    },
+    {
+      "id": "CBVD-09",
+      "name": "Rumination + Lying Down (Chewing Cud)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-09_crop_618_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-09_scene_618_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-09_crop_618_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-09_scene_618_00002.jpg",
+      "filename": "618_00002.jpg",
+      "video_id": "618",
+      "labels": [
+        "lying down",
+        "rumination"
+      ],
+      "crop_res": "208x370",
+      "scene_res": "1920x1080",
+      "focus": "Lying cow labeled as chewing cud; check if mouth/jaw motion is visible in single crop."
+    },
+    {
+      "id": "CBVD-10",
+      "name": "Rumination + Stand (Upright Chewing)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-10_crop_618_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-10_scene_618_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-10_crop_618_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-10_scene_618_00002.jpg",
+      "filename": "618_00002.jpg",
+      "video_id": "618",
+      "labels": [
+        "stand",
+        "rumination"
+      ],
+      "crop_res": "321x349",
+      "scene_res": "1920x1080",
+      "focus": "Standing cow labeled as ruminating."
+    },
+    {
+      "id": "CBVD-11",
+      "name": "Crowded Pen Scene A (Video 618)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-11_crop_618_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-11_scene_618_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-11_crop_618_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-11_scene_618_00002.jpg",
+      "filename": "618_00002.jpg",
+      "video_id": "618",
+      "labels": [
+        "stand",
+        "rumination"
+      ],
+      "crop_res": "321x349",
+      "scene_res": "1920x1080",
+      "focus": "Scene with 6+ cows in view; check bounding box placement."
+    },
+    {
+      "id": "CBVD-12",
+      "name": "Crowded Pen Scene B (Video 621)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-12_crop_621_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-12_scene_621_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-12_crop_621_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-12_scene_621_00002.jpg",
+      "filename": "621_00002.jpg",
+      "video_id": "621",
+      "labels": [
+        "stand"
+      ],
+      "crop_res": "150x332",
+      "scene_res": "1920x1080",
+      "focus": "Multiple cows standing along fence; check inter-cow occlusion."
+    },
+    {
+      "id": "CBVD-13",
+      "name": "Fence / Railing Occlusion",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-13_crop_621_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-13_scene_621_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-13_crop_621_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-13_scene_621_00002.jpg",
+      "filename": "621_00002.jpg",
+      "video_id": "621",
+      "labels": [
+        "stand",
+        "foraging"
+      ],
+      "crop_res": "440x300",
+      "scene_res": "1920x1080",
+      "focus": "Cow partially behind metal fence gate in foreground."
+    },
+    {
+      "id": "CBVD-14",
+      "name": "Extreme Small Crop (<100px)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-14_crop_686_00004.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-14_scene_686_00004.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-14_crop_686_00004.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-14_scene_686_00004.jpg",
+      "filename": "686_00004.jpg",
+      "video_id": "686",
+      "labels": [
+        "stand"
+      ],
+      "crop_res": "88x102",
+      "scene_res": "1920x1080",
+      "focus": "Inspect low-resolution boundary case; is behavior distinguishable?"
+    },
+    {
+      "id": "CBVD-15",
+      "name": "Consecutive Video 621 - Frame 2",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-15_crop_621_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-15_scene_621_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-15_crop_621_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-15_scene_621_00002.jpg",
+      "filename": "621_00002.jpg",
+      "video_id": "621",
+      "labels": [
+        "stand",
+        "foraging"
+      ],
+      "crop_res": "440x300",
+      "scene_res": "1920x1080",
+      "focus": "Frame t=2s of cow feeding along rail."
+    },
+    {
+      "id": "CBVD-16",
+      "name": "Consecutive Video 621 - Frame 3",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-16_crop_621_00003.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-16_scene_621_00003.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-16_crop_621_00003.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-16_scene_621_00003.jpg",
+      "filename": "621_00003.jpg",
+      "video_id": "621",
+      "labels": [
+        "stand",
+        "foraging"
+      ],
+      "crop_res": "402x282",
+      "scene_res": "1920x1080",
+      "focus": "Frame t=3s (1 second later); check temporal continuity."
+    },
+    {
+      "id": "CBVD-17",
+      "name": "Consecutive Video 621 - Frame 4",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-17_crop_621_00004.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-17_scene_621_00004.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-17_crop_621_00004.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-17_scene_621_00004.jpg",
+      "filename": "621_00004.jpg",
+      "video_id": "621",
+      "labels": [
+        "stand"
+      ],
+      "crop_res": "378x176",
+      "scene_res": "1920x1080",
+      "focus": "Frame t=4s (2 seconds later); check posture shift."
+    },
+    {
+      "id": "CBVD-18",
+      "name": "Consecutive Video 621 - Frame 5",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-18_crop_621_00005.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-18_scene_621_00005.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-18_crop_621_00005.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-18_scene_621_00005.jpg",
+      "filename": "621_00005.jpg",
+      "video_id": "621",
+      "labels": [
+        "stand"
+      ],
+      "crop_res": "442x332",
+      "scene_res": "1920x1080",
+      "focus": "Frame t=5s (3 seconds later); observe feeding continuity."
+    },
+    {
+      "id": "CBVD-19",
+      "name": "Different Video Setup (Video 624)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-19_crop_624_00002.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-19_scene_624_00002.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-19_crop_624_00002.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-19_scene_624_00002.jpg",
+      "filename": "624_00002.jpg",
+      "video_id": "624",
+      "labels": [
+        "stand",
+        "rumination"
+      ],
+      "crop_res": "290x222",
+      "scene_res": "1920x1080",
+      "focus": "Check barn lighting and floor cleanliness in video 624."
+    },
+    {
+      "id": "CBVD-20",
+      "name": "Different Video Setup (Video 689)",
+      "crop_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-20_crop_689_00003.jpg",
+      "scene_path": "D:\\cattle-health-monitoring-multi-task-model\\docs\\audits\\assets\\agent_behavior_inspection\\cbvd-20_scene_689_00003.jpg",
+      "rel_crop_path": "assets/agent_behavior_inspection/cbvd-20_crop_689_00003.jpg",
+      "rel_scene_path": "assets/agent_behavior_inspection/cbvd-20_scene_689_00003.jpg",
+      "filename": "689_00003.jpg",
+      "video_id": "689",
+      "labels": [
+        "stand",
+        "drinking water"
+      ],
+      "crop_res": "344x460",
+      "scene_res": "1920x1080",
+      "focus": "Check camera angle and perspective in video 689."
+    }
+  ]
+}

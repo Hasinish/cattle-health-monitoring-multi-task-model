@@ -64,6 +64,8 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `assets/manual_dataset_verification/`: Directory of 48 compact, Git-friendly review images (1.4 MB total) including 16 ScienceDB rear-view thumbnails, 16 MmCows behavior crops, and 16 SideView 3-panel composites (`[RGB | Binary Mask | Contour Overlay]`).
   - `phase3_behavior_dataset_manual_comparison.md`: 14-pair side-by-side manual visual comparison document evaluating MmCows vs. CBVD-5 across matching/unique behaviors, crop resolutions, and scene context.
   - `assets/behavior_dataset_comparison/`: Directory of 42 review images (1.0 MB total) containing paired MmCows crops, CBVD-5 crops, and full-scene 1080p thumbnails with bounding box overlays.
+  - `phase3_behavior_agent_visual_inspection.md`: Multimodal agent visual inspection report auditing 20 MmCows and 20 CBVD-5 samples, analyzing image quality, crop boundaries, resolution, and annotation validity.
+  - `assets/agent_behavior_inspection/`: Staging directory containing 20 MmCows crops, 20 CBVD-5 crops, 20 CBVD-5 scenes, and `manifest.json`.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
   - `2026-09-20_mmcows_vs_cbvd5_primary_behavior_assessment.md`: Forensic assessment comparing MmCows and CBVD-5 for primary behavior role across 10 dimensions, proving CBVD has zero cow IDs, median 156x167px crops, lacks walking/licking, and recommending Option A (keep MmCows primary, preserve CBVD-5 as external).

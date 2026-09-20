@@ -1,3 +1,14 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 1 MmCows vs CBVD-5 Agent Visual Inspection)
+
+- Executed direct multimodal agent visual inspection of 20 MmCows crops and 20 CBVD-5 crops + scenes using native vision model.
+- Documented per-sample visual descriptions, resolutions, and verdicts in `docs/audits/phase3_behavior_agent_visual_inspection.md`.
+- Evaluated MmCows: 12 GOOD, 7 ACCEPTABLE, 1 QUESTIONABLE (MM-03 narrow crop), 0 BAD. 95% of samples fully usable for deep learning.
+- Evaluated CBVD-5: 11 GOOD, 6 ACCEPTABLE, 2 QUESTIONABLE (CBVD-02 distant, CBVD-04 partial stall bar), 1 BAD (CBVD-14 88x102 px pixelated smudge).
+- Visually confirmed the "wide-angle sharpness illusion": CBVD-5 full scenes look crisp at 1080p, but individual cow bounding boxes are distant and 2.5x smaller in area than MmCows (median 156px vs 390px).
+- Discovered temporal label inconsistency in CBVD-5 Video 621 (Frame 5 actively foraging across rail but labeled ONLY "stand").
+- Confirmed rumination cannot be verified on static crops without temporal video modeling.
+- Recommended keeping MmCows as Primary Behavior and CBVD-5 as External Validation (Option A).
+
 # Session Summary — 2026-09-20 (Phase 3 Step 1 MmCows vs CBVD-5 Primary Behavior Assessment)
 
 - Conducted exhaustive forensic comparison of MmCows vs. CBVD-5 across 10 dimensions to address user visual quality concerns regarding blurry MmCows crops.
