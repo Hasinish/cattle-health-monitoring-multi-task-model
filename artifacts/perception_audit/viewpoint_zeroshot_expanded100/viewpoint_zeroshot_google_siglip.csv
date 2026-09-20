@@ -1,101 +1,101 @@
-sample_id,dataset,category_or_subset,human_viewpoint,predicted_viewpoint,top_score,second_viewpoint,second_score,score_margin,input_mode,model_name,runtime_ms
-vp2_0001,ScienceDB,BCS_3.25,rear,unknown / ambiguous,0.9242,side,0.0327,0.8915,rtdetr_crop,google/siglip-base-patch16-224,50.8
-vp2_0002,ScienceDB,BCS_3.25,rear,unknown / ambiguous,0.8652,side,0.0725,0.7926,rtdetr_crop,google/siglip-base-patch16-224,43.3
-vp2_0003,ScienceDB,BCS_3.25,rear,unknown / ambiguous,0.8272,side,0.145,0.6821,rtdetr_crop,google/siglip-base-patch16-224,62.7
-vp2_0004,ScienceDB,BCS_3.25,rear-oblique,unknown / ambiguous,0.8899,side,0.0603,0.8295,rtdetr_crop,google/siglip-base-patch16-224,59.2
-vp2_0005,ScienceDB,BCS_3.25,rear-oblique,unknown / ambiguous,0.9705,front,0.0141,0.9564,rtdetr_crop,google/siglip-base-patch16-224,40.5
-vp2_0006,ScienceDB,BCS_3.25,rear-oblique,unknown / ambiguous,0.9385,side,0.0278,0.9107,rtdetr_crop,google/siglip-base-patch16-224,98.6
-vp2_0007,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.8837,side,0.0609,0.8228,rtdetr_crop,google/siglip-base-patch16-224,41.3
-vp2_0008,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.865,front,0.0952,0.7699,rtdetr_crop,google/siglip-base-patch16-224,41.4
-vp2_0009,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.9219,side,0.0376,0.8844,rtdetr_crop,google/siglip-base-patch16-224,41.3
-vp2_0010,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.9121,side,0.0522,0.8599,rtdetr_crop,google/siglip-base-patch16-224,39.7
-vp2_0011,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.9774,front,0.013,0.9643,rtdetr_crop,google/siglip-base-patch16-224,42.6
-vp2_0012,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.9709,front,0.0172,0.9537,rtdetr_crop,google/siglip-base-patch16-224,41.0
-vp2_0013,ScienceDB,BCS_3.75,rear-oblique,unknown / ambiguous,0.9757,rear,0.0142,0.9615,rtdetr_crop,google/siglip-base-patch16-224,41.7
-vp2_0014,ScienceDB,BCS_3.75,rear,unknown / ambiguous,0.9358,side,0.0368,0.899,rtdetr_crop,google/siglip-base-patch16-224,42.8
-vp2_0015,ScienceDB,BCS_3.75,rear,unknown / ambiguous,0.892,side,0.0602,0.8318,rtdetr_crop,google/siglip-base-patch16-224,42.3
-vp2_0016,ScienceDB,BCS_3.75,rear-oblique,unknown / ambiguous,0.9509,front,0.0241,0.9269,rtdetr_crop,google/siglip-base-patch16-224,41.5
-vp2_0017,ScienceDB,BCS_3.75,rear,unknown / ambiguous,0.9451,front,0.0263,0.9188,rtdetr_crop,google/siglip-base-patch16-224,40.4
-vp2_0018,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.9014,side,0.036,0.8655,rtdetr_crop,google/siglip-base-patch16-224,41.9
-vp2_0019,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.874,front,0.0873,0.7867,rtdetr_crop,google/siglip-base-patch16-224,41.5
-vp2_0020,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.9747,rear,0.0093,0.9654,rtdetr_crop,google/siglip-base-patch16-224,41.3
-vp2_0021,ScienceDB,BCS_4.0,rear-oblique,unknown / ambiguous,0.9264,side,0.0365,0.8899,rtdetr_crop,google/siglip-base-patch16-224,41.7
-vp2_0022,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.9527,front,0.0245,0.9282,rtdetr_crop,google/siglip-base-patch16-224,40.7
-vp2_0023,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.9461,front,0.0396,0.9065,rtdetr_crop,google/siglip-base-patch16-224,41.2
-vp2_0024,ScienceDB,BCS_4.25,rear,unknown / ambiguous,0.8796,front,0.0407,0.8389,rtdetr_crop,google/siglip-base-patch16-224,42.4
-vp2_0025,ScienceDB,BCS_4.25,rear,unknown / ambiguous,0.8953,side,0.0525,0.8428,full_image_fallback,google/siglip-base-patch16-224,41.0
-vp2_0026,ScienceDB,BCS_4.25,rear,unknown / ambiguous,0.9833,front,0.0081,0.9753,rtdetr_crop,google/siglip-base-patch16-224,42.2
-vp2_0027,ScienceDB,BCS_4.25,rear,unknown / ambiguous,0.9687,front,0.0143,0.9544,rtdetr_crop,google/siglip-base-patch16-224,41.1
-vp2_0028,ScienceDB,BCS_4.25,rear,unknown / ambiguous,0.9045,front,0.0661,0.8384,rtdetr_crop,google/siglip-base-patch16-224,41.5
-vp2_0029,ScienceDB,BCS_3.25,rear-oblique,unknown / ambiguous,0.9218,front,0.0476,0.8741,full_image_fallback,google/siglip-base-patch16-224,41.8
-vp2_0030,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.821,front,0.1222,0.6987,full_image_fallback,google/siglip-base-patch16-224,42.0
-vp2_0031,ScienceDB,BCS_3.75,rear,unknown / ambiguous,0.8834,front,0.0604,0.823,full_image_fallback,google/siglip-base-patch16-224,42.5
-vp2_0032,ScienceDB,BCS_3.75,rear-oblique,unknown / ambiguous,0.9063,front,0.0634,0.8428,full_image_fallback,google/siglip-base-patch16-224,42.6
-vp2_0033,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.9206,front,0.0491,0.8716,full_image_fallback,google/siglip-base-patch16-224,42.4
-vp2_0034,ScienceDB,BCS_4.25,rear-oblique,unknown / ambiguous,0.9043,front,0.0605,0.8437,full_image_fallback,google/siglip-base-patch16-224,41.6
-vp2_0035,MmCows,Behavior_Lying,unknown / ambiguous,unknown / ambiguous,0.8398,front,0.0927,0.7471,full_image_fallback,google/siglip-base-patch16-224,42.1
-vp2_0036,MmCows,Behavior_Lying,side,unknown / ambiguous,0.8617,side,0.0642,0.7975,full_image_fallback,google/siglip-base-patch16-224,40.5
-vp2_0037,MmCows,Behavior_Lying,side,unknown / ambiguous,0.9734,side,0.0122,0.9612,full_image_fallback,google/siglip-base-patch16-224,40.2
-vp2_0038,MmCows,Behavior_Lying,front-oblique,unknown / ambiguous,0.5782,front,0.2722,0.306,rtdetr_crop,google/siglip-base-patch16-224,40.3
-vp2_0039,MmCows,Behavior_Lying,unknown / ambiguous,unknown / ambiguous,0.9404,rear,0.036,0.9044,full_image_fallback,google/siglip-base-patch16-224,41.5
-vp2_0040,MmCows,Behavior_Standing,side,unknown / ambiguous,0.9441,side,0.0332,0.9108,rtdetr_crop,google/siglip-base-patch16-224,40.6
-vp2_0041,MmCows,Behavior_Standing,side,unknown / ambiguous,0.6338,front,0.1794,0.4544,rtdetr_crop,google/siglip-base-patch16-224,41.1
-vp2_0042,MmCows,Behavior_Standing,side,unknown / ambiguous,0.8188,front,0.1087,0.7101,rtdetr_crop,google/siglip-base-patch16-224,41.7
-vp2_0043,MmCows,Behavior_Standing,side,unknown / ambiguous,0.942,front,0.0251,0.9169,rtdetr_crop,google/siglip-base-patch16-224,40.9
-vp2_0044,MmCows,Behavior_Standing,side,unknown / ambiguous,0.8209,front,0.1097,0.7112,rtdetr_crop,google/siglip-base-patch16-224,40.0
-vp2_0045,MmCows,Behavior_Feeding_head_down,rear-oblique,unknown / ambiguous,0.8064,front,0.1052,0.7012,rtdetr_crop,google/siglip-base-patch16-224,40.8
-vp2_0046,MmCows,Behavior_Feeding_head_down,side,unknown / ambiguous,0.7856,front,0.1277,0.6579,rtdetr_crop,google/siglip-base-patch16-224,45.2
-vp2_0047,MmCows,Behavior_Feeding_head_down,side,unknown / ambiguous,0.8202,side,0.0844,0.7358,rtdetr_crop,google/siglip-base-patch16-224,39.8
-vp2_0048,MmCows,Behavior_Feeding_head_down,side,unknown / ambiguous,0.6877,front,0.1733,0.5144,rtdetr_crop,google/siglip-base-patch16-224,41.0
-vp2_0049,MmCows,Behavior_Feeding_head_down,rear,unknown / ambiguous,0.9736,side,0.0114,0.9623,full_image_fallback,google/siglip-base-patch16-224,39.3
-vp2_0050,MmCows,Behavior_Feeding_head_up,side,unknown / ambiguous,0.771,front,0.1664,0.6046,rtdetr_crop,google/siglip-base-patch16-224,41.3
-vp2_0051,MmCows,Behavior_Feeding_head_up,side,unknown / ambiguous,0.7151,front,0.2084,0.5067,rtdetr_crop,google/siglip-base-patch16-224,40.8
-vp2_0052,MmCows,Behavior_Feeding_head_up,side,unknown / ambiguous,0.8668,front,0.0904,0.7764,rtdetr_crop,google/siglip-base-patch16-224,40.5
-vp2_0053,MmCows,Behavior_Feeding_head_up,side,unknown / ambiguous,0.6668,side,0.1765,0.4903,rtdetr_crop,google/siglip-base-patch16-224,42.1
-vp2_0054,MmCows,Behavior_Feeding_head_up,rear-oblique,unknown / ambiguous,0.8334,front,0.1071,0.7263,rtdetr_crop,google/siglip-base-patch16-224,40.6
-vp2_0055,MmCows,Behavior_Walking,unknown / ambiguous,unknown / ambiguous,0.8197,front,0.0954,0.7243,rtdetr_crop,google/siglip-base-patch16-224,40.1
-vp2_0056,MmCows,Behavior_Walking,side,unknown / ambiguous,0.9467,front,0.0382,0.9085,rtdetr_crop,google/siglip-base-patch16-224,42.4
-vp2_0057,MmCows,Behavior_Walking,front-oblique,unknown / ambiguous,0.7175,side,0.1734,0.5441,rtdetr_crop,google/siglip-base-patch16-224,41.0
-vp2_0058,MmCows,Behavior_Walking,side,unknown / ambiguous,0.9612,side,0.0178,0.9433,rtdetr_crop,google/siglip-base-patch16-224,40.3
-vp2_0059,MmCows,Behavior_Walking,side,unknown / ambiguous,0.8419,side,0.0773,0.7646,rtdetr_crop,google/siglip-base-patch16-224,41.4
-vp2_0060,MmCows,Behavior_Drinking,rear,unknown / ambiguous,0.8928,rear,0.0575,0.8353,full_image_fallback,google/siglip-base-patch16-224,40.3
-vp2_0061,MmCows,Behavior_Drinking,unknown / ambiguous,unknown / ambiguous,0.7395,front,0.1728,0.5667,rtdetr_crop,google/siglip-base-patch16-224,41.1
-vp2_0062,MmCows,Behavior_Drinking,side,unknown / ambiguous,0.7037,front,0.165,0.5386,rtdetr_crop,google/siglip-base-patch16-224,42.0
-vp2_0063,MmCows,Behavior_Drinking,rear-oblique,unknown / ambiguous,0.9391,side,0.0318,0.9074,full_image_fallback,google/siglip-base-patch16-224,40.6
-vp2_0064,MmCows,Behavior_Licking,side,unknown / ambiguous,0.8559,front,0.0755,0.7804,rtdetr_crop,google/siglip-base-patch16-224,40.0
-vp2_0065,MmCows,Behavior_Licking,unknown / ambiguous,unknown / ambiguous,0.8765,front,0.0668,0.8096,rtdetr_crop,google/siglip-base-patch16-224,39.9
-vp2_0066,MmCows,Behavior_Licking,side,unknown / ambiguous,0.9143,front,0.0383,0.876,rtdetr_crop,google/siglip-base-patch16-224,40.3
-vp2_0067,MmCows,Behavior_Licking,side,unknown / ambiguous,0.8333,front,0.1259,0.7074,rtdetr_crop,google/siglip-base-patch16-224,44.1
-vp2_0068,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.6716,front,0.263,0.4086,rtdetr_crop,google/siglip-base-patch16-224,40.9
-vp2_0069,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.6805,front,0.2184,0.4621,rtdetr_crop,google/siglip-base-patch16-224,41.1
-vp2_0070,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.7855,front,0.1413,0.6442,rtdetr_crop,google/siglip-base-patch16-224,41.8
-vp2_0071,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.8972,front,0.0569,0.8403,rtdetr_crop,google/siglip-base-patch16-224,47.1
-vp2_0072,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.7793,front,0.174,0.6053,rtdetr_crop,google/siglip-base-patch16-224,41.3
-vp2_0073,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.8426,front,0.0783,0.7642,rtdetr_crop,google/siglip-base-patch16-224,41.6
-vp2_0074,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.8267,front,0.1307,0.696,rtdetr_crop,google/siglip-base-patch16-224,40.6
-vp2_0075,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.8603,front,0.0808,0.7795,rtdetr_crop,google/siglip-base-patch16-224,41.3
-vp2_0076,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.9197,front,0.0545,0.8652,rtdetr_crop,google/siglip-base-patch16-224,42.4
-vp2_0077,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.9261,front,0.049,0.8771,rtdetr_crop,google/siglip-base-patch16-224,41.5
-vp2_0078,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.8813,front,0.0784,0.8029,rtdetr_crop,google/siglip-base-patch16-224,42.3
-vp2_0079,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.789,front,0.1573,0.6318,rtdetr_crop,google/siglip-base-patch16-224,41.6
-vp2_0080,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.7022,front,0.2216,0.4806,rtdetr_crop,google/siglip-base-patch16-224,39.9
-vp2_0081,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.784,side,0.1206,0.6634,rtdetr_crop,google/siglip-base-patch16-224,45.8
-vp2_0082,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7257,front,0.1757,0.55,rtdetr_crop,google/siglip-base-patch16-224,46.0
-vp2_0083,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7146,front,0.1801,0.5345,rtdetr_crop,google/siglip-base-patch16-224,44.9
-vp2_0084,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7275,front,0.1782,0.5493,rtdetr_crop,google/siglip-base-patch16-224,45.7
-vp2_0085,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.736,side,0.139,0.597,rtdetr_crop,google/siglip-base-patch16-224,45.4
-vp2_0086,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.8425,front,0.0795,0.763,rtdetr_crop,google/siglip-base-patch16-224,46.5
-vp2_0087,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7914,front,0.1448,0.6466,rtdetr_crop,google/siglip-base-patch16-224,44.7
-vp2_0088,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7464,front,0.1435,0.6029,rtdetr_crop,google/siglip-base-patch16-224,44.4
-vp2_0089,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.8091,side,0.0887,0.7204,rtdetr_crop,google/siglip-base-patch16-224,44.3
-vp2_0090,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7996,front,0.1318,0.6679,rtdetr_crop,google/siglip-base-patch16-224,45.8
-vp2_0091,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7805,front,0.1216,0.6589,rtdetr_crop,google/siglip-base-patch16-224,45.2
-vp2_0092,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.8661,front,0.1083,0.7579,rtdetr_crop,google/siglip-base-patch16-224,43.9
-vp2_0093,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.792,front,0.117,0.675,rtdetr_crop,google/siglip-base-patch16-224,45.2
-vp2_0094,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.7324,front,0.1788,0.5536,rtdetr_crop,google/siglip-base-patch16-224,43.7
-vp2_0095,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.8361,front,0.1011,0.735,rtdetr_crop,google/siglip-base-patch16-224,41.1
-vp2_0096,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.7783,front,0.162,0.6163,rtdetr_crop,google/siglip-base-patch16-224,42.7
-vp2_0097,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.7424,front,0.1593,0.5831,rtdetr_crop,google/siglip-base-patch16-224,43.0
-vp2_0098,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.6619,front,0.2695,0.3923,rtdetr_crop,google/siglip-base-patch16-224,42.6
-vp2_0099,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.7765,front,0.1451,0.6314,rtdetr_crop,google/siglip-base-patch16-224,43.8
-vp2_0100,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.6652,front,0.2172,0.4481,rtdetr_crop,google/siglip-base-patch16-224,41.2
+sample_id,dataset,category_or_subset,human_viewpoint,predicted_viewpoint,top_score,second_viewpoint,second_score,score_margin,method_b_viewpoint,method_b_raw_physical,method_b_top_score,method_b_second_viewpoint,method_b_second_score,method_b_margin,method_b_is_rejected,input_mode,model_name,runtime_ms
+vp2_0001,ScienceDB,BCS_3.25,rear,unknown / ambiguous,0.9242,side,0.0327,0.8915,unknown / ambiguous,side,0.4307,rear,0.3953,0.0353,True,rtdetr_crop,google/siglip-base-patch16-224,51.6
+vp2_0002,ScienceDB,BCS_3.25,rear,unknown / ambiguous,0.8652,side,0.0725,0.7926,side,side,0.538,front,0.3569,0.181,False,rtdetr_crop,google/siglip-base-patch16-224,41.1
+vp2_0003,ScienceDB,BCS_3.25,rear,unknown / ambiguous,0.8272,side,0.145,0.6821,side,side,0.8391,front,0.1143,0.7248,False,rtdetr_crop,google/siglip-base-patch16-224,40.9
+vp2_0004,ScienceDB,BCS_3.25,rear-oblique,unknown / ambiguous,0.8899,side,0.0603,0.8295,side,side,0.5475,front,0.431,0.1165,False,rtdetr_crop,google/siglip-base-patch16-224,40.4
+vp2_0005,ScienceDB,BCS_3.25,rear-oblique,unknown / ambiguous,0.9705,front,0.0141,0.9564,front,front,0.479,side,0.3319,0.1472,False,rtdetr_crop,google/siglip-base-patch16-224,39.3
+vp2_0006,ScienceDB,BCS_3.25,rear-oblique,unknown / ambiguous,0.9385,side,0.0278,0.9107,unknown / ambiguous,side,0.4513,front,0.445,0.0062,True,rtdetr_crop,google/siglip-base-patch16-224,39.4
+vp2_0007,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.8837,side,0.0609,0.8228,side,side,0.5238,front,0.3791,0.1447,False,rtdetr_crop,google/siglip-base-patch16-224,40.5
+vp2_0008,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.865,front,0.0952,0.7699,front,front,0.7052,side,0.2388,0.4665,False,rtdetr_crop,google/siglip-base-patch16-224,39.5
+vp2_0009,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.9219,side,0.0376,0.8844,side,side,0.4814,front,0.3079,0.1735,False,rtdetr_crop,google/siglip-base-patch16-224,39.9
+vp2_0010,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.9121,side,0.0522,0.8599,side,side,0.5936,front,0.3352,0.2583,False,rtdetr_crop,google/siglip-base-patch16-224,39.3
+vp2_0011,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.9774,front,0.013,0.9643,front,front,0.576,side,0.255,0.3211,False,rtdetr_crop,google/siglip-base-patch16-224,39.4
+vp2_0012,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.9709,front,0.0172,0.9537,front,front,0.59,side,0.2719,0.3181,False,rtdetr_crop,google/siglip-base-patch16-224,40.3
+vp2_0013,ScienceDB,BCS_3.75,rear-oblique,unknown / ambiguous,0.9757,rear,0.0142,0.9615,rear,rear,0.584,side,0.2163,0.3677,False,rtdetr_crop,google/siglip-base-patch16-224,40.7
+vp2_0014,ScienceDB,BCS_3.75,rear,unknown / ambiguous,0.9358,side,0.0368,0.899,side,side,0.573,front,0.2215,0.3515,False,rtdetr_crop,google/siglip-base-patch16-224,40.6
+vp2_0015,ScienceDB,BCS_3.75,rear,unknown / ambiguous,0.892,side,0.0602,0.8318,side,side,0.5577,rear,0.2421,0.3156,False,rtdetr_crop,google/siglip-base-patch16-224,40.9
+vp2_0016,ScienceDB,BCS_3.75,rear-oblique,unknown / ambiguous,0.9509,front,0.0241,0.9269,unknown / ambiguous,front,0.4904,side,0.4682,0.0221,True,rtdetr_crop,google/siglip-base-patch16-224,39.2
+vp2_0017,ScienceDB,BCS_3.75,rear,unknown / ambiguous,0.9451,front,0.0263,0.9188,unknown / ambiguous,front,0.4789,side,0.4338,0.0452,True,rtdetr_crop,google/siglip-base-patch16-224,39.5
+vp2_0018,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.9014,side,0.036,0.8655,unknown / ambiguous,side,0.3649,front,0.3197,0.0452,True,rtdetr_crop,google/siglip-base-patch16-224,41.3
+vp2_0019,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.874,front,0.0873,0.7867,front,front,0.6931,side,0.185,0.5081,False,rtdetr_crop,google/siglip-base-patch16-224,39.9
+vp2_0020,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.9747,rear,0.0093,0.9654,unknown / ambiguous,rear,0.3653,side,0.3364,0.0289,True,rtdetr_crop,google/siglip-base-patch16-224,39.5
+vp2_0021,ScienceDB,BCS_4.0,rear-oblique,unknown / ambiguous,0.9264,side,0.0365,0.8899,side,side,0.4954,front,0.3462,0.1492,False,rtdetr_crop,google/siglip-base-patch16-224,40.6
+vp2_0022,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.9527,front,0.0245,0.9282,front,front,0.5186,rear,0.3583,0.1602,False,rtdetr_crop,google/siglip-base-patch16-224,39.3
+vp2_0023,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.9461,front,0.0396,0.9065,front,front,0.7338,side,0.2211,0.5127,False,rtdetr_crop,google/siglip-base-patch16-224,39.8
+vp2_0024,ScienceDB,BCS_4.25,rear,unknown / ambiguous,0.8796,front,0.0407,0.8389,unknown / ambiguous,front,0.3379,side,0.3322,0.0057,True,rtdetr_crop,google/siglip-base-patch16-224,41.0
+vp2_0025,ScienceDB,BCS_4.25,rear,unknown / ambiguous,0.8953,side,0.0525,0.8428,side,side,0.502,rear,0.3604,0.1416,False,full_image_fallback,google/siglip-base-patch16-224,40.6
+vp2_0026,ScienceDB,BCS_4.25,rear,unknown / ambiguous,0.9833,front,0.0081,0.9753,front,front,0.4826,side,0.2708,0.2118,False,rtdetr_crop,google/siglip-base-patch16-224,39.2
+vp2_0027,ScienceDB,BCS_4.25,rear,unknown / ambiguous,0.9687,front,0.0143,0.9544,unknown / ambiguous,front,0.4578,side,0.4203,0.0375,True,rtdetr_crop,google/siglip-base-patch16-224,39.4
+vp2_0028,ScienceDB,BCS_4.25,rear,unknown / ambiguous,0.9045,front,0.0661,0.8384,front,front,0.6927,side,0.1572,0.5355,False,rtdetr_crop,google/siglip-base-patch16-224,40.1
+vp2_0029,ScienceDB,BCS_3.25,rear-oblique,unknown / ambiguous,0.9218,front,0.0476,0.8741,front,front,0.6087,side,0.3254,0.2832,False,full_image_fallback,google/siglip-base-patch16-224,41.6
+vp2_0030,ScienceDB,BCS_3.5,rear,unknown / ambiguous,0.821,front,0.1222,0.6987,front,front,0.6826,side,0.2847,0.3979,False,full_image_fallback,google/siglip-base-patch16-224,41.2
+vp2_0031,ScienceDB,BCS_3.75,rear,unknown / ambiguous,0.8834,front,0.0604,0.823,front,front,0.5175,side,0.3781,0.1395,False,full_image_fallback,google/siglip-base-patch16-224,40.6
+vp2_0032,ScienceDB,BCS_3.75,rear-oblique,unknown / ambiguous,0.9063,front,0.0634,0.8428,front,front,0.6767,side,0.2553,0.4214,False,full_image_fallback,google/siglip-base-patch16-224,40.6
+vp2_0033,ScienceDB,BCS_4.0,rear,unknown / ambiguous,0.9206,front,0.0491,0.8716,front,front,0.618,side,0.3024,0.3156,False,full_image_fallback,google/siglip-base-patch16-224,40.7
+vp2_0034,ScienceDB,BCS_4.25,rear-oblique,unknown / ambiguous,0.9043,front,0.0605,0.8437,front,front,0.6323,side,0.2712,0.3611,False,full_image_fallback,google/siglip-base-patch16-224,41.0
+vp2_0035,MmCows,Behavior_Lying,unknown / ambiguous,unknown / ambiguous,0.8398,front,0.0927,0.7471,front,front,0.579,side,0.3808,0.1982,False,full_image_fallback,google/siglip-base-patch16-224,39.0
+vp2_0036,MmCows,Behavior_Lying,side,unknown / ambiguous,0.8617,side,0.0642,0.7975,unknown / ambiguous,side,0.4644,front,0.4452,0.0192,True,full_image_fallback,google/siglip-base-patch16-224,39.1
+vp2_0037,MmCows,Behavior_Lying,side,unknown / ambiguous,0.9734,side,0.0122,0.9612,unknown / ambiguous,side,0.46,front,0.4377,0.0223,True,full_image_fallback,google/siglip-base-patch16-224,39.2
+vp2_0038,MmCows,Behavior_Lying,front-oblique,unknown / ambiguous,0.5782,front,0.2722,0.306,front,front,0.6454,side,0.3338,0.3116,False,rtdetr_crop,google/siglip-base-patch16-224,39.3
+vp2_0039,MmCows,Behavior_Lying,unknown / ambiguous,unknown / ambiguous,0.9404,rear,0.036,0.9044,rear,rear,0.6043,side,0.2417,0.3626,False,full_image_fallback,google/siglip-base-patch16-224,38.8
+vp2_0040,MmCows,Behavior_Standing,side,unknown / ambiguous,0.9441,side,0.0332,0.9108,side,side,0.5944,front,0.2066,0.3878,False,rtdetr_crop,google/siglip-base-patch16-224,38.9
+vp2_0041,MmCows,Behavior_Standing,side,unknown / ambiguous,0.6338,front,0.1794,0.4544,unknown / ambiguous,front,0.4899,side,0.4859,0.0039,True,rtdetr_crop,google/siglip-base-patch16-224,41.1
+vp2_0042,MmCows,Behavior_Standing,side,unknown / ambiguous,0.8188,front,0.1087,0.7101,front,front,0.5997,side,0.3462,0.2536,False,rtdetr_crop,google/siglip-base-patch16-224,39.1
+vp2_0043,MmCows,Behavior_Standing,side,unknown / ambiguous,0.942,front,0.0251,0.9169,unknown / ambiguous,front,0.4326,side,0.3931,0.0395,True,rtdetr_crop,google/siglip-base-patch16-224,39.3
+vp2_0044,MmCows,Behavior_Standing,side,unknown / ambiguous,0.8209,front,0.1097,0.7112,front,front,0.6125,side,0.3548,0.2577,False,rtdetr_crop,google/siglip-base-patch16-224,39.3
+vp2_0045,MmCows,Behavior_Feeding_head_down,rear-oblique,unknown / ambiguous,0.8064,front,0.1052,0.7012,front,front,0.5437,side,0.415,0.1286,False,rtdetr_crop,google/siglip-base-patch16-224,39.2
+vp2_0046,MmCows,Behavior_Feeding_head_down,side,unknown / ambiguous,0.7856,front,0.1277,0.6579,front,front,0.5957,side,0.3793,0.2164,False,rtdetr_crop,google/siglip-base-patch16-224,43.3
+vp2_0047,MmCows,Behavior_Feeding_head_down,side,unknown / ambiguous,0.8202,side,0.0844,0.7358,unknown / ambiguous,side,0.4693,front,0.4669,0.0024,True,rtdetr_crop,google/siglip-base-patch16-224,39.0
+vp2_0048,MmCows,Behavior_Feeding_head_down,side,unknown / ambiguous,0.6877,front,0.1733,0.5144,front,front,0.5551,side,0.408,0.1471,False,rtdetr_crop,google/siglip-base-patch16-224,39.3
+vp2_0049,MmCows,Behavior_Feeding_head_down,rear,unknown / ambiguous,0.9736,side,0.0114,0.9623,unknown / ambiguous,side,0.4305,rear,0.3922,0.0383,True,full_image_fallback,google/siglip-base-patch16-224,38.9
+vp2_0050,MmCows,Behavior_Feeding_head_up,side,unknown / ambiguous,0.771,front,0.1664,0.6046,front,front,0.7266,side,0.2593,0.4673,False,rtdetr_crop,google/siglip-base-patch16-224,39.1
+vp2_0051,MmCows,Behavior_Feeding_head_up,side,unknown / ambiguous,0.7151,front,0.2084,0.5067,front,front,0.7315,side,0.2456,0.4859,False,rtdetr_crop,google/siglip-base-patch16-224,39.4
+vp2_0052,MmCows,Behavior_Feeding_head_up,side,unknown / ambiguous,0.8668,front,0.0904,0.7764,front,front,0.679,side,0.279,0.3999,False,rtdetr_crop,google/siglip-base-patch16-224,39.2
+vp2_0053,MmCows,Behavior_Feeding_head_up,side,unknown / ambiguous,0.6668,side,0.1765,0.4903,side,side,0.5297,front,0.4286,0.1011,False,rtdetr_crop,google/siglip-base-patch16-224,41.0
+vp2_0054,MmCows,Behavior_Feeding_head_up,rear-oblique,unknown / ambiguous,0.8334,front,0.1071,0.7263,front,front,0.6428,side,0.322,0.3208,False,rtdetr_crop,google/siglip-base-patch16-224,39.5
+vp2_0055,MmCows,Behavior_Walking,unknown / ambiguous,unknown / ambiguous,0.8197,front,0.0954,0.7243,unknown / ambiguous,front,0.5288,side,0.4428,0.086,True,rtdetr_crop,google/siglip-base-patch16-224,39.2
+vp2_0056,MmCows,Behavior_Walking,side,unknown / ambiguous,0.9467,front,0.0382,0.9085,front,front,0.7156,side,0.2154,0.5002,False,rtdetr_crop,google/siglip-base-patch16-224,40.9
+vp2_0057,MmCows,Behavior_Walking,front-oblique,unknown / ambiguous,0.7175,side,0.1734,0.5441,side,side,0.6138,front,0.3334,0.2804,False,rtdetr_crop,google/siglip-base-patch16-224,39.2
+vp2_0058,MmCows,Behavior_Walking,side,unknown / ambiguous,0.9612,side,0.0178,0.9433,side,side,0.4595,front,0.3262,0.1333,False,rtdetr_crop,google/siglip-base-patch16-224,38.9
+vp2_0059,MmCows,Behavior_Walking,side,unknown / ambiguous,0.8419,side,0.0773,0.7646,unknown / ambiguous,side,0.4888,front,0.4704,0.0184,True,rtdetr_crop,google/siglip-base-patch16-224,41.2
+vp2_0060,MmCows,Behavior_Drinking,rear,unknown / ambiguous,0.8928,rear,0.0575,0.8353,rear,rear,0.5369,side,0.2945,0.2424,False,full_image_fallback,google/siglip-base-patch16-224,39.0
+vp2_0061,MmCows,Behavior_Drinking,unknown / ambiguous,unknown / ambiguous,0.7395,front,0.1728,0.5667,front,front,0.6636,side,0.3146,0.349,False,rtdetr_crop,google/siglip-base-patch16-224,40.8
+vp2_0062,MmCows,Behavior_Drinking,side,unknown / ambiguous,0.7037,front,0.165,0.5386,front,front,0.557,side,0.4171,0.1398,False,rtdetr_crop,google/siglip-base-patch16-224,40.8
+vp2_0063,MmCows,Behavior_Drinking,rear-oblique,unknown / ambiguous,0.9391,side,0.0318,0.9074,side,side,0.5224,front,0.3337,0.1887,False,full_image_fallback,google/siglip-base-patch16-224,38.9
+vp2_0064,MmCows,Behavior_Licking,side,unknown / ambiguous,0.8559,front,0.0755,0.7804,front,front,0.5237,side,0.3963,0.1274,False,rtdetr_crop,google/siglip-base-patch16-224,38.9
+vp2_0065,MmCows,Behavior_Licking,unknown / ambiguous,unknown / ambiguous,0.8765,front,0.0668,0.8096,front,front,0.541,rear,0.239,0.302,False,rtdetr_crop,google/siglip-base-patch16-224,39.1
+vp2_0066,MmCows,Behavior_Licking,side,unknown / ambiguous,0.9143,front,0.0383,0.876,unknown / ambiguous,front,0.4467,side,0.3872,0.0595,True,rtdetr_crop,google/siglip-base-patch16-224,39.0
+vp2_0067,MmCows,Behavior_Licking,side,unknown / ambiguous,0.8333,front,0.1259,0.7074,front,front,0.7551,side,0.1915,0.5636,False,rtdetr_crop,google/siglip-base-patch16-224,43.5
+vp2_0068,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.6716,front,0.263,0.4086,front,front,0.8008,side,0.1846,0.6162,False,rtdetr_crop,google/siglip-base-patch16-224,39.6
+vp2_0069,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.6805,front,0.2184,0.4621,front,front,0.6836,side,0.3061,0.3776,False,rtdetr_crop,google/siglip-base-patch16-224,39.7
+vp2_0070,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.7855,front,0.1413,0.6442,front,front,0.6588,side,0.3084,0.3503,False,rtdetr_crop,google/siglip-base-patch16-224,40.4
+vp2_0071,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.8972,front,0.0569,0.8403,front,front,0.5531,side,0.4179,0.1352,False,rtdetr_crop,google/siglip-base-patch16-224,46.4
+vp2_0072,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.7793,front,0.174,0.6053,front,front,0.7883,side,0.19,0.5984,False,rtdetr_crop,google/siglip-base-patch16-224,40.6
+vp2_0073,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.8426,front,0.0783,0.7642,unknown / ambiguous,front,0.4976,side,0.4672,0.0305,True,rtdetr_crop,google/siglip-base-patch16-224,39.6
+vp2_0074,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.8267,front,0.1307,0.696,front,front,0.754,side,0.2108,0.5432,False,rtdetr_crop,google/siglip-base-patch16-224,39.6
+vp2_0075,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.8603,front,0.0808,0.7795,front,front,0.5783,side,0.3836,0.1947,False,rtdetr_crop,google/siglip-base-patch16-224,41.2
+vp2_0076,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.9197,front,0.0545,0.8652,front,front,0.678,side,0.2711,0.4069,False,rtdetr_crop,google/siglip-base-patch16-224,40.3
+vp2_0077,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.9261,front,0.049,0.8771,front,front,0.6635,side,0.2588,0.4046,False,rtdetr_crop,google/siglip-base-patch16-224,40.2
+vp2_0078,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.8813,front,0.0784,0.8029,front,front,0.661,side,0.3186,0.3424,False,rtdetr_crop,google/siglip-base-patch16-224,40.4
+vp2_0079,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.789,front,0.1573,0.6318,front,front,0.7456,side,0.2273,0.5182,False,rtdetr_crop,google/siglip-base-patch16-224,40.8
+vp2_0080,SideViewCows2026,ReID_parlor,side,unknown / ambiguous,0.7022,front,0.2216,0.4806,front,front,0.7442,side,0.2471,0.4972,False,rtdetr_crop,google/siglip-base-patch16-224,39.4
+vp2_0081,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.784,side,0.1206,0.6634,side,side,0.5583,front,0.4156,0.1427,False,rtdetr_crop,google/siglip-base-patch16-224,43.4
+vp2_0082,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7257,front,0.1757,0.55,front,front,0.6405,side,0.2881,0.3524,False,rtdetr_crop,google/siglip-base-patch16-224,44.9
+vp2_0083,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7146,front,0.1801,0.5345,front,front,0.631,side,0.3333,0.2977,False,rtdetr_crop,google/siglip-base-patch16-224,43.8
+vp2_0084,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7275,front,0.1782,0.5493,front,front,0.6538,side,0.2828,0.371,False,rtdetr_crop,google/siglip-base-patch16-224,45.0
+vp2_0085,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.736,side,0.139,0.597,side,side,0.5265,front,0.418,0.1085,False,rtdetr_crop,google/siglip-base-patch16-224,44.0
+vp2_0086,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.8425,front,0.0795,0.763,unknown / ambiguous,front,0.5045,side,0.4688,0.0358,True,rtdetr_crop,google/siglip-base-patch16-224,45.0
+vp2_0087,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7914,front,0.1448,0.6466,front,front,0.6939,side,0.2809,0.413,False,rtdetr_crop,google/siglip-base-patch16-224,44.6
+vp2_0088,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7464,front,0.1435,0.6029,front,front,0.5659,side,0.4189,0.147,False,rtdetr_crop,google/siglip-base-patch16-224,43.5
+vp2_0089,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.8091,side,0.0887,0.7204,unknown / ambiguous,side,0.4646,front,0.4632,0.0014,True,rtdetr_crop,google/siglip-base-patch16-224,43.5
+vp2_0090,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7996,front,0.1318,0.6679,front,front,0.6575,side,0.2762,0.3813,False,rtdetr_crop,google/siglip-base-patch16-224,44.3
+vp2_0091,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.7805,front,0.1216,0.6589,front,front,0.554,side,0.371,0.1829,False,rtdetr_crop,google/siglip-base-patch16-224,44.6
+vp2_0092,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.8661,front,0.1083,0.7579,front,front,0.8088,side,0.1492,0.6596,False,rtdetr_crop,google/siglip-base-patch16-224,44.0
+vp2_0093,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.792,front,0.117,0.675,front,front,0.5627,side,0.4171,0.1455,False,rtdetr_crop,google/siglip-base-patch16-224,45.7
+vp2_0094,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.7324,front,0.1788,0.5536,front,front,0.6681,side,0.2798,0.3883,False,rtdetr_crop,google/siglip-base-patch16-224,41.3
+vp2_0095,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.8361,front,0.1011,0.735,front,front,0.6165,side,0.3068,0.3097,False,rtdetr_crop,google/siglip-base-patch16-224,41.1
+vp2_0096,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.7783,front,0.162,0.6163,front,front,0.7309,side,0.2013,0.5296,False,rtdetr_crop,google/siglip-base-patch16-224,41.4
+vp2_0097,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.7424,front,0.1593,0.5831,front,front,0.6184,side,0.3535,0.2649,False,rtdetr_crop,google/siglip-base-patch16-224,41.5
+vp2_0098,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.6619,front,0.2695,0.3923,front,front,0.7971,side,0.1862,0.6109,False,rtdetr_crop,google/siglip-base-patch16-224,41.9
+vp2_0099,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.7765,front,0.1451,0.6314,front,front,0.649,side,0.3133,0.3357,False,rtdetr_crop,google/siglip-base-patch16-224,42.0
+vp2_0100,SideViewCows2026,ReID_snapshots,side,unknown / ambiguous,0.6652,front,0.2172,0.4481,front,front,0.6486,side,0.3209,0.3277,False,rtdetr_crop,google/siglip-base-patch16-224,41.8

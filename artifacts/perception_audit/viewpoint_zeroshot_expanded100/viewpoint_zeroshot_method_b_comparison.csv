@@ -1,0 +1,4 @@
+model_key,family,overall_accuracy,macro_f1,sciencedb_acc,mmcows_acc,sideview_acc,false_front_count,ambiguous_recall,false_ambiguous
+openai_clip,OpenAI CLIP,27.0,0.2145,23.53,33.33,24.24,11,100.0,50
+openclip_laion,OpenCLIP LAION-2B,8.0,0.0549,14.71,9.09,0.0,10,20.0,35
+google_siglip,Google SigLIP,7.0,0.0575,0.0,15.15,6.06,60,20.0,19

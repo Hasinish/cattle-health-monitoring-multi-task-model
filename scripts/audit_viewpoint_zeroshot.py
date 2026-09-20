@@ -6,6 +6,12 @@ Benchmarks multiple frozen vision-language models on cattle viewpoint samples:
   2. openclip_laion:  laion/CLIP-ViT-B-32-laion2B-s34B-b79K (OpenCLIP LAION-2B)
   3. google_siglip:   google/siglip-base-patch16-224 (Google SigLIP)
 
+Evaluation Methods:
+  - Method A: Explicit 6-class zero-shot classification (including 'unknown / ambiguous' prompt).
+  - Method B: 5-class physical classification ('rear', 'rear-oblique', 'side', 'front-oblique', 'front')
+              with confidence/margin rejection thresholding for 'unknown / ambiguous'.
+  - Both: Computes and compares both methods simultaneously with threshold sensitivity sweeps.
+
 Features:
   - Strict visual-only inference (zero metadata access).
   - Target-cow crops recovered from Step 2.1 RT-DETR-L detections via normalized path matching.
@@ -43,6 +49,14 @@ TAXONOMY_CLASSES = [
     "front-oblique",
     "front",
     "unknown / ambiguous",
+]
+
+PHYSICAL_CLASSES = [
+    "rear",
+    "rear-oblique",
+    "side",
+    "front-oblique",
+    "front",
 ]
 
 PROMPT_ENSEMBLES = {
@@ -199,7 +213,7 @@ def get_image_crop(
 
 
 # ---------------------------------------------------------------------------
-# 3. Model Wrapper Classes
+# 3. Model Wrapper Classes Supporting Method A and Method B
 # ---------------------------------------------------------------------------
 
 def extract_pooled_features(out: Any) -> torch.Tensor:
@@ -232,7 +246,12 @@ class ZeroShotViewpointClassifier:
     def _load(self):
         raise NotImplementedError
 
-    def predict(self, image: Image.Image) -> Dict[str, Any]:
+    def predict(
+        self,
+        image: Image.Image,
+        margin_thresh: float = 0.10,
+        conf_thresh: float = 0.30,
+    ) -> Dict[str, Any]:
         raise NotImplementedError
 
 
@@ -245,7 +264,7 @@ class CLIPViewpointClassifier(ZeroShotViewpointClassifier):
         self.model = CLIPModel.from_pretrained(model_id, use_safetensors=True).to(self.device).eval()
         self.processor = CLIPProcessor.from_pretrained(model_id)
 
-        # Precompute normalized prompt ensemble text embeddings for each class
+        # Precompute normalized prompt ensemble text embeddings for each of the 6 classes
         self.class_text_embeddings = []
         with torch.no_grad():
             for c in TAXONOMY_CLASSES:
@@ -256,13 +275,17 @@ class CLIPViewpointClassifier(ZeroShotViewpointClassifier):
                 text_features = self.model.get_text_features(**inputs)
                 text_features = extract_pooled_features(text_features)
                 text_features = text_features / text_features.norm(dim=-1, keepdim=True)
-                # Ensemble average
                 mean_feat = text_features.mean(dim=0, keepdim=True)
                 mean_feat = mean_feat / mean_feat.norm(dim=-1, keepdim=True)
                 self.class_text_embeddings.append(mean_feat)
             self.class_text_embeddings = torch.cat(self.class_text_embeddings, dim=0)
 
-    def predict(self, image: Image.Image) -> Dict[str, Any]:
+    def predict(
+        self,
+        image: Image.Image,
+        margin_thresh: float = 0.10,
+        conf_thresh: float = 0.30,
+    ) -> Dict[str, Any]:
         t0 = time.perf_counter()
         with torch.no_grad():
             inputs = self.processor(images=image, return_tensors="pt").to(self.device)
@@ -270,28 +293,51 @@ class CLIPViewpointClassifier(ZeroShotViewpointClassifier):
             image_features = extract_pooled_features(image_features)
             image_features = image_features / image_features.norm(dim=-1, keepdim=True)
 
-            # Cosine similarities
+            # Cosine similarities across all 6 classes
             sims = (image_features @ self.class_text_embeddings.T).squeeze(0)  # (6,)
-            # Temperature scaling matching standard CLIP logit scale (100)
-            logits = sims * self.model.logit_scale.exp().clamp(max=100.0)
-            probs = F.softmax(logits, dim=-1).cpu().numpy()
+            logits_6 = sims * self.model.logit_scale.exp().clamp(max=100.0)
+            probs_6 = F.softmax(logits_6, dim=-1).cpu().numpy()
+
+            # Method A (6 classes)
+            scores_a = {TAXONOMY_CLASSES[i]: float(probs_6[i]) for i in range(6)}
+            sorted_a = sorted(scores_a.items(), key=lambda x: x[1], reverse=True)
+            top1_a, top1_s_a = sorted_a[0]
+            top2_a, top2_s_a = sorted_a[1]
+            margin_a = top1_s_a - top2_s_a
+
+            # Method B (5 physical classes only)
+            logits_5 = logits_6[:5]
+            probs_5 = F.softmax(logits_5, dim=-1).cpu().numpy()
+            scores_b = {PHYSICAL_CLASSES[i]: float(probs_5[i]) for i in range(5)}
+            sorted_b = sorted(scores_b.items(), key=lambda x: x[1], reverse=True)
+            top1_phys, top1_s_phys = sorted_b[0]
+            top2_phys, top2_s_phys = sorted_b[1]
+            margin_b = top1_s_phys - top2_s_phys
+
+            # Rejection rule for Method B
+            is_rejected = (top1_s_phys < conf_thresh) or (margin_b < margin_thresh)
+            pred_b = "unknown / ambiguous" if is_rejected else top1_phys
 
         dt_ms = (time.perf_counter() - t0) * 1000.0
 
-        scores = {TAXONOMY_CLASSES[i]: float(probs[i]) for i in range(len(TAXONOMY_CLASSES))}
-        sorted_classes = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-        top1_class, top1_score = sorted_classes[0]
-        top2_class, top2_score = sorted_classes[1]
-        margin = top1_score - top2_score
-
         return {
-            "predicted_viewpoint": top1_class,
-            "top_score": top1_score,
-            "second_class": top2_class,
-            "second_score": top2_score,
-            "score_margin": margin,
-            "runtime_ms": dt_ms,
-            "all_scores": scores,
+            # Method A results
+            "method_a_viewpoint": top1_a,
+            "method_a_top_score": round(top1_s_a, 4),
+            "method_a_second_viewpoint": top2_a,
+            "method_a_second_score": round(top2_s_a, 4),
+            "method_a_margin": round(margin_a, 4),
+            "method_a_scores": scores_a,
+            # Method B results
+            "method_b_viewpoint": pred_b,
+            "method_b_raw_physical": top1_phys,
+            "method_b_top_score": round(top1_s_phys, 4),
+            "method_b_second_viewpoint": top2_phys,
+            "method_b_second_score": round(top2_s_phys, 4),
+            "method_b_margin": round(margin_b, 4),
+            "method_b_is_rejected": is_rejected,
+            "method_b_scores": scores_b,
+            "runtime_ms": round(dt_ms, 1),
         }
 
 
@@ -320,7 +366,12 @@ class SigLIPViewpointClassifier(ZeroShotViewpointClassifier):
                 self.class_text_embeddings.append(mean_feat)
             self.class_text_embeddings = torch.cat(self.class_text_embeddings, dim=0)
 
-    def predict(self, image: Image.Image) -> Dict[str, Any]:
+    def predict(
+        self,
+        image: Image.Image,
+        margin_thresh: float = 0.10,
+        conf_thresh: float = 0.30,
+    ) -> Dict[str, Any]:
         t0 = time.perf_counter()
         with torch.no_grad():
             inputs = self.processor(images=image, return_tensors="pt").to(self.device)
@@ -329,31 +380,54 @@ class SigLIPViewpointClassifier(ZeroShotViewpointClassifier):
             image_features = image_features / image_features.norm(dim=-1, keepdim=True)
 
             sims = (image_features @ self.class_text_embeddings.T).squeeze(0)  # (6,)
-            # SigLIP pairwise logit scale & bias if present
             if hasattr(self.model, "logit_scale"):
-                logits = sims * self.model.logit_scale.exp()
+                logits_6 = sims * self.model.logit_scale.exp()
                 if hasattr(self.model, "logit_bias"):
-                    logits = logits + self.model.logit_bias
+                    logits_6 = logits_6 + self.model.logit_bias
             else:
-                logits = sims * 10.0
-            probs = F.softmax(logits, dim=-1).cpu().numpy()
+                logits_6 = sims * 10.0
+            probs_6 = F.softmax(logits_6, dim=-1).cpu().numpy()
+
+            # Method A (6 classes)
+            scores_a = {TAXONOMY_CLASSES[i]: float(probs_6[i]) for i in range(6)}
+            sorted_a = sorted(scores_a.items(), key=lambda x: x[1], reverse=True)
+            top1_a, top1_s_a = sorted_a[0]
+            top2_a, top2_s_a = sorted_a[1]
+            margin_a = top1_s_a - top2_s_a
+
+            # Method B (5 physical classes only)
+            logits_5 = logits_6[:5]
+            probs_5 = F.softmax(logits_5, dim=-1).cpu().numpy()
+            scores_b = {PHYSICAL_CLASSES[i]: float(probs_5[i]) for i in range(5)}
+            sorted_b = sorted(scores_b.items(), key=lambda x: x[1], reverse=True)
+            top1_phys, top1_s_phys = sorted_b[0]
+            top2_phys, top2_s_phys = sorted_b[1]
+            margin_b = top1_s_phys - top2_s_phys
+
+            # Rejection rule for Method B
+            is_rejected = (top1_s_phys < conf_thresh) or (margin_b < margin_thresh)
+            pred_b = "unknown / ambiguous" if is_rejected else top1_phys
 
         dt_ms = (time.perf_counter() - t0) * 1000.0
 
-        scores = {TAXONOMY_CLASSES[i]: float(probs[i]) for i in range(len(TAXONOMY_CLASSES))}
-        sorted_classes = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-        top1_class, top1_score = sorted_classes[0]
-        top2_class, top2_score = sorted_classes[1]
-        margin = top1_score - top2_score
-
         return {
-            "predicted_viewpoint": top1_class,
-            "top_score": top1_score,
-            "second_class": top2_class,
-            "second_score": top2_score,
-            "score_margin": margin,
-            "runtime_ms": dt_ms,
-            "all_scores": scores,
+            # Method A results
+            "method_a_viewpoint": top1_a,
+            "method_a_top_score": round(top1_s_a, 4),
+            "method_a_second_viewpoint": top2_a,
+            "method_a_second_score": round(top2_s_a, 4),
+            "method_a_margin": round(margin_a, 4),
+            "method_a_scores": scores_a,
+            # Method B results
+            "method_b_viewpoint": pred_b,
+            "method_b_raw_physical": top1_phys,
+            "method_b_top_score": round(top1_s_phys, 4),
+            "method_b_second_viewpoint": top2_phys,
+            "method_b_second_score": round(top2_s_phys, 4),
+            "method_b_margin": round(margin_b, 4),
+            "method_b_is_rejected": is_rejected,
+            "method_b_scores": scores_b,
+            "runtime_ms": round(dt_ms, 1),
         }
 
 
@@ -371,61 +445,36 @@ def create_classifier(key: str, device: str) -> ZeroShotViewpointClassifier:
 # 4. Metrics Evaluation & Reporting
 # ---------------------------------------------------------------------------
 
-def evaluate_model_results(
-    df_res: pd.DataFrame, model_key: str, n_total_manifest: Optional[int] = None
+def evaluate_predictions(
+    y_true: List[str], y_pred: List[str], datasets: List[str], classes: List[str]
 ) -> Dict[str, Any]:
-    """Compute comprehensive performance metrics for a single model run."""
-    y_true = df_res["human_viewpoint"].tolist()
-    y_pred = df_res["predicted_viewpoint"].tolist()
-
-    # Supported ground-truth classes in the samples
-    support_classes = [c for c in TAXONOMY_CLASSES if c in set(y_true)]
-
+    """Compute standard classification metrics."""
+    support_classes = [c for c in classes if c in set(y_true)]
     overall_acc = accuracy_score(y_true, y_pred)
     macro_f1 = f1_score(y_true, y_pred, labels=support_classes, average="macro", zero_division=0)
 
-    # Per-dataset accuracy
     per_dataset_acc = {}
     for ds in ["ScienceDB", "MmCows", "SideViewCows2026"]:
-        sub = df_res[df_res["dataset"] == ds]
-        if len(sub) > 0:
-            per_dataset_acc[ds] = accuracy_score(sub["human_viewpoint"], sub["predicted_viewpoint"])
+        idx_ds = [i for i, d in enumerate(datasets) if d == ds]
+        if len(idx_ds) > 0:
+            sub_true = [y_true[i] for i in idx_ds]
+            sub_pred = [y_pred[i] for i in idx_ds]
+            per_dataset_acc[ds] = accuracy_score(sub_true, sub_pred)
         else:
             per_dataset_acc[ds] = 0.0
 
-    # False front predictions
-    gt_fronts = int((df_res["human_viewpoint"] == "front").sum())
-    false_fronts = int(
-        ((df_res["predicted_viewpoint"] == "front") & (df_res["human_viewpoint"] != "front")).sum()
-    )
+    gt_fronts = sum(1 for yt in y_true if yt == "front")
+    false_fronts = sum(1 for yt, yp in zip(y_true, y_pred) if yp == "front" and yt != "front")
 
-    # Ambiguous recall
-    amb_df = df_res[df_res["human_viewpoint"] == "unknown / ambiguous"]
-    gt_ambiguous = len(amb_df)
+    amb_indices = [i for i, yt in enumerate(y_true) if yt == "unknown / ambiguous"]
+    gt_ambiguous = len(amb_indices)
     amb_recall = (
-        float((amb_df["predicted_viewpoint"] == "unknown / ambiguous").mean())
-        if len(amb_df) > 0
+        sum(1 for i in amb_indices if y_pred[i] == "unknown / ambiguous") / gt_ambiguous
+        if gt_ambiguous > 0
         else 0.0
     )
 
-    # Confidence and margins
-    mean_top_score = float(df_res["top_score"].mean())
-    mean_margin = float(df_res["score_margin"].mean())
-    mean_runtime_ms = float(df_res["runtime_ms"].mean())
-
-    # Per-class metrics
-    clf_report = classification_report(
-        y_true, y_pred, labels=support_classes, output_dict=True, zero_division=0
-    )
-
-    cm = confusion_matrix(y_true, y_pred, labels=TAXONOMY_CLASSES)
-
     return {
-        "model_key": model_key,
-        "family": MODEL_CONFIGS[model_key]["family"],
-        "model_id": MODEL_CONFIGS[model_key]["model_id"],
-        "n_samples": len(df_res),
-        "n_total_manifest": n_total_manifest if n_total_manifest is not None else len(df_res),
         "overall_accuracy": overall_acc,
         "macro_f1": macro_f1,
         "sciencedb_acc": per_dataset_acc.get("ScienceDB", 0.0),
@@ -435,20 +484,15 @@ def evaluate_model_results(
         "gt_front_count": gt_fronts,
         "ambiguous_recall": amb_recall,
         "gt_ambiguous_count": gt_ambiguous,
-        "mean_top1_score": mean_top_score,
-        "mean_score_margin": mean_margin,
-        "mean_runtime_ms": mean_runtime_ms,
-        "classification_report": clf_report,
-        "confusion_matrix": cm,
     }
 
 
-def print_evaluation_summary(metrics: Dict[str, Any]):
-    """Print clean terminal scorecard for a model."""
+def print_scorecard(title: str, metrics: Dict[str, Any], n_samples: int):
+    """Print clean terminal scorecard."""
     print("\n" + "=" * 78)
-    print(f"  ZERO-SHOT EVALUATION SCORECARD: {metrics['family']} ({metrics['model_id']})")
+    print(f"  {title}")
     print("=" * 78)
-    print(f"Samples Evaluated:       {metrics['n_samples']} / {metrics['n_total_manifest']}")
+    print(f"Samples Evaluated:       {n_samples}")
     print(f"Overall Accuracy:        {metrics['overall_accuracy'] * 100:.2f}%")
     print(f"Macro-F1 (support > 0):  {metrics['macro_f1']:.4f}")
     print(f"Per-Dataset Accuracy:")
@@ -457,19 +501,10 @@ def print_evaluation_summary(metrics: Dict[str, Any]):
     print(f"  - SideViewCows2026:    {metrics['sideview_acc'] * 100:.2f}%")
     print(f"False 'front' Count:     {metrics['false_front_count']} (Ground truth has {metrics['gt_front_count']} front)")
     print(f"Ambiguous Case Recall:   {metrics['ambiguous_recall'] * 100:.2f}% ({metrics['gt_ambiguous_count']} true ambiguous)")
-    print(f"Mean Top-1 Score:        {metrics['mean_top1_score']:.4f}")
-    print(f"Mean Top-1 Margin:       {metrics['mean_score_margin']:.4f}")
-    print(f"Mean Runtime / Image:    {metrics['mean_runtime_ms']:.1f} ms")
-
-    print("\nConfusion Matrix (Rows = Ground Truth, Cols = Predicted):")
-    header = f"{'GT \\ Pred':<22}" + "".join([f"{c[:10]:>11}" for c in TAXONOMY_CLASSES])
-    print(header)
-    print("-" * len(header))
-    cm = metrics["confusion_matrix"]
-    for i, c in enumerate(TAXONOMY_CLASSES):
-        row_str = f"{c:<22}" + "".join([f"{cm[i, j]:>11}" for j in range(len(TAXONOMY_CLASSES))])
-        print(row_str)
-    print("=" * 78 + "\n")
+    if "mean_top1_score" in metrics:
+        print(f"Mean Top-1 Score:        {metrics['mean_top1_score']:.4f}")
+        print(f"Mean Top-1 Margin:       {metrics['mean_score_margin']:.4f}")
+    print("=" * 78)
 
 
 # ---------------------------------------------------------------------------
@@ -478,12 +513,12 @@ def print_evaluation_summary(metrics: Dict[str, Any]):
 
 def run_benchmark():
     parser = argparse.ArgumentParser(
-        description="Comparative Zero-Shot VLM Audit for Cattle Viewpoint"
+        description="Comparative Zero-Shot VLM Audit for Cattle Viewpoint (Method A & B)"
     )
     parser.add_argument(
         "--manifest",
         type=str,
-        default="artifacts/perception_audit/viewpoint_manual_review_manifest.csv",
+        default="artifacts/perception_audit/viewpoint_expanded_agent_review_manifest.csv",
         help="Path to viewpoint review manifest",
     )
     parser.add_argument(
@@ -499,6 +534,25 @@ def run_benchmark():
         help="Comma-separated list of model keys to run",
     )
     parser.add_argument(
+        "--method",
+        type=str,
+        choices=["method_a", "method_b", "both"],
+        default="both",
+        help="Evaluation method: method_a (6 classes), method_b (5 physical + rejection), or both",
+    )
+    parser.add_argument(
+        "--margin-thresh",
+        type=float,
+        default=0.10,
+        help="Method B margin rejection threshold (delta < tau -> ambiguous)",
+    )
+    parser.add_argument(
+        "--conf-thresh",
+        type=float,
+        default=0.30,
+        help="Method B confidence rejection threshold (score < tau -> ambiguous)",
+    )
+    parser.add_argument(
         "--smoke",
         action="store_true",
         help="Run smoke test on 2 samples to verify pipeline",
@@ -506,7 +560,7 @@ def run_benchmark():
     parser.add_argument(
         "--output-dir",
         type=str,
-        default="artifacts/perception_audit",
+        default="artifacts/perception_audit/viewpoint_zeroshot_expanded100",
         help="Directory to save per-model CSVs and comparison CSV",
     )
     parser.add_argument(
@@ -530,7 +584,6 @@ def run_benchmark():
     manifest_df = pd.read_csv(args.manifest)
     print(f"[OK] Loaded manifest: {len(manifest_df)} rows from {args.manifest}")
 
-    # Determine ground-truth viewpoint column: final_viewpoint if present, else proposed_viewpoint
     if "final_viewpoint" in manifest_df.columns:
         gt_col = "final_viewpoint"
     elif "proposed_viewpoint" in manifest_df.columns:
@@ -559,92 +612,159 @@ def run_benchmark():
 
     model_keys = [k.strip() for k in args.models.split(",") if k.strip() in MODEL_CONFIGS]
     print(f"[INFO] Selected models to evaluate: {model_keys} on device: {args.device}")
+    print(f"[INFO] Evaluation Method: {args.method.upper()} (Margin Thresh: {args.margin_thresh}, Conf Thresh: {args.conf_thresh})")
 
-    all_model_metrics = []
+    all_model_method_a_metrics = []
+    all_model_method_b_metrics = []
+    all_model_phys_metrics = []
 
     for model_key in model_keys:
         out_csv = os.path.join(args.output_dir, f"viewpoint_zeroshot_{model_key}.csv")
+        
+        # Check if re-run is needed
+        run_inference = True
         if os.path.exists(out_csv) and not args.force and not args.smoke:
             existing_df = pd.read_csv(out_csv)
-            if len(existing_df) == len(manifest_df):
+            if len(existing_df) == len(manifest_df) and "method_b_viewpoint" in existing_df.columns:
                 print(f"[SKIP] Model {model_key} already completed ({len(existing_df)} rows). Use --force to re-run.")
-                metrics = evaluate_model_results(existing_df, model_key, len(manifest_df))
-                all_model_metrics.append(metrics)
-                print_evaluation_summary(metrics)
-                continue
+                res_df = existing_df
+                run_inference = False
 
-        # Initialize model
-        classifier = create_classifier(model_key, args.device)
+        if run_inference:
+            classifier = create_classifier(model_key, args.device)
+            records = []
+            total_samples = len(manifest_df)
+            t_start = time.time()
 
-        records = []
-        total_samples = len(manifest_df)
-        t_start = time.time()
+            for idx, (_, row) in enumerate(manifest_df.iterrows(), 1):
+                s_id = str(row["sample_id"])
+                ds = str(row["dataset"])
+                img_path = str(row["source_image_path"])
+                human_label = str(row[gt_col])
 
-        for idx, (_, row) in enumerate(manifest_df.iterrows(), 1):
-            s_id = str(row["sample_id"])
-            ds = str(row["dataset"])
-            img_path = str(row["source_image_path"])
-            human_label = str(row[gt_col])
+                box_info = sample_boxes.get(s_id)
+                crop_img, input_mode = get_image_crop(img_path, box_info)
 
-            box_info = sample_boxes.get(s_id)
-            crop_img, input_mode = get_image_crop(img_path, box_info)
+                # Predict both Method A and Method B
+                pred = classifier.predict(
+                    crop_img, margin_thresh=args.margin_thresh, conf_thresh=args.conf_thresh
+                )
 
-            # Predict
-            pred = classifier.predict(crop_img)
+                records.append({
+                    "sample_id": s_id,
+                    "dataset": ds,
+                    "category_or_subset": row.get("category_or_subset", ""),
+                    "human_viewpoint": human_label,
+                    # Method A fields
+                    "predicted_viewpoint": pred["method_a_viewpoint"],
+                    "top_score": pred["method_a_top_score"],
+                    "second_viewpoint": pred["method_a_second_viewpoint"],
+                    "second_score": pred["method_a_second_score"],
+                    "score_margin": pred["method_a_margin"],
+                    # Method B fields
+                    "method_b_viewpoint": pred["method_b_viewpoint"],
+                    "method_b_raw_physical": pred["method_b_raw_physical"],
+                    "method_b_top_score": pred["method_b_top_score"],
+                    "method_b_second_viewpoint": pred["method_b_second_viewpoint"],
+                    "method_b_second_score": pred["method_b_second_score"],
+                    "method_b_margin": pred["method_b_margin"],
+                    "method_b_is_rejected": pred["method_b_is_rejected"],
+                    "input_mode": input_mode,
+                    "model_name": MODEL_CONFIGS[model_key]["model_id"],
+                    "runtime_ms": pred["runtime_ms"],
+                })
 
-            records.append({
-                "sample_id": s_id,
-                "dataset": ds,
-                "category_or_subset": row.get("category_or_subset", ""),
-                "human_viewpoint": human_label,
-                "predicted_viewpoint": pred["predicted_viewpoint"],
-                "top_score": round(pred["top_score"], 4),
-                "second_viewpoint": pred["second_class"],
-                "second_score": round(pred["second_score"], 4),
-                "score_margin": round(pred["score_margin"], 4),
-                "input_mode": input_mode,
-                "model_name": MODEL_CONFIGS[model_key]["model_id"],
-                "runtime_ms": round(pred["runtime_ms"], 1),
-            })
+                # Live Single-Line Progress Display
+                elapsed = time.time() - t_start
+                ips = idx / elapsed if elapsed > 0 else 0
+                eta_sec = (total_samples - idx) / ips if ips > 0 else 0
+                pct = (idx / total_samples) * 100
+                display_pred = pred["method_b_viewpoint"] if args.method == "method_b" else pred["method_a_viewpoint"]
+                sys.stdout.write(
+                    f"\r[{model_key}] [{idx:>3}/{total_samples}] {pct:5.1f}% | "
+                    f"Sample: {s_id} | Pred: {display_pred:<19} | "
+                    f"Speed: {ips:.1f} img/s | ETA: {eta_sec:.0f}s"
+                )
+                sys.stdout.flush()
 
-            # Live Single-Line Progress Display
-            elapsed = time.time() - t_start
-            ips = idx / elapsed if elapsed > 0 else 0
-            eta_sec = (total_samples - idx) / ips if ips > 0 else 0
-            pct = (idx / total_samples) * 100
-            sys.stdout.write(
-                f"\r[{model_key}] [{idx:>3}/{total_samples}] {pct:5.1f}% | "
-                f"Sample: {s_id} | Pred: {pred['predicted_viewpoint']:<19} | "
-                f"Speed: {ips:.1f} img/s | ETA: {eta_sec:.0f}s"
-            )
-            sys.stdout.flush()
+            sys.stdout.write("\n")
+            res_df = pd.DataFrame(records)
+            res_df.to_csv(out_csv, index=False)
+            print(f"[OK] Saved {len(res_df)} predictions to {out_csv}")
 
-        sys.stdout.write("\n")
+            del classifier
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
-        # Save per-model CSV
-        res_df = pd.DataFrame(records)
-        res_df.to_csv(out_csv, index=False)
-        print(f"[OK] Saved {len(res_df)} predictions to {out_csv}")
+        # Evaluate Metrics
+        y_true = res_df["human_viewpoint"].tolist()
+        datasets = res_df["dataset"].tolist()
 
-        # Free GPU memory
-        del classifier
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        # 1. Method A Evaluation
+        if args.method in ["method_a", "both"]:
+            y_pred_a = res_df["predicted_viewpoint"].tolist()
+            mA = evaluate_predictions(y_true, y_pred_a, datasets, TAXONOMY_CLASSES)
+            mA["model_key"] = model_key
+            mA["family"] = MODEL_CONFIGS[model_key]["family"]
+            mA["model_id"] = MODEL_CONFIGS[model_key]["model_id"]
+            mA["mean_top1_score"] = float(res_df["top_score"].mean())
+            mA["mean_score_margin"] = float(res_df["score_margin"].mean())
+            mA["mean_runtime_ms"] = float(res_df["runtime_ms"].mean())
+            all_model_method_a_metrics.append(mA)
+            print_scorecard(f"METHOD A (6-Class Explicit): {mA['family']}", mA, len(res_df))
 
-        metrics = evaluate_model_results(res_df, model_key, len(manifest_df))
-        all_model_metrics.append(metrics)
-        print_evaluation_summary(metrics)
+        # 2. Method B Evaluation
+        if args.method in ["method_b", "both"]:
+            # Raw Physical (on physical samples only)
+            phys_mask = [yt != "unknown / ambiguous" for yt in y_true]
+            y_true_phys = [y_true[i] for i in range(len(y_true)) if phys_mask[i]]
+            y_pred_phys = [res_df["method_b_raw_physical"].iloc[i] for i in range(len(y_true)) if phys_mask[i]]
+            ds_phys = [datasets[i] for i in range(len(y_true)) if phys_mask[i]]
+            
+            mPhys = evaluate_predictions(y_true_phys, y_pred_phys, ds_phys, PHYSICAL_CLASSES)
+            mPhys["model_key"] = model_key
+            mPhys["family"] = MODEL_CONFIGS[model_key]["family"]
+            mPhys["model_id"] = MODEL_CONFIGS[model_key]["model_id"]
+            mPhys["mean_top1_score"] = float(res_df["method_b_top_score"].mean())
+            mPhys["mean_score_margin"] = float(res_df["method_b_margin"].mean())
+            all_model_phys_metrics.append(mPhys)
+            print_scorecard(f"METHOD B (Raw 5-Class Physical, N={len(y_true_phys)}): {mPhys['family']}", mPhys, len(y_true_phys))
+
+            # Full Method B with Rejection (on all 100 samples)
+            y_pred_b = res_df["method_b_viewpoint"].tolist()
+            mB = evaluate_predictions(y_true, y_pred_b, datasets, TAXONOMY_CLASSES)
+            mB["model_key"] = model_key
+            mB["family"] = MODEL_CONFIGS[model_key]["family"]
+            mB["model_id"] = MODEL_CONFIGS[model_key]["model_id"]
+            mB["false_ambiguous"] = sum(1 for yt, yp in zip(y_true, y_pred_b) if yt != "unknown / ambiguous" and yp == "unknown / ambiguous")
+            all_model_method_b_metrics.append(mB)
+            print_scorecard(f"METHOD B (6-Class with Rejection tau_margin={args.margin_thresh}): {mB['family']}", mB, len(res_df))
+
+            # Threshold sensitivity sweep table
+            print(f"\nMethod B Threshold Sweep for {model_key} (Margin Rejection: delta < tau -> ambiguous):")
+            print(f"{'tau_margin':<12} {'Overall Acc (N=100)':<22} {'Amb Recall (N=5)':<18} {'False Amb (N=95)':<18} {'Macro-F1':<10}")
+            print("-" * 80)
+            for tau in [0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30]:
+                sweep_preds = [
+                    "unknown / ambiguous" if res_df["method_b_margin"].iloc[i] < tau else res_df["method_b_raw_physical"].iloc[i]
+                    for i in range(len(res_df))
+                ]
+                acc_t = accuracy_score(y_true, sweep_preds)
+                f1_t = f1_score(y_true, sweep_preds, labels=TAXONOMY_CLASSES, average="macro", zero_division=0)
+                amb_rec_t = sum(1 for yt, yp in zip(y_true, sweep_preds) if yt == "unknown / ambiguous" and yp == "unknown / ambiguous") / 5.0
+                false_amb_t = sum(1 for yt, yp in zip(y_true, sweep_preds) if yt != "unknown / ambiguous" and yp == "unknown / ambiguous")
+                print(f"{tau:<12.2f} {acc_t*100:<22.2f} {amb_rec_t*100:<18.2f} {false_amb_t:<18} {f1_t:<10.4f}")
 
     # -----------------------------------------------------------------------
-    # Comparative Scorecard Table Across All Models
+    # Comparative Tables
     # -----------------------------------------------------------------------
-    if len(all_model_metrics) > 0:
-        comp_records = []
-        for m in all_model_metrics:
-            comp_records.append({
+    # 1. Method A Comparison Table
+    if len(all_model_method_a_metrics) > 0:
+        comp_a = []
+        for m in all_model_method_a_metrics:
+            comp_a.append({
                 "model_key": m["model_key"],
                 "family": m["family"],
-                "model_id": m["model_id"],
                 "overall_accuracy": round(m["overall_accuracy"] * 100, 2),
                 "macro_f1": round(m["macro_f1"], 4),
                 "sciencedb_acc": round(m["sciencedb_acc"] * 100, 2),
@@ -652,19 +772,65 @@ def run_benchmark():
                 "sideview_acc": round(m["sideview_acc"] * 100, 2),
                 "false_front_count": m["false_front_count"],
                 "ambiguous_recall": round(m["ambiguous_recall"] * 100, 2),
-                "mean_top1_score": round(m["mean_top1_score"], 4),
-                "mean_score_margin": round(m["mean_score_margin"], 4),
-                "mean_runtime_ms": round(m["mean_runtime_ms"], 1),
             })
-        comp_df = pd.DataFrame(comp_records)
-        comp_csv = os.path.join(args.output_dir, "viewpoint_zeroshot_model_comparison.csv")
-        comp_df.to_csv(comp_csv, index=False)
-        print(f"\n[OK] Wrote comparative model scorecard to {comp_csv}\n")
+        df_comp_a = pd.DataFrame(comp_a)
+        csv_a = os.path.join(args.output_dir, "viewpoint_zeroshot_method_a_comparison.csv")
+        df_comp_a.to_csv(csv_a, index=False)
+        print(f"\n[OK] Wrote Method A comparison table to {csv_a}")
+        print("=" * 100)
+        print(f"  METHOD A: COMPARATIVE ZERO-SHOT MODEL PERFORMANCE TABLE (N={len(manifest_df)})")
+        print("=" * 100)
+        print(df_comp_a.to_string(index=False))
+        print("=" * 100)
 
+    # 2. Method B Raw Physical Comparison Table
+    if len(all_model_phys_metrics) > 0:
+        comp_phys = []
+        for m in all_model_phys_metrics:
+            comp_phys.append({
+                "model_key": m["model_key"],
+                "family": m["family"],
+                "raw_phys_accuracy": round(m["overall_accuracy"] * 100, 2),
+                "raw_macro_f1": round(m["macro_f1"], 4),
+                "sciencedb_acc": round(m["sciencedb_acc"] * 100, 2),
+                "mmcows_acc": round(m["mmcows_acc"] * 100, 2),
+                "sideview_acc": round(m["sideview_acc"] * 100, 2),
+                "predicted_fronts": m["false_front_count"],
+            })
+        df_comp_phys = pd.DataFrame(comp_phys)
+        csv_phys = os.path.join(args.output_dir, "viewpoint_zeroshot_method_b_raw_physical_comparison.csv")
+        df_comp_phys.to_csv(csv_phys, index=False)
+        print(f"\n[OK] Wrote Method B Raw Physical comparison table to {csv_phys}")
         print("=" * 100)
-        print(f"  COMPARATIVE ZERO-SHOT MODEL PERFORMANCE TABLE (N={len(manifest_df)})")
+        print(f"  METHOD B: RAW 5-CLASS PHYSICAL PERFORMANCE TABLE (N=95 physical samples, No Rejection)")
         print("=" * 100)
-        print(comp_df.to_string(index=False))
+        print(df_comp_phys.to_string(index=False))
+        print("=" * 100)
+
+    # 3. Method B Full Comparison Table
+    if len(all_model_method_b_metrics) > 0:
+        comp_b = []
+        for m in all_model_method_b_metrics:
+            comp_b.append({
+                "model_key": m["model_key"],
+                "family": m["family"],
+                "overall_accuracy": round(m["overall_accuracy"] * 100, 2),
+                "macro_f1": round(m["macro_f1"], 4),
+                "sciencedb_acc": round(m["sciencedb_acc"] * 100, 2),
+                "mmcows_acc": round(m["mmcows_acc"] * 100, 2),
+                "sideview_acc": round(m["sideview_acc"] * 100, 2),
+                "false_front_count": m["false_front_count"],
+                "ambiguous_recall": round(m["ambiguous_recall"] * 100, 2),
+                "false_ambiguous": m["false_ambiguous"],
+            })
+        df_comp_b = pd.DataFrame(comp_b)
+        csv_b = os.path.join(args.output_dir, "viewpoint_zeroshot_method_b_comparison.csv")
+        df_comp_b.to_csv(csv_b, index=False)
+        print(f"\n[OK] Wrote Method B Rejection comparison table to {csv_b}")
+        print("=" * 100)
+        print(f"  METHOD B: 6-CLASS REJECTION PERFORMANCE TABLE (N=100, tau_margin={args.margin_thresh})")
+        print("=" * 100)
+        print(df_comp_b.to_string(index=False))
         print("=" * 100)
 
 

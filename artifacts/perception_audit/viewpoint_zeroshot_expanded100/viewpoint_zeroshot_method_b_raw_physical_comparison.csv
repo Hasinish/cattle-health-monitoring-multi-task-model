@@ -1,0 +1,4 @@
+model_key,family,raw_phys_accuracy,raw_macro_f1,sciencedb_acc,mmcows_acc,sideview_acc,predicted_fronts
+openai_clip,OpenAI CLIP,33.68,0.2711,32.35,28.57,39.39,19
+openclip_laion,OpenCLIP LAION-2B,15.79,0.1149,29.41,14.29,3.03,13
+google_siglip,Google SigLIP,12.63,0.0958,2.94,28.57,9.09,66
