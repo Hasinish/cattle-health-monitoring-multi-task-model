@@ -73,7 +73,7 @@
   2. Soft motion blur on hooves/limbs during walking (e.g. MM-02).
   3. Stall bar foreground occlusion in stall camera views (e.g. MM-16).
   4. Occasional tight/awkward crop framing (e.g. MM-03).
-  5. Overall usability: **19 / 20 (95%) samples are fully usable for deep learning behavior recognition.**
+  5. Overall usability: **19/20 inspected MmCows samples were visually usable for deep learning behavior recognition.**
 
 ### CBVD-5 Visual Inspection Summary
 - **GOOD**: 11 (55%)
@@ -92,13 +92,13 @@
 ## 4. Direct Answers to Core Evaluation Questions
 
 ### 1. Does MmCows actually look too poor for behavior training?
-**NO.** While MmCows displays standard agricultural CCTV compression and occasional motion blur on fast-moving hooves, 95% of crops (19/20) clearly capture the animal's torso, limbs, head, and behavioral posture. MmCows crops are large (median 390x370 px, reaching up to 931x719 px), providing abundant pixel density on the cow itself. It is fully viable and standard for real-world barn vision.
+**NO.** While MmCows displays standard agricultural CCTV compression and occasional motion blur on fast-moving hooves, 19/20 inspected MmCows samples were visually usable, clearly capturing the animal's torso, limbs, head, and behavioral posture. MmCows crops are large (median 390x370 px, reaching up to 931x719 px), providing abundant pixel density on the cow itself. It is fully viable and standard for real-world barn vision.
 
 ### 2. Does CBVD actually look visually better at the COW level, not just scene level?
 **NO.** This is the most crucial visual finding of this audit. CBVD-5 creates a false impression of superiority because its 1080p full barn scenes look bright and clean. However, when cropped to individual cows, the animals are physically distant from the wide-angle camera. The median CBVD-5 crop is only 156x167 px (2.5x smaller in area than MmCows). Distant cows shrink to 88x102 px, where JPEG/DCT block compression turns the animal into a pixelated smudge. At the cow crop level, CBVD is **not** superior to MmCows.
 
 ### 3. Are the previous blur/resolution conclusions visually supported?
-**YES, 100% VISUALLY SUPPORTED.**
+**YES — supported by this 40-sample visual audit.**
 - MmCows crops contain significantly more pixels on the cow body.
 - CBVD full scenes look sharper, but CBVD cow crops suffer from low resolution, edge-sharpening halos, and blocky compression.
 - The forensic audit's claim that CBVD's sharpness is a scene-level illusion is confirmed by direct visual inspection.
@@ -126,6 +126,6 @@
 
 **Why?** Because visual inspection confirms that MmCows is not too degraded for training and CBVD does not have superior cow-level detail, the non-negotiable scientific and structural factors decisively favor MmCows:
 1. **Biological Cow Identity**: MmCows provides verified cow IDs (1–16) and strict identity-disjoint train/val/test splits. CBVD-5 has ZERO cow IDs (dummy actor ID `1` everywhere), making true cow-disjoint generalization testing impossible.
-2. **Video Split Leakage**: Official AVA splits in CBVD-5 leak 100% of val/test videos into train.
-3. **Taxonomy Completeness**: MmCows includes Walking (vital for mobility/lameness research) and Licking. CBVD-5 lacks Walking and Licking entirely.
+2. **Video Split Leakage**: Validation and test share the same 50 videos; 5 videos overlap with train.
+3. **Taxonomy Completeness**: MmCows includes Walking (adds useful locomotion/motion behavior coverage) and Licking. CBVD-5 lacks Walking and Licking entirely.
 4. **Temporal Modeling**: Rumination in CBVD-5 requires 3D-CNN / video modeling and cannot be reliably classified on static 2D crops.

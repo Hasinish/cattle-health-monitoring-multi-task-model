@@ -84,15 +84,15 @@ These can only be reconsidered after the core roadmap is stable.
 Role:
 - Main training dataset
 - Main in-domain BCS benchmark
-- Passage-disjoint / sequence-safe evaluation
+- Burst-group-disjoint / sequence-safe evaluation
 
 Verified 2026-09-20:
 - 53,566 images
 - true biological cow IDs are not released in the available dataset metadata
 - the former project claim of 10,898 cows was invalid because passage/frame identifiers were parsed as biological identities
-- 5,662 reconstructed passage/sequence clusters are the defensible grouping units for split protection
+- 5,653 repaired connected burst groups are the defensible grouping units for split protection
 - the legacy split placed 247 of 261 stereo passage blocks (94.64%) across multiple partitions
-- the replacement split has zero passage-cluster overlap and zero exact-duplicate leakage across train/val/test
+- the replacement split has no burst-group overlap and no exact-duplicate or burst-crossing leakage detected under the implemented checks across train/val/test
 
 Main strengths:
 - Large image count
@@ -182,7 +182,7 @@ Why it replaces MultiCamCows2024 as primary under approved contingency:
 
 Status:
 - 100% downloaded and verified locally (`datasets/id/external/sideviewcows2026/`).
-- Deterministic protocol generation and leakage audit pending in Step 1.
+- Protocols A, B, C, and D are COMPLETE & VERIFIED with no leakage detected under the implemented checks (0 exact duplicates, 0 adjacent-frame crossings, 0 mask mismatches, min perceptual distance 7 bits).
 
 ### Primary External Longitudinal Re-ID Validation
 **BECA-L**
@@ -327,10 +327,10 @@ val_passages ∩ test_passages = ∅
 Verified split:
 
 ```text
-5,662 passage clusters
-train: 3,963 clusters / 37,126 images
-val:     849 clusters /  8,099 images
-test:    850 clusters /  8,341 images
+5,653 repaired connected burst groups
+train: 3,958 groups / 37,045 images
+val:     850 groups /  8,481 images
+test:    845 groups /  8,040 images
 seed: 42
 ```
 
