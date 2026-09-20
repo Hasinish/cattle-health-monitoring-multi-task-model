@@ -1,3 +1,21 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 2.2 Cattle Segmentation Feasibility Audit)
+
+- Executed Step 2.2 (Cattle Segmentation Feasibility Audit) across ScienceDB (BCS), MmCows (Behavior), and SideViewCows2026 (Re-ID).
+- Built reproducible audit script `scripts/audit_segmentation_feasibility.py` evaluating Pipeline A (`RT-DETR-L` box -> pretrained `SAM 2.1 small` [`sam2.1_s.pt`]), Pipeline B (`YOLO26s-seg` [`yolo26s-seg.pt`], cow class only), and Diagnostic Pipeline (`Oracle GT box` -> `SAM 2.1 small`).
+- Ran initial 30-image smoke test and expanded 300-image evaluation (100 images per primary dataset; seed=42) on local GTX 1050 Ti.
+- SideViewCows2026 Ground Truth Results (N=100):
+  - RT-DETR-L -> SAM 2.1: Mean IoU 0.9216 | Median IoU 0.9613 | Mean Dice 0.9530 | Median Dice 0.9803 | 99% IoU >= 0.50 | 96% IoU >= 0.70.
+  - Oracle GT Box -> SAM 2.1: Mean IoU 0.9468 | Median IoU 0.9639 | Mean Dice 0.9717 | Median Dice 0.9817 | 100% IoU >= 0.50 | 99% IoU >= 0.70.
+  - YOLO26s-seg: Mean IoU 0.8660 | Median IoU 0.9118 | Mean Dice 0.9170 | Median Dice 0.9538 | 96% IoU >= 0.50 | 95% IoU >= 0.70.
+- Quantitative finding: The Oracle vs RT-DETR-L gap is only 0.0252 IoU, proving that RT-DETR-L bounding boxes are sufficiently tight that SAM 2.1 boundary delineation quality is preserved end-to-end.
+- ScienceDB & MmCows Usability Results (N=200):
+  - SAM 2.1 segmented 100% of detected cattle (93/93 ScienceDB, 90/90 MmCows) with zero internal SAM failures.
+  - Visual inspection confirms clean exclusion of metal chute bars, head gates, and concrete/straw flooring, with full preservation of dorsal ridges, pin bones, and postures.
+  - Fast baseline YOLO26s-seg suffered a 38% miss rate on ScienceDB and 27% on MmCows, proving single-stage anchor-free segmentation is fragile on non-standard camera viewpoints.
+- Hardware efficiency: Total Pipeline A latency is 475.0 ms/frame (~2.1 FPS) on GTX 1050 Ti with ~1.4 GB peak VRAM. Fully viable for offline Step 3 caching.
+- Failure case analysis: Discovered `sample_0277` multi-cow ambiguity (23 cows in barn; primary-cow area heuristic selected foreground non-target cow, yielding IoU 0.0 against target GT; Oracle GT box achieved 0.9633 IoU).
+- Extended `docs/audits/phase3_perception_feasibility.md` with Section 2, generated 36 4-panel visual composites in `docs/audits/assets/perception_audit/`, and published `docs/research_log/2026-09-20_cattle_segmentation_feasibility_audit.md`. Step 2.2 COMPLETE!
+
 # Session Summary — 2026-09-20 (Phase 3 Step 2.1 Cattle Localization Feasibility Audit)
 
 - Executed Step 2.1 (Cattle Detection / Localization Feasibility Audit) across ScienceDB (BCS), MmCows (Behavior), and SideViewCows2026 (Re-ID).

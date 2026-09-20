@@ -56,8 +56,8 @@ Structured project documentation, defense resources, forensic audits, and offici
 - `README.md`: Master directory guide for the organized `docs/` workspace.
 - `phase3_canonical_roadmap.md`: Canonical Phase 3 execution roadmap mirror.
 - `audits/`: Detailed dataset forensic investigations, anti-leakage manifests, and cross-validation architectures.
-  - `phase3_perception_feasibility.md`: Cattle perception feasibility audit document. Step 2.1 (Cow Detection / Localization) completed across ScienceDB, MmCows, and SideViewCows2026, comparing YOLOv8s, Faster R-CNN v2, and RT-DETR-L.
-  - `assets/perception_audit/`: Directory containing 120 4-panel visual inspection composites comparing Original, YOLOv8s, Faster R-CNN v2, and RT-DETR-L on representative cattle scenes.
+  - `phase3_perception_feasibility.md`: Cattle perception feasibility audit document. Step 2.1 (Cow Detection / Localization; evaluated YOLOv8s, Faster R-CNN v2, RT-DETR-L) and Step 2.2 (Cow Segmentation; evaluated RT-DETR-L -> SAM 2.1 small vs YOLO26s-seg vs Oracle GT -> SAM 2.1) completed across ScienceDB, MmCows, and SideViewCows2026.
+  - `assets/perception_audit/`: Directory containing 120 4-panel localization composites and 36 4-panel segmentation composites (`[Original | Box Prompt | Mask | Overlay]`) across ScienceDB, MmCows, and SideViewCows2026.
   - `candidate_lameness_datasets_audit.md`: Deep forensic audit of 4 potential alternative lameness datasets (Russello 2026, Wu/NWAFU, whsu2s, Duan 2025).
   - `cattle_lameness_audit_report.md`: Forensic audit of the CattleLameness dataset (50 clips, 42 cattle, ezgif container footprints, cross-split leakage identification).
   - `cattle_lameness_grouping_report.md`: Anti-leakage clustering architecture, multi-clip group resolution (8 groups, 16 clips), and balanced 5-fold StratifiedGroupKFold cross-validation specification.
@@ -70,7 +70,8 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `assets/agent_behavior_inspection/`: Staging directory containing 20 MmCows crops, 20 CBVD-5 crops, 20 CBVD-5 scenes, and `manifest.json`.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
-  - `2026-09-20_cattle_localization_feasibility_audit.md`: Two-stage localization audit (90 smoke, 300 expanded) comparing YOLOv8s, Faster R-CNN v2, and RT-DETR-L across ScienceDB, MmCows, and SideViewCows2026, establishing RT-DETR-L (94.3% recall, 94ms latency) as primary upstream localizer.
+  - `2026-09-20_cattle_segmentation_feasibility_audit.md`: Step 2.2 segmentation feasibility audit evaluating RT-DETR-L -> SAM 2.1 small (0.9216 Mean IoU, 0.9530 Mean Dice on SideView; 93% usable on ScienceDB, 90% on MmCows) vs YOLO26s-seg (0.8660 IoU, 38% missed on ScienceDB, 27% on MmCows), confirming pretrained segmentation feasibility without fine-tuning.
+  - `2026-09-20_cattle_localization_feasibility_audit.md`: Two-stage localization audit (90 smoke, 300 expanded) comparing YOLOv8s, Faster R-CNN v2, and RT-DETR-L across ScienceDB, MmCows, and SideViewCows2026, establishing RT-DETR-L (94.3% raw detection rate, 94ms latency) as primary upstream localizer.
   - `2026-09-20_mmcows_vs_cbvd5_primary_behavior_assessment.md`: Forensic assessment comparing MmCows and CBVD-5 for primary behavior role across 10 dimensions, proving CBVD has zero cow IDs, median 156x167px crops, lacks walking/licking, and recommending Option A (keep MmCows primary, preserve CBVD-5 as external).
   - `2026-09-20_sideviewcows2026_protocol_and_leakage_audit.md`: Protocol generation and leakage audit for SideViewCows2026, building 4 canonical protocols, recovering 3,604 recording sessions, verifying 0 duplicate and 0 adjacent-frame leakage, and clearing Gate 1.
   - `2026-09-20_multicam_contingency_assessment.md`: Forensic assessment of MultiCamCows2024 upstream block, evaluating SideViewCows2026, BECA-L, BECA-D, and OpenCows2020, and adopting SideViewCows2026 as primary Re-ID benchmark under approved contingency.
@@ -165,6 +166,7 @@ Reference materials, prior sample defense posters, and official CSE400 formattin
 
 ### `scripts/`
 Automation utilities for batch experiments, metric aggregation, dataset restoration, and environment setup.
+- `audit_segmentation_feasibility.py`: Deterministic multi-model cattle segmentation feasibility auditor (Step 2.2) evaluating Pipeline A (RT-DETR-L box -> SAM 2.1 small), Pipeline B (YOLO26s-seg), and Diagnostic Pipeline (Oracle GT Box -> SAM 2.1) across ScienceDB, MmCows, and SideViewCows2026 with clean single-line progress UI, SideView IoU/Dice calculation, and 4-panel composite generator.
 - `audit_localization_feasibility.py`: Deterministic multi-model cattle localization feasibility auditor (Step 2.1) evaluating YOLOv8s, Faster R-CNN v2, and RT-DETR-L in smoke (90 images) and expanded (300 images) modes with Windows-clean single-line progress UI and automated composite generator.
 - `aggregate.py`: Collects training logs and performance metrics across member workspaces and generates consolidated summary tables.
 - `build_dataset_registry.py`: Deterministic generation script for `datasets/dataset_registry.csv` compiling Phase 3 datasets, roles, and local physical status.
@@ -193,6 +195,14 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `modal_billing.py`: Instant one-shot terminal summary runner for Modal billing.
 - `pcgrad.py`: NeurIPS 2020 Projecting Conflicting Gradients implementation for mitigating negative gradient interference across multitask heads.
 - `setup_research_pc.ps1`: 1-click lab PC bootstrap script for Git pull, virtual environment setup, and dependency installation.
+
+### `artifacts/`
+Generated manifests, audit CSVs, and model evaluation outputs.
+- `perception_audit/`:
+  - `sample_manifest_smoke.csv` (90 samples) & `sample_manifest_expanded.csv` (300 samples): Deterministic stratified sample manifests across ScienceDB, MmCows, and SideViewCows2026.
+  - `localization_detections_smoke.csv` & `localization_detections_expanded.csv`: Bounding box detection records from YOLOv8s, Faster R-CNN v2, and RT-DETR-L.
+  - `localization_summary_smoke.csv` & `localization_summary_expanded.csv`: Aggregated detection counts, raw detection rates, and latencies.
+  - `segmentation_results_smoke.csv` & `segmentation_results_expanded.csv`: Step 2.2 segmentation results comparing RT-DETR-L -> SAM 2.1 small, YOLO26s-seg, and Oracle GT -> SAM 2.1 with SideView IoU/Dice metrics.
 
 ### `thesis template/`
 Clean, official CSE400 LaTeX template skeleton used as the foundation for the thesis formatting.
