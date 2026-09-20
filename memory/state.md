@@ -5,9 +5,9 @@
 - **Core Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning and improve robustness across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE | STEP 2.2: COMPLETE | STEP 2.3: COMPLETE | STEP 2.4 MANUAL REVIEW: COMPLETE)
-- **Immediate next action:** STEP 2.4 / GATE 2 — Decide downstream viewpoint operational strategy and conclude Step 2 perception feasibility audit.
-- [x] STEP 2.4 (Manual Taxonomy Review): Cattle viewpoint manual visual taxonomy review completed across ScienceDB, MmCows, and SideViewCows2026 (`artifacts/perception_audit/viewpoint_manual_review_manifest.csv`; `docs/audits/phase3_viewpoint_visual_review_index.md`; 60-image deliberately diverse review pack; user verified/corrected after ChatGPT initial labeling; ScienceDB strongly rear/rear-oblique [90%], MmCows broad mixture with highest ambiguity [15%], SideView overwhelmingly side-view [90%]; confirmed coarse taxonomy `rear, rear-oblique, side, front-oblique, front, unknown / ambiguous` is visually usable; camera ID is not viewpoint; no model trained; Step 2.4 / Step 2 remain open; `docs/research_log/2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`)
+## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE | STEP 2.2: COMPLETE | STEP 2.3: COMPLETE | STEP 2.4 MANUAL REVIEW & STRATEGY AUDIT: COMPLETE)
+- **Immediate next action:** STEP 2.4 / GATE 2 — Benchmark zero-shot CLIP/SigLIP prompt classification on the 60 verified review samples (`scripts/audit_viewpoint_zeroshot.py`) to confirm the Step 3 operational generator and conclude Gate 2.
+- [x] STEP 2.4 (Manual Taxonomy Review & Operational Strategy Audit): Completed manual visual taxonomy review (60 samples verified) and comprehensive operational strategy audit. Evaluated 4 candidate options: (1) Domain heuristics (usable as strong prior for ScienceDB/SideView chutes, but fails completely on MmCows); (2) Geometric aspect-ratio rules (REJECTED: mathematically degenerate between front and rear, broken by lying postures); (3) Pretrained resources / MOO (REJECTED: MOO is a synthetic dataset without any pretrained predictor model or weights, high domain gap, training from scratch violates roadmap); (4) Lightweight / Zero-shot classifier (RECOMMENDED: evaluate frozen zero-shot vision-language models like CLIP / SigLIP on 60-image benchmark); confirmed camera ID must NOT be used as viewpoint to prevent shortcut leakage. Step 2.4 / Step 2 remain open pending zero-shot validation; `docs/research_log/2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`.
 - [x] STEP 2.3: Cattle pose / keypoint feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated official DeepLabCut SuperAnimal-Quadruped HRNet-W32 and ResNet-50 on RT-DETR-L target crops; 81.0% operational success [243/300], 13.3% pose_detector_failure [40/300], 5.7% upstream_localization_failure [17/300], 0% crashes; human visual review by user with ChatGPT-assisted organization [N=60 across 30 samples in `artifacts/perception_audit/pose_manual_review.csv`]: documented selection bias [ScienceDB BCS 3.25 only, MmCows Lying only, SideView parlor only; not extrapolated to unreviewed classes/settings]; in reviewed ScienceDB subset, rear-view outputs judged visually bad / anatomically unreliable (`clearly_wrong`) and missing BCS landmarks, not recommended for downstream BCS; in reviewed MmCows subset, lying outputs judged visually bad / anatomically unreliable (`clearly_wrong`) with 50% localization misses; SideView parlor was the only group that looked genuinely plausible, promising for Step 6 ablation [77.2% mask containment sanity check] but not proven useful yet; ResNet-50 provisional candidate due to higher raw confidence and mask containment [does not establish higher pose accuracy]; `docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md`)
 - [x] STEP 2.2: Cattle segmentation feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated RT-DETR-L -> SAM 2.1 small [Mean IoU 0.9216 / Dice 0.9530 on SideView GT; 0.0252 delta from Oracle GT box; 93/100 segmented on ScienceDB, 90/100 on MmCows] vs YOLO26s-seg [Mean IoU 0.8660, 38% missed on ScienceDB, 27% on MmCows]; confirmed pretrained segmentation feasible without fine-tuning; docs/research_log/2026-09-20_cattle_segmentation_feasibility_audit.md)
 - [x] STEP 2.1: Cattle detection / localization feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated YOLOv8s, Faster R-CNN v2, RT-DETR-L; proved YOLOv8s 37% non-detection rate on rear-view chute and tight crops; designated RT-DETR-L [94.3% raw detection rate, 94ms latency] as provisional primary candidate for Step 2.2; docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md)
@@ -38,7 +38,7 @@
 - [x] Generate manual human visual-verification pack for primary Phase 3 datasets (ScienceDB 16, MmCows 16, SideView 16; 48 checks + 3-panel composites generated deterministically via `scripts/build_manual_dataset_visual_verification.py`; `docs/audits/phase3_manual_dataset_visual_verification.md`)
 - [x] Audit MmCows vs. CBVD-5 for Primary Behavior role (`docs/research_log/2026-09-20_mmcows_vs_cbvd5_primary_behavior_assessment.md`; 14-pair manual side-by-side pack at `docs/audits/phase3_behavior_dataset_manual_comparison.md`; recommended Option A: keep MmCows Primary, preserve CBVD-5 as External Validation)
 - [x] Complete multimodal agent visual inspection of 20 MmCows and 20 CBVD-5 samples (`docs/audits/phase3_behavior_agent_visual_inspection.md`; confirmed 19/20 MmCows usable, exposed CBVD-5 wide-angle crop resolution deficit [median 156px vs 390px] and temporal label inconsistency; visually validated prior audit claims; recommended retaining Option A)
-- [ ] STEP 2: Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md` — Step 2.1 Localization COMPLETE; Step 2.2 Segmentation COMPLETE; Step 2.3 Pose COMPLETE; Step 2.4 Viewpoint manual visual taxonomy review COMPLETE, overall Step 2.4 / Step 2 pending)
+- [ ] STEP 2: Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md` — Step 2.1 Localization COMPLETE; Step 2.2 Segmentation COMPLETE; Step 2.3 Pose COMPLETE; Step 2.4 Viewpoint manual visual taxonomy review & operational strategy audit COMPLETE; zero-shot validation pending)
 - [ ] STEP 3: Cache upstream cattle information (bbox, soft_mask, pose_coords, viewpoint)
 - [ ] STEP 4: Clean RGB single-task baselines
 - [ ] STEP 5: Localization / segmentation ablation
@@ -68,14 +68,14 @@
 - **Lameness Status**: Excluded from primary Phase 3 MTL; CattleLameness retained for historical P2 audit only.
 
 ## Current Local Availability on this Machine (Physical Verification Baseline)
-- **ScienceDB BCS**:
+- **ScienceDB**:
   - Scientific Role: Primary BCS dataset
-  - Local Status: **AVAILABLE & LOCKED**. Fully restored, repaired, and verified locally (`datasets/bcs/sciencedb/`).
-  - Physical Counts: 53,566 RGB images across 5 classes: 3.25 (7,536), 3.50 (13,256), 3.75 (14,255), 4.00 (12,556), 4.25 (5,963).
-  - Repaired Protocol: `datasets/bcs/sciencedb/` (5,653 repaired burst groups, train: 37,045, val: 8,481, test: 8,040). Verified 0 exact cross-duplicates and 0 cross-burst overlap. Master index `datasets/bcs/sciencedb_bcs_index.csv` updated.
+  - Local Status: **Raw images present locally** (`datasets/bcs/sciencedb_bcs/dataset/`).
+  - Physical Counts: 53,566 images across classes 3.25–4.25 (100% valid/resolving).
+  - Split Status: 5,653 repaired burst groups; 0 exact duplicates, 0 cross-burst overlap; 100% verified.
 - **Dryad BCS**:
-  - Scientific Role: Secondary external BCS validation
-  - Local Status: **AVAILABLE & FULLY INDEXED** (`datasets/bcs/dryad_bcs/Total_sorted_DGE_images/`).
+  - Scientific Role: Secondary external BCS benchmark
+  - Local Status: **Raw images present locally** (`datasets/bcs/dryad/`).
   - Physical Counts: 5,940 TIFF files verified across class folders 2 through 7 (100% valid 224x224 RGB DGE images; 54 biological cows, 148 sessions).
   - Index Status: `datasets/bcs/dryad/manifest.csv` (5,940 rows), `cow_audit.csv` (54 cows), and `datasets/bcs/bcs_index.csv` (5,940 rows) fully populated and verified.
 - **MmCows**:
@@ -116,7 +116,13 @@
   - SideViewCows2026: 18 side, 1 front-oblique, 1 unknown / ambiguous (overwhelmingly side-view dominated; 1 front-oblique parlor entry, 1 multi-cow barn alley ambiguity).
   - Overall: 27 side, 14 rear-oblique, 11 rear, 3 front-oblique, 5 unknown / ambiguous, 0 front.
 - Persisted verified labels in `artifacts/perception_audit/viewpoint_manual_review_manifest.csv` with status `human_verified` and accurate provenance documentation.
-- Updated `docs/audits/phase3_perception_feasibility.md` with Section 4, created research log `docs/research_log/2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`, and indexed in `docs/research_log/README.md`.
+- Completed Step 2.4 Operational Strategy Audit evaluating 4 candidate options:
+  - Option 1 (Metadata heuristics): Usable as strong domain prior for ScienceDB/SideView, but fails on MmCows (360-degree rotation in pens).
+  - Option 2 (Geometric rules): REJECTED; aspect ratio is mathematically degenerate between front and rear ($w/h < 1.0$), and broken by lying postures.
+  - Option 3 (MOO): REJECTED; synthetic dataset without any pretrained predictor model or weights, high domain gap, training from scratch violates roadmap.
+  - Option 4 (Zero-shot foundation vision model): RECOMMENDED for evaluation; frozen CLIP/SigLIP requires zero training and leverages broad semantic priors.
+  - Camera ID: Confirmed camera ID must NEVER be treated as viewpoint to prevent shortcut leakage.
+- Updated `docs/audits/phase3_perception_feasibility.md` (Section 4.5 & 4.6), updated `docs/research_log/2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`, and synchronized workspace state.
 - Maintained constraints: no model trained, no weights downloaded, Step 2.4 and overall Step 2 remain open.
 
 ## Current Blockers & Notes
@@ -124,6 +130,7 @@
 - **STEP 2.1 (Localization Feasibility) IS 100% COMPLETE**.
 - **STEP 2.2 (Segmentation Feasibility) IS 100% COMPLETE**.
 - **STEP 2.3 (Pose Feasibility) IS 100% COMPLETE**.
-- **STEP 2.4 (Manual Visual Taxonomy Review) IS COMPLETE; overall Step 2.4 / Step 2 remain open**.
-- Deliverable updated: `docs/audits/phase3_perception_feasibility.md` (Localization, Segmentation, Pose, and Viewpoint Manual Review documented).
+- **STEP 2.4 (Manual Review & Operational Strategy Audit) COMPLETE; overall Step 2.4 / Step 2 remain open**.
+- Deliverable updated: `docs/audits/phase3_perception_feasibility.md` (Localization, Segmentation, Pose, and Viewpoint Strategy documented).
+- Recommended next experiment: `scripts/audit_viewpoint_zeroshot.py` testing frozen zero-shot CLIP/SigLIP against the 60 human-verified benchmark images.
 - Antigravity sync rule: changes mirrored to `D:\custom-antigravity`.

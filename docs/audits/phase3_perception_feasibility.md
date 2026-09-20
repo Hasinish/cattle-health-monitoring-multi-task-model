@@ -499,6 +499,36 @@ The 60 images were arranged into 6 high-resolution contact sheets (10 images per
 4. **Usability of Taxonomy**: The coarse viewpoint taxonomy is visually usable and consistently annotatable on this diversity-selected 60-image sample. The inclusion of `unknown / ambiguous` is strictly necessary to prevent forced misclassifications under heavy occlusion or top-down ambiguity.
 5. **Camera ID Independence**: Camera ID must NOT be treated as viewpoint. While ScienceDB and SideView are captured in constrained passage setups, animal movement and camera placement result in off-axis orientations. In MmCows, cows rotate freely relative to fixed overhead cameras.
 
-### 4.5 Current Status
+### 4.5 Operational Strategy Assessment for Step 3 Viewpoint Generation
 
-The manual visual taxonomy review for Step 2.4 is complete and persisted. No classifier training or model inference has been performed. Step 2.4 and overall Step 2 remain open pending further decisions on whether automated viewpoint classification is required or whether existing metadata/heuristics suffice.
+To determine the most defensible method for producing `coarse_viewpoint` labels during Step 3 caching across ScienceDB, MmCows, and SideViewCows2026, four candidate operational options were evaluated:
+
+1. **Option 1 (Metadata / Domain Heuristics)**:
+   - *ScienceDB & SideView*: Constrained capture geometry yields strong domain priors (90% rear/rear-oblique in ScienceDB; 90% side in SideView). However, naive heuristics miss non-standard angles (`sample_0084` front-oblique, `sample_0215` parlor turn) and cannot identify ambiguous cases (`sample_0022`, `sample_0277`).
+   - *MmCows*: Completely fails. MmCows metadata contains zero viewpoint annotations; ceiling cameras capture loose-housing pens where cows move, feed, lie, and lick across all 360 degrees.
+   - *Verdict*: Insufficient as a general solution; usable only as a strong domain prior for fixed-chute setups.
+
+2. **Option 2 (Geometric Rules: Aspect Ratio / Mask Moments)**:
+   - *Degeneracy*: Bounding box aspect ratio ($w/h$) **cannot scientifically distinguish front vs. rear**. Both a cow facing directly toward the camera (`front`) and away (`rear`) present a narrow, tall/square cross-section ($w/h \approx 0.6 - 1.0$).
+   - *Posture & Occlusion*: Lying postures, curled cows, and vertical stall bars corrupt aspect-ratio signals in MmCows.
+   - *Verdict*: REJECTED as a standalone viewpoint classifier.
+
+3. **Option 3 (Pretrained Resources: MOO — Multi-view Oriented Observations, arXiv:2603.04314)**:
+   - *What MOO Provides*: A synthetic dataset of 128,000 Blender-rendered cattle images across 1,000 synthetic identities with spherical viewpoint annotations (azimuth, elevation).
+   - *Pretrained Predictor Checkpoint*: **DOES NOT EXIST**. MOO provides no off-the-shelf orientation predictor model or weights.
+   - *Domain Gap*: Synthetic Blender cows in free space vs real chutes (ScienceDB), low-light stall-bar occlusions (MmCows), and industrial milking parlors (SideView).
+   - *Roadmap Constraint*: Training an orientation predictor from scratch on 128k synthetic images violates the Phase 3 core constraint against training models from scratch before core baselines.
+   - *Verdict*: REJECTED for Step 3 operational labeling.
+
+4. **Option 4 (Lightweight Classifier / Zero-Shot Vision-Language Foundation Model)**:
+   - *Supervised Training*: Possessing only 60 human-verified samples makes training a supervised CNN/ViT classifier prone to severe overfitting and domain memorization.
+   - *Zero-Shot Foundation Model (CLIP / SigLIP)*: Frozen vision-language models have broad semantic priors to distinguish body orientations (e.g. ranking prompts: *"a rear view of a cow"*, *"a side profile of a cow"*, *"a front view of a cow"*, *"an occluded or ambiguous cow"*) with zero training and zero parameter expansion.
+   - *Verdict*: RECOMMENDED AS PRIMARY CANDIDATE FOR EVALUATION.
+
+5. **Camera ID Shortcut Leakage**:
+   - Camera ID must NEVER be used as a viewpoint proxy. In MmCows, cows rotate dynamically across all 360 degrees within each camera view. In ScienceDB/SideView, camera ID proxies leak background and sensor shortcuts, directly defeating the thesis hypothesis of eliminating background shortcuts.
+
+### 4.6 Current Status & Recommended Next Experiment
+
+The manual visual taxonomy review and operational strategy audit for Step 2.4 are complete and persisted. No classifier training or GPU inference has been performed. Step 2.4 and overall Step 2 remain open pending:
+- **Smallest Experiment Needed Next**: A lightweight zero-shot evaluation script (`scripts/audit_viewpoint_zeroshot.py`) testing whether frozen CLIP / SigLIP can correctly classify the 60 human-verified images in `artifacts/perception_audit/viewpoint_manual_review_manifest.csv` into the 6 coarse viewpoint classes without any training or fine-tuning.

@@ -1,4 +1,4 @@
-# Session Summary — 2026-09-20 (Phase 3 Step 2.4 Cattle Viewpoint Taxonomy & Manual Review Feasibility Audit)
+# Session Summary — 2026-09-20 (Phase 3 Step 2.4 Cattle Viewpoint Taxonomy & Operational Strategy Audit)
 
 - Executed Step 2.4 initial manual visual feasibility audit of cattle viewpoint categories across ScienceDB, MmCows, and SideViewCows2026.
 - Formulated candidate coarse viewpoint taxonomy: `rear`, `rear-oblique`, `side`, `front-oblique`, `front`, and `unknown / ambiguous`.
@@ -10,9 +10,14 @@
   - SideViewCows2026 (20): 18 side, 1 front-oblique (`sample_0215` parlor entrance/turn), 1 unknown / ambiguous (`sample_0277` multi-cow barn alley). Overwhelmingly side-view dominated (90.0%).
   - Overall (60): 27 side, 14 rear-oblique, 11 rear, 3 front-oblique, 5 unknown / ambiguous, 0 front.
 - Persisted verified labels and provenance metadata in `artifacts/perception_audit/viewpoint_manual_review_manifest.csv` (`review_status = human_verified`).
-- Proved coarse viewpoint taxonomy is visually usable on this diversity-selected sample (not statistically representative of full datasets). Confirmed camera ID must not be treated as viewpoint.
-- Updated `docs/audits/phase3_perception_feasibility.md` with Section 4, created research log `docs/research_log/2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`, and indexed in `docs/research_log/README.md`.
-- Maintained constraints: no model trained, no weights downloaded, Step 2.4 and overall Step 2 remain open.
+- Completed Step 2.4 Operational Strategy Audit evaluating 4 candidate options for Step 3 caching:
+  - Option 1 (Metadata heuristics): Usable as strong domain prior for ScienceDB/SideView, but fails on MmCows (360-degree rotation in pens).
+  - Option 2 (Geometric rules): REJECTED; aspect ratio is mathematically degenerate between front and rear ($w/h < 1.0$), and broken by lying postures.
+  - Option 3 (MOO — Multi-view Oriented Observations, arXiv:2603.04314): REJECTED; synthetic Blender dataset (128k images) without any pretrained predictor model or weights; training from scratch violates roadmap and faces high synthetic-to-real domain gap.
+  - Option 4 (Zero-shot foundation vision model): RECOMMENDED for evaluation; frozen CLIP/SigLIP requires zero training, zero parameter expansion, and leverages broad semantic priors.
+  - Camera ID: Confirmed camera ID must NEVER be treated as viewpoint to prevent shortcut leakage.
+- Updated `docs/audits/phase3_perception_feasibility.md` (Sections 4.5 & 4.6), updated `docs/research_log/2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`, and synchronized workspace state.
+- Maintained constraints: no model trained, no weights downloaded, Step 2.4 and overall Step 2 remain open. Recommended next experiment: `scripts/audit_viewpoint_zeroshot.py` testing frozen zero-shot CLIP/SigLIP against the 60 human-verified benchmark images.
 
 # Session Summary — 2026-09-20 (Phase 3 Step 2.3 Cattle Pose / Keypoint Feasibility Audit)
 

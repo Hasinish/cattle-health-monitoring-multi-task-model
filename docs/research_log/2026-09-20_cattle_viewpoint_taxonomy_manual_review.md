@@ -72,16 +72,66 @@ To prevent the selection-bias flaw observed in Step 2.3 (where sequential sampli
 
 ---
 
-## 4. Architectural Decisions & Action Plan
+## 4. Operational Strategy Assessment for Step 3 Viewpoint Generation
 
-1. **Taxonomy Retention**: The 6-class taxonomy (`rear`, `rear-oblique`, `side`, `front-oblique`, `front`, `unknown / ambiguous`) is validated as visually workable.
-2. **Explicit Ambiguity Handling**: Any automated viewpoint predictor or conditioning mechanism must support `unknown / ambiguous` or output continuous orientation confidence to handle occluded stall scenes.
-3. **No Model Training in Step 2.4 (Initial Phase)**: In accordance with the canonical roadmap, no classifier was trained and no pre-trained weights were downloaded.
-4. **Step 2.4 Status**: Step 2.4 manual visual taxonomy review is completed and persisted. Step 2.4 and overall Step 2 remain open pending decisions on automated viewpoint labeling strategies.
+To determine the most scientifically defensible method for producing `coarse_viewpoint` labels during Step 3 caching across ScienceDB, MmCows, and SideViewCows2026, four candidate operational options were rigorously evaluated:
+
+### 4.1 Option 1: Metadata / Domain Heuristics
+- **Analysis**:
+  - **ScienceDB & SideViewCows2026**: High-level capture geometry is constrained (chute walkaway vs milking parlor profile). In our 20-sample audits, ScienceDB was 90% rear/rear-oblique and SideView was 90% side.
+  - **MmCows Failure**: MmCows metadata contains **zero** viewpoint information. Ceiling cameras view loose-housing pens where cows move, feed, lie, and lick in arbitrary 360-degree orientations.
+  - **Limitation**: Even in ScienceDB and SideView, naive heuristics miss non-standard angles (e.g. ScienceDB `sample_0084` front-oblique, SideView `sample_0215` parlor entrance turn) and cannot identify ambiguous cases (`sample_0022`, `sample_0277`).
+- **Verdict**: **Insufficient as a standalone solution**. Usable only as a strong domain prior for fixed-chute setups, but completely incapable of resolving MmCows.
+
+### 4.2 Option 2: Geometric Rules (Bounding Box Aspect Ratio / Mask Moments)
+- **Analysis**:
+  - **Front vs. Rear Degeneracy**: Bounding box aspect ratio ($w/h$) and 2D silhouette area **cannot scientifically distinguish front vs. rear**. Both a cow facing directly toward the camera (`front`) and facing away (`rear`) present a narrow, tall/square cross-section ($w/h \approx 0.6 - 1.0$).
+  - **Posture Corruption**: Lying/curled cows in MmCows completely break rigid aspect-ratio assumptions regardless of orientation.
+  - **Stall Occlusions**: Vertical stall bars or feeding headlocks truncate bounding boxes, corrupting aspect ratios.
+- **Verdict**: **REJECTED as a viewpoint classifier**. Aspect ratio can easily separate broadside profiles ($w/h \gg 1.0$) from axial views, but is mathematically degenerate between front and rear.
+
+### 4.3 Option 3: Pretrained Cattle Viewpoint Resources (MOO — Multi-view Oriented Observations)
+- **Forensic Verification of MOO (Grolleau et al., CVPR 2026 CV4Animals Workshop, arXiv:2603.04314)**:
+  - **What MOO Actually Provides**: A large-scale **synthetic dataset** of 128,000 images across 1,000 synthetic cattle identities rendered in Blender from 128 uniformly sampled spherical viewpoints ($360^\circ$ azimuth, $-25^\circ$ to $90^\circ$ elevation) with depth maps.
+  - **Availability**: Code repository at `https://github.com/TurtleSmoke/MOO`; dataset hosted as `MOO.zip` on CEA servers.
+  - **Pretrained Predictor Checkpoint**: **DOES NOT EXIST**. MOO is a synthetic benchmark and pre-training resource for aerial-ground Re-ID under elevation shifts; it does **not** provide an off-the-shelf orientation predictor model or weights.
+  - **Taxonomy Mapping**: Continuous azimuth $\phi$ and elevation $\theta$ could theoretically map to our taxonomy (rear: $\sim 180^\circ$, side: $\sim 90^\circ/270^\circ$, front: $\sim 0^\circ$, ambiguous: $\theta \ge 45^\circ$).
+  - **Severe Domain Gap Risks**: MOO features clean, unoccluded synthetic Blender cattle in free space. Real-world target imagery contains severe domain shifts: narrow metal chutes with manure (ScienceDB), low-light CCTV with stall-bar occlusions and straw bedding (MmCows), and industrial milking parlors (SideView).
+  - **Roadmap Violation**: Training an orientation regressor from scratch on 128k synthetic images violates the Phase 3 core constraint: *"Not core right now: Cattle foundation model training from scratch... Training a new segmentation model from scratch"*.
+- **Verdict**: **REJECTED for Step 3 operational labeling**. MOO provides no off-the-shelf model, and synthetic-to-real transfer to cluttered farm environments is unproven and high-risk.
+
+### 4.4 Option 4: Lightweight Viewpoint Classifier / Zero-Shot Vision-Language Foundation Model
+- **Analysis**:
+  - **Supervised Training Problem**: We currently possess 60 verified human labels. Training a supervised CNN/ViT classifier on 60 samples guarantees severe overfitting, memorization, and lack of generalizability.
+  - **Zero-Shot Foundation Model Viability**: Modern frozen vision-language models (e.g. `open_clip`, `SigLIP`, `CLIP ViT-B/32`) possess broad semantic priors that recognize animal body orientation without task-specific fine-tuning (e.g. ranking prompts such as *"a rear view of a cow"*, *"a side profile of a cow"*, *"a front view of a cow"*, *"an occluded or ambiguous cow"*).
+  - **Zero-Training Advantage**: Requires zero training, zero checkpoint downloads from untrusted sources, and introduces zero parameters.
+- **Verdict**: **RECOMMENDED AS PRIMARY CANDIDATE FOR EVALUATION**.
+
+### 4.5 Camera ID Shortcut Leakage Warning
+- **Camera ID must NEVER be used as a viewpoint proxy**:
+  - In MmCows, cows rotate dynamically across all 360 degrees within each camera's field of view.
+  - In ScienceDB and SideView, associating camera ID with viewpoint causes downstream models to learn camera/farm/lighting shortcuts rather than anatomical orientation, directly defeating the thesis core hypothesis of eliminating background shortcuts.
 
 ---
 
-## 5. Artifacts & File Registry
+## 5. Architectural Decisions & Action Plan
+
+1. **Recommended Operational Strategy**:
+   - **Chute Tasks (ScienceDB & SideView)**: Use domain-informed structural priors (ScienceDB = rear-dominated, SideView = side-dominated), verified by geometric aspect-ratio checks to flag off-axis anomalies.
+   - **MmCows (Behavior)**: Deploy a lightweight frozen zero-shot vision-language model (e.g. CLIP / SigLIP) to classify dynamic animal orientations without training.
+   - **Explicit Ambiguity Class**: Preserve `unknown / ambiguous` for heavily occluded, curled lying, or multi-cow instances.
+2. **Smallest Experiment Needed Next**:
+   - Evaluate zero-shot CLIP / SigLIP prompt classification on the human-verified 60-image benchmark (`artifacts/perception_audit/viewpoint_manual_review_manifest.csv`).
+   - If zero-shot agreement is acceptable, adopt it for Step 3 offline caching.
+   - If zero-shot foundation models fail, adopt domain priors for ScienceDB/SideView with simple heuristic clustering for MmCows.
+3. **Step 2.4 & Step 2 Gate Status**:
+   - Step 2.4 manual visual taxonomy review is complete and persisted.
+   - The operational strategy assessment is complete.
+   - Step 2.4 and overall Step 2 remain open until the small zero-shot validation experiment confirms the operational generator.
+
+---
+
+## 6. Artifacts & File Registry
 
 - **Manifest**: [artifacts/perception_audit/viewpoint_manual_review_manifest.csv](file:///d:/cattle-health-monitoring-multi-task-model/artifacts/perception_audit/viewpoint_manual_review_manifest.csv) (60 rows, verified labels, provenance notes)
 - **Visual Review Index**: [docs/audits/phase3_viewpoint_visual_review_index.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/audits/phase3_viewpoint_visual_review_index.md)
@@ -97,11 +147,12 @@ To prevent the selection-bias flaw observed in Step 2.3 (where sequential sampli
 
 ---
 
-## 6. Next Steps
+## 7. Next Steps
 
 - [x] Curate deliberately diverse 60-image viewpoint review pack across ScienceDB, MmCows, SideViewCows2026.
 - [x] Generate high-resolution contact sheets and index document.
 - [x] Perform visual review with ChatGPT-assisted initial labeling followed by human verification and correction.
 - [x] Persist verified labels and provenance metadata in `viewpoint_manual_review_manifest.csv`.
-- [ ] Determine downstream viewpoint operational strategy (whether to train a lightweight classifier, use geometric bounding box aspect ratios, or rely on task-specific domain assumptions).
+- [x] Conduct operational strategy audit (heuristics vs geometry vs MOO vs zero-shot classifier).
+- [ ] Run smallest experiment: benchmark zero-shot CLIP/SigLIP prompt classification on the 60 verified review samples.
 - [ ] Conclude Step 2.4 and decide Gate 2 feasibility status.
