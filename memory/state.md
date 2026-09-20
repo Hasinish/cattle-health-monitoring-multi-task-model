@@ -7,7 +7,7 @@
 
 ## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE | STEP 2.2: COMPLETE | STEP 2.3: COMPLETE)
 - **Immediate next action:** STEP 2.4 — Cattle Viewpoint / Orientation Feasibility Audit.
-- [x] STEP 2.3: Cattle pose / keypoint feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated official DeepLabCut SuperAnimal-Quadruped HRNet-W32 and ResNet-50 backbones on RT-DETR-L target crops; 81.0% operational success [243/300], 13.3% pose_detector_failure [40/300], 5.7% upstream_localization_failure [17/300], 0% crashes; proved zero-shot pose NOT feasible for BCS due to rear-view chute angle and missing pelvic/pin/hook bone keypoints; marginal for Behavior due to 22% detector failure on lying/stall cows; feasible for Re-ID side views with 77.2% keypoints-inside-mask rate; selected ResNet-50 over HRNet-W32; docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md)
+- [x] STEP 2.3: Cattle pose / keypoint feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated official DeepLabCut SuperAnimal-Quadruped HRNet-W32 and ResNet-50 on RT-DETR-L target crops; 81.0% operational success [243/300], 13.3% pose_detector_failure [40/300], 5.7% upstream_localization_failure [17/300], 0% crashes; human-verified visual review [N=60 across 30 samples in `artifacts/perception_audit/pose_manual_review.csv`]: ScienceDB rear-view pose outputs frequently anatomically implausible and not recommended for downstream BCS based on visual inspection and missing BCS-relevant landmarks; MmCows mixed/fragile with coarse posture sometimes captured but substantial occlusion/lying failures; SideViewCows2026 visually more anatomically plausible and promising for Step 6 ablation [77.2% keypoints-inside-mask sanity check], not proven useful yet; ResNet-50 provisional candidate because of higher raw confidence and slightly higher mask containment, but these do not establish higher pose accuracy; `docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md`)
 - [x] STEP 2.2: Cattle segmentation feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated RT-DETR-L -> SAM 2.1 small [Mean IoU 0.9216 / Dice 0.9530 on SideView GT; 0.0252 delta from Oracle GT box; 93/100 segmented on ScienceDB, 90/100 on MmCows] vs YOLO26s-seg [Mean IoU 0.8660, 38% missed on ScienceDB, 27% on MmCows]; confirmed pretrained segmentation feasible without fine-tuning; docs/research_log/2026-09-20_cattle_segmentation_feasibility_audit.md)
 - [x] STEP 2.1: Cattle detection / localization feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated YOLOv8s, Faster R-CNN v2, RT-DETR-L; proved YOLOv8s 37% non-detection rate on rear-view chute and tight crops; designated RT-DETR-L [94.3% raw detection rate, 94ms latency] as provisional primary candidate for Step 2.2; docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md)
 - [x] Download & restore 213,686 MmCows behavior images via Hugging Face (213,686 indexed crops valid in `behaviors/`; 427,390 total local JPGs; raw videos purged)
@@ -20,7 +20,7 @@
 - [x] Conduct read-only physical filesystem inventory audit (`docs/research_log/2026-09-20_local_dataset_inventory_audit.md`)
 - [x] Build canonical dataset registry (`datasets/dataset_registry.csv` generated; 13 datasets, 28 fields, local physical statuses cataloged)
 - [x] Document MultiCamCows2024 upstream blocker and formally adopt SideViewCows2026 contingency (`docs/research_log/2026-09-20_multicam_contingency_assessment.md`)
-- [x] Download & restore ScienceDB Cattle BCS raw images (53,566 images across 5 classes restored via 24-thread fast downloader & 7-Zip; index validated)
+- [x] Download & restore ScienceDB BCS raw images (53,566 images across 5 classes restored via 24-thread fast downloader & 7-Zip; index validated)
 - [x] Validate ScienceDB identity parser and repair burst-group split (`datasets/bcs/sciencedb/`; 5,653 repaired burst groups, 0 exact duplicates, 0 cross-burst leakage; 100% verified)
 - [x] Rebuild MmCows grouped evaluation protocol with time-block / multi-view protection (`datasets/behavior/mmcows/folds/`; 213,686 crops, 16 cows, canonical split + 4-fold GroupKFold suite, 0 leakage)
 - [x] Audit and rebuild OpenCows2020 legacy Re-ID evaluation protocol (`datasets/id/opencow2020/`; 4,736 images, 46 cows; official test 496 preserved; train: 3,586, val: 654; contiguous frame-index heuristic + duplicate harmonization; 0 exact-duplicate overlap; true tracklet/temporal leakage unrecoverable from provenance)
@@ -98,15 +98,9 @@
   - Local Status: **AVAILABLE** (`datasets/id/external/beca/BECA-D/`).
   - Physical Counts: 16,889 images across 5,661 beef cattle (16,083 train with 3 imgs/cow, 806 val).
 - **OpenCows2020**:
-  - Scientific Role: Legacy Re-ID benchmark only
-  - Local Status: **Locally present** (`datasets/id/opencow2020-DatasetNinja/`).
-  - Physical Counts: 4,736 images across 46 identities (4,240 in `identification-train/img/`, 496 in `identification-test/img/`).
-  - Protocol Status: `datasets/id/opencow2020/manifest.csv` (4,736 rows), `train.csv` (3,586), `val.csv` (654), `test.csv` (496 official preserved), `split_report.md`, and updated `id_index.csv` (4,736 rows).
-- **MultiCamCows2024**:
-  - Scientific Role: Intended primary Re-ID dataset (Contingency-excluded)
-  - Local Status: **NOT present locally**. 0 files/archives.
-  - Upstream Status: Official download attempt blocked upstream (`data.bris.ac.uk` connection reset verified locally and on Modal cloud). Formally replaced by SideViewCows2026 under approved contingency (2026-09-20).
-- **Ruchay 2026**: Metadata and 25,700-sample manifest verified locally in `datasets/bcs/external/ruchay2026/`; raw 77.74 GB RGB-D zip archives remain on Zenodo (DOI: 10.5281/zenodo.20290988).
+  - Scientific Role: Legacy Re-ID baseline
+  - Local Status: **AVAILABLE** (`datasets/id/opencows2020/`).
+  - Physical Counts: 4,736 images across 46 cows (3,586 train, 654 val, 496 test).
 - **CBVD-5**: AVAILABLE locally (`datasets/behavior/external/cbvd5/`; 887 videos, 206,100 frames, 5,322 annotated label frames across 107 cows).
 - **CattleEyeView / SuperAnimal / MOO**: Not present locally.
 - **CattleLameness**: Locally present (50 MP4s in `CattleLameness/Data/` + 9,950 frames in `frames/`). Historical Phase 2 material only; remains strictly excluded from core Phase 3 MTL.
@@ -117,9 +111,11 @@
 ## Last Session (Convo e78aa1ac-ddc7-4c32-8bab-f25894ade0df)
 - Completed Step 2.2 (Cattle Segmentation Feasibility Audit: RT-DETR-L -> SAM 2.1 small vs YOLO26s-seg).
 - Completed Step 2.3 (Cattle Pose / Keypoint Feasibility Audit: DeepLabCut SuperAnimal-Quadruped HRNet-W32 and ResNet-50 across the 300-image expanded sample).
-- Discovered that zero-shot pose is NOT feasible for BCS (ScienceDB rear views depress confidence to 0.13-0.28, hallucinate occluded cranial points, and lack pelvic/pin/hook bone keypoints needed for BCS).
-- Discovered that zero-shot pose has marginal utility for Behavior (MmCows; 22% internal detector failure on curled/stall-occluded cows).
-- Confirmed zero-shot pose is feasible for Re-ID side views (SideViewCows2026; 77.2% keypoints-inside-mask rate). Selected ResNet-50 over HRNet-W32.
+- Step 2.3 Visual Review & Evidence-Based Findings (N=60 reviews across 30 samples in `artifacts/perception_audit/pose_manual_review.csv`, human-verified):
+  - ScienceDB: rear-view pose outputs frequently anatomically implausible; not recommended for downstream BCS based on visual inspection and missing BCS-relevant landmarks.
+  - MmCows: mixed/fragile; coarse posture sometimes captured, but occlusion/lying failures are substantial (22% internal detector failure).
+  - SideViewCows2026: visually more anatomically plausible; promising for Step 6 ablation (77.2% mask containment sanity check), not proven useful yet.
+  - ResNet-50: provisional candidate because of higher raw confidence and slightly higher mask containment; these do not establish higher pose accuracy.
 - Updated `docs/audits/phase3_perception_feasibility.md`, created research log `docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md`, and indexed in `docs/research_log/README.md`.
 
 ## Current Blockers & Notes

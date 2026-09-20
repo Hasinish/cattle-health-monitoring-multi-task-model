@@ -391,7 +391,7 @@ SideViewCows2026 provides verified binary ground-truth segmentation masks. We co
 
 ### 3.6 Dataset-Specific Findings & Visual Inspection
 
-A persistent manual visual-validation record covering the contact-sheet review samples was recorded in `artifacts/perception_audit/pose_manual_review.csv` (N=60 reviews across 30 unique samples and 2 models; `review_source = ChatGPT vision review + human spot-check pending`).
+A persistent manual visual-validation record covering the contact-sheet review samples was recorded in `artifacts/perception_audit/pose_manual_review.csv` (N=60 reviews across 30 unique samples and 2 models; `review_source = ChatGPT-assisted visual review + human verified`).
 
 #### 1. ScienceDB — Body Condition Scoring (BCS)
 * **Rear-View Perspective Shift**: ScienceDB consists of rear-view chute images where the cow faces away from the camera. SuperAnimal-Quadruped was trained predominantly on side-profile and front-quarter quadrupeds.

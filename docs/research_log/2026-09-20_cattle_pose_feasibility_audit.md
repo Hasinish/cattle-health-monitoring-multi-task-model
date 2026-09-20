@@ -65,7 +65,7 @@ This is an empirical feasibility audit only; no commitment is made yet to includ
 
 ## 4. Key Scientific Findings & Visual Inspection
 
-A persistent manual visual-validation record covering the contact-sheet review samples was recorded in `artifacts/perception_audit/pose_manual_review.csv` (N=60 reviews across 30 unique samples and 2 models; `review_source = ChatGPT vision review + human spot-check pending`).
+A persistent manual visual-validation record covering the contact-sheet review samples was recorded in `artifacts/perception_audit/pose_manual_review.csv` (N=60 reviews across 30 unique samples and 2 models; `review_source = ChatGPT-assisted visual review + human verified`).
 
 ### Ground-Truth & Metric Caveats:
 * **No Keypoint Ground Truth**: ScienceDB, MmCows, and SideViewCows2026 do not provide verified keypoint annotations; therefore, no PCK, OKS, or pose mAP can be claimed.

@@ -11,11 +11,12 @@
   - `upstream_localization_failure`: 17 / 300 (5.7%) across both models (ScienceDB: 7, MmCows: 10, SideView: 0).
   - `pose_inference_error`: 0 / 300 (0.0%) across both models — absolute zero technical crashes.
 - Confidence & Geometric Sanity Check on `pose_output_returned`:
-  - SideViewCows2026 (Re-ID): ResNet-50 mean confidence 0.4838 (HRNet 0.4093); 77.2% of keypoints fall inside the ground-truth cow mask (HRNet 72.7%).
-  - ScienceDB (BCS rear view): Confidence heavily depressed (HRNet 0.1324, ResNet 0.2878). Model hallucinates cranial points on cows facing away. SuperAnimal schema completely lacks hip/pin/hook bone keypoints (*tuber coxae*, *tuber ischiadicum*) or pelvic hollow markers needed for BCS.
-  - MmCows (Behavior): Posture keypoints coherent for standing/walking cows (ResNet mean conf 0.3607, HRNet 0.2287), but 22% internal detector failure on curled lying cows and heavy stall bars.
-- Model Selection: ResNet-50 selected as preferred pose backbone over HRNet-W32 due to higher raw confidence (0.4838 vs 0.4093) and higher mask containment (77.2% vs 72.7%).
-- Deliverables updated: `docs/audits/phase3_perception_feasibility.md` (Section 3 added), published `docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md`, and indexed in `docs/research_log/README.md`. Step 2.3 COMPLETE!
+  - SideViewCows2026 (Re-ID): ResNet-50 mean raw confidence 0.4838 (HRNet 0.4093); 77.2% of keypoints fall inside ground-truth cow mask (HRNet 72.7%) as a geometric sanity check; visually more anatomically plausible and promising for Step 6 ablation, but not proven useful yet.
+  - ScienceDB (BCS rear view): Confidence heavily depressed (HRNet 0.1324, ResNet 0.2878). Model hallucinates cranial points on cows facing away. SuperAnimal schema completely lacks hip/pin/hook bone keypoints (*tuber coxae*, *tuber ischiadicum*) or pelvic depression markers needed for BCS. Visual inspection indicates outputs frequently anatomically implausible; not recommended for downstream BCS.
+  - MmCows (Behavior): Posture keypoints coherent for standing/walking cows (ResNet mean conf 0.3607, HRNet 0.2287), but 22% internal detector failure on curled lying cows and heavy stall bars; outputs are mixed and fragile.
+- Model Selection: ResNet-50 designated provisional candidate because of higher raw confidence and slightly higher mask containment; these do not establish higher pose accuracy.
+- Human Verification & Deliverables: Persistent manual visual-validation record created at `artifacts/perception_audit/pose_manual_review.csv` (N=60 reviews across 30 samples, ChatGPT-assisted + human verified). Updated `docs/audits/phase3_perception_feasibility.md` (Section 3), published `docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md`, and indexed in `docs/research_log/README.md`. Step 2.3 COMPLETE!
+
 
 # Session Summary — 2026-09-20 (Phase 3 Step 2.2 Cattle Segmentation Feasibility Audit)
 
