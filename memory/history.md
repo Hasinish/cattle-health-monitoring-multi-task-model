@@ -1,4 +1,17 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 2.4 Cattle Viewpoint 100-Sample Expanded Cross-Check & Adjudication)
+
+- Constructed a 100-sample expanded cattle viewpoint review pack (ScienceDB: 34, MmCows: 33, SideViewCows2026: 33; seed 2026) with zero overlap with the 60-image baseline.
+- Rendered 10 high-resolution blind contact sheets (2x5 grid, 10 images each) displaying only sample IDs (`vp2_0001` to `vp2_0100`).
+- Generated index at `docs/audits/phase3_viewpoint_expanded_crosscheck_index.md` and provisional manifest at `artifacts/perception_audit/viewpoint_expanded_agent_review_manifest.csv`.
+- Obtained independent blind predictions from ChatGPT vision, yielding an initial raw concordance of 79.0% (79/100).
+- Isolated the 21 disagreements into `docs/audits/phase3_viewpoint_mismatch_user_review.md` and prepared individual crops in `docs/audits/assets/viewpoint_mismatch_user_review/`.
+- User completed adjudication across all 21 disagreements: accepted 20 ChatGPT labels and issued 1 explicit user override for `vp2_0060` to `rear`.
+- Executed `scripts/finalize_viewpoint_expanded_manifest.py` to finalize `artifacts/perception_audit/viewpoint_expanded_agent_review_manifest.csv` with strict provenance tracking (`agent visual labeling + independent ChatGPT vision cross-check + user adjudication of disagreements`).
+- Final distribution across 100 samples: `side`: 54, `rear`: 27, `rear-oblique`: 12, `unknown / ambiguous`: 5, `front-oblique`: 2, `front`: 0.
+- Documented in `docs/research_log/2026-09-20_cattle_viewpoint_expanded_crosscheck.md` and updated research log hub index.
+
 # Session Summary — 2026-09-20 (Phase 3 Step 2.4 Cattle Viewpoint Taxonomy & Operational Strategy Audit)
+
 
 - Executed Step 2.4 initial manual visual feasibility audit of cattle viewpoint categories across ScienceDB, MmCows, and SideViewCows2026.
 - Formulated candidate coarse viewpoint taxonomy: `rear`, `rear-oblique`, `side`, `front-oblique`, `front`, and `unknown / ambiguous`.
@@ -247,6 +260,8 @@
 
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
 
+- **[2026-09-20] Convo 0178fee0-5a16-4a5c-8d7f-7b932bf6ae08**: Investigated publicly available records, position, and contact channels for Subal Chandra Roy (NBL / National Bank Limited).
+- **[2026-09-20] Convo e78aa1ac-ddc7-4c32-8bab-f25894ade0df**: Phase 3 Step 2.4 Cattle Viewpoint Taxonomy & Operational Strategy Audit; completed 60-image manual review and multi-option strategy analysis.
 - **[2026-09-20] Convo 27375138-e032-457f-a2a6-753e72f4a342**: Completed forensic local dataset inventory on GTX 1050 Ti machine; distinguished physical local availability from canonical scientific roles; marked MultiCamCows2024 download as BLOCKED (upstream issue); created canonical dataset registry `datasets/dataset_registry.csv` (13 datasets, 28 columns).
 - **[2026-09-19] Convo 27375138-e032-457f-a2a6-753e72f4a342**: Synchronized workspace and custom-antigravity from origin/main (+287k lines, 12 config files). Deployed Antigravity customizations via setup.ps1. Added Modal accounts hasinishrak2015 and dryousufmozumder ($30 grants each), upgraded tigerwood697 ($30 grant), reaching 6 accounts and $107.01 total credit (~55 hrs L40S). Synced canonical roadmap clarifications to docs/ and pushed to GitHub. Clean start locked for STEP 1 execution.
 - **[2026-09-19] Convo fa09b269-a73b-49f3-aecc-c870aef77dac**: Git synchronization status check across workspace and custom-antigravity repository. Verified clean working trees and all commits pushed to origin/main.

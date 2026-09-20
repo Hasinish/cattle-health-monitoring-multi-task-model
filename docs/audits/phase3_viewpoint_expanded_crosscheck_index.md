@@ -1,9 +1,10 @@
 # Phase 3 Cattle Viewpoint Expanded Cross-Check Index (100 Samples)
 
-**Status**: Provisional Agent Visual Labels Pending Independent ChatGPT Vision Cross-Check  
+**Status**: Completed (79 Consensus + 21 User Adjudicated)  
 **Date**: 2026-09-20  
 **Manifest**: [artifacts/perception_audit/viewpoint_expanded_agent_review_manifest.csv](file:///D:/cattle-health-monitoring-multi-task-model/artifacts/perception_audit/viewpoint_expanded_agent_review_manifest.csv)  
 **Asset Directory**: [docs/audits/assets/viewpoint_expanded_crosscheck](file:///D:/cattle-health-monitoring-multi-task-model/docs/audits/assets/viewpoint_expanded_crosscheck)  
+**Disagreement Review**: [docs/audits/phase3_viewpoint_mismatch_user_review.md](file:///D:/cattle-health-monitoring-multi-task-model/docs/audits/phase3_viewpoint_mismatch_user_review.md)  
 
 ---
 
@@ -14,12 +15,11 @@ This review pack contains **100 new, non-overlapping cattle images** across our 
 - **MmCows**: 33 samples (7 behaviors, 4 cameras, 15 unique cows)
 - **SideViewCows2026**: 33 samples (parlor, barn, snapshots across 28 cows)
 
-> [!IMPORTANT]
-> **Provisional Review Status**: These 100 labels represent initial visual labeling by the coding/research agent and are **provisional**. They have **NOT** been merged with the human-verified 60-image manifest and do **NOT** constitute final ground truth.
-> 
-> The 10 contact sheets below are **completely blind**: each image displays **ONLY** its sample ID (`vp2_0001` to `vp2_0100`) with zero metadata, zero bounding boxes, and zero viewpoint hints.
-> 
-> **Next Step**: An independent ChatGPT vision session will inspect these blind contact sheets, produce blind predictions, and compare against the agent labels to identify consensus and resolve edge cases.
+> [!NOTE]
+> **Provenance Statement**: These 100 samples carry the provenance **`agent visual labeling + independent ChatGPT vision cross-check + user adjudication of disagreements`**.
+> They are strictly distinguished from the 60-image human-verified baseline (`viewpoint_manual_review_manifest.csv`).
+> Initial consensus between the coding/research agent and independent ChatGPT vision was **79.0% (79/100)**.
+> The 21 disagreements were compiled into [phase3_viewpoint_mismatch_user_review.md](file:///D:/cattle-health-monitoring-multi-task-model/docs/audits/phase3_viewpoint_mismatch_user_review.md) and personally adjudicated by the user (20 ChatGPT labels accepted, 1 user override for `vp2_0060` to `rear`).
 
 ---
 
@@ -214,3 +214,36 @@ This review pack contains **100 new, non-overlapping cattle images** across our 
 2. Prompt ChatGPT to assign one of the 6 taxonomy classes (`rear`, `rear-oblique`, `side`, `front-oblique`, `front`, `unknown / ambiguous`) to each sample ID.
 3. Tabulate agreement, compute Cohen's kappa / raw concordance, and investigate all disagreements.
 4. Human user adjudicates remaining edge cases to establish the verified 100-sample cross-checked set.
+
+---
+
+## 5. Cross-Check Results & Final Adjudication
+
+### 5.1 Agreement Summary
+- **Total Samples**: 100
+- **Initial Consensus (Agent vs. ChatGPT)**: 79 / 100 (79.0% raw agreement)
+- **Disagreements Audited**: 21 / 100 (21.0%)
+- **User Adjudication Decisions**:
+  - 20 cases: User accepted ChatGPT label over Agent label.
+  - 1 case (`vp2_0060`): User made explicit override to `rear` (Agent: `rear-oblique`, ChatGPT: `unknown / ambiguous`).
+- **Final Adjudicated Dataset**: 100% resolved (100 / 100).
+
+### 5.2 Final Viewpoint Class Distribution (N=100)
+| Viewpoint Class | Count | Percentage |
+|---|---|---|
+| `side` | 54 | 54.0% |
+| `rear` | 27 | 27.0% |
+| `rear-oblique` | 12 | 12.0% |
+| `unknown / ambiguous` | 5 | 5.0% |
+| `front-oblique` | 2 | 2.0% |
+| `front` | 0 | 0.0% |
+| **Total** | **100** | **100.0%** |
+
+### 5.3 Final Distribution by Dataset
+| Dataset | front-oblique | rear | rear-oblique | side | unknown / ambiguous | Total |
+|---|---|---|---|---|---|---|
+| **ScienceDB** | 0 | 25 | 9 | 0 | 0 | 34 |
+| **MmCows** | 2 | 2 | 3 | 21 | 5 | 33 |
+| **SideViewCows2026** | 0 | 0 | 0 | 33 | 0 | 33 |
+| **Total** | **2** | **27** | **12** | **54** | **5** | **100** |
+
