@@ -9,6 +9,8 @@
 - Executed `scripts/finalize_viewpoint_expanded_manifest.py` to finalize `artifacts/perception_audit/viewpoint_expanded_agent_review_manifest.csv` with strict provenance tracking (`agent visual labeling + independent ChatGPT vision cross-check + user adjudication of disagreements`).
 - Final distribution across 100 samples: `side`: 54, `rear`: 27, `rear-oblique`: 12, `unknown / ambiguous`: 5, `front-oblique`: 2, `front`: 0.
 - Documented in `docs/research_log/2026-09-20_cattle_viewpoint_expanded_crosscheck.md` and updated research log hub index.
+- Refactored `scripts/audit_viewpoint_zeroshot.py` to support dynamic ground truth selection (`final_viewpoint`), normalized path RT-DETR-L crop matching (86 crops recovered, 14 fallbacks), dynamic metrics, and isolated output directory `artifacts/perception_audit/viewpoint_zeroshot_expanded100/`.
+- User executed 100-sample zero-shot VLM benchmark on CUDA: OpenAI CLIP scored 30.0% (16 false fronts on caudal rear views), OpenCLIP LAION scored 6.0% (95% ambiguous collapse), and Google SigLIP scored 5.0% (95% ambiguous collapse). Proved Method A explicit ambiguous prompting triggers severe semantic collapse in off-the-shelf VLMs.
 
 # Session Summary — 2026-09-20 (Phase 3 Step 2.4 Cattle Viewpoint Taxonomy & Operational Strategy Audit)
 

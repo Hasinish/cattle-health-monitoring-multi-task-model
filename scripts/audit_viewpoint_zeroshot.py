@@ -1,17 +1,17 @@
 """
 audit_viewpoint_zeroshot.py — Comparative Zero-Shot VLM Audit for Cattle Viewpoint
 
-Benchmarks multiple frozen vision-language models on the 60 human-verified cattle viewpoint samples:
+Benchmarks multiple frozen vision-language models on cattle viewpoint samples:
   1. openai_clip:     openai/clip-vit-base-patch32 (OpenAI CLIP)
   2. openclip_laion:  laion/CLIP-ViT-B-32-laion2B-s34B-b79K (OpenCLIP LAION-2B)
   3. google_siglip:   google/siglip-base-patch16-224 (Google SigLIP)
 
 Features:
   - Strict visual-only inference (zero metadata access).
-  - Target-cow crops recovered from Step 2.1 RT-DETR-L detections (59 matched, 1 fallback).
+  - Target-cow crops recovered from Step 2.1 RT-DETR-L detections via normalized path matching.
   - Standardized prompt ensembles across all 6 candidate classes.
-  - Method A (explicit ambiguous prompt) vs. Method B (confidence/margin rejection).
-  - Metrics: Overall Acc, Macro-F1, Balanced Acc, Per-dataset Acc, Per-class PRF, False Fronts, Ambiguous Recall.
+  - Dynamic ground truth support: 'final_viewpoint' if present, else 'proposed_viewpoint'.
+  - Metrics: Overall Acc, Macro-F1, Per-dataset Acc, Per-class PRF, False Fronts, Ambiguous Recall.
   - Live single-line progress bar with ETA, resumable, and smoke-test mode.
 """
 
@@ -107,13 +107,26 @@ MODEL_CONFIGS = {
 # 2. Input Preparation: RT-DETR-L Crop Recovery
 # ---------------------------------------------------------------------------
 
+def normalize_path(p: Any) -> str:
+    """Normalize file path for robust cross-platform/case-insensitive matching."""
+    return os.path.abspath(os.path.normpath(str(p))).lower()
+
+
 def load_primary_cow_boxes(
     localization_csv: str, manifest_df: pd.DataFrame
-) -> Dict[str, Optional[Dict[str, Any]]]:
-    """Load Step 2.1 RT-DETR-L primary cow bounding box for each sample."""
+) -> Tuple[Dict[str, Optional[Dict[str, Any]]], Dict[str, str]]:
+    """
+    Load Step 2.1 RT-DETR-L primary cow bounding box for each sample by normalized image path.
+    Returns:
+      sample_boxes: Dict mapping sample_id -> box_info (or None)
+      sample_modes: Dict mapping sample_id -> 'rtdetr_crop' or 'full_image_fallback'
+    """
     if not os.path.exists(localization_csv):
         print(f"[WARN] Localization CSV not found: {localization_csv}. Using full images.")
-        return {str(s_id): None for s_id in manifest_df["sample_id"]}
+        return (
+            {str(s_id): None for s_id in manifest_df["sample_id"]},
+            {str(s_id): "full_image_fallback" for s_id in manifest_df["sample_id"]},
+        )
 
     df_det = pd.read_csv(localization_csv)
     rt = df_det[df_det["model_name"] == "RT-DETR-L"].copy()
@@ -128,14 +141,17 @@ def load_primary_cow_boxes(
     rt_valid["area"] = (rt_valid["box_x2"] - rt_valid["box_x1"]) * (
         rt_valid["box_y2"] - rt_valid["box_y1"]
     )
+    rt_valid["norm_path"] = rt_valid["image_path"].apply(normalize_path)
+
+    # Sort to select primary cow: largest area first, then highest confidence
     sorted_det = rt_valid.sort_values(
-        by=["sample_id", "area", "confidence"], ascending=[True, False, False]
+        by=["norm_path", "area", "confidence"], ascending=[True, False, False]
     )
 
     primary_map: Dict[str, Dict[str, Any]] = {}
-    for s_id, grp in sorted_det.groupby("sample_id"):
+    for norm_p, grp in sorted_det.groupby("norm_path"):
         top = grp.iloc[0]
-        primary_map[str(s_id)] = {
+        primary_map[norm_p] = {
             "box": [
                 float(top["box_x1"]),
                 float(top["box_y1"]),
@@ -146,11 +162,15 @@ def load_primary_cow_boxes(
         }
 
     sample_boxes: Dict[str, Optional[Dict[str, Any]]] = {}
+    sample_modes: Dict[str, str] = {}
     for _, row in manifest_df.iterrows():
         s_id = str(row["sample_id"])
-        sample_boxes[s_id] = primary_map.get(s_id, None)
+        norm_img_path = normalize_path(row["source_image_path"])
+        box_info = primary_map.get(norm_img_path, None)
+        sample_boxes[s_id] = box_info
+        sample_modes[s_id] = "rtdetr_crop" if box_info is not None else "full_image_fallback"
 
-    return sample_boxes
+    return sample_boxes, sample_modes
 
 
 def get_image_crop(
@@ -351,12 +371,14 @@ def create_classifier(key: str, device: str) -> ZeroShotViewpointClassifier:
 # 4. Metrics Evaluation & Reporting
 # ---------------------------------------------------------------------------
 
-def evaluate_model_results(df_res: pd.DataFrame, model_key: str) -> Dict[str, Any]:
+def evaluate_model_results(
+    df_res: pd.DataFrame, model_key: str, n_total_manifest: Optional[int] = None
+) -> Dict[str, Any]:
     """Compute comprehensive performance metrics for a single model run."""
     y_true = df_res["human_viewpoint"].tolist()
     y_pred = df_res["predicted_viewpoint"].tolist()
 
-    # Supported ground-truth classes in the 60 samples
+    # Supported ground-truth classes in the samples
     support_classes = [c for c in TAXONOMY_CLASSES if c in set(y_true)]
 
     overall_acc = accuracy_score(y_true, y_pred)
@@ -371,11 +393,15 @@ def evaluate_model_results(df_res: pd.DataFrame, model_key: str) -> Dict[str, An
         else:
             per_dataset_acc[ds] = 0.0
 
-    # False front predictions (ground truth has 0 front)
-    false_fronts = int((df_res["predicted_viewpoint"] == "front").sum())
+    # False front predictions
+    gt_fronts = int((df_res["human_viewpoint"] == "front").sum())
+    false_fronts = int(
+        ((df_res["predicted_viewpoint"] == "front") & (df_res["human_viewpoint"] != "front")).sum()
+    )
 
-    # Ambiguous recall (ground truth has 5 ambiguous)
+    # Ambiguous recall
     amb_df = df_res[df_res["human_viewpoint"] == "unknown / ambiguous"]
+    gt_ambiguous = len(amb_df)
     amb_recall = (
         float((amb_df["predicted_viewpoint"] == "unknown / ambiguous").mean())
         if len(amb_df) > 0
@@ -399,13 +425,16 @@ def evaluate_model_results(df_res: pd.DataFrame, model_key: str) -> Dict[str, An
         "family": MODEL_CONFIGS[model_key]["family"],
         "model_id": MODEL_CONFIGS[model_key]["model_id"],
         "n_samples": len(df_res),
+        "n_total_manifest": n_total_manifest if n_total_manifest is not None else len(df_res),
         "overall_accuracy": overall_acc,
         "macro_f1": macro_f1,
         "sciencedb_acc": per_dataset_acc.get("ScienceDB", 0.0),
         "mmcows_acc": per_dataset_acc.get("MmCows", 0.0),
         "sideview_acc": per_dataset_acc.get("SideViewCows2026", 0.0),
         "false_front_count": false_fronts,
+        "gt_front_count": gt_fronts,
         "ambiguous_recall": amb_recall,
+        "gt_ambiguous_count": gt_ambiguous,
         "mean_top1_score": mean_top_score,
         "mean_score_margin": mean_margin,
         "mean_runtime_ms": mean_runtime_ms,
@@ -419,15 +448,15 @@ def print_evaluation_summary(metrics: Dict[str, Any]):
     print("\n" + "=" * 78)
     print(f"  ZERO-SHOT EVALUATION SCORECARD: {metrics['family']} ({metrics['model_id']})")
     print("=" * 78)
-    print(f"Samples Evaluated:       {metrics['n_samples']} / 60")
+    print(f"Samples Evaluated:       {metrics['n_samples']} / {metrics['n_total_manifest']}")
     print(f"Overall Accuracy:        {metrics['overall_accuracy'] * 100:.2f}%")
     print(f"Macro-F1 (support > 0):  {metrics['macro_f1']:.4f}")
     print(f"Per-Dataset Accuracy:")
     print(f"  - ScienceDB:           {metrics['sciencedb_acc'] * 100:.2f}%")
     print(f"  - MmCows:              {metrics['mmcows_acc'] * 100:.2f}%")
     print(f"  - SideViewCows2026:    {metrics['sideview_acc'] * 100:.2f}%")
-    print(f"False 'front' Count:     {metrics['false_front_count']} (Ground truth has 0 front)")
-    print(f"Ambiguous Case Recall:   {metrics['ambiguous_recall'] * 100:.2f}% (5 true ambiguous)")
+    print(f"False 'front' Count:     {metrics['false_front_count']} (Ground truth has {metrics['gt_front_count']} front)")
+    print(f"Ambiguous Case Recall:   {metrics['ambiguous_recall'] * 100:.2f}% ({metrics['gt_ambiguous_count']} true ambiguous)")
     print(f"Mean Top-1 Score:        {metrics['mean_top1_score']:.4f}")
     print(f"Mean Top-1 Margin:       {metrics['mean_score_margin']:.4f}")
     print(f"Mean Runtime / Image:    {metrics['mean_runtime_ms']:.1f} ms")
@@ -472,7 +501,7 @@ def run_benchmark():
     parser.add_argument(
         "--smoke",
         action="store_true",
-        help="Run smoke test on 2 samples (1 ScienceDB, 1 MmCows) to verify pipeline",
+        help="Run smoke test on 2 samples to verify pipeline",
     )
     parser.add_argument(
         "--output-dir",
@@ -501,16 +530,32 @@ def run_benchmark():
     manifest_df = pd.read_csv(args.manifest)
     print(f"[OK] Loaded manifest: {len(manifest_df)} rows from {args.manifest}")
 
+    # Determine ground-truth viewpoint column: final_viewpoint if present, else proposed_viewpoint
+    if "final_viewpoint" in manifest_df.columns:
+        gt_col = "final_viewpoint"
+    elif "proposed_viewpoint" in manifest_df.columns:
+        gt_col = "proposed_viewpoint"
+    else:
+        raise ValueError(
+            f"Manifest {args.manifest} has neither 'final_viewpoint' nor 'proposed_viewpoint' column."
+        )
+    print(f"[INFO] Ground truth column selected: '{gt_col}'")
+    print(f"[INFO] Ground truth label distribution (N={len(manifest_df)}):")
+    for c, cnt in manifest_df[gt_col].value_counts().items():
+        print(f"       - {c:<20}: {cnt}")
+
     if args.smoke:
         print("[INFO] SMOKE TEST MODE: Selecting 2 representative samples.")
-        manifest_df = manifest_df[
-            manifest_df["sample_id"].isin(["sample_0001", "sample_0104"])
-        ].copy()
+        smoke_ids = [manifest_df["sample_id"].iloc[0], manifest_df["sample_id"].iloc[-1]]
+        manifest_df = manifest_df[manifest_df["sample_id"].isin(smoke_ids)].copy()
+        print(f"[INFO] Smoke samples selected: {smoke_ids}")
 
-    # Load RT-DETR-L primary cow bounding boxes
-    sample_boxes = load_primary_cow_boxes(args.localization_csv, manifest_df)
+    # Load RT-DETR-L primary cow bounding boxes via normalized path matching
+    sample_boxes, sample_modes = load_primary_cow_boxes(args.localization_csv, manifest_df)
     n_boxes = sum(1 for b in sample_boxes.values() if b is not None)
-    print(f"[OK] Recovered RT-DETR-L boxes for {n_boxes} / {len(manifest_df)} samples")
+    n_fallbacks = len(manifest_df) - n_boxes
+    print(f"[OK] Recovered RT-DETR-L crops: {n_boxes} / {len(manifest_df)}")
+    print(f"[INFO] Full-image fallbacks: {n_fallbacks} / {len(manifest_df)}")
 
     model_keys = [k.strip() for k in args.models.split(",") if k.strip() in MODEL_CONFIGS]
     print(f"[INFO] Selected models to evaluate: {model_keys} on device: {args.device}")
@@ -523,7 +568,7 @@ def run_benchmark():
             existing_df = pd.read_csv(out_csv)
             if len(existing_df) == len(manifest_df):
                 print(f"[SKIP] Model {model_key} already completed ({len(existing_df)} rows). Use --force to re-run.")
-                metrics = evaluate_model_results(existing_df, model_key)
+                metrics = evaluate_model_results(existing_df, model_key, len(manifest_df))
                 all_model_metrics.append(metrics)
                 print_evaluation_summary(metrics)
                 continue
@@ -539,7 +584,7 @@ def run_benchmark():
             s_id = str(row["sample_id"])
             ds = str(row["dataset"])
             img_path = str(row["source_image_path"])
-            human_label = str(row["proposed_viewpoint"])
+            human_label = str(row[gt_col])
 
             box_info = sample_boxes.get(s_id)
             crop_img, input_mode = get_image_crop(img_path, box_info)
@@ -568,9 +613,8 @@ def run_benchmark():
             eta_sec = (total_samples - idx) / ips if ips > 0 else 0
             pct = (idx / total_samples) * 100
             sys.stdout.write(
-                f"\r[{model_key}] [{idx:02d}/{total_samples:02d}] {pct:5.1f}% | "
-                f"Sample: {s_id} ({ds[:8]}) | Pred: {pred['predicted_viewpoint']:<14} | "
-                f"Top: {pred['top_score']:.3f} | Margin: {pred['score_margin']:.3f} | "
+                f"\r[{model_key}] [{idx:>3}/{total_samples}] {pct:5.1f}% | "
+                f"Sample: {s_id} | Pred: {pred['predicted_viewpoint']:<19} | "
                 f"Speed: {ips:.1f} img/s | ETA: {eta_sec:.0f}s"
             )
             sys.stdout.flush()
@@ -587,7 +631,7 @@ def run_benchmark():
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
 
-        metrics = evaluate_model_results(res_df, model_key)
+        metrics = evaluate_model_results(res_df, model_key, len(manifest_df))
         all_model_metrics.append(metrics)
         print_evaluation_summary(metrics)
 
@@ -618,7 +662,7 @@ def run_benchmark():
         print(f"\n[OK] Wrote comparative model scorecard to {comp_csv}\n")
 
         print("=" * 100)
-        print("  COMPARATIVE ZERO-SHOT MODEL PERFORMANCE TABLE (N=60)")
+        print(f"  COMPARATIVE ZERO-SHOT MODEL PERFORMANCE TABLE (N={len(manifest_df)})")
         print("=" * 100)
         print(comp_df.to_string(index=False))
         print("=" * 100)

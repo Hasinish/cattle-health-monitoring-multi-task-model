@@ -1,0 +1,4 @@
+model_key,family,model_id,overall_accuracy,macro_f1,sciencedb_acc,mmcows_acc,sideview_acc,false_front_count,ambiguous_recall,mean_top1_score,mean_score_margin,mean_runtime_ms
+openai_clip,OpenAI CLIP,openai/clip-vit-base-patch32,30.0,0.2468,29.41,24.24,36.36,16,80.0,0.4028,0.2034,21.9
+openclip_laion,OpenCLIP LAION-2B,laion/CLIP-ViT-B-32-laion2B-s34B-b79K,6.0,0.03,0.0,15.15,3.03,1,100.0,0.6813,0.5422,20.6
+google_siglip,Google SigLIP,google/siglip-base-patch16-224,5.0,0.019,0.0,15.15,0.0,0,100.0,0.844,0.7481,43.0
