@@ -1,0 +1,10 @@
+passage_a,passage_b,farm_source,file_a,file_b,dhash_dist,ahash_dist,pixel_mae
+GS_1820,GS_1825,GS_Gansu,GS_1820_2.jpg,GS_1825_1.jpg,0,0,0.27
+GS_2122,GS_2131,GS_Gansu,GS_2122_2.jpg,GS_2131_2.jpg,1,1,3.67
+GS_2124,GS_2133,GS_Gansu,GS_2124_4.jpg,GS_2133_5.jpg,0,0,4.73
+GS_2314,GS_2319,GS_Gansu,GS_2314_1.jpg,GS_2319_1.jpg,0,0,0.28
+GS_1818,GS_1823,GS_Gansu,GS_1818_2.jpg,GS_1823_1.jpg,0,0,0.26
+GS_2120,GS_2128,GS_Gansu,GS_2120_1.jpg,GS_2128_1.jpg,0,0,0.29
+GS_1879,GS_1882,GS_Gansu,GS_1879_10.jpg,GS_1882_6.jpg,0,0,0.31
+GS_2123,GS_2132,GS_Gansu,GS_2123_2.jpg,GS_2132_2.jpg,0,0,0.33
+GS_1819,GS_1824,GS_Gansu,GS_1819_10.jpg,GS_1824_8.jpg,0,0,0.3

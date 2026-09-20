@@ -1,9 +1,12 @@
 """
 Script: scripts/build_sciencedb_splits.py
-Purpose: Audits ScienceDB Cow Identity Parser, identifies video sequence & duplicate leakage,
-and builds mathematically leak-free, passage-disjoint train/val/test splits.
+Status: SUPERSEDED by scripts/repair_sciencedb_splits.py (2026-09-20)
+Purpose: Historical passage-disjoint split builder. The passage-level grouping was found
+to leak overlapping 1-frame-shifted video bursts (e.g., GS_1818 in val vs GS_1823 in train).
+For the leak-free, burst-group-disjoint canonical split, use:
+    python scripts/repair_sciencedb_splits.py
 
-Outputs:
+Outputs (Historical):
   - datasets/bcs/sciencedb/train.csv
   - datasets/bcs/sciencedb/val.csv
   - datasets/bcs/sciencedb/test.csv

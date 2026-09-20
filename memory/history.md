@@ -1,3 +1,18 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 1 ScienceDB Burst Split Repair Script)
+
+- Engineered `scripts/repair_sciencedb_splits.py` to repair the ScienceDB Cattle BCS dataset split by clustering overlapping video burst passages into leak-free connected burst groups.
+- Designed multi-signal conservative burst evidence:
+  1. Exact SHA-256 content byte hashing.
+  2. Multi-Index Hashing (MIH) on 64-bit dHash and aHash (Hamming distance <= 2) within the same farm source.
+  3. In-memory normalized pixel Mean Absolute Error (MAE) on 64x64 grayscale with threshold <= 5.0 (out of 255).
+  4. Disjoint Set Union (Union-Find) connected component graph clustering.
+- Built rock-solid Windows PowerShell compatible `tqdm` progress UI (`ascii=True`, fixed width, multi-stage, eta, rate, zero flickering, zero spammy prints).
+- Implemented multi-check verification suite (53,566 image count, group disjointness, 0 exact cross-duplicates, 0 confirmed cross-burst links).
+- Executed manual run in terminal: 5,653 repaired burst groups formed from 5,662 initial passages (9 confirmed video burst overlaps merged into connected components); 70/15/15 stratified split generated (train: 37,045, val: 8,481, test: 8,040 across 3,958 train, 850 val, 845 test groups).
+- Verified 0 exact duplicates, 0 cross-burst leakage; confirmed GS_1818 and GS_1823 are 100% unified in val.
+- Promoted staging deliverables to canonical `datasets/bcs/sciencedb/` and updated `sciencedb_bcs_index.csv`.
+- Documented in `docs/research_log/2026-09-20_sciencedb_burst_group_split_repair.md` and updated research log README.md index.
+
 # Session Summary — 2026-09-20 (Phase 3 Duplicate Audit & Cold Turkey System Purge)
 
 - Conducted exhaustive exact (SHA-256) and perceptual near-duplicate (Multi-Index Hashed dHash/aHash, $d \le 6$) leakage audit across all split-bearing Phase 3 datasets:
