@@ -154,6 +154,8 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `fast_download_sciencedb.py`: High-speed multi-threaded (16-stream parallel) resumable chunk downloader and extractor for ScienceDB Cattle BCS dataset to bypass GFW throttling.
 - `download_mmcows.py`: High-speed Hugging Face automated downloader and extractor for MmCows behavior bounding boxes with automatic zip cleanup.
 - `download_opencows.py`: Fast Kagglehub downloader and normalizer for OpenCows2020 identification images.
+- `billing_monitor.py`: Real-time multi-account Modal billing monitor and dashboard updater. Discovers accounts, pulls metered/billed cost via Modal CLI, calculates remaining credit balances and GPU runtimes, and writes to `BILLING.md`.
+- `modal_billing.py`: Instant one-shot terminal summary runner for Modal billing.
 - `pcgrad.py`: NeurIPS 2020 Projecting Conflicting Gradients implementation for mitigating negative gradient interference across multitask heads.
 - `setup_research_pc.ps1`: 1-click lab PC bootstrap script for Git pull, virtual environment setup, and dependency installation.
 
@@ -169,3 +171,11 @@ Member-specific experimental sandboxes containing model training scripts, loss c
 - `workspaces/nusrat/`: Nusrat's sandbox focusing on temporal MTL architectures, CBAM attention mechanisms, and video inference scripts.
 - `workspaces/shouvik/`: Shouvik's sandbox with standalone task training runs and comparative benchmarks.
 - `workspaces/bithi/` & `workspaces/namira/`: Additional team member ablation and experimental directories.
+
+### Root Workspace Files
+- `BILLING.md`: Live auto-refreshed Modal billing and credit dashboard tracking all 6 accounts, credit grants ($122.00), metered spend, remaining balance, and L40S/H100 runtime estimates.
+- `monitor.py`: Live auto-looping Modal billing daemon that displays the initial scoreboard and continuously refreshes `BILLING.md` every 10s until `Ctrl+C`.
+- `billing_monitor.py`: Root entry-point wrapper to run billing monitor (`python billing_monitor.py` or `python billing_monitor.py --loop`).
+- `phase3_canonical_roadmap.md`: Master canonical 13-step Phase 3 execution roadmap.
+- `AGENTS.md`: Workspace rules, research log requirements, and memory synchronization guidelines.
+- `README.md`: Workspace introduction and quick overview.

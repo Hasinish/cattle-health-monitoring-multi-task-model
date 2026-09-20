@@ -1,4 +1,12 @@
+# Session Summary — 2026-09-20 (Modal Billing Monitor & BILLING.md Integration)
+
+- Added real-time multi-account Modal billing monitor and dashboard generator identical to `modal-qwen`.
+- Created `scripts/billing_monitor.py` supporting profile discovery from `~/.modal.toml`, active profile detection, thread-safe JSON query of metered/billed cost across all 6 accounts, remaining credit calculation, and L40S/H100/L4 GPU runtime estimations.
+- Created `scripts/modal_billing.py` for one-shot terminal summaries and root wrapper `billing_monitor.py` for direct command-line execution (`python billing_monitor.py` and `python billing_monitor.py --loop`).
+- Successfully generated `BILLING.md` in workspace root and mirrored it to `D:\custom-antigravity\BILLING.md`.
+
 # Session Summary — 2026-09-20 (External Benchmarks Hydration: SideViewCows, BECA, CBVD-5)
+
 - Built high-speed multi-threaded resumable downloader `scripts/fast_download_sideviewcows.py` for SideViewCows2026 (Zenodo record 21605650, 80,260 images + masks, 23.33 GB) with browser header spoofing and custom `\r` `CleanProgressBar`. Fully downloaded and extracted `snapshots.zip` (607 imgs), `parlor.zip` (108,786 files), and `barn.zip` (15.05 GB).
 - Created `scripts/fast_download_beca.py` for BECA dataset (Figshare file 63928608, Article 32070171: BECA-D + BECA-L, 18.91 GB, 29,061 images) with multi-threaded HTTP Range and automatic S3 redirect resolution. Fully downloaded and extracted `BECA.zip` (68,350 files).
 - Created `scripts/download_cbvd5.py` for CBVD-5 behavior dataset from Kaggle via `kagglehub` API with automatic syncing into canonical `datasets/behavior/external/cbvd5/`. Fully downloaded and synced 887 MP4 videos, 206,100 mini frames, 5,322 annotated label frames (10.84 GB).
@@ -7,6 +15,7 @@
 - Updated hardware configuration in `personal_info.md` to document local GTX 1050 Ti laptop and remote BRACU lab RTX 5090 research rig. Mirrored changes to `D:\custom-antigravity`.
 
 # Session Summary — 2026-09-20 (OpenCows2020 Legacy Re-ID Protocol Rebuild)
+
 - Audited OpenCows2020 (4,736 images across 46 identities) and proved that sequence / tracklet structure cannot be recovered from provenance (frame numbers are unordered crops; consecutive MAE is identical to random pairs within cow).
 - Quantified extensive random within-identity mixing in legacy `context/preprocess_id.py` random split: 1,023 frame-index adjacent pairs ($|f_1 - f_2| = 1$), 2,942 near frame-index pairs ($|f_1 - f_2| \le 5$), 1,760 visually similar pairs (MAE < 15), and 3 exact-duplicate pairs (identical SHA256) crossed train and val.
 - Preserved the official benchmark `identification-test` set (496 images, 46 cows) 100% untouched.
@@ -19,6 +28,7 @@
 - Maintained OpenCows2020 strictly as a **LEGACY BASELINE ONLY**; MultiCamCows2024 remains intended primary Re-ID.
 
 # Session Summary — 2026-09-20
+
 - Completed Dryad Cattle BCS Discrepancy Audit (`docs/research_log/2026-09-20_dryad_bcs_discrepancy_audit.md`).
 - Fully reconciled the discrepancy between the older ~5,923 expectation and 5,940 physical files: proved that legacy `preprocess_bcs.py` hardcoded classes 2–6 (5,923 imgs) to fit a 5-class head and silently dropped class folder '7' (17 imgs from `Cow_52`).
 - Proved Class 7 is 100% authentic Criollo beef cattle data on the 1–9 Wagner scale (Winkler & Boucheron, NMSU, Dryad DOI: 10.5061/dryad.tqjq2bw4s); `Cow_52` was also recorded at BCS 6 (`Cow_52_29`).
@@ -36,18 +46,21 @@
 - Created deterministic canonical dataset registry `datasets/dataset_registry.csv` via `scripts/build_dataset_registry.py` (13 datasets, 28 columns, machine-awareness fields `local_status_1050ti` and `local_verified_date`).
 
 # Session Summary — 2026-09-19
+
 - Adopted and locked the 13-step Phase 3 Canonical Roadmap (`phase3_canonical_roadmap.md` and `docs/phase3_canonical_roadmap.md`).
 - Established primary tasks & datasets: BCS (Primary: ScienceDB, Ext: Ruchay 2026, Dryad), Behavior (Primary: MmCows, Ext: CBVD-5), Cow ID / Re-ID (New Primary: MultiCamCows2024, Ext: SideViewCows2026, Legacy: OpenCows2020).
 - Locked immediate priority to STEP 1: Data Registry (`datasets/dataset_registry.csv`) and Clean Splits.
 - Documented roadmap in research log (`docs/research_log/2026-09-19_phase3_canonical_roadmap.md`) and synchronized workspace memory.
 
 # Session Summary — 2026-09-18
+
 - Audited primary Phase 3 dataset split protocols across ScienceDB BCS (53,566 images), MmCows behavior (213,686 crops), and OpenCows2020 cow ID (4,736 images).
 - Corrected status claims: verified that indexing does not equate to methodologically clean splits; verified MmCows has 7 active classes (not 5); verified Dryad BCS labels are folder classes '2'-'6' (not continuous 1-5).
 - Re-aligned experiment order: locked 6-step sequence (Split Audit -> Single-Task Baselines -> Hard-Sharing MTL -> Partial-Sharing MTL -> Transfer Analysis -> optional PCGrad/GradNorm).
 - Updated memory/state.md to reflect split validation status and prevent premature model training.
 
 # Session Summary — 2026-09-17
+
 - Conducted exhaustive forensic audit of Mendeley CattleLameness dataset (50 clips, 9,950 frames); exposed critical train/test leakage (`N (9).mp4` in Train vs `N (3).mp4` in Test from identical YouTube source).
 - Built 42-animal/source grouping manifest (`cattle_lameness_manifest.csv`) with leak-free 5-fold StratifiedGroupKFold cross-validation (marked provisional/historical).
 - Forensically audited 4 candidate lameness datasets: evaluated Russello 2026 (98 cows, 272 trajectories, pose-only), rejected Wu NWAFU (static pose only), whsu2s (missing repo data), and Duan 2025 (closed/private data).
@@ -55,6 +68,7 @@
 - Codified canonical Phase 3 scope: Body Condition Scoring (Primary: ScienceDB, Secondary: Dryad), Behavior Recognition (MmCows), and Individual Cow Identification (OpenCows2020); Lameness excluded from primary MTL training.
 
 # Session Summary — 2026-09-16
+
 - Fully restored and indexed 3 of 4 core datasets: Mendeley CattleLameness (9,950 frames), MmCows Behavior (213,686 images), and OpenCows2020 Cow ID (4,736 images across 46 classes).
 - Built high-speed Kagglehub restore for OpenCows2020 and automated disk cleanup removing 36+ GB of raw video/zip clutter.
 - Corrected Dryad BCS dataset DOI reference (doi:10.5061/dryad.tqjq2bw4s) and built automated browser launcher & real-time download watcher in `download_all.py` (commit `f543f16`).
@@ -63,10 +77,13 @@
 - Resurrected the lost custom Modal billing script from historical transcripts into `custom-antigravity/scripts/modal_billing.py` (commit `5fc1c76`), verified real-time balances ($104.97 total remaining credit).
 
 # Session Summary — 2026-09-15
+
 - Workspace synchronization check against GitHub remote origin/main. Local commit 6c3437f matches remote exactly. Untracked compiled PDFs detected. Workspace memory initialized.
 
 # history.md — Conversation Log History
+
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
+
 - **[2026-09-20] Convo 27375138-e032-457f-a2a6-753e72f4a342**: Completed forensic local dataset inventory on GTX 1050 Ti machine; distinguished physical local availability from canonical scientific roles; marked MultiCamCows2024 download as BLOCKED (upstream issue); created canonical dataset registry `datasets/dataset_registry.csv` (13 datasets, 28 columns).
 - **[2026-09-19] Convo 27375138-e032-457f-a2a6-753e72f4a342**: Synchronized workspace and custom-antigravity from origin/main (+287k lines, 12 config files). Deployed Antigravity customizations via setup.ps1. Added Modal accounts hasinishrak2015 and dryousufmozumder ($30 grants each), upgraded tigerwood697 ($30 grant), reaching 6 accounts and $107.01 total credit (~55 hrs L40S). Synced canonical roadmap clarifications to docs/ and pushed to GitHub. Clean start locked for STEP 1 execution.
 - **[2026-09-19] Convo fa09b269-a73b-49f3-aecc-c870aef77dac**: Git synchronization status check across workspace and custom-antigravity repository. Verified clean working trees and all commits pushed to origin/main.
