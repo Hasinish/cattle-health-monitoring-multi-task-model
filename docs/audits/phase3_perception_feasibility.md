@@ -515,15 +515,18 @@ To determine the most defensible method for producing `coarse_viewpoint` labels 
 
 3. **Option 3 (Pretrained Resources: MOO — Multi-view Oriented Observations, arXiv:2603.04314)**:
    - *Dataset Scale*: 128,000 Blender-rendered synthetic cattle images across 1,000 synthetic IDs with spherical coordinates $(\phi, \theta)$ and discrete viewpoint labels (`front`, `front-left`, `front-right`, `left`, `right`, `back-left`, `back-right`, `back`).
-   - *Cloud Ingestion & Training Setup*: Ingested official 34.03 GB archive into Modal volume `moo-data` (`scripts/modal_moo_pipeline.py`). Sampled 2,500 balanced synthetic crops across 5 physical classes (500/class) and trained a 5-class linear head on frozen ImageNet ResNet-18 in 0.64s on CPU (93.2% synthetic val acc; checkpoint `moo_resnet18_viewpoint.pth`).
-   - *Initial Evaluation on 100 Real Cattle Benchmark*: Initial raw evaluation on 95 non-ambiguous real cattle crops collapsed to **12.63% accuracy** and 40 false fronts.
-   - *Discovery of 90-Degree Orthogonal Misalignment*: Forensic confusion matrix analysis revealed that 43/54 True Side cattle were predicted as Front (28) or Rear (15), while 16/27 True Rear cattle were predicted as Side. In Blender, the cow CAD model was oriented along the $X$-axis rather than the $Y$-axis; thus, cameras labeled `'front'` and `'back'` faced the cow's lateral flanks (sides), and `'left'` and `'right'` faced the cow's cranial and caudal poles (front and rear).
-   - *Aligned Synthetic-to-Real Performance*: Once the 90-degree coordinate frame misalignment was corrected:
-     - Physical Accuracy jumped from **12.63% -> 63.16%** (nearly **2x higher than OpenAI CLIP's 33.68%**).
-     - Macro-F1 jumped from **0.0674 -> 0.3600** (exceeding CLIP's 0.2711).
-     - False Front predictions dropped from **40 -> 0** (compared to 19 for CLIP and 66 for SigLIP).
-     - True Side recall reached **79.6%** (43/54) and True Rear recall reached **59.3%** (16/27).
-   - *Verdict*: **FEASIBLE / HIGHLY PROMISING OPERATIONAL CANDIDATE**. Outperforms all tested zero-shot VLMs by a wide margin with zero real training samples. Provides the primary baseline for Step 3 viewpoint caching.
+   - *Cloud Ingestion & Training Setup*: Ingested official 34.03 GB archive into Modal volume `moo-data` (`scripts/modal_moo_pipeline.py`). Sampled 2,500 balanced synthetic crops across 5 physical classes (500/class) and trained a 5-class linear head on frozen ImageNet ResNet-18 on CPU (checkpoint `moo_resnet18_viewpoint.pth`).
+   - *MOO Synthetic Validation*: Achieved **93.2% synthetic validation accuracy** on held-out synthetic renders (valid as synthetic-domain validation only).
+   - *Raw Synthetic-to-Real Transfer*: Evaluation on N=95 non-ambiguous real cattle crops from the cross-checked benchmark yielded **12.63% accuracy**, **Macro-F1 0.0674**, and **40 false-front predictions**. This represents the clean untuned real transfer result from this experiment.
+   - *Post-Hoc 63.16% Result & Audit*: A post-hoc mapping yielded 63.16% accuracy and 0.3600 Macro-F1, but this was obtained only after testing multiple label permutations against the same real benchmark labels. It is classified explicitly as an:
+     `exploratory post-hoc benchmark fit; invalid as final held-out evaluation evidence`.
+     It must NOT be described as a discovered physical coordinate correction or proof of successful 90-degree alignment.
+   - *Independent MOO Orientation Verification*: Direct visual inspection of raw synthetic images from Modal `moo-data` for a single cow identity established:
+     - `front` -> anatomical front/head (cranial end)
+     - `back` -> anatomical rear/tail (caudal end)
+     - `left`/`right` -> anatomical lateral body sides
+     Therefore: `Independent evidence does NOT support the claimed 90-degree anatomical mismatch.` The 3D model in MOO is already anatomically aligned; the post-hoc mapping was an artificial permutation fit to the real benchmark distribution.
+   - *Verdict*: **ROADMAP-APPROVED CANDIDATE; INSUFFICIENT TRANSFER EVIDENCE**. MOO remains a valid candidate under the roadmap, but current zero-shot real-transfer evidence is insufficient.
 
 4. **Option 4 (Zero-Shot Vision-Language Foundation Models: CLIP / SigLIP)**:
    - *Evaluation Setup*: Evaluated frozen zero-shot vision-language models (`openai/clip-vit-base-patch32`, `laion/CLIP-ViT-B-32-laion2B-s34B-b79K`, `google/siglip-base-patch16-224`) on the 100-sample cross-checked benchmark (`artifacts/perception_audit/viewpoint_expanded_agent_review_manifest.csv`) with RT-DETR-L target crops recovered via normalized path matching.
@@ -545,7 +548,7 @@ To determine the most defensible method for producing `coarse_viewpoint` labels 
 
 5. **Option 5 (Supervised Cattle-Specific Viewpoint Classifier)**:
    - *Roadmap Alignment*: A supervised cattle-specific viewpoint classifier remains an allowed roadmap candidate ("simple classifier if needed").
-   - *Status*: With MOO achieving 63.16% transfer, the recommended operational strategy is a hybrid: use MOO synthetic supervision to initialize the viewpoint head and fine-tune on available human-verified cattle crops.
+   - *Status*: Open for consideration if synthetic transfer or domain adaptation cannot be validated cleanly.
 
 6. **Camera ID Shortcut Leakage**:
    - Camera ID must NEVER be treated as a viewpoint proxy. In MmCows, cows rotate dynamically across all 360 degrees within each camera view. In ScienceDB/SideView, camera ID proxies leak background and sensor shortcuts, directly defeating the thesis hypothesis of eliminating background shortcuts.
@@ -554,14 +557,19 @@ To determine the most defensible method for producing `coarse_viewpoint` labels 
 
 1. **Taxonomy Feasibility**: The coarse viewpoint taxonomy (`rear`, `rear-oblique`, `side`, `front-oblique`, `front`, `unknown / ambiguous`) is visually usable and consistently definable on real cattle imagery across diverse datasets.
 2. **Zero-Shot Evaluation Outcome**: The tested zero-shot approach failed as an operational generator under both Method A (ambiguity-class collapse under the tested explicit ambiguous prompt setup) and Method B (low physical accuracy and high false-front / false-rejection rates).
-3. **Synthetic MOO Transfer Outcome**: Out-of-the-box MOO synthetic supervision with coordinate alignment achieves **63.16% physical accuracy** and **0 false fronts**, outperforming all tested VLMs (nearly 2x OpenAI CLIP).
+3. **Synthetic MOO Transfer Outcome**:
+   - 93.2% synthetic validation accuracy (valid as synthetic-domain validation only).
+   - 12.63% accuracy and 40 false fronts on N=95 non-ambiguous real cattle crops (clean untuned real transfer result).
+   - 63.16% post-hoc result retained only as an `exploratory post-hoc benchmark fit; invalid as final held-out evaluation evidence`.
+   - Independent MOO visual verification confirmed standard anatomical facing (`Independent evidence does NOT support the claimed 90-degree anatomical mismatch`).
 4. **Current Step 2.4 Component Status**:
    - **Viewpoint Taxonomy**: FEASIBLE / DEFINABLE
    - **Domain Heuristics**: INSUFFICIENT AS GENERAL SOLUTION (usable only as auxiliary prior for fixed chutes)
    - **Simple Geometry / Aspect Ratio**: REJECTED AS STANDALONE CLASSIFIER
    - **Zero-Shot CLIP / OpenCLIP / SigLIP**: REJECTED AS OPERATIONAL GENERATOR UNDER TESTED SETUP
-   - **MOO-Supervised Estimator**: FEASIBLE / OPERATIONAL CANDIDATE (63.16% accuracy, 0 false fronts)
-   - **Supervised Cattle-Specific Classifier**: OPEN FOR FINE-TUNING
-   - **Operational Viewpoint Generator**: MOO-Supervised ResNet-18 (Aligned) designated as Primary Candidate for Step 3 Caching.
-5. **Step 2 Deliverable Complete**: Step 2 (Perception Feasibility Audit) is now fully synthesized across Detection (2.1), Segmentation (2.2), Pose (2.3), and Viewpoint (2.4). Step 2 is ready to lock, clearing the path to Step 3 (Upstream Caching).
+   - **MOO-Supervised Estimator**: ROADMAP-APPROVED CANDIDATE (insufficient real-transfer evidence; clean 12.63%, post-hoc 63.16% invalid as test evidence)
+   - **Supervised Cattle-Specific Classifier**: OPEN AS ROADMAP CANDIDATE
+   - **Operational Viewpoint Generator**: NOT YET SELECTED.
+5. **Step 2 Status**: **STEP 2.4 REOPENED | STEP 2 IN PROGRESS**.
+   - Immediate next action: Establish a scientifically valid MOO-supervised viewpoint experiment without post-hoc label remapping on the real evaluation benchmark.
 
