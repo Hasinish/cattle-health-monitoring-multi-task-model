@@ -3,11 +3,12 @@
 - Executed Step 2.1 (Cattle Detection / Localization Feasibility Audit) across ScienceDB (BCS), MmCows (Behavior), and SideViewCows2026 (Re-ID).
 - Built reproducible audit script `scripts/audit_localization_feasibility.py` evaluating three pretrained architectures: YOLOv8s (11.2M params), Faster R-CNN ResNet-50 FPN v2 (43.7M params), and RT-DETR-L (32.0M params).
 - Ran initial 90-image smoke test and expanded 300-image audit (100 images per primary dataset; seed=42) on local GTX 1050 Ti.
-- Forensic finding: YOLOv8s suffered a catastrophic 37.0% failure rate on ScienceDB rear-view chute images and MmCows behavior crops due to COCO pasture broadside bias.
-- Forensic finding: RT-DETR-L (94.3% recall, 94.3ms latency) and Faster R-CNN v2 (95.0% recall, 470.8ms latency) achieve near-perfect localization without fine-tuning.
+- Forensic finding: YOLOv8s exhibited a 37.0% non-detection rate on ScienceDB rear-view chute images and MmCows behavior crops (hypothesized COCO broadside pasture bias / anchor-free feature grid limitations).
+- Forensic finding: RT-DETR-L (94.3% raw detection rate, 94.3ms latency) and Faster R-CNN v2 (95.0% raw detection rate, 470.8ms latency) achieve robust localization without fine-tuning.
+- Verified MmCows 100-sample representation across all 4 cameras (Cam 1: 24, Cam 2: 31, Cam 3: 14, Cam 4: 31) and all 16 biological cows (Cows 1–16).
 - Identified multi-cow background clutter in pens (76–87% of images) requiring primary-cow selection heuristics in downstream representation caching.
 - Identified that only 5 of 300 images (1.67%) were missed by all three models (extreme entrance/exit occlusions and 2.68:1 extreme horizontal lying crops).
-- Decisively recommended RT-DETR-L as the primary upstream localizer (5x faster than Faster R-CNN).
+- Designated RT-DETR-L as the provisional primary candidate for Step 2.2 due to its balanced speed/performance tradeoff.
 - Generated 120 4-panel visual composites in `docs/audits/assets/perception_audit/`, authored `docs/audits/phase3_perception_feasibility.md` (Step 2.1 section), published research log `docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md`. Step 2.1 COMPLETE!
 
 # Session Summary — 2026-09-20 (Phase 3 Step 1 MmCows vs CBVD-5 Agent Visual Inspection)

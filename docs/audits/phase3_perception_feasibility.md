@@ -37,7 +37,7 @@ To ensure statistical validity and prevent selection bias, a two-stage evaluatio
 
 #### Dataset Stratification:
 - **ScienceDB (100 images)**: Stratified across all 5 BCS classes (20 per class: 3.25, 3.50, 3.75, 4.00, 4.25) drawn from distinct connected burst groups to ensure independence, capturing entry, mid-chute, and exit positions under varied illumination.
-- **MmCows (100 images)**: Stratified across all 7 behaviors (Lying: 16, Standing: 16, Feeding_head_down: 16, Feeding_head_up: 16, Walking: 14, Drinking: 11, Licking: 11) across all 4 CCTV cameras (Cam 1–4) and 16 cows.
+- **MmCows (100 images)**: Stratified across all 7 behaviors (Lying: 16, Standing: 16, Feeding_head_down: 16, Feeding_head_up: 16, Walking: 14, Drinking: 11, Licking: 11). Verified to cover all 4 CCTV cameras (Cam 1: 24, Cam 2: 31, Cam 3: 14, Cam 4: 31) and all 16 biological cows (Cows 1–16, ranging from 1 to 13 samples per cow).
 - **SideViewCows2026 (100 images)**: Stratified across recording environments (Parlor fixed chute: 40, Barn handheld video: 40, Snapshots unconstrained: 20) capturing side profiles, outdoor grazing, and varied postures.
 
 All missed detections were strictly recorded with empty bounding-box fields (`""`) rather than dropped rows.
@@ -46,7 +46,7 @@ All missed detections were strictly recorded with empty bounding-box fields (`""
 
 ### 1.4 Quantitative Localization Results (Expanded 300-Image Audit)
 
-| Model Candidate | Dataset | Sample Size | Detected (>=1 Cow) | Raw Detection Rate | Missed (0 Cows) | Multi-Cow Detections | Median Latency (GTX 1050 Ti) |
+| Model Candidate | Dataset | Sample Size | Detected (>=1 Cow) | Raw Detection Rate (>=1 Cow) | Missed (0 Cows) | Multi-Cow Detections | Median Latency (GTX 1050 Ti) |
 |---|---|---|---|---|---|---|---|
 | **YOLOv8s** | ScienceDB (BCS) | 100 | 63 | **63.0%** | 37 | 30 | **24.1 ms** |
 | | MmCows (Behavior) | 100 | 63 | **63.0%** | 37 | 34 | 25.8 ms |
@@ -61,27 +61,27 @@ All missed detections were strictly recorded with empty bounding-box fields (`""
 | | SideViewCows2026 (Re-ID) | 100 | 100 | **100.0%** | 0 | 87 | 94.2 ms |
 | | **Overall RT-DETR-L** | **300** | **283** | **94.3%** | **17** | **232** | **94.3 ms** |
 
-*Note: Automated detection rates reflect the proportion of images where at least one cow was detected with confidence >= 0.25. They do not constitute ground-truth precision/recall metrics, which are evaluated below via manual visual inspection.*
+*Note: Raw detection rates reflect the empirical percentage of images where at least one cow was detected with confidence >= 0.25. Because ScienceDB and MmCows do not provide verified ground-truth bounding boxes, these figures represent raw detection rates rather than formal precision/recall metrics.*
 
 ---
 
 ### 1.5 Forensic Failure Mode & Manual Visual Analysis
 
-Manual visual inspection of the 300 test cases and 120 generated side-by-side composite panels revealed sharp distinctions between architectures:
+Manual visual inspection of the 300 test cases and 120 generated side-by-side composite panels revealed sharp empirical distinctions between architectures:
 
-#### 1. YOLOv8s Severe Blind Spot on Non-Side Views
-- **Finding**: YOLOv8s suffered a catastrophic **37.0% failure rate** on ScienceDB and MmCows.
-- **Cause**: COCO training imagery is overwhelmingly dominated by broadside, full-body views of cattle in pastures. YOLOv8s's anchor-free grid features fail to fire on rear-view anatomy (rump, hip bones, tailhead in ScienceDB) and tight crops where cow extremities are clipped by frame boundaries.
-- **Vindication**: The thesis guideline to *"not automatically assume YOLO is the winner"* was decisively confirmed.
+#### 1. YOLOv8s Failure Pattern on Non-Side Views
+- **Observation**: YOLOv8s exhibited a 37.0% non-detection rate on ScienceDB and MmCows.
+- **Hypothesis**: A plausible hypothesis is that COCO training imagery may be dominated by broadside, full-body views of cattle in open pastures, potentially causing anchor-free grid features to miss rear-view anatomy (rump, spine, pin bones in ScienceDB) and tight crops where extremities are clipped. However, this audit only establishes the observed empirical difference; proving training distribution or architectural causality would require isolated ablations.
+- **Vindication**: The thesis guideline to *"not automatically assume YOLO is the winner"* was supported by the empirical data.
 
-#### 2. Transformer & Two-Stage Superiority on Complex Cattle Poses
-- Both **RT-DETR-L (94.3%)** and **Faster R-CNN v2 (95.0%)** proved remarkably robust to rear views, close-up crops, and partial views.
-- In 72 specific images where YOLOv8s was completely blind, RT-DETR-L and Faster R-CNN v2 accurately identified the cattle.
-- Faster R-CNN's region proposal network (RPN) and RT-DETR's global self-attention mechanisms effectively aggregate contextual cues (e.g. skin texture, spine contour, hooves) that single-stage CNN anchors miss.
+#### 2. Performance Comparison on Complex Cattle Poses
+- Both **RT-DETR-L (94.3% raw detection rate)** and **Faster R-CNN v2 (95.0% raw detection rate)** achieved substantially higher detection rates on rear views, close-up crops, and partial views than YOLOv8s.
+- In 72 specific images where YOLOv8s reported 0 detections, RT-DETR-L or Faster R-CNN v2 detected cattle.
+- **Hypothesis**: Faster R-CNN's region proposal network (RPN) and RT-DETR's global self-attention mechanism are hypothesized to aggregate distributed contextual cues (e.g. spine contours, body texture, hooves) more effectively than the tested single-stage CNN. This remains an architectural hypothesis rather than a formally proven mechanism.
 
 #### 3. High Multi-Cow Detection Rate (The "Cluttered Pen" Effect)
 - In MmCows (76–77% multi-cow) and SideViewCows2026 (81–87% multi-cow), both RT-DETR and Faster R-CNN detected multiple cattle per image.
-- **Visual Inspection Confirmation**: In MmCows, while the image is centered on the labeled cow, neighboring cows in adjacent stalls or walking in background alleys are clearly visible through the metal bars. The detectors correctly detected these background cows as cows.
+- **Visual Inspection Confirmation**: In MmCows, while the crop is centered on the labeled cow, neighboring cows in adjacent stalls or walking in background alleys are visible through metal bars. The detectors correctly detected these background cows as cows.
 - **Architectural Implication**: Upstream localization cannot simply take "all detected boxes." The pipeline must select the **primary target cow** (e.g., maximum area, central proximity, or overlap with tracking/ROI priors).
 
 #### 4. The 5 Universal Failure Cases
@@ -104,7 +104,7 @@ Across all 300 images, exactly 5 images (1.67%) were missed by all three models:
 | **GTX 1050 Ti Latency** | **24.5 ms** (Fastest) | 470.8 ms (19x slower) | **94.3 ms** (Balanced) |
 | **VRAM Footprint** | ~100 MB | ~800 MB – 1.2 GB | ~550 MB |
 | **Box Tightness** | Loose / Fragmented | Tight | **Tight & Accurate** |
-| **Viability for Upstream P3** | **REJECTED** (High miss rate) | Viable but slow | **RECOMMENDED PRIMARY** |
+| **Viability for Upstream P3** | **REJECTED** (High miss rate) | Viable but slow | **PROVISIONAL PRIMARY CANDIDATE** |
 
 ---
 
@@ -132,7 +132,7 @@ Representative 4-panel visual composites generated during the audit are archived
 ### 1.8 Step 2.1 Feasibility Verdict
 **VERDICT: LOCALIZATION FEASIBILITY CONFIRMED.**
 
-1. **Pretrained Usability**: Off-the-shelf detectors without cattle fine-tuning are **sufficiently reliable** (94.3% overall detection with RT-DETR-L, 95.0% with Faster R-CNN v2) to serve as upstream cattle localizers for Phase 3 representation caching.
-2. **Model Selection**: **RT-DETR-L** is the decisive winner for upstream localization, delivering 94.3% recall across all three datasets at **94 ms latency** (5x faster than Faster R-CNN v2) with tight, accurate bounding boxes.
+1. **Pretrained Usability**: Off-the-shelf detectors without cattle fine-tuning are **sufficiently reliable** (94.3% raw detection rate with RT-DETR-L, 95.0% with Faster R-CNN v2) to serve as upstream cattle localizers for Phase 3 representation caching.
+2. **Candidate Selection**: **RT-DETR-L** is designated as the **provisional primary candidate for the next perception stage**. While Faster R-CNN v2 achieved a slightly higher raw detection rate (95.0% vs 94.3%), RT-DETR-L provides a substantially better speed/performance tradeoff, running 5x faster (94.3 ms vs 470.8 ms) on local hardware with tight, accurate bounding boxes.
 3. **Required Upstream Safeguard**: Because 76–87% of pen images contain background cattle, downstream feature extraction must include a primary-cow selection heuristic (largest bounding box or center-weighted box) rather than naive multi-box averaging.
 4. **Gate Status**: Step 2.1 is complete. We are cleared to proceed to Step 2.2 (Segmentation feasibility).

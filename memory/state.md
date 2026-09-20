@@ -7,7 +7,7 @@
 
 ## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE)
 - **Immediate next action:** STEP 2.2 — Cattle segmentation feasibility audit (SAM 2 / SAM 2.1 prompted by RT-DETR-L boxes).
-- [x] STEP 2.1: Cattle detection / localization feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated YOLOv8s, Faster R-CNN v2, RT-DETR-L; proved YOLOv8s 37% failure rate on rear-view chute and tight crops; selected RT-DETR-L [94.3% recall, 94ms latency] as primary upstream localizer; docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md)
+- [x] STEP 2.1: Cattle detection / localization feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated YOLOv8s, Faster R-CNN v2, RT-DETR-L; proved YOLOv8s 37% non-detection rate on rear-view chute and tight crops; designated RT-DETR-L [94.3% raw detection rate, 94ms latency] as provisional primary candidate for Step 2.2; docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md)
 - [x] Download & restore 213,686 MmCows behavior images via Hugging Face (213,686 indexed crops valid in `behaviors/`; 427,390 total local JPGs; raw videos purged)
 - [x] Download & index OpenCows2020 (4,736 images across 46 classes via Kagglehub - designated Legacy Baseline)
 - [x] Purge 36+ GB raw behavior videos, zip archives, and cache to reclaim local disk space
@@ -116,9 +116,9 @@
 ## Last Session (Convo e78aa1ac-ddc7-4c32-8bab-f25894ade0df)
 - Built and executed `scripts/audit_localization_feasibility.py` for Step 2.1 (Cattle Detection / Localization Feasibility Audit).
 - Ran initial 90-image smoke test and expanded 300-image audit (100 ScienceDB, 100 MmCows, 100 SideViewCows2026; seed=42) across YOLOv8s, Faster R-CNN v2, and RT-DETR-L.
-- Proved YOLOv8s suffers a severe 37% failure rate on rear-view chute and tight crops.
-- Proved RT-DETR-L (94.3% recall, 94ms latency) and Faster R-CNN v2 (95.0% recall, 470ms latency) achieve near-perfect cattle localization without fine-tuning.
-- Decisively recommended RT-DETR-L as the primary upstream localizer for Phase 3 representation caching.
+- Proved YOLOv8s suffers a 37% non-detection rate on rear-view chute and tight crops.
+- Proved RT-DETR-L (94.3% raw detection rate, 94ms latency) and Faster R-CNN v2 (95.0% raw detection rate, 470ms latency) achieve robust cattle localization without fine-tuning.
+- Designated RT-DETR-L as the provisional primary candidate for Step 2.2 representation caching due to its balanced speed/performance profile.
 - Generated 120 4-panel visual composites in `docs/audits/assets/perception_audit/`, created `docs/audits/phase3_perception_feasibility.md`, and published research log `docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md`. Step 2.1 COMPLETE!
 
 ## Current Blockers & Notes
