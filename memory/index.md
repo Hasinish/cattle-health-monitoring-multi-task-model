@@ -56,8 +56,10 @@ Structured project documentation, defense resources, forensic audits, and offici
 - `README.md`: Master directory guide for the organized `docs/` workspace.
 - `phase3_canonical_roadmap.md`: Canonical Phase 3 execution roadmap mirror.
 - `audits/`: Detailed dataset forensic investigations, anti-leakage manifests, and cross-validation architectures.
-  - `phase3_perception_feasibility.md`: Cattle perception feasibility audit document. Step 2.1 (Cow Detection / Localization; evaluated YOLOv8s, Faster R-CNN v2, RT-DETR-L) and Step 2.2 (Cow Segmentation; evaluated RT-DETR-L -> SAM 2.1 small vs YOLO26s-seg vs Oracle GT -> SAM 2.1) completed across ScienceDB, MmCows, and SideViewCows2026.
-  - `assets/perception_audit/`: Directory containing 120 4-panel localization composites and 36 4-panel segmentation composites (`[Original | Box Prompt | Mask | Overlay]`) across ScienceDB, MmCows, and SideViewCows2026.
+  - `phase3_perception_feasibility.md`: Cattle perception feasibility audit document. Step 2.1 (Cow Detection / Localization; evaluated YOLOv8s, Faster R-CNN v2, RT-DETR-L), Step 2.2 (Cow Segmentation; evaluated RT-DETR-L -> SAM 2.1 small vs YOLO26s-seg vs Oracle GT -> SAM 2.1), Step 2.3 (Cattle Pose; evaluated SuperAnimal-Quadruped HRNet-W32 and ResNet-50), and Step 2.4 (Manual Visual Taxonomy Review; candidate 6-class viewpoint taxonomy verified across 60 samples).
+  - `phase3_viewpoint_visual_review_index.md`: Step 2.4 viewpoint visual review index document embedding 6 contact sheets across ScienceDB, MmCows, and SideViewCows2026 with verified distribution tables and defensible findings.
+  - `assets/viewpoint_visual_review/`: Directory containing 6 high-resolution 2-column contact sheets (10 samples each, 60 total) for manual visual review of cattle viewpoints.
+  - `assets/perception_audit/`: Directory containing 120 4-panel localization composites, 36 4-panel segmentation composites, and 90 pose overlay JPGs across ScienceDB, MmCows, and SideViewCows2026.
   - `candidate_lameness_datasets_audit.md`: Deep forensic audit of 4 potential alternative lameness datasets (Russello 2026, Wu/NWAFU, whsu2s, Duan 2025).
   - `cattle_lameness_audit_report.md`: Forensic audit of the CattleLameness dataset (50 clips, 42 cattle, ezgif container footprints, cross-split leakage identification).
   - `cattle_lameness_grouping_report.md`: Anti-leakage clustering architecture, multi-clip group resolution (8 groups, 16 clips), and balanced 5-fold StratifiedGroupKFold cross-validation specification.
@@ -70,6 +72,8 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `assets/agent_behavior_inspection/`: Staging directory containing 20 MmCows crops, 20 CBVD-5 crops, 20 CBVD-5 scenes, and `manifest.json`.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`: Step 2.4 viewpoint taxonomy manual review feasibility audit across ScienceDB, MmCows, and SideViewCows2026.
+  - `2026-09-20_cattle_pose_feasibility_audit.md`: Step 2.3 pose feasibility audit evaluating DeepLabCut SuperAnimal-Quadruped HRNet-W32 and ResNet-50 across 300 samples with human visual validation.
   - `2026-09-20_cattle_segmentation_feasibility_audit.md`: Step 2.2 segmentation feasibility audit evaluating RT-DETR-L -> SAM 2.1 small (0.9216 Mean IoU, 0.9530 Mean Dice on SideView; 93/100 segmented on ScienceDB, 90/100 on MmCows) vs YOLO26s-seg (0.8660 IoU, 38% missed on ScienceDB, 27% on MmCows), confirming pretrained segmentation feasibility without fine-tuning.
   - `2026-09-20_cattle_localization_feasibility_audit.md`: Two-stage localization audit (90 smoke, 300 expanded) comparing YOLOv8s, Faster R-CNN v2, and RT-DETR-L across ScienceDB, MmCows, and SideViewCows2026, establishing RT-DETR-L (94.3% raw detection rate, 94ms latency) as primary upstream localizer.
   - `2026-09-20_mmcows_vs_cbvd5_primary_behavior_assessment.md`: Forensic assessment comparing MmCows and CBVD-5 for primary behavior role across 10 dimensions, proving CBVD has zero cow IDs, median 156x167px crops, lacks walking/licking, and recommending Option A (keep MmCows primary, preserve CBVD-5 as external).
@@ -79,10 +83,6 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `2026-09-20_phase3_duplicate_nearduplicate_audit.md`: Automated exact (SHA-256) and perceptual near-duplicate (dHash/aHash, $d \le 6$) audit across all split-bearing Phase 3 datasets, exposing ScienceDB overlapping passage vulnerability.
   - `2026-09-20_external_benchmarks_hydration_audit.md`: Hydration and verification audit for SideViewCows2026, BECA, and CBVD-5.
   - `2026-09-20_opencows2020_legacy_reid_audit.md`: Forensic audit of OpenCows2020 legacy Re-ID protocol, proving lack of sequence recoverability from provenance, exposing 1,023 frame-index adjacency crossings in legacy random shuffle, and verifying contiguous heuristic rebuild.
-  - `2026-09-20_dryad_bcs_discrepancy_audit.md`: Discrepancy audit reconciling 5,923 vs 5,940 physical TIFFs, validating Class 7 as authentic Criollo beef data, and establishing 54-cow census.
-  - `2026-09-20_mmcows_grouped_protocol_and_leakage_audit.md`: Audit of MmCows behavior dataset, proving biological cow IDs (16 cows), protecting 87.15% multi-camera synchronized events, and creating 4-Fold GroupKFold suite.
-  - `2026-09-20_sciencedb_identity_audit_and_leakage_free_split.md`: Forensic audit of ScienceDB identity parser, disproving 10,898 cows claim, exposing 94.6% stereo leakage in legacy split, and building leak-free 5,662-passage split.
-  - `2026-09-20_sciencedb_roadmap_correction.md`: Formal roadmap correction replacing ScienceDB cow-disjoint wording with passage-disjoint / sequence-safe evaluation and setting MmCows grouped evaluation as the next Step 1 action.
   - `2026-09-20_local_dataset_inventory_audit.md`: Physical inventory audit on GTX 1050 Ti machine and canonical dataset registry creation.
   - `2026-09-19_phase3_canonical_roadmap.md`: Formal log adopting the 13-step Phase 3 Canonical Roadmap and MultiCamCows2024 Re-ID replacement.
   - `2026-09-18_cattle_centered_anatomy_aware_direction.md`: Proposed research direction on segmentation-guided, anatomy-aware, and viewpoint-aware representation learning.
@@ -166,6 +166,7 @@ Reference materials, prior sample defense posters, and official CSE400 formattin
 
 ### `scripts/`
 Automation utilities for batch experiments, metric aggregation, dataset restoration, and environment setup.
+- `build_viewpoint_contact_sheets.py`: Deterministic generation script for Step 2.4 viewpoint manual review pack. Extracts 60 diverse samples (20 per dataset) across ScienceDB, MmCows, and SideViewCows2026, generates `viewpoint_manual_review_manifest.csv`, stitches 6 high-resolution 2-column contact sheets (10 images each), and builds `phase3_viewpoint_visual_review_index.md`.
 - `audit_pose_feasibility.py`: Deterministic cattle pose / keypoint feasibility auditor (Step 2.3) evaluating official DeepLabCut SuperAnimal-Quadruped (HRNet-W32 and ResNet-50) top-down pose estimation on RT-DETR-L target-cow crops across ScienceDB, MmCows, and SideViewCows2026. Supports smoke (30 imgs) and expanded (300 imgs) modes, 4-stage failure categorization (`upstream_localization_failure`, `pose_detector_failure`, `pose_output_returned`, `pose_inference_error`), raw confidence preservation, dynamic keypoint schema extraction, SideView ground-truth mask sanity check, crash-safe `--resume`, and visible progress display.
 - `audit_segmentation_feasibility.py`: Deterministic multi-model cattle segmentation feasibility auditor (Step 2.2) evaluating Pipeline A (RT-DETR-L box -> SAM 2.1 small), Pipeline B (YOLO26s-seg), and Diagnostic Pipeline (Oracle GT Box -> SAM 2.1) across ScienceDB, MmCows, and SideViewCows2026 with clean single-line progress UI, SideView IoU/Dice calculation, and 4-panel composite generator.
 - `audit_localization_feasibility.py`: Deterministic multi-model cattle localization feasibility auditor (Step 2.1) evaluating YOLOv8s, Faster R-CNN v2, and RT-DETR-L in smoke (90 images) and expanded (300 images) modes with Windows-clean single-line progress UI and automated composite generator.
@@ -200,13 +201,15 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 ### `artifacts/`
 Generated manifests, audit CSVs, and model evaluation outputs.
 - `perception_audit/`:
+  - `viewpoint_manual_review_manifest.csv`: 60-row verified manual review manifest mapping sample IDs across ScienceDB, MmCows, and SideViewCows2026 to verified viewpoint categories (`rear`, `rear-oblique`, `side`, `front-oblique`, `unknown / ambiguous`), provenance notes, and review status `human_verified`.
+  - `pose_manual_review.csv`: 60-row verified manual review record for Step 2.3 pose feasibility across ScienceDB, MmCows, and SideViewCows2026 with ratings and review provenance.
   - `sample_manifest_smoke.csv` (90 samples) & `sample_manifest_expanded.csv` (300 samples): Deterministic stratified sample manifests across ScienceDB, MmCows, and SideViewCows2026.
   - `localization_detections_smoke.csv` & `localization_detections_expanded.csv`: Bounding box detection records from YOLOv8s, Faster R-CNN v2, and RT-DETR-L.
   - `localization_summary_smoke.csv` & `localization_summary_expanded.csv`: Aggregated detection counts, raw detection rates, and latencies.
   - `segmentation_results_smoke.csv` & `segmentation_results_expanded.csv`: Step 2.2 segmentation results comparing RT-DETR-L -> SAM 2.1 small, YOLO26s-seg, and Oracle GT -> SAM 2.1 with SideView IoU/Dice metrics.
-
-### `thesis template/`
-Clean, official CSE400 LaTeX template skeleton used as the foundation for the thesis formatting.
+  - `pose_results_expanded_hrnet_w32.csv` & `pose_results_expanded_resnet_50.csv`: Step 2.3 pose evaluation results across 300 samples per backbone.
+  - `pose_keypoints_expanded_hrnet_w32.csv` & `pose_keypoints_expanded_resnet_50.csv`: Extracted 39-keypoint coordinates and confidence scores across 300 samples per backbone.
+  - `superanimal_quadruped_schema.json`: Official DeepLabCut 39-keypoint quadruped schema and body part index mapping.
 
 ### `videos/`
 Test video files and sample inference output clips demonstrating real-time bounding box detection, tracking, and multitask predictions.

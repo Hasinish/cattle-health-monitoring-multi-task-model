@@ -3,7 +3,8 @@
 **Date**: 2026-09-20  
 **Phase**: Phase 3 (Pretrained Perception Feasibility Audit — Step 2.4 Viewpoint Taxonomy Definition)  
 **Manifest**: [artifacts/perception_audit/viewpoint_manual_review_manifest.csv](file:///d:/cattle-health-monitoring-multi-task-model/artifacts/perception_audit/viewpoint_manual_review_manifest.csv)  
-**Status**: `pending_human_review` (Manual review pack built; no model inference or training performed)  
+**Status**: `human_verified` (60/60 samples verified)  
+**Review Provenance**: User visual verification and correction after ChatGPT-assisted initial labeling  
 
 ---
 
@@ -21,6 +22,24 @@ The objective of Step 2.4 is to determine whether cattle body orientation catego
 
 > [!IMPORTANT]
 > **Camera ID is NOT viewpoint**: In multi-camera surveillance (MmCows) or fixed chutes, camera position must not be treated as a viewpoint proxy. The true viewpoint is defined strictly by the cow's physical body orientation relative to the camera optical axis.
+
+---
+
+## Verified Manual Review Distribution (N=60)
+
+| Dataset | Total Samples | `rear` | `rear-oblique` | `side` | `front-oblique` | `front` | `unknown / ambiguous` |
+|---|---|---|---|---|---|---|---|
+| **ScienceDB** | 20 | 10 (50.0%) | 8 (40.0%) | 0 (0.0%) | 1 (5.0%) | 0 (0.0%) | 1 (5.0%) |
+| **MmCows** | 20 | 1 (5.0%) | 6 (30.0%) | 9 (45.0%) | 1 (5.0%) | 0 (0.0%) | 3 (15.0%) |
+| **SideViewCows2026** | 20 | 0 (0.0%) | 0 (0.0%) | 18 (90.0%) | 1 (5.0%) | 0 (0.0%) | 1 (5.0%) |
+| **Overall** | **60** | **11 (18.3%)** | **14 (23.3%)** | **27 (45.0%)** | **3 (5.0%)** | **0 (0.0%)** | **5 (8.3%)** |
+
+### Defensible Findings from Visual Review:
+1. **ScienceDB**: The reviewed 20-sample subset is strongly rear/rear-oblique dominated (18/20, 90.0%). One sample (`sample_0084`) exhibits a front-oblique angle captured from an alternate farm camera, and one sample (`sample_0022`) is ambiguous due to a partial crop/chute occlusion.
+2. **MmCows**: Contains a much broader viewpoint mixture (side: 9, rear-oblique: 6, rear: 1, front-oblique: 1) reflecting cows moving and resting in loose housing pens. It also contains the highest rate of ambiguous cases (3/20, 15.0%) due to heavy stall-bar occlusions (`sample_0107`), feeding stanchions (`sample_0140`), and dark/top-down CCTV perspectives (`sample_0190`).
+3. **SideViewCows2026**: Overwhelmingly side-view dominated (18/20, 90.0%) across parlor, barn, and snapshots. One sample (`sample_0215`) captures a front-oblique entry/turn, and one (`sample_0277`) is ambiguous due to multiple overlapping cows in a barn alley.
+4. **Taxonomy Usability**: The coarse viewpoint taxonomy is visually usable and consistently annotatable on this **diversity-selected 60-image review sample**; however, this sample is **not** statistically representative of the full datasets.
+5. **Camera ID Independence**: Camera ID does not predict viewpoint; orientation varies dynamically with animal locomotion and resting angles.
 
 ---
 

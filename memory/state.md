@@ -5,8 +5,9 @@
 - **Core Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning and improve robustness across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE | STEP 2.2: COMPLETE | STEP 2.3: COMPLETE)
-- **Immediate next action:** STEP 2.4 — Cattle Viewpoint / Orientation Feasibility Audit.
+## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE | STEP 2.2: COMPLETE | STEP 2.3: COMPLETE | STEP 2.4 MANUAL REVIEW: COMPLETE)
+- **Immediate next action:** STEP 2.4 / GATE 2 — Decide downstream viewpoint operational strategy and conclude Step 2 perception feasibility audit.
+- [x] STEP 2.4 (Manual Taxonomy Review): Cattle viewpoint manual visual taxonomy review completed across ScienceDB, MmCows, and SideViewCows2026 (`artifacts/perception_audit/viewpoint_manual_review_manifest.csv`; `docs/audits/phase3_viewpoint_visual_review_index.md`; 60-image deliberately diverse review pack; user verified/corrected after ChatGPT initial labeling; ScienceDB strongly rear/rear-oblique [90%], MmCows broad mixture with highest ambiguity [15%], SideView overwhelmingly side-view [90%]; confirmed coarse taxonomy `rear, rear-oblique, side, front-oblique, front, unknown / ambiguous` is visually usable; camera ID is not viewpoint; no model trained; Step 2.4 / Step 2 remain open; `docs/research_log/2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`)
 - [x] STEP 2.3: Cattle pose / keypoint feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated official DeepLabCut SuperAnimal-Quadruped HRNet-W32 and ResNet-50 on RT-DETR-L target crops; 81.0% operational success [243/300], 13.3% pose_detector_failure [40/300], 5.7% upstream_localization_failure [17/300], 0% crashes; human visual review by user with ChatGPT-assisted organization [N=60 across 30 samples in `artifacts/perception_audit/pose_manual_review.csv`]: documented selection bias [ScienceDB BCS 3.25 only, MmCows Lying only, SideView parlor only; not extrapolated to unreviewed classes/settings]; in reviewed ScienceDB subset, rear-view outputs judged visually bad / anatomically unreliable (`clearly_wrong`) and missing BCS landmarks, not recommended for downstream BCS; in reviewed MmCows subset, lying outputs judged visually bad / anatomically unreliable (`clearly_wrong`) with 50% localization misses; SideView parlor was the only group that looked genuinely plausible, promising for Step 6 ablation [77.2% mask containment sanity check] but not proven useful yet; ResNet-50 provisional candidate due to higher raw confidence and mask containment [does not establish higher pose accuracy]; `docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md`)
 - [x] STEP 2.2: Cattle segmentation feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated RT-DETR-L -> SAM 2.1 small [Mean IoU 0.9216 / Dice 0.9530 on SideView GT; 0.0252 delta from Oracle GT box; 93/100 segmented on ScienceDB, 90/100 on MmCows] vs YOLO26s-seg [Mean IoU 0.8660, 38% missed on ScienceDB, 27% on MmCows]; confirmed pretrained segmentation feasible without fine-tuning; docs/research_log/2026-09-20_cattle_segmentation_feasibility_audit.md)
 - [x] STEP 2.1: Cattle detection / localization feasibility audit completed across ScienceDB, MmCows, and SideViewCows2026 (`docs/audits/phase3_perception_feasibility.md`; evaluated YOLOv8s, Faster R-CNN v2, RT-DETR-L; proved YOLOv8s 37% non-detection rate on rear-view chute and tight crops; designated RT-DETR-L [94.3% raw detection rate, 94ms latency] as provisional primary candidate for Step 2.2; docs/research_log/2026-09-20_cattle_localization_feasibility_audit.md)
@@ -37,7 +38,7 @@
 - [x] Generate manual human visual-verification pack for primary Phase 3 datasets (ScienceDB 16, MmCows 16, SideView 16; 48 checks + 3-panel composites generated deterministically via `scripts/build_manual_dataset_visual_verification.py`; `docs/audits/phase3_manual_dataset_visual_verification.md`)
 - [x] Audit MmCows vs. CBVD-5 for Primary Behavior role (`docs/research_log/2026-09-20_mmcows_vs_cbvd5_primary_behavior_assessment.md`; 14-pair manual side-by-side pack at `docs/audits/phase3_behavior_dataset_manual_comparison.md`; recommended Option A: keep MmCows Primary, preserve CBVD-5 as External Validation)
 - [x] Complete multimodal agent visual inspection of 20 MmCows and 20 CBVD-5 samples (`docs/audits/phase3_behavior_agent_visual_inspection.md`; confirmed 19/20 MmCows usable, exposed CBVD-5 wide-angle crop resolution deficit [median 156px vs 390px] and temporal label inconsistency; visually validated prior audit claims; recommended retaining Option A)
-- [ ] STEP 2: Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md` — Step 2.1 Localization COMPLETE; Step 2.2 Segmentation COMPLETE; Step 2.3 Pose COMPLETE; Step 2.4 Viewpoint pending)
+- [ ] STEP 2: Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md` — Step 2.1 Localization COMPLETE; Step 2.2 Segmentation COMPLETE; Step 2.3 Pose COMPLETE; Step 2.4 Viewpoint manual visual taxonomy review COMPLETE, overall Step 2.4 / Step 2 pending)
 - [ ] STEP 3: Cache upstream cattle information (bbox, soft_mask, pose_coords, viewpoint)
 - [ ] STEP 4: Clean RGB single-task baselines
 - [ ] STEP 5: Localization / segmentation ablation
@@ -58,14 +59,12 @@
   - **Secondary External**: Dryad BCS (5,940 DGE images across discrete classes '2'-'7')
 - **2. Behavior Recognition**:
   - **Primary (In-Domain)**: MmCows (213,686 bounding-box crops across 7 active classes from 16 cows, multi-camera CCTV)
-  - **Primary External Validation**: CBVD-5 (larger-herd external test)
-  - **Optional External**: CVB, XGain, Simmental 2026 (for compatible label intersections only)
-- **3. Individual Cow Identification / Re-Identification (Re-ID)**:
-  - **Primary (Approved Contingency)**: SideViewCows2026 (110 cows, 80,260 images + 80,260 binary masks, parlor/barn/snapshots nested settings, >9 months span; replaces MultiCam under approved contingency; COMPLETE & VERIFIED)
-  - **Primary External Validation (Longitudinal)**: BECA-L (103 beef cattle, 12,172 images, 134 dates over 7+ months, top-down dorsal view, 3 cowsheds)
-  - **External Scale Stress**: BECA-D (5,661 beef cattle, 16,889 images, 3 shots/cow)
-  - **Contingency-Excluded Intended Primary**: MultiCamCows2024 (90 cows, 101,329 images; blocked upstream by persistent server connection resets; preserved in project records)
-  - **Legacy Baseline**: OpenCows2020 (retained strictly for backward comparability; contiguous frame-index heuristic + duplicate harmonization protocol verified)
+  - **Primary External Validation**: CBVD-5 (887 videos, 206,100 frames across 107 cows; reserved for external validation)
+- **3. Individual Cow Identification / Re-ID**:
+  - **Primary (In-Domain)**: SideViewCows2026 (80,260 images + 80,260 binary masks, 110 cows; 4 canonical protocols: cross-setting, longitudinal, open-set, closed-set; Gate 1 CLEARED)
+  - **Primary External Longitudinal Validation**: BECA-L (12,172 images across 103 cows, 134 dates over 7+ months)
+  - **Secondary External Scale / Stress Validation**: BECA-D (16,889 images across 5,661 cows)
+  - **Legacy Baseline (Historical / Reference Only)**: OpenCows2020 (4,736 images across 46 cows)
 - **Lameness Status**: Excluded from primary Phase 3 MTL; CattleLameness retained for historical P2 audit only.
 
 ## Current Local Availability on this Machine (Physical Verification Baseline)
@@ -109,21 +108,22 @@
 > **Multi-Environment Awareness**: Physical dataset availability may differ across machines and execution environments (e.g. this local laptop vs. Modal cloud volumes vs. the BRACU Lab Research PC with RTX 5090). Future agents MUST inspect physical files on disk before assuming a dataset is available locally.
 
 ## Last Session (Convo e78aa1ac-ddc7-4c32-8bab-f25894ade0df)
-- Completed Step 2.2 (Cattle Segmentation Feasibility Audit: RT-DETR-L -> SAM 2.1 small vs YOLO26s-seg).
-- Completed Step 2.3 (Cattle Pose / Keypoint Feasibility Audit: DeepLabCut SuperAnimal-Quadruped HRNet-W32 and ResNet-50 across the 300-image expanded sample).
-- Step 2.3 Visual Review & Evidence-Based Findings (N=60 reviews across 30 samples in `artifacts/perception_audit/pose_manual_review.csv`, human visual review by user with ChatGPT-assisted organization):
-  - Documented review-set selection bias: 30 samples represent only ScienceDB BCS 3.25, MmCows Lying, and SideView parlor; not representative of full datasets and not extrapolated to unreviewed classes/settings.
-  - ScienceDB: In reviewed 10-sample BCS 3.25 subset, rear-view pose outputs judged visually bad / anatomically unreliable (`clearly_wrong`), lacking BCS landmarks; not recommended for downstream BCS.
-  - MmCows: In reviewed 10-sample lying subset, outputs judged visually bad / anatomically unreliable (`clearly_wrong`) with 50% localization misses; overall mixed/fragile.
-  - SideViewCows2026: In reviewed 10-sample parlor subset, SideView was the only group that looked genuinely plausible (`plausible`/`partially_plausible`); promising for Step 6 ablation (77.2% mask containment sanity check), not proven useful yet.
-  - ResNet-50: provisional candidate because of higher raw confidence and slightly higher mask containment; these do not establish higher pose accuracy.
-- Updated `docs/audits/phase3_perception_feasibility.md`, created research log `docs/research_log/2026-09-20_cattle_pose_feasibility_audit.md`, and indexed in `docs/research_log/README.md`.
+- Completed Step 2.4 (Manual Visual Taxonomy Review): Built deliberately diverse 60-image viewpoint review pack across ScienceDB (20), MmCows (20), and SideViewCows2026 (20).
+- Generated 6 high-resolution contact sheets (`docs/audits/assets/viewpoint_visual_review/`) and visual review index (`docs/audits/phase3_viewpoint_visual_review_index.md`).
+- Completed visual review with ChatGPT-assisted initial proposals and user verification/corrections:
+  - ScienceDB: 10 rear, 8 rear-oblique, 1 front-oblique, 1 unknown / ambiguous (strongly rear/rear-oblique dominated).
+  - MmCows: 9 side, 6 rear-oblique, 1 rear, 1 front-oblique, 3 unknown / ambiguous (broadest mixture, highest ambiguity due to stall bars/rails/top-down CCTV).
+  - SideViewCows2026: 18 side, 1 front-oblique, 1 unknown / ambiguous (overwhelmingly side-view dominated; 1 front-oblique parlor entry, 1 multi-cow barn alley ambiguity).
+  - Overall: 27 side, 14 rear-oblique, 11 rear, 3 front-oblique, 5 unknown / ambiguous, 0 front.
+- Persisted verified labels in `artifacts/perception_audit/viewpoint_manual_review_manifest.csv` with status `human_verified` and accurate provenance documentation.
+- Updated `docs/audits/phase3_perception_feasibility.md` with Section 4, created research log `docs/research_log/2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`, and indexed in `docs/research_log/README.md`.
+- Maintained constraints: no model trained, no weights downloaded, Step 2.4 and overall Step 2 remain open.
 
 ## Current Blockers & Notes
 - **STEP 1 IS 100% COMPLETE & LOCKED (Gate 1 Cleared)**.
 - **STEP 2.1 (Localization Feasibility) IS 100% COMPLETE**.
 - **STEP 2.2 (Segmentation Feasibility) IS 100% COMPLETE**.
 - **STEP 2.3 (Pose Feasibility) IS 100% COMPLETE**.
-- **Current immediate position is STEP 2.4 — Cattle Viewpoint / Orientation Feasibility Audit**.
-- Deliverable updated: `docs/audits/phase3_perception_feasibility.md` (Localization, Segmentation, and Pose complete; Viewpoint next).
+- **STEP 2.4 (Manual Visual Taxonomy Review) IS COMPLETE; overall Step 2.4 / Step 2 remain open**.
+- Deliverable updated: `docs/audits/phase3_perception_feasibility.md` (Localization, Segmentation, Pose, and Viewpoint Manual Review documented).
 - Antigravity sync rule: changes mirrored to `D:\custom-antigravity`.

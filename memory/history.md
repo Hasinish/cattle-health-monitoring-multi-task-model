@@ -1,3 +1,19 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 2.4 Cattle Viewpoint Taxonomy & Manual Review Feasibility Audit)
+
+- Executed Step 2.4 initial manual visual feasibility audit of cattle viewpoint categories across ScienceDB, MmCows, and SideViewCows2026.
+- Formulated candidate coarse viewpoint taxonomy: `rear`, `rear-oblique`, `side`, `front-oblique`, `front`, and `unknown / ambiguous`.
+- Curated a deliberately diverse 60-image manual review pack (20 ScienceDB, 20 MmCows, 20 SideViewCows2026) across BCS classes, farm sources, behavior categories, surveillance cameras, and capture subsets to avoid selection-bias pitfalls.
+- Generated 6 high-resolution 2-column contact sheets (10 images each) in `docs/audits/assets/viewpoint_visual_review/` and created index at `docs/audits/phase3_viewpoint_visual_review_index.md`.
+- Completed visual review with ChatGPT-assisted initial proposals and final verification/corrections by the user across all 60 samples:
+  - ScienceDB (20): 10 rear, 8 rear-oblique, 1 front-oblique (`sample_0084`), 1 unknown / ambiguous (`sample_0022` chute occlusion). Strongly rear/rear-oblique dominated (90.0%).
+  - MmCows (20): 9 side, 6 rear-oblique, 1 rear, 1 front-oblique (`sample_0185`), 3 unknown / ambiguous (`sample_0107`, `0140`, `0190` due to stall bars, stanchions, dark top-down CCTV). Broadest mixture and highest ambiguity rate (15.0%).
+  - SideViewCows2026 (20): 18 side, 1 front-oblique (`sample_0215` parlor entrance/turn), 1 unknown / ambiguous (`sample_0277` multi-cow barn alley). Overwhelmingly side-view dominated (90.0%).
+  - Overall (60): 27 side, 14 rear-oblique, 11 rear, 3 front-oblique, 5 unknown / ambiguous, 0 front.
+- Persisted verified labels and provenance metadata in `artifacts/perception_audit/viewpoint_manual_review_manifest.csv` (`review_status = human_verified`).
+- Proved coarse viewpoint taxonomy is visually usable on this diversity-selected sample (not statistically representative of full datasets). Confirmed camera ID must not be treated as viewpoint.
+- Updated `docs/audits/phase3_perception_feasibility.md` with Section 4, created research log `docs/research_log/2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`, and indexed in `docs/research_log/README.md`.
+- Maintained constraints: no model trained, no weights downloaded, Step 2.4 and overall Step 2 remain open.
+
 # Session Summary — 2026-09-20 (Phase 3 Step 2.3 Cattle Pose / Keypoint Feasibility Audit)
 
 - Executed Step 2.3 (Cattle Pose / Keypoint Feasibility Audit) across ScienceDB (BCS), MmCows (Behavior), and SideViewCows2026 (Re-ID).

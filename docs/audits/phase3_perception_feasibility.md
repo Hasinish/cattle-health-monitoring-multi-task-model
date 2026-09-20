@@ -445,5 +445,60 @@ These manual observations must **not** be extrapolated to unreviewed classes or 
 6. **Model Selection**: ResNet-50 produced higher raw confidence and slightly higher mask containment, making it the provisional candidate for Step 6 pose ablation; however, higher confidence and mask containment do not establish higher pose accuracy.
 7. **Gate Status**: Step 2.3 is complete. Proceed to Step 2.4 (Viewpoint / Orientation feasibility audit) per `phase3_canonical_roadmap.md`.
 
+---
 
+## 4. Step 2.4 Cattle Viewpoint / Orientation Feasibility Audit (Manual Visual Taxonomy Review)
 
+**Date**: 2026-09-20  
+**Deliverable Artifacts**:
+- Manifest: [artifacts/perception_audit/viewpoint_manual_review_manifest.csv](file:///d:/cattle-health-monitoring-multi-task-model/artifacts/perception_audit/viewpoint_manual_review_manifest.csv)
+- Visual Review Index: [docs/audits/phase3_viewpoint_visual_review_index.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/audits/phase3_viewpoint_visual_review_index.md)
+- Contact Sheets: [docs/audits/assets/viewpoint_visual_review/](file:///d:/cattle-health-monitoring-multi-task-model/docs/audits/assets/viewpoint_visual_review/) (6 sheets, 10 samples each)
+- Generation Script: [scripts/build_viewpoint_contact_sheets.py](file:///d:/cattle-health-monitoring-multi-task-model/scripts/build_viewpoint_contact_sheets.py)
+
+### 4.1 Objective & Candidate Taxonomy
+
+Step 2.4 investigates whether cattle viewpoint/orientation categories can be visually defined, consistently recognized, and practically utilized across the three primary Phase 3 datasets without relying on camera ID shortcuts.
+
+**Candidate Coarse Viewpoint Taxonomy**:
+1. `rear`: Direct caudal view (rump, tailhead, pin bones directly facing camera).
+2. `rear-oblique`: Three-quarter rear perspective (flank and rear visible).
+3. `side`: Broadside lateral profile (full flank/ribcage profile visible).
+4. `front-oblique`: Three-quarter frontal perspective (head, shoulder, and flank visible).
+5. `front`: Direct cranial view (head, chest, snout facing camera).
+6. `unknown / ambiguous`: Cases where orientation cannot be definitively determined due to heavy stall occlusion, extreme top-down CCTV angle, tight partial crop, or multiple overlapping cows.
+
+### 4.2 Deliberately Diverse Sampling Strategy (N=60)
+
+To prevent the selection-bias issues identified in Step 2.3 (where sequential sampling restricted review to single classes), a deliberately diverse subset of 20 images per dataset (60 total) was sampled from the expanded audit manifest:
+- **ScienceDB (20)**: 4 samples across each of the 5 BCS classes (`3.25`, `3.50`, `3.75`, `4.00`, `4.25`), covering all 3 farm sources (`GS_Gansu`: 8, `YM_Farm2`: 8, `STEREO_Farm3`: 4).
+- **MmCows (20)**: Covers all 7 behaviors (`Lying`: 3, `Standing`: 3, `Feeding head down`: 3, `Feeding head up`: 3, `Walking`: 3, `Drinking`: 3, `Licking`: 2), spanning 14 unique cows and all 4 surveillance camera angles (`Cam 1`, `Cam 2`, `Cam 3`, `Cam 4`).
+- **SideViewCows2026 (20)**: Covers `Parlor` (8), `Barn` (8), and `Snapshots` (4) across multiple cows and sessions.
+
+*Note*: This subset is a deliberately diverse manual feasibility sample, not an exhaustive statistical census of the full datasets.
+
+### 4.3 Review Methodology & Provenance
+
+The 60 images were arranged into 6 high-resolution contact sheets (10 images per sheet) preserving native aspect ratios with original RGB pixels (no pose or bounding box overlays).
+
+**Review Provenance**: User visual verification and correction after ChatGPT-assisted initial labeling.
+
+### 4.4 Verified Distribution & Findings
+
+| Dataset | Total Samples | `rear` | `rear-oblique` | `side` | `front-oblique` | `front` | `unknown / ambiguous` |
+|---|---|---|---|---|---|---|---|
+| **ScienceDB** | 20 | 10 (50.0%) | 8 (40.0%) | 0 (0.0%) | 1 (5.0%) | 0 (0.0%) | 1 (5.0%) |
+| **MmCows** | 20 | 1 (5.0%) | 6 (30.0%) | 9 (45.0%) | 1 (5.0%) | 0 (0.0%) | 3 (15.0%) |
+| **SideViewCows2026** | 20 | 0 (0.0%) | 0 (0.0%) | 18 (90.0%) | 1 (5.0%) | 0 (0.0%) | 1 (5.0%) |
+| **Overall** | **60** | **11 (18.3%)** | **14 (23.3%)** | **27 (45.0%)** | **3 (5.0%)** | **0 (0.0%)** | **5 (8.3%)** |
+
+#### Defensible Observations:
+1. **ScienceDB**: Strongly rear/rear-oblique dominated (90.0%). One non-standard front-oblique case (`sample_0084`) exists from an alternate farm camera, and one sample (`sample_0022`) was judged ambiguous due to chute occlusion and a partial crop.
+2. **MmCows**: Exhibits a diverse mixture of orientations (side: 9, rear-oblique: 6, rear: 1, front-oblique: 1). It also contains the highest rate of ambiguous cases (15.0%) caused by heavy stall-bar occlusions (`sample_0107`), feeding stanchions (`sample_0140`), and dark/top-down CCTV geometry (`sample_0190`).
+3. **SideViewCows2026**: Overwhelmingly side-view (90.0%). A front-oblique angle occurs during parlor entrance/turn (`sample_0215`), and one sample (`sample_0277`) is ambiguous due to multiple overlapping cows in a barn alley.
+4. **Usability of Taxonomy**: The coarse viewpoint taxonomy is visually usable and consistently annotatable on this diversity-selected 60-image sample. The inclusion of `unknown / ambiguous` is strictly necessary to prevent forced misclassifications under heavy occlusion or top-down ambiguity.
+5. **Camera ID Independence**: Camera ID must NOT be treated as viewpoint. While ScienceDB and SideView are captured in constrained passage setups, animal movement and camera placement result in off-axis orientations. In MmCows, cows rotate freely relative to fixed overhead cameras.
+
+### 4.5 Current Status
+
+The manual visual taxonomy review for Step 2.4 is complete and persisted. No classifier training or model inference has been performed. Step 2.4 and overall Step 2 remain open pending further decisions on whether automated viewpoint classification is required or whether existing metadata/heuristics suffice.
