@@ -1,0 +1,61 @@
+sample_id,dataset,category_or_subset,human_viewpoint,predicted_viewpoint,top_score,second_viewpoint,second_score,score_margin,input_mode,model_name,runtime_ms
+sample_0001,ScienceDB,BCS_3.25,rear,front,0.3808,front-oblique,0.2538,0.1269,rtdetr_crop,openai/clip-vit-base-patch32,111.9
+sample_0003,ScienceDB,BCS_3.25,rear,front,0.368,rear,0.1619,0.2061,rtdetr_crop,openai/clip-vit-base-patch32,24.1
+sample_0006,ScienceDB,BCS_3.25,rear-oblique,front-oblique,0.3826,rear-oblique,0.2102,0.1725,rtdetr_crop,openai/clip-vit-base-patch32,22.6
+sample_0010,ScienceDB,BCS_3.25,rear,unknown / ambiguous,0.4363,rear,0.2553,0.181,rtdetr_crop,openai/clip-vit-base-patch32,21.0
+sample_0021,ScienceDB,BCS_3.5,rear-oblique,front,0.4584,front-oblique,0.3215,0.1369,rtdetr_crop,openai/clip-vit-base-patch32,20.1
+sample_0022,ScienceDB,BCS_3.5,unknown / ambiguous,rear,0.3433,front,0.3024,0.0409,rtdetr_crop,openai/clip-vit-base-patch32,21.0
+sample_0026,ScienceDB,BCS_3.5,rear-oblique,front-oblique,0.34,front,0.2074,0.1326,rtdetr_crop,openai/clip-vit-base-patch32,20.2
+sample_0030,ScienceDB,BCS_3.5,rear,front,0.3809,rear,0.1828,0.1981,rtdetr_crop,openai/clip-vit-base-patch32,21.1
+sample_0041,ScienceDB,BCS_3.75,rear,rear,0.3922,rear-oblique,0.2211,0.1711,full_image_fallback,openai/clip-vit-base-patch32,21.7
+sample_0043,ScienceDB,BCS_3.75,rear,rear-oblique,0.3636,rear,0.2735,0.09,rtdetr_crop,openai/clip-vit-base-patch32,21.5
+sample_0051,ScienceDB,BCS_3.75,rear-oblique,front,0.4173,front-oblique,0.3426,0.0747,rtdetr_crop,openai/clip-vit-base-patch32,20.3
+sample_0053,ScienceDB,BCS_3.75,rear,rear-oblique,0.3565,rear,0.287,0.0696,rtdetr_crop,openai/clip-vit-base-patch32,20.7
+sample_0061,ScienceDB,BCS_4.0,rear,front,0.3358,unknown / ambiguous,0.1825,0.1533,rtdetr_crop,openai/clip-vit-base-patch32,21.8
+sample_0063,ScienceDB,BCS_4.0,rear,front-oblique,0.3665,rear-oblique,0.3084,0.0581,rtdetr_crop,openai/clip-vit-base-patch32,20.8
+sample_0065,ScienceDB,BCS_4.0,rear-oblique,front-oblique,0.2354,rear-oblique,0.2011,0.0342,rtdetr_crop,openai/clip-vit-base-patch32,20.2
+sample_0070,ScienceDB,BCS_4.0,rear-oblique,front,0.538,front-oblique,0.1731,0.3649,rtdetr_crop,openai/clip-vit-base-patch32,21.3
+sample_0081,ScienceDB,BCS_4.25,rear,rear,0.537,rear-oblique,0.1783,0.3587,rtdetr_crop,openai/clip-vit-base-patch32,20.7
+sample_0082,ScienceDB,BCS_4.25,rear-oblique,front-oblique,0.3323,front,0.3024,0.0299,rtdetr_crop,openai/clip-vit-base-patch32,20.2
+sample_0084,ScienceDB,BCS_4.25,front-oblique,front,0.4765,front-oblique,0.2286,0.2479,rtdetr_crop,openai/clip-vit-base-patch32,20.3
+sample_0090,ScienceDB,BCS_4.25,rear-oblique,rear-oblique,0.2356,unknown / ambiguous,0.1992,0.0364,rtdetr_crop,openai/clip-vit-base-patch32,21.3
+sample_0104,MmCows,Behavior_Lying,side,unknown / ambiguous,0.5207,rear,0.1439,0.3768,rtdetr_crop,openai/clip-vit-base-patch32,20.1
+sample_0105,MmCows,Behavior_Lying,side,front,0.3401,rear,0.3237,0.0164,rtdetr_crop,openai/clip-vit-base-patch32,22.1
+sample_0107,MmCows,Behavior_Lying,unknown / ambiguous,unknown / ambiguous,0.3475,front,0.2765,0.071,rtdetr_crop,openai/clip-vit-base-patch32,19.6
+sample_0117,MmCows,Behavior_Standing,side,side,0.2883,rear-oblique,0.233,0.0553,rtdetr_crop,openai/clip-vit-base-patch32,22.3
+sample_0120,MmCows,Behavior_Standing,side,unknown / ambiguous,0.7859,rear-oblique,0.0599,0.7261,rtdetr_crop,openai/clip-vit-base-patch32,21.0
+sample_0124,MmCows,Behavior_Standing,rear-oblique,front,0.3851,side,0.214,0.1712,rtdetr_crop,openai/clip-vit-base-patch32,20.7
+sample_0133,MmCows,Behavior_Feeding_head_down,rear,rear,0.2795,side,0.2562,0.0233,rtdetr_crop,openai/clip-vit-base-patch32,19.3
+sample_0137,MmCows,Behavior_Feeding_head_down,rear-oblique,rear-oblique,0.2827,rear,0.2648,0.018,rtdetr_crop,openai/clip-vit-base-patch32,19.2
+sample_0140,MmCows,Behavior_Feeding_head_down,unknown / ambiguous,unknown / ambiguous,0.8397,rear,0.0553,0.7844,rtdetr_crop,openai/clip-vit-base-patch32,19.6
+sample_0149,MmCows,Behavior_Feeding_head_up,rear-oblique,unknown / ambiguous,0.6556,rear,0.1511,0.5045,rtdetr_crop,openai/clip-vit-base-patch32,20.5
+sample_0152,MmCows,Behavior_Feeding_head_up,rear-oblique,unknown / ambiguous,0.4563,front,0.1388,0.3175,rtdetr_crop,openai/clip-vit-base-patch32,19.4
+sample_0156,MmCows,Behavior_Feeding_head_up,side,side,0.2604,rear-oblique,0.2101,0.0503,rtdetr_crop,openai/clip-vit-base-patch32,21.9
+sample_0165,MmCows,Behavior_Walking,side,unknown / ambiguous,0.4362,rear,0.1784,0.2578,rtdetr_crop,openai/clip-vit-base-patch32,20.6
+sample_0169,MmCows,Behavior_Walking,rear-oblique,unknown / ambiguous,0.5833,rear,0.1156,0.4677,rtdetr_crop,openai/clip-vit-base-patch32,19.9
+sample_0172,MmCows,Behavior_Walking,side,unknown / ambiguous,0.423,side,0.1759,0.2471,rtdetr_crop,openai/clip-vit-base-patch32,19.7
+sample_0179,MmCows,Behavior_Drinking,side,unknown / ambiguous,0.3836,side,0.1807,0.2029,rtdetr_crop,openai/clip-vit-base-patch32,20.8
+sample_0183,MmCows,Behavior_Drinking,side,unknown / ambiguous,0.4145,side,0.1499,0.2646,rtdetr_crop,openai/clip-vit-base-patch32,19.5
+sample_0185,MmCows,Behavior_Drinking,front-oblique,side,0.3209,front-oblique,0.2104,0.1105,rtdetr_crop,openai/clip-vit-base-patch32,61.4
+sample_0190,MmCows,Behavior_Licking,unknown / ambiguous,unknown / ambiguous,0.2329,rear-oblique,0.1964,0.0365,rtdetr_crop,openai/clip-vit-base-patch32,21.0
+sample_0195,MmCows,Behavior_Licking,rear-oblique,unknown / ambiguous,0.5506,front,0.1775,0.3731,rtdetr_crop,openai/clip-vit-base-patch32,19.7
+sample_0201,SideViewCows2026,ReID_parlor,side,side,0.2787,rear-oblique,0.2008,0.0779,rtdetr_crop,openai/clip-vit-base-patch32,19.3
+sample_0204,SideViewCows2026,ReID_parlor,side,rear,0.3267,side,0.1776,0.1491,rtdetr_crop,openai/clip-vit-base-patch32,19.6
+sample_0206,SideViewCows2026,ReID_parlor,side,rear,0.3544,front,0.2061,0.1482,rtdetr_crop,openai/clip-vit-base-patch32,21.0
+sample_0210,SideViewCows2026,ReID_parlor,side,rear,0.3397,front,0.2431,0.0967,rtdetr_crop,openai/clip-vit-base-patch32,22.3
+sample_0215,SideViewCows2026,ReID_parlor,front-oblique,front,0.2291,rear-oblique,0.2284,0.0007,rtdetr_crop,openai/clip-vit-base-patch32,20.9
+sample_0220,SideViewCows2026,ReID_parlor,side,front,0.2454,side,0.2299,0.0155,rtdetr_crop,openai/clip-vit-base-patch32,20.1
+sample_0228,SideViewCows2026,ReID_parlor,side,rear-oblique,0.2325,rear,0.2181,0.0144,rtdetr_crop,openai/clip-vit-base-patch32,21.3
+sample_0235,SideViewCows2026,ReID_parlor,side,rear-oblique,0.4082,side,0.2847,0.1235,rtdetr_crop,openai/clip-vit-base-patch32,21.4
+sample_0241,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.3502,rear-oblique,0.2297,0.1205,rtdetr_crop,openai/clip-vit-base-patch32,26.0
+sample_0245,SideViewCows2026,ReID_barn,side,front-oblique,0.2869,side,0.2678,0.019,rtdetr_crop,openai/clip-vit-base-patch32,24.4
+sample_0250,SideViewCows2026,ReID_barn,side,rear-oblique,0.2518,front-oblique,0.2378,0.0139,rtdetr_crop,openai/clip-vit-base-patch32,25.2
+sample_0255,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.4077,side,0.2127,0.195,rtdetr_crop,openai/clip-vit-base-patch32,23.9
+sample_0260,SideViewCows2026,ReID_barn,side,side,0.3882,rear-oblique,0.2224,0.1658,rtdetr_crop,openai/clip-vit-base-patch32,23.4
+sample_0265,SideViewCows2026,ReID_barn,side,side,0.2761,rear-oblique,0.251,0.0251,rtdetr_crop,openai/clip-vit-base-patch32,24.4
+sample_0270,SideViewCows2026,ReID_barn,side,unknown / ambiguous,0.3277,side,0.2361,0.0916,rtdetr_crop,openai/clip-vit-base-patch32,24.3
+sample_0277,SideViewCows2026,ReID_barn,unknown / ambiguous,side,0.2669,unknown / ambiguous,0.2511,0.0158,rtdetr_crop,openai/clip-vit-base-patch32,21.1
+sample_0281,SideViewCows2026,ReID_snapshots,side,front-oblique,0.3105,side,0.2597,0.0508,rtdetr_crop,openai/clip-vit-base-patch32,23.0
+sample_0285,SideViewCows2026,ReID_snapshots,side,side,0.3238,front-oblique,0.2865,0.0373,rtdetr_crop,openai/clip-vit-base-patch32,21.8
+sample_0290,SideViewCows2026,ReID_snapshots,side,front-oblique,0.3015,side,0.2785,0.0229,rtdetr_crop,openai/clip-vit-base-patch32,22.6
+sample_0298,SideViewCows2026,ReID_snapshots,side,side,0.3645,rear-oblique,0.2685,0.096,rtdetr_crop,openai/clip-vit-base-patch32,21.8
