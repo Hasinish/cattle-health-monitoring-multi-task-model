@@ -417,23 +417,29 @@ Acceptance criteria:
 
 ## 4.3 SideViewCows2026 split (Primary Re-ID — Approved Contingency)
 
-Status: In Progress (Pending deterministic protocol generation and leakage audit in Step 1).
+Status: COMPLETE & VERIFIED (2026-09-20). Generated and verified leak-free via `scripts/build_sideview_reid_protocols.py`.
 
-Create at least four evaluation protocols across the 110 individuals and 80,260 images (+ 80,260 binary masks):
+Four canonical evaluation protocols across 110 individuals, 80,260 images, and 80,260 binary masks:
 
 ### Protocol A — Cross-setting domain shift (Primary Benchmark Protocol)
-- **Gallery**: Fixed camera `parlor` entrance frames (controlled lighting, consistent framing).
-- **Query 1**: Handheld video frames in `barn` (motion blur, varying camera angles).
-- **Query 2**: Unconstrained `snapshots` (outdoor/indoor, varied postures including lying down).
+- **Gallery**: Fixed camera `parlor` entrance frames (controlled lighting, consistent framing; 36,811 images across 69 cows).
+- **Query 1**: Handheld video frames in `barn` (motion blur, varying camera angles; 25,260 images across 69 cows).
+- **Query 2**: Unconstrained `snapshots` (outdoor/indoor, varied postures including lying down; 607 images across 63 cows).
+- **Train**: Parlor frames from 41 parlor-only cows (17,582 images) available for representation learning without test query contamination.
 
 ### Protocol B — Longitudinal / cross-temporal
-- Exploit `time_offset_s` (>279 days span): earlier capture interval (e.g., first 100 days) -> later capture interval (subsequent months).
+- Exploit `time_offset_s` (>279 days span; 0 to 634 days): earlier parlor capture interval (first 60% of sessions per cow; 35,433 images) -> later parlor capture interval (subsequent 40% of sessions; 18,960 images).
+- Query long-range: barn video (25,260 images) and snapshots (607 images) recorded >200 days after parlor.
+- Strict assertion: for every cow, all query sessions occur strictly after all gallery sessions (`min_query_time > max_gallery_time`).
 
 ### Protocol C — Open-set / identity-disjoint
-- 80 identities for training representation / metric learning -> 30 held-out identities for zero-shot gallery/query retrieval.
+- Stratified 70% Train (77 cows, 57,605 images) / 10% Val (11 cows, 7,225 images) / 20% Test (22 cows, 15,430 images) balanced across subset types (multi, parlor_barn, parlor_only).
+- Strict assertion: train, val, and test cow identities are 100% disjoint.
 
 ### Protocol D — Closed-set identification
-- Standard 110-class metric evaluation.
+- Standard 110-class metric identification with sequence-safe recording protection (`dt <= 60s` session clustering; 3,604 sessions).
+- Chronological partition: in-domain parlor (70% train: 40,745 images, 15% val: 7,373 images, 15% test_parlor: 6,275 images) + out-of-domain test sets (test_barn: 25,260 images, test_snapshots: 607 images).
+- Strict assertion: zero adjacent-frame video burst leakage.
 
 Required manifest:
 ```text
@@ -459,11 +465,11 @@ datasets/id/sideviewcows2026/split_report.md
 ```
 
 Acceptance criteria:
-- [ ] 0 image overlap across train/gallery/query partitions
-- [ ] exact duplicate (SHA-256) and perceptual near-duplicate audit run
-- [ ] open-set protocol strictly identity-disjoint
-- [ ] segmentation masks verified and matched 1-to-1 with images
-- [ ] sequence provenance recorded
+- [x] 0 image overlap across train/gallery/query partitions
+- [x] exact duplicate (SHA-256) and perceptual near-duplicate audit run (0 exact duplicates, min perceptual distance 7 bits)
+- [x] open-set protocol strictly identity-disjoint (77 Train / 11 Val / 22 Test cows, 0 overlap)
+- [x] segmentation masks verified and matched 1-to-1 with images (80,260 masks, 0 stem mismatches)
+- [x] sequence provenance recorded (3,604 discrete recording sessions; zero adjacent-frame leakage)
 
 ### 4.3.1 MultiCamCows2024 Contingency Record (Historical)
 - MultiCamCows2024 was the originally intended primary Re-ID benchmark (90 cows, 101k images, 3 ceiling cameras, 7 days).
@@ -1426,13 +1432,14 @@ Do not create a second competing memory system.
 # 20. Go / No-Go Gates
 
 ## Gate 1 — Data Ready
+**Status: PASSED & LOCKED (2026-09-20)**
 
 Proceed to perception/baselines only if:
 
 - [x] ScienceDB burst-group-disjoint / sequence-safe split verified (repaired 2026-09-20; 0 cross-burst leakage)
 - [x] MmCows grouped evaluation defined (canonical split + 4-fold GroupKFold suite verified 2026-09-20; 0 cow overlap)
-- [ ] SideViewCows2026 protocols generated and duplicate audit passed (MultiCamCows2024 contingency adopted 2026-09-20)
-- [ ] required duplicate / near-duplicate and protocol leakage checks pass across all primary splits
+- [x] SideViewCows2026 protocols generated and duplicate audit passed (4 canonical protocols verified 2026-09-20; 0 exact duplicates, min perceptual distance 7 bits)
+- [x] required duplicate / near-duplicate and protocol leakage checks pass across all primary splits
 
 ---
 
@@ -1501,9 +1508,10 @@ Do not spend paid GPU time debugging basic script failures that can be reproduce
 
 ## Current state
 
-**STEP 1 — Data Registry and Clean Splits**
+**STEP 1 — Data Registry and Clean Splits: COMPLETE (2026-09-20)**
+**GATE 1: PASSED & LOCKED**
 
-Immediate priority order:
+Completed deliverables:
 
 1. [x] Build canonical dataset registry (`datasets/dataset_registry.csv` verified)
 2. [x] Audit ScienceDB identity semantics and repair burst-group split (`datasets/bcs/sciencedb/` verified leak-free)
@@ -1514,29 +1522,27 @@ Immediate priority order:
 7. [x] Download/index BECA-D / BECA-L (29,061 images verified on disk)
 8. [x] Verify/index CBVD-5 raw data and identity metadata (887 videos, 206,100 frames verified on disk)
 9. [x] Run automatic duplicate / near-duplicate audit across ScienceDB, MmCows, OpenCows
-10. [ ] Build and verify deterministic SideViewCows2026 primary Re-ID protocols and run duplicate/near-duplicate audit
+10. [x] Build and verify deterministic SideViewCows2026 primary Re-ID protocols and run duplicate/near-duplicate audit (`datasets/id/sideviewcows2026/` verified)
 
 ---
 
 # 22. Agent Instruction — What To Do Next
 
-The coding agent should NOT start model architecture work yet.
+Gate 1 is fully CLEARED. Step 1 is COMPLETE.
 
-Immediate task:
+Immediate next task:
 
-> **Build and verify the SideViewCows2026 primary Re-ID evaluation protocol.**
+> **STEP 2 — Cattle-Perception Feasibility Audit**
 
-Required next deliverables:
+Required next deliverable:
 
 ```text
-datasets/dataset_registry.csv (updated roles)
-
-datasets/bcs/sciencedb/ (repaired & locked)
-datasets/behavior/mmcows/ (locked)
-datasets/id/sideviewcows2026/ (protocol manifests + audit)
-
-docs/research_log/2026-09-20_sideviewcows2026_protocol_and_leakage_audit.md
+docs/audits/phase3_perception_feasibility.md
 ```
+
+Then update:
+- `memory/state.md`
+- `docs/research_log/README.md`
 
 Then update:
 

@@ -62,6 +62,7 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `phase3_near_duplicate_suspects.csv`: Exhaustive export of cross-partition near-duplicate suspect pairs with 64x64 grayscale MAE scores across ScienceDB, MmCows, and OpenCows2020.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-20_sideviewcows2026_protocol_and_leakage_audit.md`: Protocol generation and leakage audit for SideViewCows2026, building 4 canonical protocols, recovering 3,604 recording sessions, verifying 0 duplicate and 0 adjacent-frame leakage, and clearing Gate 1.
   - `2026-09-20_multicam_contingency_assessment.md`: Forensic assessment of MultiCamCows2024 upstream block, evaluating SideViewCows2026, BECA-L, BECA-D, and OpenCows2020, and adopting SideViewCows2026 as primary Re-ID benchmark under approved contingency.
   - `2026-09-20_sciencedb_burst_group_split_repair.md`: Forensic repair of ScienceDB Cattle BCS split into 5,653 unified burst groups, eliminating 1-frame-shifted video burst leakage (e.g., `GS_1818` vs `GS_1823`) with verified 0 cross-burst overlap.
   - `2026-09-20_phase3_duplicate_nearduplicate_audit.md`: Automated exact (SHA-256) and perceptual near-duplicate (dHash/aHash, $d \le 6$) audit across all split-bearing Phase 3 datasets, exposing ScienceDB overlapping passage vulnerability.
@@ -128,6 +129,14 @@ Canonical benchmark data and task registries.
     - `manifest.csv`: 4,736-row master manifest mapping all images to cow ID, frame ID, official split, new split, SHA256, width, and height.
     - `train.csv` (3,586 rows), `val.csv` (654 rows), `test.csv` (496 rows): Contiguous frame-index split manifests with duplicate harmonization (0 exact-duplicate overlap).
     - `split_report.md`: Forensic audit report detailing legacy random within-identity mixing (1,023 frame-index adjacency crossings) and contiguous heuristic rebuild.
+  - `sideviewcows2026/`:
+    - `manifest.csv`: 80,260-row master manifest mapping all images and masks across 110 cows, recording IDs, and subset types.
+    - `protocol_cross_setting.csv`: 80,260-row Protocol A manifest (parlor gallery vs barn/snapshots queries).
+    - `protocol_longitudinal.csv`: 80,260-row Protocol B manifest (early parlor gallery vs late parlor query vs long-range barn/snapshots).
+    - `protocol_open_set.csv`: 80,260-row Protocol C manifest (77 Train / 11 Val / 22 Test cows, 100% disjoint).
+    - `protocol_closed_set.csv`: 80,260-row Protocol D manifest (110 cows with 70/15/15 parlor session split + barn/snapshots test).
+    - `leakage_audit.csv`: Verification scorecard confirming 0 exact duplicates, 0 adjacent-frame leakage, and min perceptual distance 7 bits.
+    - `split_report.md`: Detailed audit report with mathematical distribution proofs.
   - `external/sideviewcows2026/`: 80,260 images + 80,260 binary segmentation masks across 110 biological cows in snapshots (607), parlor (54,393), and barn (25,260) subsets (Zenodo record 21605650). Designated Primary Re-ID dataset under approved contingency.
   - `external/beca/`: BECA-D (16,889 images across 5,661 beef cattle; external scale stress benchmark) and BECA-L (12,172 images across 103 beef cattle tracked over 7+ months across 134 dates; primary external longitudinal Re-ID benchmark).
 - `lameness/`:
@@ -155,6 +164,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `build_dryad_manifest.py`: Dryad BCS discrepancy audit, biological cow parser (54 cows), master manifest generator, and bcs_index.csv updater.
 - `build_opencows_splits.py`: OpenCows2020 legacy Re-ID protocol builder, duplicate harmonizer, manifest generator, and split report author.
 - `verify_opencows_splits.py`: Standalone verification script asserting OpenCows2020 46 cows across all splits, 0 duplicate leakage, official test set integrity, and path resolution.
+- `build_sideview_reid_protocols.py`: SideViewCows2026 4-protocol generator, session recovery, exact and perceptual near-duplicate auditor with 7-stage Windows progress UI and standalone --verify-only mode.
 - `build_leakage_safe_manifest.py`: Audits CattleLameness clips, applies heuristic & perceptual clustering, generates StratifiedGroupKFold assignments, and exports `cattle_lameness_manifest.csv`.
 - `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.
 - `run_all_training.py`: Orchestrates multi-gpu batch execution of all task training scripts.

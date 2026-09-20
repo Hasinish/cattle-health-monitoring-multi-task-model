@@ -1,3 +1,21 @@
+# Session Summary — 2026-09-20 (Phase 3 Step 1 SideViewCows2026 Protocol Generation & Gate 1 Cleared)
+
+- Engineered `scripts/build_sideview_reid_protocols.py` with 7-stage Windows-compatible ASCII progress UI and standalone `--verify-only` verification mode.
+- Recovered 3,604 discrete recording sessions across 80,260 images and 110 cows using temporal delta clustering (`dt <= 60s`).
+- Built and verified all 4 canonical Re-ID evaluation protocols under `datasets/id/sideviewcows2026/`:
+  - **Protocol A (Cross-Setting)**: parlor gallery (36,811 imgs) vs barn query (25,260 imgs) vs snapshots query (607 imgs) vs parlor training representation (17,582 imgs).
+  - **Protocol B (Longitudinal)**: early parlor gallery (35,433 imgs) vs late parlor query (18,960 imgs, strictly positive time gap) + long-range barn and snapshots queries (>200 days later).
+  - **Protocol C (Open-Set)**: 77 Train / 11 Val / 22 Test cows (100% disjoint cow identities; balanced across subset types).
+  - **Protocol D (Closed-Set)**: 110 cows with 70% train (40,745 imgs), 15% val (7,373 imgs), 15% test_parlor (6,275 imgs) + out-of-domain test sets (test_barn: 25,260 imgs, test_snapshots: 607 imgs).
+- Executed exact duplicate and perceptual near-duplicate audits:
+  - 0 duplicate SHA-256 hashes across all 80,260 images.
+  - 0 adjacent-frame video burst crossings.
+  - 0 mask mismatches (100% 1-to-1 stem and dimension match).
+  - Minimum perceptual near-duplicate distance across partition boundaries is 7 bits (clean).
+- Promoted deliverables to canonical `datasets/id/sideviewcows2026/`.
+- Published research log: `docs/research_log/2026-09-20_sideviewcows2026_protocol_and_leakage_audit.md`.
+- **GATE 1 STATUS: CLEARED & LOCKED**. Step 1 (Data Registry & Clean Splits) is 100% complete!
+
 # Session Summary — 2026-09-20 (Phase 3 Step 1 MultiCamCows Contingency Adoption & Re-ID Roles Locked)
 
 - User formally APPROVED the MultiCamCows2024 contingency proposed in `docs/research_log/2026-09-20_multicam_contingency_assessment.md`.

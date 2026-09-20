@@ -1,0 +1,9 @@
+metric,value,status
+total_images,80260,VERIFIED
+total_masks,80260,VERIFIED
+unique_cows,110,VERIFIED
+exact_byte_duplicates,0,CLEAN
+open_set_identity_leakage,0,CLEAN
+closed_set_adjacent_frame_leakage,0,CLEAN
+mask_stem_mismatches,0,CLEAN
+near_duplicate_min_dist_sample,7,CLEAN

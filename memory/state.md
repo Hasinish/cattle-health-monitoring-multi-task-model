@@ -5,8 +5,8 @@
 - **Core Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning and improve robustness across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (STEP 1: Data Registry & Clean Splits)
-- **Immediate next action:** Build and verify the deterministic SideViewCows2026 primary Re-ID protocol (`datasets/id/sideviewcows2026/`).
+## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED)
+- **Immediate next action:** STEP 2 — Cattle-perception feasibility audit (`docs/audits/phase3_perception_feasibility.md`).
 - [x] Download & restore 213,686 MmCows behavior images via Hugging Face (213,686 indexed crops valid in `behaviors/`; 427,390 total local JPGs; raw videos purged)
 - [x] Download & index OpenCows2020 (4,736 images across 46 classes via Kagglehub - designated Legacy Baseline)
 - [x] Purge 36+ GB raw behavior videos, zip archives, and cache to reclaim local disk space
@@ -21,7 +21,7 @@
 - [x] Validate ScienceDB identity parser and repair burst-group split (`datasets/bcs/sciencedb/`; 5,653 repaired burst groups, 0 exact duplicates, 0 cross-burst leakage; 100% verified)
 - [x] Rebuild MmCows grouped evaluation protocol with time-block / multi-view protection (`datasets/behavior/mmcows/folds/`; 213,686 crops, 16 cows, canonical split + 4-fold GroupKFold suite, 0 leakage)
 - [x] Audit and rebuild OpenCows2020 legacy Re-ID evaluation protocol (`datasets/id/opencow2020/`; 4,736 images, 46 cows; official test 496 preserved; train: 3,586, val: 654; contiguous frame-index heuristic + duplicate harmonization; 0 exact-duplicate overlap; true tracklet/temporal leakage unrecoverable from provenance)
-- [ ] Build and verify deterministic SideViewCows2026 primary Re-ID protocols (Protocol A: cross-setting parlor-to-barn/snapshots; Protocol B: longitudinal; Protocol C: open-set; Protocol D: closed-set) and run duplicate/near-duplicate audit
+- [x] Build and verify deterministic SideViewCows2026 primary Re-ID protocols (Protocol A: cross-setting parlor-to-barn/snapshots; Protocol B: longitudinal; Protocol C: open-set; Protocol D: closed-set) and run duplicate/near-duplicate audit (0 exact duplicates, min perceptual distance 7 bits; Gate 1 CLEARED)
 - [x] Retrieve & index Ruchay 2026 metadata (Zenodo record 20290988 verified; 25,700 samples, 1,025 cows; manifest generated in datasets/bcs/external/ruchay2026/; 77.74 GB raw archives on Zenodo)
 - [x] Audit Dryad BCS local count/class discrepancy (5,940 TIFFs verified across classes 2–7; older ~5,923 count omitted Class 7 [17 imgs from Cow_52]; 54 biological cows census; manifest generated; bcs_index.csv updated)
 - [x] Download/index SideViewCows2026: 80,260 images + 80,260 binary segmentation masks across 110 cows (snapshots: 607, parlor: 54,393, barn: 25,260) 100% downloaded and extracted in `datasets/id/external/sideviewcows2026/`.
@@ -83,7 +83,7 @@
   - Scientific Role: Primary Re-ID dataset (Approved Contingency)
   - Local Status: **AVAILABLE** (`datasets/id/external/sideviewcows2026/`).
   - Physical Counts: 80,260 images + 80,260 binary segmentation masks across 110 biological cows (parlor: 54,393, barn: 25,260, snapshots: 607).
-  - Protocol Status: PENDING deterministic protocol generation and leakage audit in Step 1.
+  - Protocol Status: **COMPLETE & VERIFIED** (`datasets/id/sideviewcows2026/`). 4 canonical protocols generated and audited: `protocol_cross_setting.csv`, `protocol_longitudinal.csv`, `protocol_open_set.csv`, `protocol_closed_set.csv`, `leakage_audit.csv`, and `split_report.md`. Verified 0 exact duplicates, 0 adjacent-frame leakage (3,604 discrete recording sessions), 0 cow overlap in open-set, and min perceptual distance 7 bits.
 - **BECA-L**:
   - Scientific Role: Primary external longitudinal Re-ID validation benchmark
   - Local Status: **AVAILABLE** (`datasets/id/external/beca/BECA-L/`).
@@ -113,14 +113,18 @@
 - Built and executed `scripts/repair_sciencedb_splits.py` to repair the ScienceDB Cattle BCS dataset split. Clustered overlapping 1-frame-shifted video bursts (including GS_1818/GS_1823) into 5,653 connected burst groups via Disjoint Set Union (threshold: dHash/aHash <= 2, pixel MAE <= 5.0). Generated 70/15/15 stratified split (train: 37,045, val: 8,481, test: 8,040). Verified 0 exact cross-duplicates and 0 cross-burst overlap. Promoted to canonical `datasets/bcs/sciencedb/`.
 - Conducted forensic suitability audit of accessible Re-ID datasets (`docs/research_log/2026-09-20_multicam_contingency_assessment.md`). Formulated Strategy 1 (SideViewCows2026 as primary Re-ID, BECA-L as external longitudinal, BECA-D as external scale stress).
 - User formally APPROVED the MultiCam contingency on 2026-09-20. Updated canonical roadmap and dataset registry roles.
+- Engineered `scripts/build_sideview_reid_protocols.py` with 7-stage clean progress UI. Recovered 3,604 discrete recording sessions (`dt <= 60s`). Generated and verified 4 canonical evaluation protocols (Cross-setting, Longitudinal, Open-set 77/11/22 cows, Closed-set 70/15/15 parlor + barn/snapshots). Verified 0 duplicate hashes, 0 adjacent-frame leakage, 0 identity leakage, and min perceptual distance 7 bits. Promoted deliverables to `datasets/id/sideviewcows2026/`.
+- Cleared Gate 1! Completed Step 1 (Data Registry and Clean Splits).
 
 ## Current Blockers & Notes
-- Current immediate position is **STEP 1 — Data Registry and Clean Splits**.
-- **Gate 1 remains open** pending one final deliverable:
-  - Build and verify the deterministic SideViewCows2026 primary Re-ID protocol (`datasets/id/sideviewcows2026/`) and run duplicate/near-duplicate audit.
-- ScienceDB BCS split is 100% REPAIRED and LOCKED (`datasets/bcs/sciencedb/`).
-- MmCows behavior split is 100% CLEAN and LOCKED (`datasets/behavior/mmcows/folds/`).
-- MultiCamCows2024 contingency is formally adopted and locked in documentation.
-- Model training remains strictly blocked until Gate 1 is fully cleared.
+- **STEP 1 IS 100% COMPLETE**.
+- **GATE 1 IS CLEARED & LOCKED**.
+- Current immediate position is **STEP 2 — Cattle-Perception Feasibility Audit**.
+- Next deliverable: `docs/audits/phase3_perception_feasibility.md`.
+- All primary splits locked:
+  - ScienceDB BCS: 100% repaired and locked (`datasets/bcs/sciencedb/`).
+  - MmCows behavior: 100% clean and locked (`datasets/behavior/mmcows/folds/`).
+  - SideViewCows2026 Re-ID: 100% clean and locked (`datasets/id/sideviewcows2026/`).
+  - OpenCows2020: 100% contiguous heuristic rebuild locked as legacy benchmark.
 - Antigravity sync rule: changes mirrored to `D:\custom-antigravity`.
 
