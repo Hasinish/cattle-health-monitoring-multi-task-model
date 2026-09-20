@@ -10,6 +10,7 @@ datasets/**
 *.jpg
 *.jpeg
 *.png
+!docs/audits/assets/**
 *.zip
 *.tar
 *.gz

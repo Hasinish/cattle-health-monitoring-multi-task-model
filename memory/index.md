@@ -60,6 +60,8 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `cattle_lameness_audit_report.md`: Forensic audit of the CattleLameness dataset (50 clips, 42 cattle, ezgif container footprints, cross-split leakage identification).
   - `cattle_lameness_grouping_report.md`: Anti-leakage clustering architecture, multi-clip group resolution (8 groups, 16 clips), and balanced 5-fold StratifiedGroupKFold cross-validation specification.
   - `phase3_near_duplicate_suspects.csv`: Exhaustive export of cross-partition near-duplicate suspect pairs with 64x64 grayscale MAE scores across ScienceDB, MmCows, and OpenCows2020.
+  - `phase3_manual_dataset_visual_verification.md`: Curated 48-check visual verification document embedding resized thumbnails and 3-panel composites for human visual sanity checking across ScienceDB, MmCows, and SideViewCows2026.
+  - `assets/manual_dataset_verification/`: Directory of 48 compact, Git-friendly review images (1.4 MB total) including 16 ScienceDB rear-view thumbnails, 16 MmCows behavior crops, and 16 SideView 3-panel composites (`[RGB | Binary Mask | Contour Overlay]`).
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
   - `2026-09-20_sideviewcows2026_protocol_and_leakage_audit.md`: Protocol generation and leakage audit for SideViewCows2026, building 4 canonical protocols, recovering 3,604 recording sessions, verifying 0 duplicate and 0 adjacent-frame leakage, and clearing Gate 1.
@@ -171,7 +173,9 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `download_all.py`: Master dataset pipeline orchestrating restoration and indexing across all active thesis tasks directly into `datasets/`.
 - `download_sciencedb.py`: Direct downloader, resume-supported streamer, unrar extractor, and preprocessor for ScienceDB Cattle BCS dataset.
 - `fast_download_sciencedb.py`: High-speed multi-threaded (16-stream parallel) resumable chunk downloader and extractor for ScienceDB Cattle BCS dataset to bypass GFW throttling.
-- `audit_duplicate_leakage.py`: Reusable automated exact (SHA-256) and perceptual near-duplicate (Multi-Index Hashed 64-bit dHash/aHash) audit tool with pixel MAE verification across partitions.
+- `repair_sciencedb_splits.py`: ScienceDB burst-group repair script merging 1-frame-shifted video passages into 5,653 connected burst groups via DSU and creating 70/15/15 stratified split.
+- `build_sideview_reid_protocols.py`: SideViewCows2026 session recovery and 4-protocol generator with 7-stage progress bar and leakage audit.
+- `build_manual_dataset_visual_verification.py`: Deterministic generator for manual human visual inspection pack across ScienceDB, MmCows, and SideViewCows2026 with 4-stage progress UI and 3-panel mask composites.
 - `fast_download_sideviewcows.py`: Multi-threaded (16-thread) resumable chunk downloader and 7-Zip extractor for SideViewCows2026.
 - `fast_download_beca.py`: Multi-threaded (16-thread) resumable chunk downloader and extractor for BECA dataset.
 - `download_cbvd5.py`: Automated Kagglehub downloader and normalizer for CBVD-5 dataset.
