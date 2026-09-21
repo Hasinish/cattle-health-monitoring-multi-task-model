@@ -1395,6 +1395,307 @@ def benchmark_h200_throughput(
     }
 
 
+@app.function(
+    volumes={VOLUME_DIR: volume},
+    gpu="L4",
+    cpu=8.0,
+    memory=32768,
+    timeout=600,
+)
+def benchmark_l4_throughput(
+    checkpoint_name: str = "moo_resnet18_viewpoint8_full_resume.pth",
+    splits_dir: str = "/root/moo_splits",
+    warmup_batches: int = 5,
+    benchmark_batches: int = 100,
+):
+    """Read-only L4 throughput benchmark for MOO ResNet-18 viewpoint training pipeline."""
+    import io
+    import time
+    import random
+    import numpy as np
+    import pandas as pd
+    from tqdm import tqdm
+    h5py = __import__("h5py")
+    from PIL import Image
+
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import Dataset, DataLoader
+    import torchvision.transforms as T
+    import torchvision.models as models
+    from torch.cuda.amp import GradScaler, autocast
+
+    CANONICAL_VIEWPOINT_CLASSES = [
+        "front",
+        "front-left",
+        "left",
+        "back-left",
+        "back",
+        "back-right",
+        "right",
+        "front-right",
+    ]
+    CLASS_TO_IDX = {name: idx for idx, name in enumerate(CANONICAL_VIEWPOINT_CLASSES)}
+
+    EXPECTED_SPLIT_HASHES = {
+        "train.csv": "596a1a49c985223202bdf04b6d2b20d6544ab01d7683827fe65b70f6fc521e61",
+        "val.csv": "7995c1e357cc33ccc17c9d70f0a210d1035839bfdd4ff26d7179201fdf42b261",
+        "test.csv": "276603b9589f66d6d66f19140889d2e5ca369e69493815a23b47e13fb0ab4a8d",
+    }
+
+    # 1. Check resume checkpoint exists read-only
+    resume_path = os.path.join(VOLUME_DIR, checkpoint_name)
+    if not os.path.exists(resume_path):
+        raise FileNotFoundError(f"Resume checkpoint not found at {resume_path}!")
+
+    print(f"=== L4 Throughput Benchmark (READ-ONLY) ===")
+    print(f"Loading resume checkpoint from: {resume_path}")
+    checkpoint = torch.load(resume_path, map_location="cpu")
+
+    # 2. Strict verification of checkpoint metadata
+    completed_epoch = checkpoint.get("completed_epoch")
+    if completed_epoch != 1:
+        raise ValueError(f"Expected completed_epoch == 1, got {completed_epoch}!")
+
+    expected_sha = "feef8b8daa1bedcd0343ed1297e32ced58b87774"
+    ckpt_sha = checkpoint.get("git_commit_sha", "")
+    if ckpt_sha != expected_sha:
+        raise ValueError(f"Expected git_commit_sha == {expected_sha}, got {ckpt_sha}!")
+
+    ckpt_hashes = checkpoint.get("train_val_test_csv_sha256", {})
+    if ckpt_hashes != EXPECTED_SPLIT_HASHES:
+        raise ValueError(f"Checkpoint split hashes mismatch! {ckpt_hashes} != {EXPECTED_SPLIT_HASHES}")
+
+    cfg = checkpoint.get("training_configuration", {})
+    if cfg.get("batch_size") != 128:
+        raise ValueError(f"Expected batch_size == 128, got {cfg.get('batch_size')}")
+    if cfg.get("learning_rate") != 3e-4:
+        raise ValueError(f"Expected learning_rate == 3e-4, got {cfg.get('learning_rate')}")
+    if cfg.get("weight_decay") != 1e-4:
+        raise ValueError(f"Expected weight_decay == 1e-4, got {cfg.get('weight_decay')}")
+    if checkpoint.get("seed") != 2026:
+        raise ValueError(f"Expected seed == 2026, got {checkpoint.get('seed')}")
+
+    print("✓ Checkpoint metadata verified (completed_epoch=1, SHA=feef8b8, seed=2026, batch_size=128, lr=3e-4).")
+
+    # 3. Locate splits directory and load train.csv
+    resolved_splits_dir = None
+    candidate_dirs = [
+        splits_dir,
+        "/root/moo_splits",
+        os.path.join(VOLUME_DIR, "moo_splits"),
+        os.path.join(VOLUME_DIR, "splits"),
+        str(SPLITS_DIR_LOCAL),
+    ]
+    for c in candidate_dirs:
+        if c and os.path.exists(os.path.join(c, "train.csv")):
+            resolved_splits_dir = c
+            break
+
+    if resolved_splits_dir is None:
+        raise FileNotFoundError(f"Could not locate splits directory. Checked: {candidate_dirs}")
+
+    train_df = pd.read_csv(os.path.join(resolved_splits_dir, "train.csv"))
+    hdf5_path = os.path.join(VOLUME_DIR, "data.hdf5")
+    if not os.path.exists(hdf5_path):
+        raise FileNotFoundError(f"data.hdf5 not found in {VOLUME_DIR}!")
+
+    # 4. Deterministic seed
+    random.seed(2026)
+    np.random.seed(2026)
+    torch.manual_seed(2026)
+    torch.cuda.manual_seed_all(2026)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using compute device: {device}")
+    if torch.cuda.is_available():
+        print(f"GPU: {torch.cuda.get_device_name(0)}")
+
+    # 5. Dataset definition
+    class MOODataset(Dataset):
+        def __init__(self, df, h5_path, cls_to_idx, transform=None):
+            self.cow_ids = df["cow_id"].values
+            self.image_ids = df["image_id"].values
+            self.labels = [cls_to_idx[v] for v in df["view"].values]
+            self.h5_path = h5_path
+            self.transform = transform
+            self.hf = None
+
+        def __len__(self):
+            return len(self.cow_ids)
+
+        def __getitem__(self, idx):
+            if self.hf is None:
+                self.hf = h5py.File(self.h5_path, "r")
+            cow_id = self.cow_ids[idx]
+            img_id = self.image_ids[idx]
+            label = self.labels[idx]
+
+            if cow_id not in self.hf:
+                raise KeyError(f"Cow ID '{cow_id}' not found in HDF5!")
+
+            grp = self.hf[cow_id]
+            if img_id in grp:
+                obj = grp[img_id]
+            elif f"{cow_id}_{img_id}" in grp:
+                obj = grp[f"{cow_id}_{img_id}"]
+            elif "_" in img_id and img_id.split("_")[-1] in grp:
+                obj = grp[img_id.split("_")[-1]]
+            else:
+                available_sample = list(grp.keys())[:5]
+                raise KeyError(
+                    f"Could not resolve image '{img_id}' for cow '{cow_id}' in HDF5! "
+                    f"Tried: '{img_id}', '{cow_id}_{img_id}', '{img_id.split('_')[-1]}'. "
+                    f"Available keys (first 5 of {len(grp)}): {available_sample}"
+                )
+
+            if isinstance(obj, h5py.Group):
+                if "colors" in obj:
+                    raw = obj["colors"][()]
+                elif "image" in obj:
+                    raw = obj["image"][()]
+                elif "rgb" in obj:
+                    raw = obj["rgb"][()]
+                elif "data" in obj:
+                    raw = obj["data"][()]
+                else:
+                    available_fields = list(obj.keys())
+                    raise KeyError(
+                        f"Could not find valid image dataset ('colors', 'image', 'rgb', 'data') "
+                        f"in HDF5 group for cow '{cow_id}', image '{img_id}'! Available fields: {available_fields}"
+                    )
+            else:
+                raw = obj[()]
+
+            if isinstance(raw, (bytes, bytearray, np.void)) or (hasattr(raw, "dtype") and raw.dtype == np.uint8 and raw.ndim == 1):
+                img = Image.open(io.BytesIO(raw)).convert("RGB")
+            else:
+                img = Image.fromarray(raw).convert("RGB")
+
+            if self.transform:
+                img = self.transform(img)
+
+            return img, label
+
+        def __del__(self):
+            if hasattr(self, "hf") and self.hf is not None:
+                try:
+                    self.hf.close()
+                except Exception:
+                    pass
+
+    train_transform = T.Compose([
+        T.RandomResizedCrop(224, scale=(0.8, 1.0), ratio=(0.9, 1.1)),
+        T.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1),
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    train_ds = MOODataset(train_df, hdf5_path, CLASS_TO_IDX, transform=train_transform)
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=128,
+        shuffle=True,
+        num_workers=4,
+        pin_memory=True,
+        drop_last=True,
+    )
+
+    # 6. Recreate model & optimizer
+    model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+    model.fc = nn.Linear(model.fc.in_features, len(CANONICAL_VIEWPOINT_CLASSES))
+    for param in model.parameters():
+        param.requires_grad = True
+    model.load_state_dict(checkpoint["model_state_dict"])
+    model = model.to(device)
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-4)
+    optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+    scaler = GradScaler(enabled=torch.cuda.is_available())
+    if "scaler_state_dict" in checkpoint and checkpoint["scaler_state_dict"] is not None:
+        scaler.load_state_dict(checkpoint["scaler_state_dict"])
+
+    model.train()
+    loader_iter = iter(train_loader)
+
+    # 7. Warm-up (5 uncounted batches) with visible progress bar
+    print(f"\n--- Running Warm-up ({warmup_batches} batches, uncounted) ---")
+    warmup_pbar = tqdm(range(warmup_batches), desc="Warm-up (uncounted)", leave=False)
+    for _ in warmup_pbar:
+        imgs, targets = next(loader_iter)
+        imgs = imgs.to(device, non_blocking=True)
+        targets = targets.to(device, non_blocking=True)
+        optimizer.zero_grad()
+        with autocast(enabled=torch.cuda.is_available()):
+            outputs = model(imgs)
+            loss = criterion(outputs, targets)
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+
+    # 8. Benchmark (exactly 100 measured batches) with visible progress bar
+    print(f"\n--- Running Benchmark ({benchmark_batches} batches, measured) ---")
+    if torch.cuda.is_available():
+        torch.cuda.reset_peak_memory_stats(device)
+    start_bench_time = time.time()
+
+    bench_pbar = tqdm(range(benchmark_batches), desc="Benchmark (measured)", leave=True)
+    for _ in bench_pbar:
+        imgs, targets = next(loader_iter)
+        imgs = imgs.to(device, non_blocking=True)
+        targets = targets.to(device, non_blocking=True)
+        optimizer.zero_grad()
+        with autocast(enabled=torch.cuda.is_available()):
+            outputs = model(imgs)
+            loss = criterion(outputs, targets)
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+
+    if torch.cuda.is_available():
+        torch.cuda.synchronize()
+    total_measured_s = time.time() - start_bench_time
+    sec_per_batch = total_measured_s / benchmark_batches
+    total_images = benchmark_batches * 128
+    imgs_per_sec = total_images / total_measured_s
+    est_600_batch_time_s = sec_per_batch * 600
+    est_15_epoch_time_s = est_600_batch_time_s * 15
+
+    gpu_name = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "CPU"
+    peak_alloc_mb = (torch.cuda.max_memory_allocated(device) / (1024 * 1024)) if torch.cuda.is_available() else 0.0
+    peak_res_mb = (torch.cuda.max_memory_reserved(device) / (1024 * 1024)) if torch.cuda.is_available() else 0.0
+
+    print(f"\n{'='*75}")
+    print(f"L4 MOO Throughput Benchmark Results:")
+    print(f"  GPU Name:                    {gpu_name}")
+    print(f"  Measured Batches:            {benchmark_batches} (Batch Size: 128)")
+    print(f"  Total Measured Time:         {total_measured_s:.3f} s")
+    print(f"  Throughput:                  {imgs_per_sec:.1f} images/s ({sec_per_batch:.4f} s/batch)")
+    print(f"  Est. 600-batch Epoch Time:   {est_600_batch_time_s:.1f} s ({est_600_batch_time_s/60:.2f} mins)")
+    print(f"  Est. 15-epoch Total Time:    {est_15_epoch_time_s:.1f} s ({est_15_epoch_time_s/60:.2f} mins)")
+    print(f"  Peak Allocated VRAM:         {peak_alloc_mb:.1f} MB")
+    print(f"  Peak Reserved VRAM:          {peak_res_mb:.1f} MB")
+    print(f"{'='*75}\n")
+    print("READ-ONLY check: NO checkpoint saved, NO volume committed, NO canonical training altered.")
+
+    return {
+        "status": "success",
+        "gpu_name": gpu_name,
+        "benchmark_batches": benchmark_batches,
+        "total_measured_s": total_measured_s,
+        "sec_per_batch": sec_per_batch,
+        "images_per_second": imgs_per_sec,
+        "est_epoch_seconds": est_600_batch_time_s,
+        "est_15_epoch_seconds": est_15_epoch_time_s,
+        "peak_allocated_mb": peak_alloc_mb,
+        "peak_reserved_mb": peak_res_mb,
+    }
+
+
 if __name__ == "__main__":
     print("This script is a Modal App.")
     print("Run via Modal CLI:")
@@ -1403,3 +1704,4 @@ if __name__ == "__main__":
     print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::train_smoke_classifier")
     print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::train_full_directional_classifier --git-commit-sha <SHA>")
     print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::benchmark_h200_throughput")
+    print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::benchmark_l4_throughput")
