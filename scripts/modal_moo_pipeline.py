@@ -215,7 +215,7 @@ def download_moo():
 def inspect_moo():
     """Inspect metadata.json and data.hdf5 inside the volume."""
     import json
-    import h5py
+    h5py = __import__("h5py")
 
     hdf5_path = os.path.join(VOLUME_DIR, "data.hdf5")
     meta_path = os.path.join(VOLUME_DIR, "metadata.json")
@@ -283,7 +283,7 @@ def train_smoke_classifier(samples_per_class: int = 500, epochs: int = 15):
     import json
     import random
     import numpy as np
-    import h5py
+    h5py = __import__("h5py")
     import torch
     import torch.nn as nn
     from torch.utils.data import Dataset, DataLoader, TensorDataset
@@ -413,8 +413,9 @@ def train_smoke_classifier(samples_per_class: int = 500, epochs: int = 15):
 
     # 1. Feature Extraction on CPU using frozen ResNet-18
     print("\n--- Pre-extracting 512-dim features with frozen ResNet-18 ---")
+    from typing import cast
     resnet = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
-    resnet.fc = nn.Identity()
+    resnet.fc = cast(nn.Linear, nn.Identity())
     resnet.eval()
 
     start_feat = time.time()
@@ -441,6 +442,7 @@ def train_smoke_classifier(samples_per_class: int = 500, epochs: int = 15):
 
     print(f"\n--- Training Linear Head ({epochs} Epochs) ---")
     start_train = time.time()
+    val_acc: float = 0.0
     for epoch in range(1, epochs + 1):
         head.train()
         total_loss = 0.0
@@ -530,7 +532,7 @@ def train_full_directional_classifier(
     import random
     import numpy as np
     import pandas as pd
-    import h5py
+    h5py = __import__("h5py")
     from PIL import Image
     from tqdm import tqdm
     from sklearn.metrics import f1_score
