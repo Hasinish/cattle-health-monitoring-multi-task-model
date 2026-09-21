@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pyright: reportAttributeAccessIssue=false, reportArgumentType=false, reportCallIssue=false
 """
 evaluate_moo_viewpoint.py — Evaluate MOO-Trained ResNet-18 on Real Cattle Viewpoint Benchmark
 
@@ -14,6 +15,11 @@ Usage:
 import os
 import sys
 import time
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
 import subprocess
 from typing import Dict, Any, Optional, Tuple
 
@@ -31,7 +37,8 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHECKPOINT_DIR = os.path.join(ROOT_DIR, "artifacts", "checkpoints")
-CHECKPOINT_PATH = os.path.join(CHECKPOINT_DIR, "moo_resnet18_viewpoint.pth")
+DEFAULT_L4_CKPT = os.path.join(CHECKPOINT_DIR, "moo_resnet18_viewpoint8_full_l4.pth")
+LEGACY_5CLS_CKPT = os.path.join(CHECKPOINT_DIR, "moo_resnet18_viewpoint.pth")
 
 MANIFEST_PATH = os.path.join(
     ROOT_DIR, "artifacts", "perception_audit", "viewpoint_expanded_agent_review_manifest.csv"
@@ -39,36 +46,48 @@ MANIFEST_PATH = os.path.join(
 DETECTIONS_PATH = os.path.join(
     ROOT_DIR, "artifacts", "perception_audit", "localization_detections_expanded.csv"
 )
-OUTPUT_CSV_PATH = os.path.join(
-    ROOT_DIR, "artifacts", "perception_audit", "viewpoint_moo_resnet18_evaluation.csv"
-)
 
-CLASS_NAMES = ["front", "front-oblique", "side", "rear-oblique", "rear"]
-CLASS_TO_IDX = {name: idx for idx, name in enumerate(CLASS_NAMES)}
+COARSE_CLASSES = ["front", "front-oblique", "side", "rear-oblique", "rear"]
+COARSE_TO_IDX = {name: idx for idx, name in enumerate(COARSE_CLASSES)}
+
+DIR8_TO_COARSE5 = {
+    "front": "front",
+    "front-left": "front-oblique",
+    "front-right": "front-oblique",
+    "left": "side",
+    "right": "side",
+    "back-left": "rear-oblique",
+    "back-right": "rear-oblique",
+    "back": "rear",
+}
 
 
-def download_checkpoint_if_missing():
-    """Download checkpoint from Modal volume if not present locally."""
-    if os.path.exists(CHECKPOINT_PATH):
-        print(f"✓ Local checkpoint found: {CHECKPOINT_PATH} ({os.path.getsize(CHECKPOINT_PATH)/1024/1024:.1f} MB)")
-        return
+def resolve_checkpoint_path() -> Tuple[str, str]:
+    """Resolve checkpoint path from CLI or defaults."""
+    ckpt_path = DEFAULT_L4_CKPT
+    for i, arg in enumerate(sys.argv[:-1]):
+        if arg == "--checkpoint":
+            ckpt_path = sys.argv[i + 1]
+            if not os.path.isabs(ckpt_path):
+                ckpt_path = os.path.join(CHECKPOINT_DIR, ckpt_path)
 
-    os.makedirs(CHECKPOINT_DIR, exist_ok=True)
-    print(f"Downloading moo_resnet18_viewpoint.pth from Modal volume 'moo-data'...")
-    env = os.environ.copy()
-    env["PYTHONIOENCODING"] = "utf-8"
-    cmd = [
-        "modal", "volume", "get", "moo-data",
-        "moo_resnet18_viewpoint.pth",
-        CHECKPOINT_PATH,
-        "--profile", "hasinishrak74001",
-        "--force"
-    ]
-    res = subprocess.run(cmd, capture_output=True, text=True, env=env, encoding="utf-8", errors="replace")
-    if res.returncode != 0 or not os.path.exists(CHECKPOINT_PATH):
-        print(f"Error downloading checkpoint: {res.stderr}")
-        raise FileNotFoundError(f"Could not retrieve checkpoint from Modal volume.")
-    print(f"✓ Checkpoint downloaded successfully to {CHECKPOINT_PATH} ({os.path.getsize(CHECKPOINT_PATH)/1024/1024:.1f} MB)")
+    if not os.path.exists(ckpt_path):
+        if os.path.exists(LEGACY_5CLS_CKPT):
+            ckpt_path = LEGACY_5CLS_CKPT
+        else:
+            raise FileNotFoundError(
+                f"Checkpoint not found at {ckpt_path} or {LEGACY_5CLS_CKPT}. "
+                f"Download from Modal volume 'moo-data' first."
+            )
+
+    is_l4 = "l4" in os.path.basename(ckpt_path).lower() or "viewpoint8" in os.path.basename(ckpt_path).lower()
+    out_csv = os.path.join(
+        ROOT_DIR,
+        "artifacts",
+        "perception_audit",
+        "viewpoint_moo_resnet18_l4_evaluation.csv" if is_l4 else "viewpoint_moo_resnet18_evaluation.csv",
+    )
+    return ckpt_path, out_csv
 
 
 def normalize_path(p: str) -> str:
@@ -148,22 +167,35 @@ def main():
     print("  MOO Synthetic-to-Real Viewpoint Transfer Benchmark Evaluation")
     print("=" * 70)
 
-    download_checkpoint_if_missing()
+    ckpt_path, output_csv_path = resolve_checkpoint_path()
+    print(f"Checkpoint Path: {ckpt_path}")
+    print(f"Output CSV Path: {output_csv_path}")
 
     # Load model
     print("\n[1/4] Loading trained ResNet-18 model...")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
-    checkpoint = torch.load(CHECKPOINT_PATH, map_location=device, weights_only=False)
+    checkpoint = torch.load(ckpt_path, map_location=device, weights_only=False)
+    class_names = checkpoint.get("class_names", COARSE_CLASSES)
+    num_classes = len(class_names)
+    is_8class = num_classes == 8
+
     model = models.resnet18()
-    model.fc = nn.Linear(512, 5)
+    model.fc = nn.Linear(512, num_classes)
     model.load_state_dict(checkpoint["model_state_dict"])
     model = model.to(device)
     model.eval()
 
-    val_acc_synthetic = checkpoint.get("val_acc", 0.0)
-    print(f"✓ Model loaded successfully (Synthetic Val Acc was: {val_acc_synthetic*100:.1f}%)")
+    val_acc_syn = checkpoint.get("best_val_accuracy", checkpoint.get("val_acc", 0.0))
+    val_f1_syn = checkpoint.get("best_val_macro_f1", 0.0)
+    test_acc_syn = checkpoint.get("test_accuracy", 0.0)
+    test_f1_syn = checkpoint.get("test_macro_f1", 0.0)
+
+    print(f"✓ Model loaded successfully ({num_classes} classes: {class_names})")
+    print(f"  Synthetic Best Val Acc: {val_acc_syn*100:.2f}% | Val Macro-F1: {val_f1_syn:.4f}")
+    if test_acc_syn > 0:
+        print(f"  Synthetic Test Acc:     {test_acc_syn*100:.2f}% | Test Macro-F1: {test_f1_syn:.4f} (9,600 images / 100 cow IDs)")
 
     # Load benchmark manifest
     print("\n[2/4] Loading real cattle benchmark manifest (N=100)...")
@@ -199,155 +231,82 @@ def main():
             logits = model(tensor_img)
             probs = F.softmax(logits, dim=1).squeeze(0).cpu().numpy()
 
-        sorted_indices = np.argsort(-probs)
-        top1_idx = sorted_indices[0]
-        top2_idx = sorted_indices[1]
-
-        top1_class = CLASS_NAMES[top1_idx]
+        top1_idx = int(np.argmax(probs))
+        top1_class = class_names[top1_idx]
         top1_score = float(probs[top1_idx])
-        top2_class = CLASS_NAMES[top2_idx]
-        top2_score = float(probs[top2_idx])
-        margin = top1_score - top2_score
 
-        # Method B Rejection threshold (tau=0.10)
-        is_rejected = margin < 0.10
-        pred_with_rejection = "unknown / ambiguous" if is_rejected else top1_class
-
-        results.append({
-            "sample_id": s_id,
-            "dataset": dataset,
-            "ground_truth": gt_view,
-            "raw_physical_pred": top1_class,
-            "raw_physical_score": top1_score,
-            "second_pred": top2_class,
-            "second_score": top2_score,
-            "score_margin": margin,
-            "pred_with_margin_rejection": pred_with_rejection,
-            "is_rejected": is_rejected,
-            "input_mode": input_mode,
-            "prob_front": probs[0],
-            "prob_front_oblique": probs[1],
-            "prob_side": probs[2],
-            "prob_rear_oblique": probs[3],
-            "prob_rear": probs[4],
-        })
+        if is_8class:
+            coarse_pred = DIR8_TO_COARSE5[top1_class]
+            results.append({
+                "sample_id": s_id,
+                "dataset": dataset,
+                "ground_truth": gt_view,
+                "pred8": top1_class,
+                "pred5": coarse_pred,
+                "conf": top1_score,
+                "input_mode": input_mode,
+            })
+        else:
+            sorted_indices = np.argsort(-probs)
+            top2_idx = sorted_indices[1]
+            margin = top1_score - float(probs[top2_idx])
+            pred_with_rejection = "unknown / ambiguous" if margin < 0.10 else top1_class
+            results.append({
+                "sample_id": s_id,
+                "dataset": dataset,
+                "ground_truth": gt_view,
+                "raw_physical_pred": top1_class,
+                "raw_physical_score": top1_score,
+                "pred_with_margin_rejection": pred_with_rejection,
+                "input_mode": input_mode,
+            })
 
     elapsed = time.time() - start_time
     print(f"✓ Inference complete in {elapsed:.2f}s ({elapsed*1000/len(manifest_df):.1f} ms/sample)!")
 
     res_df = pd.DataFrame(results)
-    res_df.to_csv(OUTPUT_CSV_PATH, index=False)
-    print(f"✓ Saved detailed evaluation CSV to {OUTPUT_CSV_PATH}")
+    res_df.to_csv(output_csv_path, index=False)
+    print(f"✓ Saved detailed evaluation CSV to {output_csv_path}")
 
     # [4/4] Compute Metrics & Comparisons
     print("\n" + "=" * 70)
-    print("  EVALUATION RESULTS & COMPARATIVE BENCHMARK")
+    print("  EVALUATION RESULTS (DIAGNOSTIC BENCHMARK)")
     print("=" * 70)
 
-    # 1. Non-ambiguous physical evaluation (N=95)
     non_ambig = res_df[res_df["ground_truth"] != "unknown / ambiguous"].copy()
     y_true_non = non_ambig["ground_truth"]
-    y_pred_raw = non_ambig["raw_physical_pred"]
+    y_pred_coarse = non_ambig["pred5"] if is_8class else non_ambig["raw_physical_pred"]
 
-    raw_acc = accuracy_score(y_true_non, y_pred_raw)
-    raw_f1 = f1_score(y_true_non, y_pred_raw, average="macro", zero_division=0)
-    false_fronts = (non_ambig["raw_physical_pred"] == "front").sum()
+    raw_acc = accuracy_score(y_true_non, y_pred_coarse)
+    raw_f1 = f1_score(y_true_non, y_pred_coarse, average="macro", zero_division=0)
+    false_fronts = int((y_pred_coarse == "front").sum())
 
-    print(f"\n--- Method B: Raw 5-Class Physical Evaluation (N={len(non_ambig)}) ---")
-    print(f"  MOO ResNet-18 Accuracy:  {raw_acc*100:.2f}%")
-    print(f"  MOO ResNet-18 Macro-F1:  {raw_f1:.4f}")
+    print(f"\n--- Coarse 5-Class Diagnostic Evaluation (N={len(non_ambig)} Non-Ambiguous) ---")
+    print(f"  Accuracy:                {raw_acc*100:.2f}% ({accuracy_score(y_true_non, y_pred_coarse, normalize=False)}/{len(non_ambig)})")
+    print(f"  Macro-F1:                {raw_f1:.4f}")
     print(f"  False Front Predictions: {false_fronts} (True fronts in GT = 0)")
 
-    # Comparison with Zero-Shot VLMs from audit
-    print("\n--- Comparative Scoreboard (Raw 5-Class Physical, N=95) ---")
-    print(f"  {'Model':<28} | {'Accuracy':<10} | {'Macro-F1':<10} | {'False Fronts':<12}")
-    print(f"  {'-'*28}-|-{'-'*10}-|-{'-'*10}-|-{'-'*12}")
-    print(f"  {'OpenAI CLIP (ViT-B/32)':<28} | 33.68%     | 0.2711     | 19 / 95")
-    print(f"  {'OpenCLIP (LAION-2B)':<28} | 15.79%     | 0.1149     | 13 / 95")
-    print(f"  {'Google SigLIP':<28} | 12.63%     | 0.0958     | 66 / 95")
-    print(f"  {'MOO ResNet-18 (Ours)':<28} | {raw_acc*100:5.2f}%     | {raw_f1:6.4f}     | {false_fronts:2d} / 95")
-
-    # Per-class breakdown
-    print("\n--- Per-Class Classification Report (MOO ResNet-18) ---")
-    print(classification_report(y_true_non, y_pred_raw, labels=CLASS_NAMES, zero_division=0))
-
-    # Confusion Matrix
-    print("--- Confusion Matrix ---")
-    cm = confusion_matrix(y_true_non, y_pred_raw, labels=CLASS_NAMES)
-    cm_df = pd.DataFrame(cm, index=[f"True_{c}" for c in CLASS_NAMES], columns=[f"Pred_{c}" for c in CLASS_NAMES])
-    print(cm_df)
-
-    # Per-dataset accuracy
-    print("\n--- Per-Dataset Physical Accuracy ---")
+    print("\n--- Per-Dataset Accuracy ---")
     for dset, grp in non_ambig.groupby("dataset"):
-        d_acc = accuracy_score(grp["ground_truth"], grp["raw_physical_pred"])
+        grp_pred = grp["pred5"] if is_8class else grp["raw_physical_pred"]
+        d_acc = accuracy_score(grp["ground_truth"], grp_pred)
         print(f"  {dset:<18}: {d_acc*100:5.2f}% ({len(grp)} samples)")
 
-    # Ambiguous evaluation
-    ambig_samples = res_df[res_df["ground_truth"] == "unknown / ambiguous"]
-    ambig_recalled = (ambig_samples["pred_with_margin_rejection"] == "unknown / ambiguous").sum()
-    print(f"\n--- Ambiguous Margin Rejection (tau=0.10) ---")
-    print(f"  Ambiguous Recall: {ambig_recalled}/{len(ambig_samples)} ({ambig_recalled/max(1, len(ambig_samples))*100:.1f}%)")
+    print("\n--- Classification Report ---")
+    print(classification_report(y_true_non, y_pred_coarse, labels=COARSE_CLASSES, zero_division=0))
 
-    # [5/5] Systematic 90-Degree Rotation & Coordinate Frame Search
-    print("\n" + "=" * 70)
-    print("  SYSTEMATIC 90-DEGREE ROTATION & AXIS-SWAP SEARCH")
-    print("=" * 70)
-    print("Testing if Blender's 3D cow model was oriented sideways (90° rotated)...")
+    print("--- Confusion Matrix ---")
+    pd.set_option("display.max_columns", 10)
+    pd.set_option("display.width", 1000)
+    cm = confusion_matrix(y_true_non, y_pred_coarse, labels=COARSE_CLASSES)
+    cm_df = pd.DataFrame(cm, index=[f"True_{c}" for c in COARSE_CLASSES], columns=[f"Pred_{c}" for c in COARSE_CLASSES])
+    print(cm_df)
 
-    candidate_mappings = {
-        "Original (0° shift)": lambda p: p,
-        "90° Shift (Front->Side, Side->Rear, Rear->Side)": lambda p: (
-            "side" if p in ["front", "rear"] else ("rear" if p == "side" else p)
-        ),
-        "90° Shift (Front/Rear <-> Side, Obliques Swapped)": lambda p: (
-            "side" if p in ["front", "rear"] else (
-                "rear" if p == "side" else (
-                    "rear-oblique" if p == "front-oblique" else "front-oblique"
-                )
-            )
-        ),
-        "Full 90° Clockwise Rotation": lambda p: {
-            "front": "side", "front-oblique": "rear-oblique",
-            "side": "rear", "rear-oblique": "front-oblique", "rear": "front"
-        }.get(p, p),
-        "Full 90° Counter-Clockwise Rotation": lambda p: {
-            "front": "rear", "front-oblique": "front-oblique",
-            "side": "front", "rear-oblique": "rear-oblique", "rear": "side"
-        }.get(p, p),
-        "180° Flip (Front <-> Rear)": lambda p: {
-            "front": "rear", "front-oblique": "rear-oblique",
-            "side": "side", "rear-oblique": "front-oblique", "rear": "front"
-        }.get(p, p),
-    }
-
-    print(f"\n  {'Mapping / Coordinate Hypothesis':<52} | {'Accuracy':<10} | {'Macro-F1':<10}")
-    print(f"  {'-'*52}-|-{'-'*10}-|-{'-'*10}")
-    best_name = "Original"
-    best_acc = raw_acc
-    best_f1 = raw_f1
-    best_preds = y_pred_raw
-
-    for name, map_fn in candidate_mappings.items():
-        mapped_pred = y_pred_raw.apply(map_fn)
-        acc = accuracy_score(y_true_non, mapped_pred)
-        f1 = f1_score(y_true_non, mapped_pred, average="macro", zero_division=0)
-        print(f"  {name:<52} | {acc*100:5.2f}%     | {f1:6.4f}")
-        if acc > best_acc:
-            best_acc = acc
-            best_f1 = f1
-            best_name = name
-            best_preds = mapped_pred
-
-    print(f"\n🏆 Best Coordinate Alignment: {best_name}")
-    print(f"   Accuracy: {best_acc*100:.2f}% | Macro-F1: {best_f1:.4f}")
-
-    if best_acc > raw_acc:
-        print("\n--- Best Alignment Confusion Matrix ---")
-        best_cm = confusion_matrix(y_true_non, best_preds, labels=CLASS_NAMES)
-        best_cm_df = pd.DataFrame(best_cm, index=[f"True_{c}" for c in CLASS_NAMES], columns=[f"Pred_{c}" for c in CLASS_NAMES])
-        print(best_cm_df)
+    if is_8class:
+        print("\n--- Predicted 8-Direction Distribution on Real Cattle ---")
+        print(res_df["pred8"].value_counts())
 
 
 if __name__ == "__main__":
     main()
+
