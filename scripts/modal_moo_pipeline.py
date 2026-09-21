@@ -502,7 +502,7 @@ def train_smoke_classifier(samples_per_class: int = 500, epochs: int = 15):
 
 @app.function(
     volumes={VOLUME_DIR: volume},
-    gpu="L40S",
+    gpu="L4",
     cpu=8.0,
     memory=32768,
     timeout=7200,
