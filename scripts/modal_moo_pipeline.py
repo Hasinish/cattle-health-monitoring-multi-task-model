@@ -516,6 +516,7 @@ def train_full_directional_classifier(
     seed: int = 2026,
     splits_dir: str = "/root/moo_splits",
     checkpoint_name: str = "moo_resnet18_viewpoint8_full.pth",
+    resume: bool = True,
 ):
     """Full fine-tuning of ImageNet-pretrained ResNet-18 on the canonical 8-direction MOO synthetic viewpoint split."""
     if not git_commit_sha or not git_commit_sha.strip():
@@ -815,11 +816,73 @@ def train_full_directional_classifier(
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-6)
     scaler = GradScaler(enabled=torch.cuda.is_available())
 
-    # 6. Training Loop
+    # 6. Training Loop & Resumability Setup
+    start_epoch = 1
     best_val_f1 = -1.0
     best_val_acc = 0.0
     best_epoch = 0
     best_model_state_dict = None
+
+    resume_checkpoint_path = os.path.join(VOLUME_DIR, checkpoint_name.replace(".pth", "_resume.pth"))
+
+    if resume and os.path.exists(resume_checkpoint_path):
+        print(f"\n--- Found Resume Checkpoint: {resume_checkpoint_path} ---")
+        resume_data = torch.load(resume_checkpoint_path, map_location=device)
+
+        # 1. Verify split hashes
+        resume_hashes = resume_data.get("train_val_test_csv_sha256", {})
+        if resume_hashes != computed_hashes:
+            raise ValueError(
+                f"Resume checkpoint split hashes do not match current canonical splits!\n"
+                f"  Checkpoint hashes: {resume_hashes}\n"
+                f"  Current hashes:    {computed_hashes}"
+            )
+
+        # 2. Verify class mapping
+        if resume_data.get("class_names") != CANONICAL_VIEWPOINT_CLASSES or resume_data.get("class_to_idx") != CLASS_TO_IDX:
+            raise ValueError("Resume checkpoint class mapping does not match canonical 8 classes!")
+
+        # 3. Verify seed
+        if resume_data.get("seed") != seed:
+            raise ValueError(f"Resume checkpoint seed ({resume_data.get('seed')}) != requested seed ({seed})!")
+
+        # 4. Verify training configuration
+        cfg = resume_data.get("training_configuration", {})
+        if cfg.get("batch_size") != batch_size:
+            raise ValueError(f"Resume checkpoint batch_size ({cfg.get('batch_size')}) != requested batch_size ({batch_size})!")
+        if cfg.get("learning_rate") != lr:
+            raise ValueError(f"Resume checkpoint learning_rate ({cfg.get('learning_rate')}) != requested learning_rate ({lr})!")
+        if cfg.get("weight_decay") != weight_decay:
+            raise ValueError(f"Resume checkpoint weight_decay ({cfg.get('weight_decay')}) != requested weight_decay ({weight_decay})!")
+
+        # 5. Verify git_commit_sha
+        res_sha = resume_data.get("git_commit_sha", "")
+        if res_sha != git_commit_sha:
+            raise ValueError(
+                f"Resume checkpoint Git commit SHA ({res_sha}) does not match requested experiment SHA ({git_commit_sha})!"
+            )
+
+        # Restore states
+        model.load_state_dict(resume_data["model_state_dict"])
+        optimizer.load_state_dict(resume_data["optimizer_state_dict"])
+        scheduler.load_state_dict(resume_data["scheduler_state_dict"])
+        if "scaler_state_dict" in resume_data and resume_data["scaler_state_dict"] is not None:
+            scaler.load_state_dict(resume_data["scaler_state_dict"])
+
+        best_val_f1 = float(resume_data.get("best_val_macro_f1", -1.0))
+        best_val_acc = float(resume_data.get("best_val_accuracy", 0.0))
+        best_epoch = int(resume_data.get("best_epoch", 0))
+        best_model_state_dict = copy.deepcopy(resume_data.get("best_model_state_dict", model.state_dict()))
+
+        completed_epoch = int(resume_data.get("completed_epoch", 0))
+        start_epoch = completed_epoch + 1
+        print(f"✓ Resuming from epoch {start_epoch} (completed: epoch {completed_epoch}/{epochs})")
+        print(f"  Current best val Macro-F1: {best_val_f1:.4f} (at epoch {best_epoch})")
+    else:
+        if resume:
+            print("No resume checkpoint found — starting fresh.")
+        else:
+            print("Resume disabled — starting fresh.")
 
     start_train_time = time.time()
     print(f"\n{'='*75}")
@@ -828,7 +891,7 @@ def train_full_directional_classifier(
     print(f"Dataset: Train={len(train_ds):,} | Val={len(val_ds):,} | Test={len(test_ds):,}")
     print(f"{'='*75}\n")
 
-    for epoch in range(1, epochs + 1):
+    for epoch in range(start_epoch, epochs + 1):
         epoch_start = time.time()
         model.train()
         running_loss = 0.0
@@ -913,6 +976,32 @@ def train_full_directional_classifier(
             best_model_state_dict = copy.deepcopy(model.state_dict())
             print(f"  --> [BEST CHECKPOINT] Updated best val Macro-F1: {best_val_f1:.4f} (Acc: {best_val_acc*100:.2f}%) at epoch {epoch}")
 
+        # Save crash-safe resume checkpoint after EVERY completed epoch
+        torch.save({
+            "completed_epoch": epoch,
+            "model_state_dict": model.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(),
+            "scheduler_state_dict": scheduler.state_dict(),
+            "scaler_state_dict": scaler.state_dict() if scaler.is_enabled() else None,
+            "best_val_macro_f1": best_val_f1,
+            "best_val_accuracy": best_val_acc,
+            "best_epoch": best_epoch,
+            "best_model_state_dict": best_model_state_dict,
+            "seed": seed,
+            "class_names": CANONICAL_VIEWPOINT_CLASSES,
+            "class_to_idx": CLASS_TO_IDX,
+            "train_val_test_csv_sha256": computed_hashes,
+            "git_commit_sha": git_commit_sha,
+            "training_configuration": {
+                "epochs": epochs,
+                "batch_size": batch_size,
+                "learning_rate": lr,
+                "weight_decay": weight_decay,
+            },
+        }, resume_checkpoint_path)
+        volume.commit()
+        print(f"  [Resume Checkpoint] Committed epoch {epoch} state to {resume_checkpoint_path}")
+
     # 7. Final Synthetic Test Evaluation (strictly once on best validation checkpoint)
     print(f"\n--- Evaluating Best Validation Checkpoint on Synthetic TEST Split ---")
     if best_model_state_dict is None:
@@ -988,6 +1077,15 @@ def train_full_directional_classifier(
     }, save_path)
     volume.commit()
     print(f"✓ Full checkpoint committed to volume: {save_path}")
+
+    # 9. Clean up intermediate resume checkpoint after successful full training
+    if os.path.exists(resume_checkpoint_path):
+        try:
+            os.remove(resume_checkpoint_path)
+            volume.commit()
+            print(f"✓ Cleaned up intermediate resume checkpoint and committed volume: {resume_checkpoint_path}")
+        except Exception as e:
+            print(f"Warning: Could not remove resume checkpoint: {e}")
 
     return {
         "status": "success",
