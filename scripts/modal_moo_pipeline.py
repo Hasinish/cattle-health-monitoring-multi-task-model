@@ -506,6 +506,7 @@ def train_smoke_classifier(samples_per_class: int = 500, epochs: int = 15):
     timeout=7200,
 )
 def train_full_directional_classifier(
+    git_commit_sha: str = "",
     epochs: int = 15,
     batch_size: int = 128,
     lr: float = 3e-4,
@@ -513,9 +514,15 @@ def train_full_directional_classifier(
     seed: int = 2026,
     splits_dir: str = "/root/moo_splits",
     checkpoint_name: str = "moo_resnet18_viewpoint8_full.pth",
-    git_commit_sha: str = "0265be6ed1636c6ae6323d5cda1af595fece5588",
 ):
     """Full fine-tuning of ImageNet-pretrained ResNet-18 on the canonical 8-direction MOO synthetic viewpoint split."""
+    if not git_commit_sha or not git_commit_sha.strip():
+        raise ValueError(
+            "Explicit 'git_commit_sha' is required (e.g. --git-commit-sha <SHA>) "
+            "to guarantee scientific provenance. Empty or missing SHA is rejected."
+        )
+    git_commit_sha = git_commit_sha.strip()
+    print(f"Git Commit SHA: {git_commit_sha}")
     import io
     import time
     import copy
@@ -696,6 +703,9 @@ def train_full_directional_classifier(
             img_id = self.image_ids[idx]
             label = self.labels[idx]
 
+            if cow_id not in self.hf:
+                raise KeyError(f"Cow ID '{cow_id}' not found in HDF5!")
+
             grp = self.hf[cow_id]
             if img_id in grp:
                 obj = grp[img_id]
@@ -704,17 +714,28 @@ def train_full_directional_classifier(
             elif "_" in img_id and img_id.split("_")[-1] in grp:
                 obj = grp[img_id.split("_")[-1]]
             else:
-                obj = grp[list(grp.keys())[0]]
+                available_sample = list(grp.keys())[:5]
+                raise KeyError(
+                    f"Could not resolve image '{img_id}' for cow '{cow_id}' in HDF5! "
+                    f"Tried: '{img_id}', '{cow_id}_{img_id}', '{img_id.split('_')[-1]}'. "
+                    f"Available keys (first 5 of {len(grp)}): {available_sample}"
+                )
 
             if isinstance(obj, h5py.Group):
-                if "image" in obj:
+                if "colors" in obj:
+                    raw = obj["colors"][()]
+                elif "image" in obj:
                     raw = obj["image"][()]
                 elif "rgb" in obj:
                     raw = obj["rgb"][()]
                 elif "data" in obj:
                     raw = obj["data"][()]
                 else:
-                    raw = obj[list(obj.keys())[0]][()]
+                    available_fields = list(obj.keys())
+                    raise KeyError(
+                        f"Could not find valid image dataset ('colors', 'image', 'rgb', 'data') "
+                        f"in HDF5 group for cow '{cow_id}', image '{img_id}'! Available fields: {available_fields}"
+                    )
             else:
                 raw = obj[()]
 
@@ -984,4 +1005,4 @@ if __name__ == "__main__":
     print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::download_moo")
     print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::inspect_moo")
     print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::train_smoke_classifier")
-    print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::train_full_directional_classifier")
+    print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::train_full_directional_classifier --git-commit-sha <SHA>")
