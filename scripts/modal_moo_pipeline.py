@@ -52,8 +52,8 @@ MOO_URL = "https://kalisteo.cea.fr/index.php/download/moo-dataset/?wpdmdl=4365"
 @app.function(
     volumes={VOLUME_DIR: volume},
     timeout=3600,  # 1 hour max
-    cpu=1.0,
-    memory=2048,  # 2 GB RAM (minimal cost)
+    cpu=2.0,
+    memory=4096,  # 4 GB RAM for fast disk I/O throughput
 )
 def download_moo():
     """Download MOO.zip into persistent Modal volume and extract it."""
@@ -78,33 +78,82 @@ def download_moo():
         return {"status": "already_extracted", "hdf5_gb": h5_size_gb}
 
     # Step 1: Download MOO.zip if not present or incomplete
-    if not os.path.exists(zip_path) or os.path.getsize(zip_path) < 36_000_000_000:
+    import zipfile
+    aria2_control = zip_path + ".aria2"
+    is_complete_zip = (
+        os.path.exists(zip_path)
+        and not os.path.exists(aria2_control)
+        and zipfile.is_zipfile(zip_path)
+    )
+
+    if not is_complete_zip:
         print(f"\n[1/2] Downloading MOO.zip using aria2c (16 parallel connections)...")
+        if os.path.exists(aria2_control):
+            print(f"  Found existing aria2 session file ({aria2_control}). Resuming download...")
+        elif os.path.exists(zip_path):
+            print(f"  Existing MOO.zip is incomplete/corrupt. Resuming or completing chunks...")
         start_time = time.time()
+        import threading
+        stop_commit_thread = threading.Event()
+
+        def periodic_commit_worker():
+            while not stop_commit_thread.wait(60):
+                try:
+                    volume.commit()
+                    print("\n[Volume Checkpoint] 60s commit complete. Progress saved!", flush=True)
+                except Exception as ce:
+                    print(f"\n[Volume Checkpoint] Commit warning: {ce}", flush=True)
+
+        commit_thread = threading.Thread(target=periodic_commit_worker, daemon=True)
+        commit_thread.start()
+
         cmd = [
             "aria2c",
             "-c",
             "-s", "16",
             "-x", "16",
             "-j", "16",
-            "-k", "2M",
+            "-k", "1M",
+            "--disk-cache=64M",
+            "--file-allocation=falloc",
+            "--stream-piece-selector=geom",
+            "--max-tries=0",
+            "--retry-wait=1",
             "--check-certificate=false",
             "-d", VOLUME_DIR,
             "-o", "MOO.zip",
-            "--summary-interval=5",
+            "--summary-interval=2",
             MOO_URL
         ]
-        res = subprocess.run(cmd)
-        if res.returncode != 0:
-            raise RuntimeError(f"aria2c download failed with exit code {res.returncode}")
-        
+
+        try:
+            res = subprocess.run(cmd)
+            if res.returncode != 0:
+                raise RuntimeError(f"aria2c download failed with exit code {res.returncode}")
+        except (KeyboardInterrupt, SystemExit, BaseException) as e:
+            print(f"\n[Interrupt] Caught signal ({type(e).__name__}). Flushing final commit to volume...", flush=True)
+            stop_commit_thread.set()
+            try:
+                volume.commit()
+                print("✓ Volume committed on interrupt! Partial download is safe and resumable.", flush=True)
+            except Exception as ce:
+                print(f"Failed to commit volume on interrupt: {ce}", flush=True)
+            raise
+        finally:
+            stop_commit_thread.set()
+            commit_thread.join(timeout=5)
+            try:
+                volume.commit()
+            except Exception:
+                pass
+
         elapsed = time.time() - start_time
         downloaded_gb = os.path.getsize(zip_path) / (1024 ** 3)
         speed_mb = (downloaded_gb * 1024) / max(1, elapsed)
         print(f"✓ Download complete in {elapsed:.1f}s ({speed_mb:.1f} MB/s avg)!")
         volume.commit()
     else:
-        print(f"✓ MOO.zip already downloaded ({os.path.getsize(zip_path) / (1024**3):.2f} GB)")
+        print(f"✓ MOO.zip already downloaded and verified ({os.path.getsize(zip_path) / (1024**3):.2f} GB)")
 
     # Step 2: Extract MOO.zip
     print(f"\n[2/2] Extracting MOO.zip into {VOLUME_DIR}...")

@@ -143,12 +143,9 @@
   - Simple geometry / aspect ratio: REJECTED as standalone classifier.
   - MOO synthetic viewpoint supervision: UNTESTED (canonical roadmap explicitly allows MOO synthetic supervision).
   - Supervised cattle-specific classifier: UNTESTED (canonical roadmap explicitly allows simple classifier if needed; current review labels imbalanced).
-  - Completed MOO (Multi-view Oriented Observations) cloud download and setup in Modal volume `moo-data` (`scripts/modal_moo_pipeline.py`):
-  - Downloaded official 34.03 GB `MOO.zip` archive via `aria2c` (16 connections, 16.3 MB/s avg, 2,133.6s).
-  - Decompressed 55.24 GB `data.hdf5` (128,000 synthetic cattle images, 512x512) and 136.36 MB `metadata.json` into `/data/` in 928.8s.
-  - Purged `MOO.zip` from volume to conserve storage quota; committed volume successfully (`volume.commit()`).
-  - Optimized container resource configs to minimal footprint (`cpu=1.0, memory=2048`) per `.agents/rules/modal_cost_optimization.md`.
-  - Launched `inspect_moo` on Modal cloud to inspect coordinate conventions, camera angle distributions, and HDF5 dataset layout for synthetic-to-real viewpoint transfer.
+  - Ingested MmCows Behavior dataset (213,686 crops, 12.7 GB) into Modal volume `mmcows-data` on `tigerwood697` via Rust `hf_transfer` in ~90s and unzipped in ~19m; `cropped_bboxes.zip` purged to conserve quota.
+  - Ingested ScienceDB Cattle BCS dataset (107,132 files, 4.11 GB across classes 3.25, 3.5, 3.75, 4.0, 4.25) into Modal volume `sciencedb-data` on `tigerwood697` via 16-connection `aria2c` and `unar` (RAR5 supported); `dataset.rar` purged to reclaim quota.
+  - Ingested and extracted MOO (Multi-view Oriented Observations) 55.24 GB `data.hdf5` and 136.36 MB `metadata.json` into Modal volume `moo-data` on `tigerwood693`; `MOO.zip` purged to conserve quota; 100% verified.
 - Synthesized Step 2.4 findings and evidence into `docs/audits/phase3_perception_feasibility.md` (committed in `6d2a7d4`).
 
 ## Current Blockers & Notes

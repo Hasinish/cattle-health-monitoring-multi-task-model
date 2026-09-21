@@ -57,5 +57,6 @@ replacement_papers.txt
 curated_real_papers.txt
 thesis_bibliography_links.txt
 
-# Local Agent Personal Info
+# Local Agent Personal Info & Secrets
 memory/personal_info.md
+.env

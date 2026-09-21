@@ -1,3 +1,11 @@
+# Session Summary — 2026-09-21 (Phase 3 Modal Cloud Volume Ingestion: MmCows, ScienceDB & MOO)
+
+- Ingested primary Phase 3 datasets into Modal persistent storage volumes with minimal compute footprints:
+  - **MmCows Behavior Dataset**: Downloaded 12.7 GB `cropped_bboxes.zip` via Rust `hf_transfer` in ~90s into volume `mmcows-data` on `tigerwood697`. Extracted all 213,686 behavior crops and purged zip archive to conserve quota.
+  - **ScienceDB Cattle BCS Dataset**: Downloaded 4.11 GB `dataset.rar` via 16-connection `aria2c` from `china.scidb.cn` into volume `sciencedb-data` on `tigerwood697`. Resolved Linux `7z` RAR5 incompatibility by switching extractor to `unar` (The Unarchiver) with resilient handling of non-critical XML annotations; verified all 107,132 files across all 5 classes (`3.25`..`4.25`) and purged `.rar`.
+  - **MOO Synthetic Viewpoint Dataset**: Downloaded 34.03 GB `MOO.zip` archive into volume `moo-data` on `tigerwood693` via `aria2c`. Extracted full 55.24 GB `data.hdf5` and 136.36 MB `metadata.json` in ~14m; purged zip archive and committed volume.
+- Verified 0 active apps/containers across all 6 Modal profiles (`tigerwood693`, `tigerwood697`, `hasinishrak74001`, `dryousufmozumder`, `hasinishrak2015`, `mohtasimahmedsamii`); 0 leaking credits.
+
 # Session Summary — 2026-09-20 (Phase 3 Step 2.4 MOO Synthetic-to-Real Viewpoint Transfer & 90° Coordinate Discovery)
 
 - Designed and executed end-to-end cloud pipeline for MOO (Multi-view Oriented Observations, 128k images, 1,000 IDs) on Modal (`scripts/modal_moo_pipeline.py`):
