@@ -17,15 +17,32 @@ Usage:
 import os
 import sys
 
+# Guard against Windows cross-drive ValueError in ntpath.commonpath for Modal
+if sys.platform == "win32":
+    _orig_commonpath = os.path.commonpath
+
+    def _safe_commonpath(paths):
+        try:
+            return _orig_commonpath(paths)
+        except ValueError:
+            return ""
+
+    os.path.commonpath = _safe_commonpath
+
 try:
     import modal
 except ImportError:
     print("Error: modal package not found. Run: pip install modal")
     sys.exit(1)
 
+from pathlib import Path
+
 # Persistent storage volume for MOO dataset
 volume = modal.Volume.from_name("moo-data", create_if_missing=True)
 VOLUME_DIR = "/data"
+
+# Canonical split directory on host
+SPLITS_DIR_LOCAL = Path(__file__).resolve().parent.parent / "datasets" / "viewpoint" / "moo"
 
 # Container image with aria2, h5py, PyTorch, and imaging tools
 image = (
@@ -43,6 +60,9 @@ image = (
         "scikit-learn"
     )
 )
+
+if SPLITS_DIR_LOCAL.exists():
+    image = image.add_local_dir(str(SPLITS_DIR_LOCAL), remote_path="/root/moo_splits")
 
 app = modal.App("moo-viewpoint-pipeline", image=image)
 
@@ -478,9 +498,490 @@ def train_smoke_classifier(samples_per_class: int = 500, epochs: int = 15):
     }
 
 
+@app.function(
+    volumes={VOLUME_DIR: volume},
+    gpu="L40S",
+    cpu=8.0,
+    memory=32768,
+    timeout=7200,
+)
+def train_full_directional_classifier(
+    epochs: int = 15,
+    batch_size: int = 128,
+    lr: float = 3e-4,
+    weight_decay: float = 1e-4,
+    seed: int = 2026,
+    splits_dir: str = "/root/moo_splits",
+    checkpoint_name: str = "moo_resnet18_viewpoint8_full.pth",
+    git_commit_sha: str = "0265be6ed1636c6ae6323d5cda1af595fece5588",
+):
+    """Full fine-tuning of ImageNet-pretrained ResNet-18 on the canonical 8-direction MOO synthetic viewpoint split."""
+    import io
+    import time
+    import copy
+    import hashlib
+    import random
+    import numpy as np
+    import pandas as pd
+    import h5py
+    from PIL import Image
+    from tqdm import tqdm
+    from sklearn.metrics import f1_score
+
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import Dataset, DataLoader
+    import torchvision.transforms as T
+    import torchvision.models as models
+    from torch.cuda.amp import GradScaler, autocast
+
+    CANONICAL_VIEWPOINT_CLASSES = [
+        "front",
+        "front-left",
+        "left",
+        "back-left",
+        "back",
+        "back-right",
+        "right",
+        "front-right",
+    ]
+    CLASS_TO_IDX = {name: idx for idx, name in enumerate(CANONICAL_VIEWPOINT_CLASSES)}
+
+    EXPECTED_SPLIT_HASHES = {
+        "train.csv": "596a1a49c985223202bdf04b6d2b20d6544ab01d7683827fe65b70f6fc521e61",
+        "val.csv": "7995c1e357cc33ccc17c9d70f0a210d1035839bfdd4ff26d7179201fdf42b261",
+        "test.csv": "276603b9589f66d6d66f19140889d2e5ca369e69493815a23b47e13fb0ab4a8d",
+    }
+
+    # Locate splits directory
+    resolved_splits_dir = None
+    candidate_dirs = [
+        splits_dir,
+        "/root/moo_splits",
+        os.path.join(VOLUME_DIR, "moo_splits"),
+        os.path.join(VOLUME_DIR, "splits"),
+        str(SPLITS_DIR_LOCAL),
+    ]
+    for c in candidate_dirs:
+        if c and os.path.exists(os.path.join(c, "train.csv")):
+            resolved_splits_dir = c
+            break
+
+    if resolved_splits_dir is None:
+        raise FileNotFoundError(
+            f"Could not locate canonical MOO splits directory. Checked: {candidate_dirs}"
+        )
+
+    print(f"=== MOO Full 8-Direction Viewpoint Training (ResNet-18) ===")
+    print(f"Using splits directory: {resolved_splits_dir}")
+
+    # 1. Cryptographic hash validation
+    def compute_sha256(filepath):
+        h = hashlib.sha256()
+        with open(filepath, "rb") as f:
+            while chunk := f.read(65536):
+                h.update(chunk)
+        return h.hexdigest()
+
+    computed_hashes = {}
+    for fname, expected_hash in EXPECTED_SPLIT_HASHES.items():
+        fpath = os.path.join(resolved_splits_dir, fname)
+        if not os.path.exists(fpath):
+            raise FileNotFoundError(f"Required split file {fname} not found in {resolved_splits_dir}")
+        chash = compute_sha256(fpath)
+        computed_hashes[fname] = chash
+        if chash != expected_hash:
+            raise ValueError(
+                f"Provenance validation failure: SHA256 mismatch for {fname} in {resolved_splits_dir}!\n"
+                f"  Expected: {expected_hash}\n"
+                f"  Computed: {chash}\n"
+                f"Aborting training to prevent unvalidated data execution."
+            )
+        print(f"  ✓ {fname}: SHA256 verified ({chash[:16]}...)")
+
+    # 2. Parse and validate split contents
+    train_df = pd.read_csv(os.path.join(resolved_splits_dir, "train.csv"))
+    val_df = pd.read_csv(os.path.join(resolved_splits_dir, "val.csv"))
+    test_df = pd.read_csv(os.path.join(resolved_splits_dir, "test.csv"))
+
+    if len(train_df) != 76800:
+        raise ValueError(f"Expected 76,800 train rows, found {len(train_df)}")
+    if len(val_df) != 9600:
+        raise ValueError(f"Expected 9,600 val rows, found {len(val_df)}")
+    if len(test_df) != 9600:
+        raise ValueError(f"Expected 9,600 test rows, found {len(test_df)}")
+
+    train_cows = set(train_df["cow_id"])
+    val_cows = set(val_df["cow_id"])
+    test_cows = set(test_df["cow_id"])
+
+    if len(train_cows) != 800:
+        raise ValueError(f"Expected 800 train cows, found {len(train_cows)}")
+    if len(val_cows) != 100:
+        raise ValueError(f"Expected 100 val cows, found {len(val_cows)}")
+    if len(test_cows) != 100:
+        raise ValueError(f"Expected 100 test cows, found {len(test_cows)}")
+
+    # Leakage checks
+    train_val_cow_overlap = len(train_cows & val_cows)
+    train_test_cow_overlap = len(train_cows & test_cows)
+    val_test_cow_overlap = len(val_cows & test_cows)
+    if train_val_cow_overlap > 0 or train_test_cow_overlap > 0 or val_test_cow_overlap > 0:
+        raise ValueError(
+            f"Cow identity leakage detected! "
+            f"train∩val={train_val_cow_overlap}, train∩test={train_test_cow_overlap}, val∩test={val_test_cow_overlap}"
+        )
+
+    train_imgs = set(zip(train_df["cow_id"], train_df["image_id"]))
+    val_imgs = set(zip(val_df["cow_id"], val_df["image_id"]))
+    test_imgs = set(zip(test_df["cow_id"], test_df["image_id"]))
+
+    train_val_img_overlap = len(train_imgs & val_imgs)
+    train_test_img_overlap = len(train_imgs & test_imgs)
+    val_test_img_overlap = len(val_imgs & test_imgs)
+    if train_val_img_overlap > 0 or train_test_img_overlap > 0 or val_test_img_overlap > 0:
+        raise ValueError(
+            f"Image leakage detected! "
+            f"train∩val={train_val_img_overlap}, train∩test={train_test_img_overlap}, val∩test={val_test_img_overlap}"
+        )
+
+    # Class label validation
+    allowed_labels = set(CANONICAL_VIEWPOINT_CLASSES)
+    for split_name, df in [("train", train_df), ("val", val_df), ("test", test_df)]:
+        present_labels = set(df["view"].unique())
+        invalid_labels = present_labels - allowed_labels
+        if invalid_labels:
+            raise ValueError(f"Invalid / unmapped labels in {split_name}: {invalid_labels}")
+
+    print(f"  ✓ Split integrity verified: 800 train cows (76,800 imgs), 100 val cows (9,600 imgs), 100 test cows (9,600 imgs)")
+    print(f"  ✓ Zero cow identity overlap, zero image overlap, all 8 canonical classes verified.")
+
+    # 3. Deterministic seed
+    def set_seed(s):
+        random.seed(s)
+        np.random.seed(s)
+        torch.manual_seed(s)
+        torch.cuda.manual_seed_all(s)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+
+    set_seed(seed)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using compute device: {device}")
+    if torch.cuda.is_available():
+        print(f"GPU: {torch.cuda.get_device_name(0)}")
+
+    hdf5_path = os.path.join(VOLUME_DIR, "data.hdf5")
+    if not os.path.exists(hdf5_path):
+        raise FileNotFoundError(f"data.hdf5 not found in {VOLUME_DIR}. Run download_moo first!")
+
+    # 4. PyTorch Dataset Definition
+    class MOODataset(Dataset):
+        def __init__(self, df, h5_path, cls_to_idx, transform=None):
+            self.cow_ids = df["cow_id"].values
+            self.image_ids = df["image_id"].values
+            self.labels = [cls_to_idx[v] for v in df["view"].values]
+            self.h5_path = h5_path
+            self.transform = transform
+            self.hf = None
+
+        def __len__(self):
+            return len(self.cow_ids)
+
+        def __getitem__(self, idx):
+            if self.hf is None:
+                self.hf = h5py.File(self.h5_path, "r")
+            cow_id = self.cow_ids[idx]
+            img_id = self.image_ids[idx]
+            label = self.labels[idx]
+
+            grp = self.hf[cow_id]
+            if img_id in grp:
+                obj = grp[img_id]
+            elif f"{cow_id}_{img_id}" in grp:
+                obj = grp[f"{cow_id}_{img_id}"]
+            elif "_" in img_id and img_id.split("_")[-1] in grp:
+                obj = grp[img_id.split("_")[-1]]
+            else:
+                obj = grp[list(grp.keys())[0]]
+
+            if isinstance(obj, h5py.Group):
+                if "image" in obj:
+                    raw = obj["image"][()]
+                elif "rgb" in obj:
+                    raw = obj["rgb"][()]
+                elif "data" in obj:
+                    raw = obj["data"][()]
+                else:
+                    raw = obj[list(obj.keys())[0]][()]
+            else:
+                raw = obj[()]
+
+            if isinstance(raw, (bytes, bytearray, np.void)) or (hasattr(raw, "dtype") and raw.dtype == np.uint8 and raw.ndim == 1):
+                img = Image.open(io.BytesIO(raw)).convert("RGB")
+            else:
+                img = Image.fromarray(raw).convert("RGB")
+
+            if self.transform:
+                img = self.transform(img)
+
+            return img, label
+
+        def __del__(self):
+            if hasattr(self, "hf") and self.hf is not None:
+                try:
+                    self.hf.close()
+                except Exception:
+                    pass
+
+    # Viewpoint-preserving transforms (Strictly NO horizontal flip)
+    train_transform = T.Compose([
+        T.RandomResizedCrop(224, scale=(0.8, 1.0), ratio=(0.9, 1.1)),
+        T.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1),
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    eval_transform = T.Compose([
+        T.Resize((224, 224)),
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    train_ds = MOODataset(train_df, hdf5_path, CLASS_TO_IDX, transform=train_transform)
+    val_ds = MOODataset(val_df, hdf5_path, CLASS_TO_IDX, transform=eval_transform)
+    test_ds = MOODataset(test_df, hdf5_path, CLASS_TO_IDX, transform=eval_transform)
+
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=4,
+        pin_memory=True,
+        drop_last=True,
+    )
+    val_loader = DataLoader(
+        val_ds,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+    )
+    test_loader = DataLoader(
+        test_ds,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+    )
+
+    # 5. Model Architecture & Optimizer Setup
+    print("\n--- Initializing ResNet-18 (ImageNet-1K Pretrained) for Full Fine-Tuning ---")
+    model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+    model.fc = nn.Linear(model.fc.in_features, len(CANONICAL_VIEWPOINT_CLASSES))
+
+    # Full fine-tuning: backbone and classification head both trainable
+    for param in model.parameters():
+        param.requires_grad = True
+
+    model = model.to(device)
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=1e-6)
+    scaler = GradScaler(enabled=torch.cuda.is_available())
+
+    # 6. Training Loop
+    best_val_f1 = -1.0
+    best_val_acc = 0.0
+    best_epoch = 0
+    best_model_state_dict = None
+
+    start_train_time = time.time()
+    print(f"\n{'='*75}")
+    print(f"Starting MOO Full 8-Direction Viewpoint Training on {device}")
+    print(f"Config: Epochs={epochs}, BatchSize={batch_size}, LR={lr}, WeightDecay={weight_decay}")
+    print(f"Dataset: Train={len(train_ds):,} | Val={len(val_ds):,} | Test={len(test_ds):,}")
+    print(f"{'='*75}\n")
+
+    for epoch in range(1, epochs + 1):
+        epoch_start = time.time()
+        model.train()
+        running_loss = 0.0
+        running_correct = 0
+        total_train_samples = 0
+
+        pbar = tqdm(train_loader, desc=f"Epoch {epoch:2d}/{epochs:2d} [Train]", leave=True)
+        for imgs, targets in pbar:
+            imgs = imgs.to(device, non_blocking=True)
+            targets = targets.to(device, non_blocking=True)
+
+            optimizer.zero_grad()
+            with autocast(enabled=torch.cuda.is_available()):
+                outputs = model(imgs)
+                loss = criterion(outputs, targets)
+
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+
+            bs = targets.size(0)
+            running_loss += loss.item() * bs
+            preds = outputs.argmax(dim=1)
+            running_correct += (preds == targets).sum().item()
+            total_train_samples += bs
+
+            cur_loss = running_loss / total_train_samples
+            cur_acc = running_correct / total_train_samples
+            pbar.set_postfix({
+                "loss": f"{cur_loss:.4f}",
+                "acc": f"{cur_acc*100:.1f}%",
+                "lr": f"{optimizer.param_groups[0]['lr']:.2e}",
+            })
+
+        train_loss = running_loss / total_train_samples
+        train_acc = running_correct / total_train_samples
+
+        # Validation phase
+        model.eval()
+        val_loss_total = 0.0
+        val_samples_total = 0
+        val_preds_all = []
+        val_targets_all = []
+
+        val_pbar = tqdm(val_loader, desc=f"Epoch {epoch:2d}/{epochs:2d} [Val]  ", leave=False)
+        with torch.no_grad():
+            for imgs, targets in val_pbar:
+                imgs = imgs.to(device, non_blocking=True)
+                targets = targets.to(device, non_blocking=True)
+
+                with autocast(enabled=torch.cuda.is_available()):
+                    outputs = model(imgs)
+                    v_loss = criterion(outputs, targets)
+
+                val_loss_total += v_loss.item() * targets.size(0)
+                val_samples_total += targets.size(0)
+                preds = outputs.argmax(dim=1)
+
+                val_preds_all.extend(preds.cpu().numpy())
+                val_targets_all.extend(targets.cpu().numpy())
+
+        val_loss = val_loss_total / val_samples_total
+        val_acc = float((np.array(val_preds_all) == np.array(val_targets_all)).mean())
+        val_f1 = float(f1_score(val_targets_all, val_preds_all, average="macro"))
+        current_lr = optimizer.param_groups[0]["lr"]
+
+        scheduler.step()
+        epoch_time = time.time() - epoch_start
+
+        print(
+            f"Epoch [{epoch:2d}/{epochs:2d}] ({epoch_time:.1f}s) | "
+            f"Train Loss: {train_loss:.4f} | Train Acc: {train_acc*100:.2f}% | "
+            f"Val Loss: {val_loss:.4f} | Val Acc: {val_acc*100:.2f}% | "
+            f"Val Macro-F1: {val_f1:.4f} | LR: {current_lr:.2e}"
+        )
+
+        # Primary checkpoint selection metric: synthetic validation macro-F1
+        if val_f1 > best_val_f1:
+            best_val_f1 = val_f1
+            best_val_acc = val_acc
+            best_epoch = epoch
+            best_model_state_dict = copy.deepcopy(model.state_dict())
+            print(f"  --> [BEST CHECKPOINT] Updated best val Macro-F1: {best_val_f1:.4f} (Acc: {best_val_acc*100:.2f}%) at epoch {epoch}")
+
+    # 7. Final Synthetic Test Evaluation (strictly once on best validation checkpoint)
+    print(f"\n--- Evaluating Best Validation Checkpoint on Synthetic TEST Split ---")
+    if best_model_state_dict is None:
+        raise RuntimeError("No best checkpoint was captured during training.")
+
+    print(f"Loading weights from Best Epoch {best_epoch} (Val F1: {best_val_f1:.4f}, Val Acc: {best_val_acc*100:.2f}%)...")
+    model.load_state_dict(best_model_state_dict)
+    model.eval()
+
+    test_loss_total = 0.0
+    test_samples_total = 0
+    test_preds_all = []
+    test_targets_all = []
+
+    test_pbar = tqdm(test_loader, desc="Testing Best Model [Test]", leave=True)
+    with torch.no_grad():
+        for imgs, targets in test_pbar:
+            imgs = imgs.to(device, non_blocking=True)
+            targets = targets.to(device, non_blocking=True)
+
+            with autocast(enabled=torch.cuda.is_available()):
+                outputs = model(imgs)
+                t_loss = criterion(outputs, targets)
+
+            test_loss_total += t_loss.item() * targets.size(0)
+            test_samples_total += targets.size(0)
+            preds = outputs.argmax(dim=1)
+
+            test_preds_all.extend(preds.cpu().numpy())
+            test_targets_all.extend(targets.cpu().numpy())
+
+    test_loss = test_loss_total / test_samples_total
+    test_acc = float((np.array(test_preds_all) == np.array(test_targets_all)).mean())
+    test_f1 = float(f1_score(test_targets_all, test_preds_all, average="macro"))
+
+    total_runtime_s = time.time() - start_train_time
+
+    print(f"\n{'='*75}")
+    print(f"MOO Full 8-Direction Viewpoint Training Run Complete!")
+    print(f"Total Runtime: {total_runtime_s/60:.2f} minutes ({total_runtime_s:.1f}s)")
+    print(f"Best Epoch: {best_epoch}")
+    print(f"Best Val Accuracy: {best_val_acc*100:.2f}%")
+    print(f"Best Val Macro-F1: {best_val_f1:.4f}")
+    print(f"Synthetic Test Accuracy: {test_acc*100:.2f}%")
+    print(f"Synthetic Test Macro-F1: {test_f1:.4f}")
+    print(f"{'='*75}\n")
+
+    # 8. Save Canonical Full Checkpoint to Modal Volume
+    save_path = os.path.join(VOLUME_DIR, checkpoint_name)
+    print(f"Saving canonical full checkpoint to {save_path}...")
+    torch.save({
+        "model_state_dict": best_model_state_dict,
+        "class_names": CANONICAL_VIEWPOINT_CLASSES,
+        "class_to_idx": CLASS_TO_IDX,
+        "seed": seed,
+        "epoch": best_epoch,
+        "best_val_accuracy": best_val_acc,
+        "best_val_macro_f1": best_val_f1,
+        "test_accuracy": test_acc,
+        "test_macro_f1": test_f1,
+        "optimizer_configuration": {
+            "type": "AdamW",
+            "lr": lr,
+            "weight_decay": weight_decay,
+        },
+        "scheduler_configuration": {
+            "type": "CosineAnnealingLR",
+            "T_max": epochs,
+            "eta_min": 1e-6,
+        },
+        "train_val_test_csv_sha256": computed_hashes,
+        "git_commit_sha": git_commit_sha,
+    }, save_path)
+    volume.commit()
+    print(f"✓ Full checkpoint committed to volume: {save_path}")
+
+    return {
+        "status": "success",
+        "checkpoint_path": save_path,
+        "best_epoch": best_epoch,
+        "best_val_accuracy": best_val_acc,
+        "best_val_macro_f1": best_val_f1,
+        "test_accuracy": test_acc,
+        "test_macro_f1": test_f1,
+        "total_runtime_s": total_runtime_s,
+    }
+
+
 if __name__ == "__main__":
     print("This script is a Modal App.")
     print("Run via Modal CLI:")
-    print("  modal run --profile mohtasimahmedsamii scripts/modal_moo_pipeline.py::download_moo")
-    print("  modal run --profile mohtasimahmedsamii scripts/modal_moo_pipeline.py::inspect_moo")
-    print("  modal run --profile mohtasimahmedsamii scripts/modal_moo_pipeline.py::train_smoke_classifier")
+    print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::download_moo")
+    print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::inspect_moo")
+    print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::train_smoke_classifier")
+    print("  modal run --profile tigerwood693 scripts/modal_moo_pipeline.py::train_full_directional_classifier")
