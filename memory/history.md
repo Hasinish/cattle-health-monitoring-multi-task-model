@@ -1,8 +1,19 @@
+# Session Summary — 2026-09-22 (Phase 3 Kaggle Beef Behavior Dataset Acquisition Verification & Scientific Audit)
+
+- Verified 100% physical completion of the 48.55 GB master archive (`archive.zip`, 48,553,721,000 bytes) on Modal persistent volume `beef-behavior-data` (`/data/beef_behavior/` under profile `tigerwood693`).
+- Audited all 4,337 single-cow cropped MP4 video clips (~11.84 hours of continuous 25.0 FPS video at 224x224 px) across 5 official behaviors (`ruminate`: 1,544 clips [35.60%], `lie`: 1,362 clips [31.40%], `stand`: 638 clips [14.71%], `eat`: 546 clips [12.59%], `drink`: 247 clips [5.70%]).
+- Diagnosed and resolved Modal Persistent Volume 500,000 inode quota saturation: safely pruned redundant uncompressed frame cache (`Labelframes/`, 1.14M files) to reduce volume inode usage from 100% to <1% (4,347 inodes), preserving the intact 48.55 GB master archive and all 4,337 playable behavior clips.
+- Established that `Walking` is 100% ABSENT (zero clips, zero frames, zero labels). The dataset cannot independently support our canonical 4-class Phase 3 behavior task (`Standing`, `Lying`, `Walking`, `Feeding`).
+- Proven that 0 biological cow IDs exist: the 6 experimental beef cows in the single captive barn are labeled using ephemeral ByteTrack tracker IDs (`_1_`, `_2_` ... `_77_`). Over 100 tracker IDs exist due to severe tracking fragmentation and cannot be equated with biological cows.
+- Generated 12 visual review assets (10 consecutive filmstrips, 2 diagnostic edge cases) under `docs/audits/assets/beef_behavior_audit/`.
+- Final verdict: **PARTIALLY SUITABLE — WITH SPECIFIC LIMITATIONS**. MmCows retained as canonical Primary Behavior benchmark; CVB preserved as Optional External Validation benchmark; Kaggle Beef cataloged as `Behavior (Candidate)`.
+- Deliverables: `docs/audits/phase3_beef_behavior_scientific_audit.md`, `docs/research_log/2026-09-22_beef_behavior_scientific_audit.md`, `datasets/behavior/beef_cattle_behavior/manifest.csv`, `artifacts/behavior_audit/beef_behavior_audit_summary.csv`, `datasets/dataset_registry.csv`.
+
 # Session Summary — 2026-09-22 (Phase 3 CVB Behavior Scientific & Provenance Audit)
 
 - Completed exhaustive forensic scientific and provenance audit of the Cattle Visual Behaviors (CVB) dataset on Modal volume `cvb-data` across all 226,344 files, 502 video cuts, 225,829 1080p JPEG frames, and 1,163,408 bounding boxes.
 - Disproved legacy "589 cuts" myth (proven to be an artifact of CSIRO DAP deposit ID `58916v001`); verified exactly 502 cuts matching 502 annotation directories 1-to-1.
-- Verified 30.0 FPS dense temporal video across 15.0s continuous clips ($dt = 0.033\text{s}$).
+- Verified 30.0 FPS dense temporal video across 15.0s continuous clips (dt = 0.033 s).
 - Audited 12 official behaviors (`grazing`: 42.7%, `resting-lying`: 17.9%, `resting-standing`: 11.9%, `hidden`: 9.3%, `ruminating-lying`: 6.5%, `drinking`: 2.9%, `ruminating-standing`: 2.5%, etc.). Proved defensible mapping to 4-class compact set (`Standing`, `Lying`, `Walking`, `Feeding`) yields 971,999 boxes (83.5%).
 - Identified critical limitations: median bounding box is only 104x85 px (occupies 0.41% of 1080p frame; 16.3x smaller than MmCows crops), zero biological cow IDs exist, and official AVA split suffers from 88.9% source-video leakage across train/val.
 - Generated 18 visual review assets (16 consecutive filmstrips, 2 diagnostic edge cases) under `docs/audits/assets/cvb_behavior_audit/`.

@@ -24,6 +24,10 @@ from pathlib import Path
 
 # Guard against Windows cross-drive ValueError in ntpath.commonpath for Modal
 if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
     _orig_commonpath = os.path.commonpath
 
     def _safe_commonpath(paths):
