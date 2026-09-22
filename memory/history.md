@@ -1,3 +1,17 @@
+# Session Summary — 2026-09-23 (Kaggle Beef SAM 2.1 Prompt-Rescue Audit)
+
+- Executed controlled prompt-rescue evaluation on the identical 20 Kaggle Beef training frames comparing 5 rescue strategies against baseline A0 (`[0, 0, 223, 223]`) using SAM 2.1 Small (`sam2.1_s.pt`) and RT-DETR-L (`rtdetr-l.pt`) on Modal (`tigerwood693`, T4).
+- Verified Ultralytics API syntax and proved native support for 3D multi-point tensors and combined box+point prompting.
+- **Quantitative Performance Across 6 Conditions (N=20 frames each):**
+  - **A0 (Baseline Full Crop Box):** 50.0% mask return (10/20; 10 `sam_no_mask` failures); mean area ratio 0.3776; mean connected components 118.3 (median 111.5).
+  - **A1 (Center Positive Point `(cx, cy)`):** **100.0% mask return (20/20)** across all behaviors; mean area ratio 0.1827; mean connected components **16.6 (median 11.5)** (86% reduction in fragmentation).
+  - **A2 (Multi-Positive Body Points, 5 Pts):** **100.0% mask return (20/20)**; mean area ratio 0.2618; mean connected components 34.5 (median 20.5).
+  - **A3 (Positive Center + 4 Negative Corners):** **100.0% mask return (20/20)**; mean area ratio 0.1549 (tightest masks); mean connected components 26.6 (median 20.0).
+  - **A4 (Largest RT-DETR-L Cow Box):** 95.0% mask return (19/20); 1 failure on occluded recumbent cow `beef_00000000580000000_2_clip_3` (0 RT-DETR detections, recorded `no_rtdetr_prompt`); mean area ratio 0.3048; mean connected components 25.8 (median 12.0).
+  - **A5 (Largest RT-DETR Box + Center Point):** 95.0% mask return (19/20); 1 failure on same recumbent cow (`no_rtdetr_prompt`); mean area ratio 0.3143; mean connected components 22.7 (median 14.0).
+- Qualitative Visual Status: Explicitly marked **PENDING HUMAN REVIEW** (no winner selected; Kaggle Beef segmentation not declared solved).
+- Deliverables: `scripts/audit_beef_sam_prompt_rescue.py`, `artifacts/perception_audit/beef_sam_prompt_rescue.csv` (120 rows), `docs/audits/assets/beef_sam_prompt_rescue/`, 6 contact sheets (`beef_A0_contact_sheet.jpg` to `beef_A5_contact_sheet.jpg`), `docs/research_log/2026-09-23_beef_sam_prompt_rescue.md`.
+
 # Session Summary — 2026-09-23 (Primary Behavior Stack SAM 2.1 Segmentation Sanity Check)
 
 - Executed small zero-shot segmentation sanity check using pretrained SAM 2.1 Small (`sam2.1_s.pt`) directly on the identical 45 training midpoint frames evaluated during the RT-DETR-L localization audit (25 CVB, 20 Kaggle Beef; Seed 2026; Modal profile `tigerwood693`, GPU Tier `T4`).
@@ -465,6 +479,7 @@
 
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
 
+- **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Executed Kaggle Beef SAM 2.1 prompt-rescue audit across 6 conditions (A0-A5, 120 evaluations) on Modal (`tigerwood693`, T4). Point prompts (A1-A3) completely rescued the 50% zero-mask failure (100% return rate, fragmentation reduced from 118 to 16.6 comps); detector prompts (A4, A5) achieved 95% return (1 recumbent failure). Visual status: PENDING HUMAN REVIEW.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Executed primary Behavior SAM 2.1 segmentation sanity check (`sam2.1_s.pt`) across 45 frames on Modal (`tigerwood693`, T4). Verified CVB 100% mask return (A: 0.9746 containment, B: 0.9526 containment); exposed Beef 50% technical failure (`sam_no_mask` on 10/20) and extreme stall-bar fragmentation (mean 118 components). Visual verdict: PENDING HUMAN REVIEW.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Generated and audited canonical leakage-safe CVB + Kaggle Beef Behavior protocol (5,274 samples across 267 source/session groups; 0 overlap; Seed 2026); cleared Gate 1 for Behavior.
 - **[2026-09-20] Convo 0178fee0-5a16-4a5c-8d7f-7b932bf6ae08**: Investigated publicly available records, position, and contact channels for Subal Chandra Roy (NBL / National Bank Limited).
