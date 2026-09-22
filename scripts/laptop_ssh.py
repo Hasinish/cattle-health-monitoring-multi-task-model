@@ -32,6 +32,8 @@ def run_laptop_cmd(cmd: str, timeout: int = 60):
     # Mandatory step: Always verify hostname first
     stdin, stdout, stderr = client.exec_command("hostname")
     remote_host = stdout.read().decode().strip()
+    _ = stdout.channel.recv_exit_status()
+
     if remote_host.upper() != EXPECTED_HOSTNAME.upper():
         print(
             f"[FATAL] Hostname mismatch! Expected {EXPECTED_HOSTNAME}, got {remote_host}. Aborting!",
