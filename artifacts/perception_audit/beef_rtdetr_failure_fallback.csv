@@ -1,0 +1,4 @@
+sample_id,canonical_behavior,session_id,source_video_id,frame_index,prompt_strategy,exact_prompt_coordinates,mask_returned,mask_status,inference_time_ms,mask_area_ratio,number_of_connected_components,original_rtdetr_failure
+beef_4_4_clip_0,Drinking,4,4,125,fallback_single_center_point,"{""points"": [[112.0, 112.0]], ""labels"": [1]}",True,segmented,2491.87,0.0264,6,True
+beef_131_5_clip_0,Feeding,131,131,125,fallback_single_center_point,"{""points"": [[112.0, 112.0]], ""labels"": [1]}",True,segmented,170.57,0.264,146,True
+beef_00000000580000000_27_clip_3,Lying,580000000,580000000,125,fallback_single_center_point,"{""points"": [[112.0, 112.0]], ""labels"": [1]}",True,segmented,141.13,0.0948,25,True
