@@ -1,3 +1,14 @@
+# Session Summary — 2026-09-23 (Kaggle Beef SAM 2.1 A4 vs A5 Fresh-40 Comparison)
+
+- Executed head-to-head empirical comparison between detector-guided condition A4 (RT-DETR-L largest box -> SAM 2.1) and condition A5 (RT-DETR box + positive center point -> SAM 2.1) on 40 fresh canonical training frames (Seed 2026, 10 Drinking, 10 Feeding, 10 Lying, 10 Standing; 0 overlap with prior 20 samples; 29 unique sessions; Modal profile `tigerwood693`, GPU Tier `T4`).
+- **Comparative Metrics (N=40 frames per condition):**
+  - **A4 (RT-DETR-L Largest Box):** Mask return rate **92.5% (37/40)**; 3 upstream RT-DETR-L detection failures (`beef_4_4_clip_0` in Drinking, `beef_131_5_clip_0` in Feeding, `beef_00000000580000000_27_clip_3` in Lying); mean area ratio 0.2733 (median 0.2708); mean connected components **31.4 (median 17.0)**.
+  - **A5 (RT-DETR-L Largest Box + Center Point):** Mask return rate **92.5% (37/40)**; same 3 upstream detection failures; mean area ratio 0.2789 (median 0.2707); mean connected components **19.6 (median 16.0)** (37.6% reduction in fragmentation).
+  - Conditional Mask Return (Given Cow Detection): **100.0% (37/37)** for both conditions.
+- Generated ONE master contact sheet (`docs/audits/assets/beef_A4_A5_fresh40/contact_sheet.jpg`, 2688x2620 px, 4 columns x 10 rows: Drinking, Feeding, Lying, Standing, each showing `Original | A4 Overlay | A5 Overlay`) and 40 individual 3-panel composites.
+- Final Qualitative Status: Explicitly marked **PENDING HUMAN REVIEW** (no automated winner selected).
+- Deliverables: `scripts/audit_beef_A4_A5_fresh40.py`, `artifacts/perception_audit/beef_A4_A5_fresh40.csv` (80 rows), `docs/audits/assets/beef_A4_A5_fresh40/`, `docs/research_log/2026-09-23_beef_A4_A5_fresh40.md`.
+
 # Session Summary — 2026-09-23 (Kaggle Beef SAM 2.1 Prompt-Rescue Audit)
 
 - Executed controlled prompt-rescue evaluation on the identical 20 Kaggle Beef training frames comparing 5 rescue strategies against baseline A0 (`[0, 0, 223, 223]`) using SAM 2.1 Small (`sam2.1_s.pt`) and RT-DETR-L (`rtdetr-l.pt`) on Modal (`tigerwood693`, T4).
@@ -479,6 +490,7 @@
 
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
 
+- **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Executed head-to-head comparison between detector-guided A4 (RT-DETR box -> SAM 2.1) and A5 (RT-DETR box + center point -> SAM 2.1) on 40 fresh canonical train samples (Seed 2026, 29 sessions; Modal profile tigerwood693, T4 GPU). Both achieved 92.5% mask return (37/40) with 3 upstream RT-DETR-L failures (7.5%); A5 reduced mean connected components by 37.6% (19.6 vs 31.4). Generated master 4x10 contact sheet (2688x2620 px) and 40 individual composites. Status: PENDING HUMAN REVIEW.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Executed Kaggle Beef SAM 2.1 prompt-rescue audit across 6 conditions (A0-A5, 120 evaluations) on Modal (`tigerwood693`, T4). Point prompts (A1-A3) completely rescued the 50% zero-mask failure (100% return rate, fragmentation reduced from 118 to 16.6 comps); detector prompts (A4, A5) achieved 95% return (1 recumbent failure). Visual status: PENDING HUMAN REVIEW.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Executed primary Behavior SAM 2.1 segmentation sanity check (`sam2.1_s.pt`) across 45 frames on Modal (`tigerwood693`, T4). Verified CVB 100% mask return (A: 0.9746 containment, B: 0.9526 containment); exposed Beef 50% technical failure (`sam_no_mask` on 10/20) and extreme stall-bar fragmentation (mean 118 components). Visual verdict: PENDING HUMAN REVIEW.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Generated and audited canonical leakage-safe CVB + Kaggle Beef Behavior protocol (5,274 samples across 267 source/session groups; 0 overlap; Seed 2026); cleared Gate 1 for Behavior.
