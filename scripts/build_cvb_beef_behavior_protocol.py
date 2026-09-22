@@ -168,7 +168,7 @@ def build_protocol(repo_root: Path, seed=2026):
     
     # Standard schema:
     # dataset, sample_id, source_path, source_video_id, session_id, tracklet_id,
-    # behavior_original, behavior_canonical, fps, start_frame, end_frame, n_frames, camera_id, split
+    # behavior_original, behavior_canonical, fps, start_frame, end_frame, n_frames, duration_sec, camera_id, split
     
     cvb_unified = pd.DataFrame({
         "dataset": "cvb",
@@ -180,9 +180,10 @@ def build_protocol(repo_root: Path, seed=2026):
         "behavior_original": df_cvb_canonical["behavior_original"],
         "behavior_canonical": df_cvb_canonical["behavior_canonical"],
         "fps": 30.0,
-        "start_frame": df_cvb_canonical["start_frame"],
-        "end_frame": df_cvb_canonical["end_frame"],
-        "n_frames": df_cvb_canonical["n_frames"],
+        "start_frame": df_cvb_canonical["start_frame"].astype(int),
+        "end_frame": df_cvb_canonical["end_frame"].astype(int),
+        "n_frames": df_cvb_canonical["n_frames"].astype(int),
+        "duration_sec": (df_cvb_canonical["n_frames"].astype(float) / 30.0).round(4),
         "camera_id": df_cvb_canonical["camera_id"],
         "split": df_cvb_canonical["split"]
     })
@@ -196,10 +197,11 @@ def build_protocol(repo_root: Path, seed=2026):
         "tracklet_id": df_beef_canonical["bytetrack_id"],
         "behavior_original": df_beef_canonical["behavior"],
         "behavior_canonical": df_beef_canonical["behavior_canonical"],
-        "fps": 25.0,
+        "fps": df_beef_canonical["fps"].astype(float),
         "start_frame": 0,
-        "end_frame": 250,  # 10s default continuous clip @ 25fps
-        "n_frames": 250,
+        "end_frame": df_beef_canonical["n_frames"].astype(int) - 1,  # 0-based inclusive indexing
+        "n_frames": df_beef_canonical["n_frames"].astype(int),
+        "duration_sec": df_beef_canonical["duration_sec"].astype(float),
         "camera_id": "pen_cctv1",
         "split": df_beef_canonical["split"]
     })
@@ -471,6 +473,13 @@ if __name__ == "__main__":
         assert len(bf_tr & bf_te) == 0
         assert len(bf_va & bf_te) == 0
         assert (df_m[df_m["dataset"] == "beef_cattle_behavior"]["behavior_canonical"] == "Walking").sum() == 0
+        # Frame indexing and duration checks
+        beef_sub = df_m[df_m["dataset"] == "beef_cattle_behavior"]
+        assert (beef_sub["start_frame"] == 0).all(), "Beef start_frame must be 0"
+        assert (beef_sub["end_frame"] == beef_sub["n_frames"] - 1).all(), "Beef end_frame must be n_frames - 1"
+        assert (df_m["duration_sec"] > 0).all(), "All duration_sec must be positive"
+        assert (beef_sub["n_frames"] != 250).sum() > 0, "Beef n_frames must reflect actual probed lengths, not hardcoded 250"
+        print(f"[VERIFY] Verified {len(beef_sub)} Beef clips with exact frame metadata ({(beef_sub['n_frames'] != 250).sum()} clips != 250 frames).")
         print("[VERIFY] All protocol assertions PASSED 100%!")
     else:
         build_protocol(root, seed=2026)

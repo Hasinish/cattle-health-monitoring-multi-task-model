@@ -3,15 +3,15 @@
 - Extracted and audited annotation-level bounding-box tracklet segments from CVB (Cattle Visual Behaviors) directly on Modal volume `cvb-data` (profile `tigerwood693`, minimal CPU/RAM). Parsed 1,163,408 bounding boxes from 502 `instances_default.json` files, yielding 2,481 canonical continuous single-behavior track segments (1,212 excluded) across 452 cuts and 66 original source videos (`arm01_{camera}_{date}_{time}`).
 - Integrated Kaggle Beef Cattle Behavior dataset (2,793 continuous video clips across 201 surveillance sessions) with canonical 5-class taxonomy (`Standing`, `Lying`, `Feeding`, `Drinking`, `Walking`). Excluded `ruminate` (1,544 clips). Highlighted critical limitation: `Walking` is 100% ABSENT in Kaggle Beef; all 171 Walking samples in the primary training stack originate from CVB.
 - Built deterministic protocol generation and verification suite (`scripts/build_cvb_beef_behavior_protocol.py`) using multi-objective group-stratified search (Seed 2026).
-- Generated canonical split manifests in `datasets/behavior/cvb_beef/`:
-  - `manifest.csv`: 5,274 samples across 267 groups (SHA-256: `19b82484d126507d085d66afc5a0f7b49a1a098f498d2c80052a13a5a279e919`).
-  - `train.csv`: 3,785 samples (71.8%) across 184 groups (SHA-256: `fa8126c987179152ac677f8bf4cf5ae608cca0245be4302f50a5485507444750`).
-  - `val.csv`: 680 samples (12.9%) across 39 groups (SHA-256: `7cd1cdfaa4cc203cfedf8ee192ff8e5d045c41b8ec1fb13785a53032cd1fdf68`).
-  - `test.csv`: 809 samples (15.3%) across 44 groups (SHA-256: `57709e2aa2916684ea7ca6329b3e755d373ab773fbd91ed3037c3446ab0bda87`).
-  - `label_mapping.csv`: Complete 17-label mapping (SHA-256: `3fec13cf624c87c4852c286d528f95c478a5e01dfdf6804bb775c7dd49e0c529`).
+- Generated canonical split manifests in `datasets/behavior/cvb_beef/` with exact physical ffprobe frame counts (0-based inclusive indexing for Beef: start=0, end=n_frames-1; 58 clips != 250 frames):
+  - `manifest.csv`: 5,274 samples across 267 groups (SHA-256: `cfe54ba2dc939c4329fd5683e2ff832d1fd3376d263a1400452b206f779d5c36`).
+  - `train.csv`: 3,785 samples (71.8%; CVB: 1,747, Beef: 2,038) across 184 groups (SHA-256: `117d3191b175f4a6f43dc3cfb92f1ecbe42230f7f46a01c2d67cb81d84177e30`).
+  - `val.csv`: 680 samples (12.9%; CVB: 312, Beef: 368) across 39 groups (SHA-256: `897105d6266eba01b2b7bd45e2a7eb63bca7e9107faa202b07ba82e6d866b925`).
+  - `test.csv`: 809 samples (15.3%; CVB: 422, Beef: 387) across 44 groups (SHA-256: `0a67faf182a5ce8d3c02188656553310a6720a54d23f114b80d8b6093e00b30e`).
+  - `label_mapping.csv`: Complete 17-label mapping (SHA-256: `08f1482f6ee1014885ee3dbb8bacc671d178d0570c56aa8726c008f5005a482f`).
   - `split_report.md`: Formal verification and audit documentation.
 - Executed and passed 100% rigorous assertion checks: 0 CVB `source_video_id` overlap, 0 Kaggle Beef `session_id` overlap, 0 sample collisions, 0 excluded labels, Walking strictly CVB-only, all 5 classes covered across train, val, and test.
-- Formally cleared Gate 1 for the primary Behavior stack. Updated `datasets/dataset_registry.csv` and authored research log `docs/research_log/2026-09-23_cvb_beef_behavior_protocol_verification.md`.
+- Reconciled `phase3_canonical_roadmap.md` and `memory/state.md`: marked Gate 1 cleared across all tasks.
 - Preserved existing MmCows cow-disjoint protocol untouched as external identity-aware validation.
 
 # Session Summary — 2026-09-23 (Phase 3 ScienceDB RGB Single-Task BCS Baseline Pipeline Corrections & Compute Realignment)

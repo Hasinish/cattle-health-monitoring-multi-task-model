@@ -192,6 +192,7 @@ Reference materials, prior sample defense posters, and official CSE400 formattin
 ### `scripts/`
 Automation utilities for batch experiments, metric aggregation, dataset restoration, and environment setup.
 - `extract_cvb_track_segments.py`: Remote Modal data extraction script (`cvb-data` volume on `tigerwood693`, minimal CPU/RAM) parsing 1,163,408 bounding boxes from 502 CVB `instances_default.json` files into contiguous single-behavior track segments.
+- `probe_beef_clips_ffprobe.py`: Remote Modal ffprobe script (`beef-behavior-data` volume on `tigerwood693`, minimal CPU/RAM) extracting exact fps, n_frames, and duration_sec across all 4,337 Kaggle Beef clips.
 - `build_cvb_beef_behavior_protocol.py`: Deterministic protocol generation and verification suite implementing multi-objective group-stratified search (Seed 2026), building `datasets/behavior/cvb_beef/` manifests, and running rigorous anti-leakage assertions.
 - `audit_cvb_stage1.py` & `audit_cvb_stage2.py`: Diagnostic forensic scripts auditing CVB filesystem structure, JSON schemas, and bounding box behaviors on Modal.
 - `audit_beef_behavior_stage4.py`: Forensic audit script evaluating Kaggle Beef video clips, frame counts, and session distributions.

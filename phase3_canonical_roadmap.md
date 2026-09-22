@@ -392,7 +392,7 @@ Acceptance criteria:
 
 ## 4.2 CVB + Kaggle Beef combined Behavior protocol
 
-**Status: REOPENED / REQUIRED BEFORE BEHAVIOR TRAINING (2026-09-23)**
+**Status: COMPLETE & VERIFIED (2026-09-23)**
 
 Do not randomly split frames, tracklets, or short clips.
 
@@ -453,13 +453,13 @@ Evaluation requirements:
 
 Acceptance criteria:
 
-- [ ] CVB source-video groups never cross train/val/test
-- [ ] Kaggle Beef session/source-video groups never cross train/val/test
-- [ ] canonical 5-class mapping recorded and versioned
-- [ ] no random frame/clip leakage
-- [ ] per-dataset class counts recorded
-- [ ] Walking source-confounding limitation explicitly documented
-- [ ] split seed and manifest hashes recorded
+- [x] CVB source-video groups never cross train/val/test (44 Train, 10 Val, 12 Test; 0 overlap)
+- [x] Kaggle Beef session/source-video groups never cross train/val/test (140 Train, 29 Val, 32 Test; 0 overlap)
+- [x] canonical 5-class mapping recorded and versioned (`datasets/behavior/cvb_beef/label_mapping.csv`)
+- [x] no random frame/clip leakage (100% atomic video/session group isolation)
+- [x] per-dataset class counts recorded (CVB: 2,481; Beef: 2,793; Combined: 5,274)
+- [x] Walking source-confounding limitation explicitly documented (Walking is 100% CVB-only; 0 in Beef)
+- [x] split seed and manifest hashes recorded (Seed 2026; manifest SHA-256: `cfe54ba2dc939c4329fd5683e2ff832d1fd3376d263a1400452b206f779d5c36`)
 
 ---
 
@@ -1487,17 +1487,17 @@ Do not create a second competing memory system.
 # 20. Go / No-Go Gates
 
 ## Gate 1 — Data Ready
-**Status: REOPENED FOR BEHAVIOR PRIMARY-STACK CORRECTION (2026-09-23)**
+**Status: CLEARED (2026-09-23)**
 
 Proceed with full Behavior training only if:
 
 - [x] ScienceDB burst-group-disjoint / sequence-safe split verified (repaired 2026-09-20; 0 cross-burst leakage)
 - [x] SideViewCows2026 protocols generated and duplicate audit passed (4 canonical protocols verified 2026-09-20; 0 exact duplicates, min perceptual distance 7 bits)
 - [x] MmCows grouped protocol remains valid for external identity-aware validation
-- [ ] CVB source-video grouped train/val/test protocol built and verified
-- [ ] Kaggle Beef session/source-video grouped train/val/test protocol built and verified
-- [ ] combined CVB + Kaggle Beef manifest and canonical 5-class mapping versioned
-- [ ] required duplicate / provenance leakage checks pass for the new primary Behavior stack
+- [x] CVB source-video grouped train/val/test protocol built and verified (44 Train, 10 Val, 12 Test; 0 overlap)
+- [x] Kaggle Beef session/source-video grouped train/val/test protocol built and verified (140 Train, 29 Val, 32 Test; 0 overlap)
+- [x] combined CVB + Kaggle Beef manifest and canonical 5-class mapping versioned (`datasets/behavior/cvb_beef/`)
+- [x] required duplicate / provenance leakage checks pass for the new primary Behavior stack (0 source-video overlap, 0 session overlap, 0 sample collisions, 0 excluded labels, Walking 100% CVB-only)
 
 ---
 
@@ -1566,25 +1566,22 @@ Do not spend paid GPU time debugging basic script failures that can be reproduce
 
 ## Current state
 
-**STEP 1 — Data Registry and Clean Splits: REOPENED FOR BEHAVIOR STACK CORRECTION (2026-09-23)**
-**GATE 1: REOPENED FOR BEHAVIOR ONLY**
+**STEP 1 — Data Registry and Clean Splits: COMPLETE & LOCKED (2026-09-23)**  
+**GATE 1: CLEARED (2026-09-23)**
 
-Already-complete deliverables remain valid:
+All required Phase 3 data deliverables are complete and locked:
 
-1. [x] Build canonical dataset registry
-2. [x] Audit ScienceDB identity semantics and repair burst-group split
-3. [x] Retrieve/index Ruchay 2026 metadata and manifest
-4. [x] Preserve MmCows cow-disjoint protocol for external identity-aware validation
+1. [x] Build canonical dataset registry (`datasets/dataset_registry.csv`)
+2. [x] Audit ScienceDB identity semantics and repair burst-group split (`datasets/bcs/sciencedb/`)
+3. [x] Retrieve/index Ruchay 2026 metadata and manifest (`datasets/bcs/external/ruchay2026/`)
+4. [x] Preserve MmCows cow-disjoint protocol for external identity-aware validation (`datasets/behavior/mmcows/`)
 5. [x] Document MultiCamCows2024 upstream blocker and adopt SideViewCows2026 contingency
-6. [x] Download/index SideViewCows2026
-7. [x] Download/index BECA-D / BECA-L
-8. [x] Audit and physically verify CVB
-9. [x] Audit and physically verify Kaggle Beef Cattle Behavior
-10. [x] Build and verify deterministic SideViewCows2026 primary Re-ID protocols
-
-New required Behavior deliverable:
-
-- [ ] Build the canonical combined CVB + Kaggle Beef 5-class manifest and leakage-safe source/session-grouped split protocol.
+6. [x] Download/index SideViewCows2026 (`datasets/id/external/sideviewcows2026/`)
+7. [x] Download/index BECA-D / BECA-L (`datasets/id/external/beca/`)
+8. [x] Audit and physically verify CVB (`datasets/behavior/cvb/`)
+9. [x] Audit and physically verify Kaggle Beef Cattle Behavior (`datasets/behavior/beef_cattle_behavior/`)
+10. [x] Build and verify deterministic SideViewCows2026 primary Re-ID protocols (`datasets/id/sideviewcows2026/`)
+11. [x] Build and verify canonical combined CVB + Kaggle Beef 5-class manifest and leakage-safe source/session-grouped split protocol (`datasets/behavior/cvb_beef/`; 5,274 samples across 267 groups; Gate 1 cleared)
 
 ---
 
@@ -1592,25 +1589,7 @@ New required Behavior deliverable:
 
 Immediate next task:
 
-> **Build the canonical CVB + Kaggle Beef Behavior manifest, label mapping, and leakage-safe split protocol. Do not train yet.**
-
-Required next outputs:
-
-```text
-datasets/behavior/cvb_beef/manifest.csv
-datasets/behavior/cvb_beef/train.csv
-datasets/behavior/cvb_beef/val.csv
-datasets/behavior/cvb_beef/test.csv
-datasets/behavior/cvb_beef/label_mapping.csv
-datasets/behavior/cvb_beef/split_report.md
-```
-
-Then update:
-- `memory/state.md`
-- `datasets/dataset_registry.csv`
-- `docs/research_log/README.md`
-
-Do not begin full Behavior training until this corrected Gate 1 requirement passes.
+> **Resolve operational viewpoint strategy for Step 3 caching; synthesize upstream caching pipeline parameters.**
 
 ---
 

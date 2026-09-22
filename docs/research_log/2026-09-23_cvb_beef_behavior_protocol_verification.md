@@ -48,16 +48,23 @@ Using profile `tigerwood693` on minimal resources (`cpu=1.0, memory=2048`, zero 
 - Excluded 1,212 segments (`hidden`: 350, `none`: 329, `ruminating-lying`: 185, `other`: 163, `grooming`: 86, `ruminating-standing`: 77, `running`: 22).
 - Saved master CVB tracks manifest: `datasets/behavior/cvb/cvb_tracks_manifest.csv`.
 
-### 3.2 Kaggle Beef Behavior Manifest Integration
+### 3.2 Kaggle Beef Behavior Manifest Integration & ffprobe Physical Verification
 From `datasets/behavior/beef_cattle_behavior/manifest.csv`:
 - Extracted 4,337 single-cow MP4 clips across 203 recording sessions.
+- Executed physical forensic inspection via `ffprobe` directly on Modal persistent volume `beef-behavior-data` (`/data/beef_behavior/Category Videos/cows/`, profile `tigerwood693`, `cpu=1.0, memory=2048`, zero GPU) using `scripts/probe_beef_clips_ffprobe.py`.
+- Probed all 4,337 clips with multi-threaded ffmpeg/ffprobe to extract exact `fps`, `n_frames`, and `duration_sec`:
+  - Exactly 25.0 FPS across 100% of clips.
+  - Duration ranges from 0.080s to 10.000s (frame counts range from 2 to 250 frames; mean 248.09 frames).
+  - 78 total clips in the raw dataset deviate from the default 250 frames (1.80%).
+  - In the canonical 2,793-clip subset, exactly 58 clips deviate from 250 frames.
+  - Defined explicit frame indexing: zero-based inclusive (`start_frame = 0`, `end_frame = n_frames - 1`).
 - Applied canonical mapping:
   - `lie` -> `Lying`: 1,362 clips
   - `stand` -> `Standing`: 638 clips
   - `eat` -> `Feeding`: 546 clips
   - `drink` -> `Drinking`: 247 clips
 - Excluded 1,544 `ruminate` clips.
-- Retained 2,793 canonical clips across 201 sessions.
+- Retained 2,793 canonical clips across 201 sessions with exact verified frame and duration metadata.
 
 ### 3.3 Stratified Group Partitioning (Seed 2026)
 We implemented `scripts/build_cvb_beef_behavior_protocol.py` with multi-objective search satisfying:
@@ -80,13 +87,16 @@ We implemented `scripts/build_cvb_beef_behavior_protocol.py` with multi-objectiv
 | **Sample Uniqueness** | Across All Splits | 0 collisions (5,274 unique keys) | **PASS** |
 | **Walking Confounding** | Beef Walking Count | Exactly 0 (171 from CVB only) | **PASS** |
 | **Label Hygiene** | Excluded Classes | Exactly 0 samples entered manifests | **PASS** |
+| **Frame Indexing Integrity** | Beef start_frame/end_frame | Exactly 0-based inclusive (end = n_frames - 1) | **PASS** |
 
-### Split Hashes (Deterministic Provenance)
-- `datasets/behavior/cvb_beef/manifest.csv`: `19b82484d126507d085d66afc5a0f7b49a1a098f498d2c80052a13a5a279e919`
-- `datasets/behavior/cvb_beef/train.csv`: `fa8126c987179152ac677f8bf4cf5ae608cca0245be4302f50a5485507444750`
-- `datasets/behavior/cvb_beef/val.csv`: `7cd1cdfaa4cc203cfedf8ee192ff8e5d045c41b8ec1fb13785a53032cd1fdf68`
-- `datasets/behavior/cvb_beef/test.csv`: `57709e2aa2916684ea7ca6329b3e755d373ab773fbd91ed3037c3446ab0bda87`
-- `datasets/behavior/cvb_beef/label_mapping.csv`: `3fec13cf624c87c4852c286d528f95c478a5e01dfdf6804bb775c7dd49e0c529`
+### Split Hashes (Deterministic Provenance Recomputed Directly From Disk)
+- `datasets/behavior/cvb_beef/manifest.csv`: `cfe54ba2dc939c4329fd5683e2ff832d1fd3376d263a1400452b206f779d5c36`
+- `datasets/behavior/cvb_beef/train.csv`: `117d3191b175f4a6f43dc3cfb92f1ecbe42230f7f46a01c2d67cb81d84177e30`
+- `datasets/behavior/cvb_beef/val.csv`: `897105d6266eba01b2b7bd45e2a7eb63bca7e9107faa202b07ba82e6d866b925`
+- `datasets/behavior/cvb_beef/test.csv`: `0a67faf182a5ce8d3c02188656553310a6720a54d23f114b80d8b6093e00b30e`
+- `datasets/behavior/cvb_beef/label_mapping.csv`: `08f1482f6ee1014885ee3dbb8bacc671d178d0570c56aa8726c008f5005a482f`
+- `datasets/behavior/cvb/cvb_tracks_manifest.csv`: `0887e302e10a04d9e33b889055a350b20892d060b4fb8b1d04f1e4219758d2f9`
+- `datasets/behavior/beef_cattle_behavior/manifest.csv`: `3f3ef4aa10fa5fda01b0d3365cfb28a13a0a690e3a96826f3723713d8fe10e69`
 
 ---
 
@@ -131,7 +141,9 @@ We implemented `scripts/build_cvb_beef_behavior_protocol.py` with multi-objectiv
 | Artifact | File Path | Description |
 | :--- | :--- | :--- |
 | **CVB Track Extraction Script** | `scripts/extract_cvb_track_segments.py` | Modal script extracting annotation-level CVB tracks on profile `tigerwood693`. |
+| **Beef ffprobe Metadata Script** | `scripts/probe_beef_clips_ffprobe.py` | Modal script probing exact fps, n_frames, and duration_sec across all 4,337 Beef clips on profile `tigerwood693`. |
 | **Master CVB Tracks Manifest** | `datasets/behavior/cvb/cvb_tracks_manifest.csv` | Master manifest of 3,693 CVB track segments with bounding-box metrics. |
+| **Master Kaggle Beef Manifest** | `datasets/behavior/beef_cattle_behavior/manifest.csv` | 4,337 clips with exact verified n_frames and duration_sec metadata. |
 | **Protocol Generation Script** | `scripts/build_cvb_beef_behavior_protocol.py` | Deterministic group-stratified partition generator and verification suite. |
 | **Combined Manifest** | `datasets/behavior/cvb_beef/manifest.csv` | Master manifest of 5,274 canonical samples across CVB and Beef. |
 | **Train Partition** | `datasets/behavior/cvb_beef/train.csv` | 3,785 training samples across 184 groups. |
@@ -146,10 +158,11 @@ We implemented `scripts/build_cvb_beef_behavior_protocol.py` with multi-objectiv
 ## 8. Next Steps
 
 - [x] Extract authentic annotation-level track segments from all 502 CVB JSONs on Modal.
-- [x] Build unified `cvb_beef` schema and map to canonical 5 classes.
+- [x] Probe physical Kaggle Beef clips with ffprobe on Modal and record exact frame counts and durations.
+- [x] Build unified `cvb_beef` schema and map to canonical 5 classes with zero-based inclusive frame indexing for Beef.
 - [x] Run deterministic group-stratified splitting with Seed 2026.
 - [x] Verify 100% disjointness, sample uniqueness, label hygiene, and Walking provenance.
 - [x] Save Git-tracked manifests, label mapping, and split report.
-- [x] Update `datasets/dataset_registry.csv`, `memory/state.md`, and research log index.
+- [x] Update `datasets/dataset_registry.csv`, `memory/state.md`, `phase3_canonical_roadmap.md`, and research log index.
 - [ ] Commit and push changes to `origin/main`.
 - [ ] Mirror to `D:\custom-antigravity`.

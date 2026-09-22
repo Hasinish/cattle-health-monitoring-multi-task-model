@@ -150,9 +150,13 @@
 - Formally clarified ordinal head terminology: Frank & Hall (2001) independent cumulative BCE (`ordinal_bce`, default) vs Cao et al. (2020) weight-shared CORAL (`coral`).
 - Executed 2-epoch smoke test on local GTX 1050 Ti (~32s runtime, code 0) verifying train, val, and 100% bit-identical checkpoint save/resume.
 - Executed Compute Execution Policy Realignment: disqualified the locked/bloated BRACU Lab Research PC (RTX 5090) and redirected all future heavy compute to rotating Modal cloud profiles.
+- Built and verified canonical leakage-safe CVB + Kaggle Beef Behavior protocol (`datasets/behavior/cvb_beef/`; 5,274 samples across 267 source/session groups; Seed 2026).
+- Probed physical Kaggle Beef clips with ffprobe on Modal volume `beef-behavior-data` (`scripts/probe_beef_clips_ffprobe.py`, profile `tigerwood693`, minimal CPU/RAM): verified 100% 25.0 FPS, exact durations (0.08s to 10.0s) and frame counts (2 to 250 frames; 78 non-250 clips in total dataset, 58 non-250 clips in canonical subset). Rebuilt manifests with zero-based inclusive indexing for Beef (`start_frame = 0, end_frame = n_frames - 1`).
+- Recomputed exact sub-dataset split counts (CVB: 1,747 train, 312 val, 422 test; Beef: 2,038 train, 368 val, 387 test; Combined: 3,785 train, 680 val, 809 test) and disk hashes (manifest: `cfe54ba2...`).
+- Fully reconciled `phase3_canonical_roadmap.md`: marked section 4.2 acceptance criteria complete, marked Gate 1 cleared, updated Current Exact Position, aligning roadmap with `state.md`.
 
 ## Current Blockers & Notes
-- **STEP 1 IS 100% COMPLETE & LOCKED (Gate 1 Cleared)**: CVB + Kaggle Beef canonical Behavior protocol successfully generated, audited, and verified (5,274 samples across 267 groups; 0 source video / session leakage). Gate 1 is now 100% CLEARED across BCS, Re-ID, and Behavior.
+- **STEP 1 IS 100% COMPLETE & LOCKED (Gate 1 Cleared across BCS, Re-ID, and Behavior)**: CVB + Kaggle Beef canonical Behavior protocol successfully generated, physically audited via ffprobe, and verified (5,274 samples across 267 groups; 0 source video / session leakage). Gate 1 is now 100% CLEARED in both `memory/state.md` and `phase3_canonical_roadmap.md`.
 - **STEP 2.1 (Localization Feasibility) IS 100% COMPLETE**.
 - **STEP 2.2 (Segmentation Feasibility) IS 100% COMPLETE**.
 - **STEP 2.3 (Pose Feasibility) IS 100% COMPLETE**.

@@ -26,10 +26,10 @@ This report documents the canonical primary Behavior Recognition training partit
 
 | File | Relative Path | Samples | SHA-256 Checksum |
 | :--- | :--- | :--- | :--- |
-| **Combined Manifest** | `datasets/behavior/cvb_beef/manifest.csv` | 5,274 | `19b82484d126507d085d66afc5a0f7b49a1a098f498d2c80052a13a5a279e919` |
-| **Train Split** | `datasets/behavior/cvb_beef/train.csv` | 3,785 | `fa8126c987179152ac677f8bf4cf5ae608cca0245be4302f50a5485507444750` |
-| **Validation Split** | `datasets/behavior/cvb_beef/val.csv` | 680 | `7cd1cdfaa4cc203cfedf8ee192ff8e5d045c41b8ec1fb13785a53032cd1fdf68` |
-| **Test Split** | `datasets/behavior/cvb_beef/test.csv` | 809 | `57709e2aa2916684ea7ca6329b3e755d373ab773fbd91ed3037c3446ab0bda87` |
+| **Combined Manifest** | `datasets/behavior/cvb_beef/manifest.csv` | 5,274 | `cfe54ba2dc939c4329fd5683e2ff832d1fd3376d263a1400452b206f779d5c36` |
+| **Train Split** | `datasets/behavior/cvb_beef/train.csv` | 3,785 | `117d3191b175f4a6f43dc3cfb92f1ecbe42230f7f46a01c2d67cb81d84177e30` |
+| **Validation Split** | `datasets/behavior/cvb_beef/val.csv` | 680 | `897105d6266eba01b2b7bd45e2a7eb63bca7e9107faa202b07ba82e6d866b925` |
+| **Test Split** | `datasets/behavior/cvb_beef/test.csv` | 809 | `0a67faf182a5ce8d3c02188656553310a6720a54d23f114b80d8b6093e00b30e` |
 | **Label Mapping** | `datasets/behavior/cvb_beef/label_mapping.csv` | 17 | `08f1482f6ee1014885ee3dbb8bacc671d178d0570c56aa8726c008f5005a482f` |
 
 ---
