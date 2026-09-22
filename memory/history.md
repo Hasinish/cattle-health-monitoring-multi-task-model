@@ -1,3 +1,13 @@
+# Session Summary — 2026-09-22 (Phase 3 MmCows Behavior Visual Verification & Crop Quality Audit)
+
+- Generated 7 high-resolution contact sheets (3x3 grid, 9 samples per class, 560x445 px per tile, 1720x1450 px per sheet) with complete provenance metadata banners (Cow ID, Camera ID, Split, Resolution, Filename) for all 7 active MmCows behavior categories (`Walking`, `Standing`, `Feeding_head_up`, `Feeding_head_down`, `Licking`, `Drinking`, `Lying`).
+- Executed direct visual audit to verify whether MmCows behavior crops are good or trash:
+  - Confirmed MmCows crops are overwhelmingly GOOD and structurally sound for deep learning behavior recognition (median resolution ~390x370 px, up to 931x719 px; 2.5x to 4x higher pixel density than CBVD-5).
+  - Cubicle stall divider pipes are realistic commercial CCTV occlusions; model priors (segmentation/keypoints) handle them effectively.
+  - Feeding postures (`Feeding_head_up` vs `Feeding_head_down`) exhibit distinct cervical spine angles.
+  - Locomotion (`Walking`) and self-grooming (`Licking`) exhibit clear leg articulation and lateral neck flexion.
+- Generated comprehensive verification report at `docs/audits/phase3_mmcows_behavior_visual_verification.md` and research log at `docs/research_log/2026-09-22_mmcows_behavior_visual_verification.md`.
+
 # Session Summary — 2026-09-22 (Phase 3 1,000-Image Real-Cattle Visual Quality Reassessment & Contact Sheet Pack)
 
 - Executed formal evidence-preservation audit for the 1,000-image human real-cattle annotation review across ScienceDB (334), MmCows (333), and SideViewCows2026 (333) (`artifacts/perception_audit/viewpoint_1000_annotation_manifest.csv`).
