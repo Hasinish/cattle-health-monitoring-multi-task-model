@@ -1,3 +1,12 @@
+# Session Summary — 2026-09-22 (Phase 3 CVB Dataset Modal Cloud Volume Ingestion & Verification)
+
+- Successfully downloaded and verified the complete external behavior dataset **CVB (Cattle Visual Behaviors)** into Modal persistent volume `cvb-data` mounted at `/data/cvb` on profile `tigerwood693`.
+- Deployed high-throughput multi-stream pipeline using 64-connection `aria2c` with live summary streaming and 60-second periodic `volume.commit()` checkpoints (`scripts/modal_cvb_pipeline.py`).
+- Downloaded all 226,344 files (225,829 1080p JPEG frames + 503 COCO JSON annotation files across 589 video cuts; 14.29 GB total disk) cleanly without IP bans or network dropouts.
+- Minimal container resource efficiency: `cpu=1.0, memory=2048` strictly adhered to. Total compute cost ~$1.13.
+- Executed physical integrity verification via `verify_cvb`: 100% of 226,344 files accounted for; sample 1080p RGB JPEGs and COCO annotation files inspected and valid.
+- Updated canonical `datasets/dataset_registry.csv` marking CVB as `AVAILABLE_ON_CLOUD` (Modal Volume `cvb-data`).
+
 # Session Summary — 2026-09-22 (Phase 3 Ruchay 2026 BCS Visual Quality Audit Pack)
 
 - Built representative 100-sample visual contact-sheet pack for candidate Primary External BCS validation dataset Ruchay et al. 2026 (`10.5281/zenodo.20290988`).
