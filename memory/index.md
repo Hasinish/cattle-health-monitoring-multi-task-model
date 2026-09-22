@@ -81,6 +81,8 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `assets/agent_behavior_inspection/`: Staging directory containing 20 MmCows crops, 20 CBVD-5 crops, 20 CBVD-5 scenes, and `manifest.json`.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-23_cvb_beef_behavior_protocol_verification.md`: Complete audit and verification log for the canonical CVB + Kaggle Beef Behavior dataset protocol (`datasets/behavior/cvb_beef/`), detailing annotation-level CVB parsing on Modal (2,481 segments), Kaggle Beef clip alignment (2,793 clips), deterministic multi-objective group-stratified partitioning (Seed 2026), 100% group isolation across 267 groups, and Gate 1 clearance.
+  - `2026-09-23_sciencedb_bcs_baseline_pipeline.md`: Implementation, auditing, and smoke verification of the Phase 3 Step 4 single-task ScienceDB RGB BCS baseline pipeline (`scripts/train_sciencedb_bcs_baseline.py`).
   - `2026-09-23_behavior_primary_stack_correction.md`: Approved evidence-based roadmap correction replacing MmCows as the sole primary Behavior dataset with a combined CVB + Kaggle Beef dense-video training stack; retains MmCows as external identity-aware validation and requires new source/session-grouped splits before training.
   - `2026-09-22_real_cattle_visual_quality_reassessment.md`: Step 2 1,000-image human-verified real-cattle visual quality reassessment and contact sheet audit across ScienceDB, MmCows, and SideViewCows2026.
   - `2026-09-21_moo_resnet18_full_viewpoint_training_and_real_diagnostic.md`: Step 2.4 full fine-tuning of ResNet-18 on 8-direction MOO synthetic split and real cattle diagnostic benchmark evaluation.
@@ -139,6 +141,16 @@ Canonical benchmark data and task registries.
     - `audit_report.md`: Forensic report reconciling 5,923 vs 5,940 discrepancy and proving validity of Class 7.
 - `behavior/`:
   - `behavior_index.csv`: 213,686-row master index mapping crops to 7 active classes and legacy split.
+  - `cvb_beef/`:
+    - `manifest.csv`: 5,274-row unified canonical Primary Behavior dataset manifest combining CVB and Kaggle Beef with complete tracklet, frame, camera, and session provenance.
+    - `train.csv` (3,785 rows / 184 groups), `val.csv` (680 rows / 39 groups), `test.csv` (809 rows / 44 groups): Leakage-safe source/session-grouped split manifests.
+    - `label_mapping.csv`: Complete 17-row mapping defining the canonical 5-class taxonomy (`Standing`, `Lying`, `Feeding`, `Drinking`, `Walking`) and documenting exclusions.
+    - `split_report.md`: Forensic audit report and mathematical distribution proofs for the CVB + Kaggle Beef protocol.
+  - `cvb/`:
+    - `cvb_cuts_manifest.csv`: 502-row cut-level forensic manifest mapping cuts to camera IDs, dates, start/end frames, and primary tags.
+    - `cvb_tracks_manifest.csv`: 3,693-row annotation-level tracklet segment manifest extracted directly from 502 CVB COCO JSONs on Modal volume `cvb-data` (2,481 canonical, 1,212 excluded).
+  - `beef_cattle_behavior/`:
+    - `manifest.csv`: 4,337-row clip-level master manifest of Kaggle Beef Behavior dataset cataloging video clips, sessions, duration, fps, and behavior tags.
   - `mmcows/`:
     - `manifest.csv`: 213,686-row master manifest mapping all crops to cow ID, camera ID, epoch, ISO timestamp, time block, synchronized event ID, canonical split, and folds 0–3.
     - `provenance_audit.csv`: Cow-level provenance audit table summarizing all 16 cows across 20 parameters.
@@ -179,6 +191,10 @@ Reference materials, prior sample defense posters, and official CSE400 formattin
 - `MODAL_PROFILES.md`: Cheatsheet and multi-account mapping across all 6 Modal profiles (`tigerwood693`, `tigerwood697`, `hasinishrak74001`, `dryousufmozumder`, `hasinishrak2015`, `mohtasimahmedsamii`) with role descriptions, command reference, and grant tracking.
 ### `scripts/`
 Automation utilities for batch experiments, metric aggregation, dataset restoration, and environment setup.
+- `extract_cvb_track_segments.py`: Remote Modal data extraction script (`cvb-data` volume on `tigerwood693`, minimal CPU/RAM) parsing 1,163,408 bounding boxes from 502 CVB `instances_default.json` files into contiguous single-behavior track segments.
+- `build_cvb_beef_behavior_protocol.py`: Deterministic protocol generation and verification suite implementing multi-objective group-stratified search (Seed 2026), building `datasets/behavior/cvb_beef/` manifests, and running rigorous anti-leakage assertions.
+- `audit_cvb_stage1.py` & `audit_cvb_stage2.py`: Diagnostic forensic scripts auditing CVB filesystem structure, JSON schemas, and bounding box behaviors on Modal.
+- `audit_beef_behavior_stage4.py`: Forensic audit script evaluating Kaggle Beef video clips, frame counts, and session distributions.
 - `build_real_cattle_quality_contact_sheets.py`: Deterministic generation script for the 1,000-image real-cattle visual quality contact-sheet pack. Generates 42 high-resolution 5x5 sheets with visible metadata bars across ScienceDB, MmCows, and SideViewCows2026, and writes `phase3_real_cattle_visual_quality_contact_sheet_index.md`.
 - `modal_moo_pipeline.py`: Modal cloud pipeline for MOO (Multi-view Oriented Observations) dataset. Ingests 34.03 GB archive into Modal volume `moo-data`, extracts 55.24 GB `data.hdf5` and 136.36 MB `metadata.json`, inspects metadata/HDF5 structure, and trains a 5-class linear viewpoint head on frozen ImageNet ResNet-18 in 0.64s on CPU (`moo_resnet18_viewpoint.pth`).
 - `modal_mmcows_pipeline.py`: Modal cloud pipeline for MmCows Behavior dataset. Downloads 12.7 GB `cropped_bboxes.zip` via Rust `hf_transfer` in ~90s into volume `mmcows-data` on `tigerwood697`, unzips all 213,686 behavior crops, and purges zip archive.

@@ -1,0 +1,18 @@
+dataset,behavior_original,behavior_canonical,canonical_id,status,notes
+cvb,resting-standing,Standing,0,included,Upright resting posture
+cvb,resting-lying,Lying,1,included,Sternal/lateral recumbency
+cvb,grazing,Feeding,2,included,Pasture foraging and ingestion
+cvb,drinking,Drinking,3,included,Water trough ingestion
+cvb,walking,Walking,4,included,Active locomotion
+cvb,ruminating-standing,None,-1,excluded,Rumination jaw chew cycles excluded from initial 5-class posture baseline
+cvb,ruminating-lying,None,-1,excluded,Rumination jaw chew cycles excluded from initial 5-class posture baseline
+cvb,hidden,None,-1,excluded,Severely occluded or out-of-frame cattle
+cvb,other,None,-1,excluded,"Heterogeneous catch-all actions (sniffing, head-butting, defecation)"
+cvb,grooming,None,-1,excluded,Self-licking or rubbing against fence posts
+cvb,none,None,-1,excluded,Ambiguous or unannotated segment
+cvb,running,None,-1,excluded,Rare rapid locomotion (only 4 raw tracks)
+beef_cattle_behavior,stand,Standing,0,included,Upright posture in barn
+beef_cattle_behavior,lie,Lying,1,included,Recumbent posture on bedding
+beef_cattle_behavior,eat,Feeding,2,included,Feed bunk foraging and ingestion
+beef_cattle_behavior,drink,Drinking,3,included,Drinker cup ingestion
+beef_cattle_behavior,ruminate,None,-1,excluded,Rumination cud-chewing excluded from initial 5-class posture baseline

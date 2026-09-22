@@ -1,3 +1,19 @@
+# Session Summary — 2026-09-23 (Canonical CVB + Kaggle Beef Behavior Protocol & Gate 1 Clearance)
+
+- Extracted and audited annotation-level bounding-box tracklet segments from CVB (Cattle Visual Behaviors) directly on Modal volume `cvb-data` (profile `tigerwood693`, minimal CPU/RAM). Parsed 1,163,408 bounding boxes from 502 `instances_default.json` files, yielding 2,481 canonical continuous single-behavior track segments (1,212 excluded) across 452 cuts and 66 original source videos (`arm01_{camera}_{date}_{time}`).
+- Integrated Kaggle Beef Cattle Behavior dataset (2,793 continuous video clips across 201 surveillance sessions) with canonical 5-class taxonomy (`Standing`, `Lying`, `Feeding`, `Drinking`, `Walking`). Excluded `ruminate` (1,544 clips). Highlighted critical limitation: `Walking` is 100% ABSENT in Kaggle Beef; all 171 Walking samples in the primary training stack originate from CVB.
+- Built deterministic protocol generation and verification suite (`scripts/build_cvb_beef_behavior_protocol.py`) using multi-objective group-stratified search (Seed 2026).
+- Generated canonical split manifests in `datasets/behavior/cvb_beef/`:
+  - `manifest.csv`: 5,274 samples across 267 groups (SHA-256: `19b82484d126507d085d66afc5a0f7b49a1a098f498d2c80052a13a5a279e919`).
+  - `train.csv`: 3,785 samples (71.8%) across 184 groups (SHA-256: `fa8126c987179152ac677f8bf4cf5ae608cca0245be4302f50a5485507444750`).
+  - `val.csv`: 680 samples (12.9%) across 39 groups (SHA-256: `7cd1cdfaa4cc203cfedf8ee192ff8e5d045c41b8ec1fb13785a53032cd1fdf68`).
+  - `test.csv`: 809 samples (15.3%) across 44 groups (SHA-256: `57709e2aa2916684ea7ca6329b3e755d373ab773fbd91ed3037c3446ab0bda87`).
+  - `label_mapping.csv`: Complete 17-label mapping (SHA-256: `3fec13cf624c87c4852c286d528f95c478a5e01dfdf6804bb775c7dd49e0c529`).
+  - `split_report.md`: Formal verification and audit documentation.
+- Executed and passed 100% rigorous assertion checks: 0 CVB `source_video_id` overlap, 0 Kaggle Beef `session_id` overlap, 0 sample collisions, 0 excluded labels, Walking strictly CVB-only, all 5 classes covered across train, val, and test.
+- Formally cleared Gate 1 for the primary Behavior stack. Updated `datasets/dataset_registry.csv` and authored research log `docs/research_log/2026-09-23_cvb_beef_behavior_protocol_verification.md`.
+- Preserved existing MmCows cow-disjoint protocol untouched as external identity-aware validation.
+
 # Session Summary — 2026-09-23 (Phase 3 ScienceDB RGB Single-Task BCS Baseline Pipeline Corrections & Compute Realignment)
 
 - Implemented, corrected, and verified clean Phase 3 ScienceDB RGB single-task BCS baseline pipeline (`scripts/train_sciencedb_bcs_baseline.py`) using the canonical leakage-safe 5,653-burst-group train/val/test split (`datasets/bcs/sciencedb/`).
@@ -382,6 +398,7 @@
 
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
 
+- **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Generated and audited canonical leakage-safe CVB + Kaggle Beef Behavior protocol (5,274 samples across 267 source/session groups; 0 overlap; Seed 2026); cleared Gate 1 for Behavior.
 - **[2026-09-20] Convo 0178fee0-5a16-4a5c-8d7f-7b932bf6ae08**: Investigated publicly available records, position, and contact channels for Subal Chandra Roy (NBL / National Bank Limited).
 - **[2026-09-20] Convo e78aa1ac-ddc7-4c32-8bab-f25894ade0df**: Phase 3 Step 2.4 Cattle Viewpoint Taxonomy & Operational Strategy Audit; completed 60-image manual review and multi-option strategy analysis.
 - **[2026-09-20] Convo 27375138-e032-457f-a2a6-753e72f4a342**: Completed forensic local dataset inventory on GTX 1050 Ti machine; distinguished physical local availability from canonical scientific roles; marked MultiCamCows2024 download as BLOCKED (upstream issue); created canonical dataset registry `datasets/dataset_registry.csv` (13 datasets, 28 columns).
