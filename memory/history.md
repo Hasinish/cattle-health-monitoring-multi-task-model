@@ -1,3 +1,22 @@
+# Session Summary — 2026-09-23 (Primary Behavior Stack SAM 2.1 Segmentation Sanity Check)
+
+- Executed small zero-shot segmentation sanity check using pretrained SAM 2.1 Small (`sam2.1_s.pt`) directly on the identical 45 training midpoint frames evaluated during the RT-DETR-L localization audit (25 CVB, 20 Kaggle Beef; Seed 2026; Modal profile `tigerwood693`, GPU Tier `T4`).
+- **CVB (25 samples across 5 behaviors, 1080p, 25 unique source videos):**
+  - Evaluated two diagnostic prompts: Prompt A (official target GT bbox) and Prompt B (matched RT-DETR-L bbox; detector diagnostic only, NOT autonomous target association).
+  - Both Prompt A and Prompt B achieved a **100.0% mask return rate (25/25)** across all 5 classes (`Drinking`, `Feeding`, `Lying`, `Standing`, `Walking`).
+  - Mask Area Ratio: Mean 0.0195 for Prompt A, Mean 0.0185 for Prompt B.
+  - In-Target Box Sanity Ratio: Prompt A achieved Mean 0.9746 (Median 0.9975, Min 0.8533); Prompt B achieved Mean 0.9526 (Median 0.9955, Min 0.5319 on 1 sister-cow overlap).
+  - Delta between A and B was minimal (-0.0220 mean, -0.0020 median), demonstrating RT-DETR-L localization boxes cleanly guide SAM without severe bleed.
+- **Kaggle Beef (20 samples across 4 behaviors, 224x224 px single-cow crops, full-crop box prompt `[0, 0, 223, 223]`):**
+  - Mask Return Rate: **50.0% (10/20)**; **10 technical failures (`sam_no_mask`)**.
+  - Failures concentrated on head-down/standing postures: `Drinking` (1/5 returned, 4 failed), `Feeding` (1/5 returned, 4 failed), `Standing` (3/5 returned, 2 failed), `Lying` (5/5 returned, 0 failed). Full-crop prompt provides zero spatial contrast when cows span the frame envelope.
+  - Returned masks suffered severe fragmentation through metal stall pipes: Mean connected components = **118.3** (range: 12 to 233 components per crop).
+- Qualitative Visual Verdict: Marked strictly as **PENDING HUMAN REVIEW**. Master contact sheets generated for visual review:
+  - `docs/audits/assets/behavior_primary_segmentation_sanity/cvb_sam21_gt_contact_sheet.jpg`
+  - `docs/audits/assets/behavior_primary_segmentation_sanity/cvb_sam21_rtdetr_contact_sheet.jpg`
+  - `docs/audits/assets/behavior_primary_segmentation_sanity/beef_sam21_fullcrop_contact_sheet.jpg`
+- Deliverables: `scripts/audit_behavior_primary_segmentation.py`, `artifacts/perception_audit/behavior_primary_segmentation_sanity.csv`, `docs/audits/assets/behavior_primary_segmentation_sanity/`, `docs/research_log/2026-09-23_behavior_primary_segmentation_sanity.md`.
+
 # Session Summary — 2026-09-23 (Behavior Primary Stack RT-DETR-L Localization Sanity Check)
 
 - Executed small empirical cattle localization sanity check using pretrained RT-DETR-L (`rtdetr-l.pt`, COCO class 19 `cow`, conf >= 0.25) directly on the newly approved primary Behavior training partition (`datasets/behavior/cvb_beef/train.csv`).
@@ -446,6 +465,7 @@
 
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
 
+- **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Executed primary Behavior SAM 2.1 segmentation sanity check (`sam2.1_s.pt`) across 45 frames on Modal (`tigerwood693`, T4). Verified CVB 100% mask return (A: 0.9746 containment, B: 0.9526 containment); exposed Beef 50% technical failure (`sam_no_mask` on 10/20) and extreme stall-bar fragmentation (mean 118 components). Visual verdict: PENDING HUMAN REVIEW.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Generated and audited canonical leakage-safe CVB + Kaggle Beef Behavior protocol (5,274 samples across 267 source/session groups; 0 overlap; Seed 2026); cleared Gate 1 for Behavior.
 - **[2026-09-20] Convo 0178fee0-5a16-4a5c-8d7f-7b932bf6ae08**: Investigated publicly available records, position, and contact channels for Subal Chandra Roy (NBL / National Bank Limited).
 - **[2026-09-20] Convo e78aa1ac-ddc7-4c32-8bab-f25894ade0df**: Phase 3 Step 2.4 Cattle Viewpoint Taxonomy & Operational Strategy Audit; completed 60-image manual review and multi-option strategy analysis.
