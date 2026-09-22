@@ -282,7 +282,7 @@ STEP 13 Final repeated runs + thesis tables
 
 # 4. STEP 1 — Data Registry and Clean Splits
 
-**Status:** NEXT / IMMEDIATE
+**Status:** COMPLETE / GATE 1 CLEARED
 
 ## Goal
 
