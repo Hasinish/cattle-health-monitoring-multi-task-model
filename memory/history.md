@@ -1,3 +1,13 @@
+# Session Summary — 2026-09-22 (Phase 3 Ruchay 2026 BCS Visual Quality Audit Pack)
+
+- Built representative 100-sample visual contact-sheet pack for candidate Primary External BCS validation dataset Ruchay et al. 2026 (`10.5281/zenodo.20290988`).
+- Selected exactly 10 RGB images per BCS class across all 10 Ferguson 5-point classes (2.75 to 5.00) using deterministic seed 2026, maximizing biological cow diversity to 94 unique cows (theoretical maximum given BCS 2.75 only has 4 cows).
+- Downloaded only ~340 MB of target 1080p RGB PNGs directly from Zenodo archives via buffered HTTP Range requests, eliminating the need to download 77.74 GB of raw data.
+- Generated 10 high-resolution contact sheets (2x5 grid, 640x360 px image tiles, long side 640 px >= 500 px, 1320x2240 px per sheet) with complete provenance metadata banners (Sample ID, BCS, Cow ID, Session, Passage, Filename).
+- Authored master audit manifest (`artifacts/perception_audit/ruchay_bcs_visual_audit_manifest.csv`) and comprehensive markdown index (`docs/audits/phase3_ruchay_bcs_visual_audit_index.md`).
+- Documented findings in research log (`docs/research_log/2026-09-22_ruchay_bcs_visual_audit_pack.md`) and updated research log index table.
+- Committed deliverables to main branch (commit `704a9bd`) and pushed to GitHub `origin/main`.
+
 # Session Summary — 2026-09-22 (Phase 3 MmCows Sequential Clips & Temporal Continuity Audit)
 
 - Investigated temporal sampling characteristics of MmCows behavior crops:
