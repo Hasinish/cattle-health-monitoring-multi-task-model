@@ -1,3 +1,11 @@
+# Session Summary — 2026-09-22 (Phase 3 Ruchay 2026 BCS Manual Visual Quality Verdict)
+
+- Completed formal manual visual-quality inspection (Hasin Ishrak assisted by ChatGPT vision) across all 10 contact sheets (100 samples, 10 Ferguson BCS classes, 94 unique biological cow IDs) of candidate Primary External BCS validation benchmark Ruchay et al. (2026).
+- Verified dorsal spine, loin, hooks, pins, and tailhead morphology are observable and sharp under 1080p overhead nadir Kinect imaging. Flanking cows and stall pipes require upstream bounding-box localization (RT-DETR-L) and segmentation masking (SAM 2.1).
+- Exhaustive manifest cross-tabulation across all 25,700 samples (1,025 cows) proved critical session confounding: BCS 2.75 is 100% confined to `06.12.2024` (4 cows), while high BCS classes 4.25–5.00 are 100% confined to `27.03.2025` (133 cows).
+- Formal verdict: **PASS FOR EXTERNAL BCS VALIDATION**. Ruchay 2026 is confirmed as the Primary External BCS Validation benchmark under frozen evaluation rules with explicit documentation of session confounding.
+- Authored full audit report `docs/audits/phase3_ruchay_bcs_visual_quality_audit.md` and research log `docs/research_log/2026-09-22_ruchay_bcs_manual_visual_quality_verdict.md`. Updated research log README index and workspace state.
+
 # Session Summary — 2026-09-22 (Phase 3 CVB Dataset Modal Cloud Volume Ingestion & Verification)
 
 - Successfully downloaded and verified the complete external behavior dataset **CVB (Cattle Visual Behaviors)** into Modal persistent volume `cvb-data` mounted at `/data/cvb` on profile `tigerwood693`.
