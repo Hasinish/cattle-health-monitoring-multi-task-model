@@ -1,3 +1,13 @@
+# Session Summary — 2026-09-23 (Phase 3 ScienceDB RGB Single-Task BCS Baseline Pipeline)
+
+- Implemented and verified clean Phase 3 ScienceDB RGB single-task BCS baseline pipeline (`scripts/train_sciencedb_bcs_baseline.py`) using the canonical leakage-safe 5,653-burst-group train/val/test split (`datasets/bcs/sciencedb/`).
+- Formally classified ScienceDB as burst-group-disjoint / sequence-safe (true biological cow IDs are not provided by publisher; disclaimed cow-disjointness).
+- Integrated ImageNet-pretrained ResNet-18 with CORAL ordinal regression (and linear classification head).
+- Implemented true physiological BCS MAE calculation (scale 3.25 to 4.25, step 0.25) alongside Balanced Accuracy, Macro-F1, Acc@0, Acc@1, and per-class metrics.
+- Verified checkpoint save/resume to be 100% bit-identical.
+- Executed 2-epoch smoke test on local GTX 1050 Ti (~16s runtime, zero warnings, real BCS MAE: 0.3700 units, Acc@1: 53.60%, resume verification tested). Full 30-epoch training reserved for Research PC (RTX 5090).
+- Deliverables: `scripts/train_sciencedb_bcs_baseline.py`, `artifacts/bcs_baseline/bcs_baseline_metrics.json`, `artifacts/bcs_baseline/bcs_baseline_smoke_summary.md`, `docs/research_log/2026-09-23_sciencedb_bcs_baseline_pipeline.md`.
+
 # Session Summary — 2026-09-22 (Phase 3 Kaggle Beef Behavior Dataset Acquisition Verification & Scientific Audit)
 
 - Verified 100% physical completion of the 48.55 GB master archive (`archive.zip`, 48,553,721,000 bytes) on Modal persistent volume `beef-behavior-data` (`/data/beef_behavior/` under profile `tigerwood693`).
