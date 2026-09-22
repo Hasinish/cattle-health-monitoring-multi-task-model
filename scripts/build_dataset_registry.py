@@ -4,10 +4,60 @@ Defines canonical Phase 3 datasets, scientific roles, and local physical status 
 """
 
 import csv
+import hashlib
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT_CSV = REPO_ROOT / "datasets" / "dataset_registry.csv"
+
+
+def compute_beef_manifest_metrics():
+    manifest_path = REPO_ROOT / "datasets" / "behavior" / "beef_cattle_behavior" / "manifest.csv"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Missing Beef manifest: {manifest_path}")
+
+    with open(manifest_path, "rb") as f:
+        sha256 = hashlib.sha256(f.read()).hexdigest()
+
+    durations = []
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            durations.append(float(row["duration_sec"]))
+
+    total_sec = sum(durations)
+    total_hrs = total_sec / 3600.0
+    n_clips = len(durations)
+    return {
+        "sha256": sha256,
+        "n_clips": n_clips,
+        "total_sec": total_sec,
+        "total_hrs": total_hrs,
+    }
+
+
+def compute_cvb_beef_manifest_metrics():
+    manifest_path = REPO_ROOT / "datasets" / "behavior" / "cvb_beef" / "manifest.csv"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"Missing CVB+Beef manifest: {manifest_path}")
+
+    with open(manifest_path, "rb") as f:
+        sha256 = hashlib.sha256(f.read()).hexdigest()
+
+    samples = 0
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        for _ in reader:
+            samples += 1
+
+    return {
+        "sha256": sha256,
+        "samples": samples,
+    }
+
+
+BEEF_METRICS = compute_beef_manifest_metrics()
+CVB_BEEF_METRICS = compute_cvb_beef_manifest_metrics()
 
 COLUMNS = [
     "dataset",
@@ -134,7 +184,7 @@ ROWS = [
     {
         "dataset": "MmCows",
         "dataset_version": "1.0",
-        "task": "Behavior",
+        "task": "Behavior (External Identity-Aware Validation)",
         "paper_url": "https://openreview.net/forum?id=VfX2tXl2w0",
         "dataset_url": "https://huggingface.co/datasets/cair/MmCows",
         "license": "CC-BY-4.0",
@@ -157,14 +207,14 @@ ROWS = [
         "viewpoint_available": "Multi-view CCTV (surveillance angles)",
         "modalities": "RGB bounding-box crops",
         "label_schema": "7 active behavior classes (1 through 7)",
-        "notes": "Primary in-domain Behavior dataset. 213,686 crops verified. 16 cows, 4 synchronized CCTV cameras, 7 classes. Canonical split (11/2/3 cows) and 4-Fold GroupKFold suite verified with zero leakage.",
+        "notes": "External identity-aware Behavior stress test after 2026-09-23 roadmap correction. 213,686 crops verified. 16 cows, 4 synchronized CCTV cameras, 7 classes. Canonical cow-disjoint split and 4-Fold GroupKFold suite remain valuable for external generalization; shared 5-class mapping excludes Licking and merges Feeding_head_up/down to Feeding.",
         "local_status_1050ti": "AVAILABLE",
         "local_verified_date": "2026-09-20",
     },
     {
         "dataset": "CBVD-5",
         "dataset_version": "10.1038/s41598-024-65953-x",
-        "task": "Behavior",
+        "task": "Behavior (Secondary External Validation)",
         "paper_url": "https://doi.org/10.1038/s41598-024-65953-x",
         "dataset_url": "https://www.kaggle.com/datasets/fandaoerji/cbvd-5cow-behavior-video-dataset",
         "license": "CC-BY-4.0",
@@ -187,14 +237,14 @@ ROWS = [
         "viewpoint_available": "Side / oblique barn cameras",
         "modalities": "RGB video, extracted frames, bounding box annotations",
         "label_schema": "5 behavior classes (Feeding, Lying, Standing, Walking, Other)",
-        "notes": "Primary external behavior benchmark for larger herd validation. 887 MP4 videos, 206,100 mini frames, 5,322 annotated label frames across 107 cows. Downloaded via kagglehub (fandaoerji/cbvd-5cow-behavior-video-dataset) and fully verified on disk.",
+        "notes": "Secondary external behavior validation after 2026-09-23 roadmap correction. Use only on defensibly compatible labels; do not claim cow-disjoint evaluation without verified persistent biological IDs. 887 MP4 videos and 206,100 mini frames verified on disk.",
         "local_status_1050ti": "AVAILABLE",
         "local_verified_date": "2026-09-20",
     },
     {
         "dataset": "CVB",
         "dataset_version": "1.0 (CSIRO DAP collection 58916v001)",
-        "task": "Behavior (Optional External Validation)",
+        "task": "Behavior (Primary Dense-Video Training Stack)",
         "paper_url": "https://doi.org/10.25919/bmtp-5j95",
         "dataset_url": "https://doi.org/10.25919/bmtp-5j95",
         "license": "CSIRO Data Licence",
@@ -217,22 +267,22 @@ ROWS = [
         "viewpoint_available": "Open-pasture stationary wide-angle (fence arm mounted)",
         "modalities": "RGB 1080p frames, bounding box annotations (COCO & AVA formats)",
         "label_schema": "12 official classes (grazing: 496k, resting-lying: 209k, resting-standing: 138k, hidden: 108k, ruminating-lying: 76k, drinking: 33k, ruminating-standing: 29k, other: 27k, walking: 24k, grooming: 17k, none: 5k, running: 1.7k)",
-        "notes": "Optional external behavior dataset. 226,344 files (225,829 1080p frames, 1,163,408 bounding boxes across 502 cuts). 30 FPS dense temporal video. Zero biological cow IDs. Median bbox resolution 104x85 px (16.3x smaller than MmCows). Official AVA split leaks 88.9% of source videos across train/val. Requires source-video grouped splitting.",
+        "notes": "Primary dense-video Behavior training stack member after approved 2026-09-23 correction. 30 FPS temporal video; canonical mapping uses resting-standing->Standing, resting-lying->Lying, grazing->Feeding, drinking->Drinking, walking->Walking. Official AVA split is forbidden because 88.9% of validation source videos overlap training; rebuild source-video-grouped splits.",
         "local_status_1050ti": "AVAILABLE_ON_CLOUD",
         "local_verified_date": "2026-09-22",
     },
     {
         "dataset": "Kaggle_Beef_Cattle_Behavior",
         "dataset_version": "1.0 (lucyfirst/beef-cattle-behavior-data-set)",
-        "task": "Behavior (Candidate)",
+        "task": "Behavior (Primary Dense-Video Training Stack)",
         "paper_url": "NA",
         "dataset_url": "https://www.kaggle.com/datasets/lucyfirst/beef-cattle-behavior-data-set",
         "license": "Unknown (Kaggle default)",
         "download_status": "DOWNLOADED (Modal Volume beef-behavior-data)",
         "local_root": "datasets/behavior/beef_cattle_behavior/ (Manifests & audit pack; raw data on Modal Volume beef-behavior-data at /data/beef_behavior/)",
-        "sha256_or_manifest_hash": "638e7bdb55876552309ef9c252a2d4f2f2dd4a9f85bd8d3f696704bc6dc0cc07",
+        "sha256_or_manifest_hash": BEEF_METRICS["sha256"],
         "n_images": "1143130 (224x224 RGB image crops in Labelframes/ inside archive.zip)",
-        "n_videos": "4337 (single-cow MP4 clips across 5 behaviors; 500 full-scene surveillance MP4s in archive)",
+        "n_videos": f"{BEEF_METRICS['n_clips']} (single-cow MP4 clips across 5 behaviors; 500 full-scene surveillance MP4s in archive)",
         "n_cows": "6 (commercial beef cows monitored in captive pen; true biological cow IDs not provided)",
         "n_farms": "1 (captive barn enclosure)",
         "n_sessions": "203 (recording session prefixes across 168 hours / 7 days)",
@@ -242,14 +292,14 @@ ROWS = [
         "session_id_available": "TRUE (session prefixes in filenames)",
         "tracklet_id_available": "TRUE (ByteTrack IDs 1-100+; highly fragmented)",
         "camera_id_available": "TRUE (1 stationary camera)",
-        "timestamp_available": "TRUE (25.0 FPS consecutive frames, median 10.0s clips; 11.84h total video)",
+        "timestamp_available": f"TRUE (25.0 FPS consecutive frames, median 10.0s clips; {BEEF_METRICS['total_sec']:,.2f}s / {BEEF_METRICS['total_hrs']:.2f}h total video via ffprobe)",
         "source_video_available": "TRUE (500 full-scene videos in videos_cut/videos/ inside archive)",
         "viewpoint_available": "Captive barn top-down / high-angle oblique surveillance",
         "modalities": "RGB video (224x224 MP4), extracted frames (224x224 JPEG), YOLO detection labels (.txt)",
         "label_schema": "5 official classes (ruminate: 1544, lie: 1362, stand: 638, eat: 546, drink: 247). Walking is 100% ABSENT.",
-        "notes": "Candidate behavior benchmark. Master archive (48.55 GB) verified on Modal volume beef-behavior-data. 4,337 single-cow MP4 clips verified. 25.0 FPS dense video. Walking is 100% ABSENT. 0 biological cow IDs (ByteTrack IDs 1-100+ on 6 cows). Pre-resized 224x224 crops. Requires session-grouped splitting. Inode limit (500k) resolved by retaining master archive and pruning uncompressed frame cache.",
+        "notes": f"Primary dense-video Behavior training stack member after approved 2026-09-23 correction. {BEEF_METRICS['n_clips']:,} single-cow MP4 clips, 25 FPS, {BEEF_METRICS['total_sec']:,.2f}s ({BEEF_METRICS['total_hrs']:.2f}h; exhaustive ffprobe manifest supersedes earlier ~11.84h sampled estimate). Canonical mapping uses stand->Standing, lie->Lying, eat->Feeding, drink->Drinking; ruminate excluded from the shared 5-class baseline. Walking is absent. Requires recording-session/source-video grouped splitting; never random clip/frame splits.",
         "local_status_1050ti": "AVAILABLE_ON_CLOUD",
-        "local_verified_date": "2026-09-22",
+        "local_verified_date": "2026-09-23",
     },
     {
         "dataset": "XGain",
@@ -460,6 +510,36 @@ ROWS = [
         "notes": "External Re-ID long-term appearance stress test (appearance change over 5 continuous months). 12,172 images across 103 beef cattle. Fully downloaded from Figshare (32070171 / 63928608) and extracted.",
         "local_status_1050ti": "AVAILABLE",
         "local_verified_date": "2026-09-20",
+    },
+    {
+        "dataset": "CVB_Beef_Behavior",
+        "dataset_version": "1.0",
+        "task": "Behavior (Primary Dense-Video Training Protocol)",
+        "paper_url": "NA",
+        "dataset_url": "NA",
+        "license": "Combined",
+        "download_status": "BUILT",
+        "local_root": "datasets/behavior/cvb_beef/",
+        "sha256_or_manifest_hash": CVB_BEEF_METRICS["sha256"],
+        "n_images": str(CVB_BEEF_METRICS["samples"]),
+        "n_videos": "NA",
+        "n_cows": "0 (No reliable biological cow IDs; source/session-grouped)",
+        "n_farms": "2",
+        "n_sessions": "267 (66 CVB + 201 Beef)",
+        "n_cameras": "4",
+        "cow_id_available": "FALSE",
+        "farm_id_available": "TRUE",
+        "session_id_available": "TRUE",
+        "tracklet_id_available": "TRUE",
+        "camera_id_available": "TRUE",
+        "timestamp_available": "TRUE",
+        "source_video_available": "TRUE",
+        "viewpoint_available": "Mixed (Pasture wide-angle + Pen CCTV)",
+        "modalities": "RGB (1080p clips + 224x224 clips)",
+        "label_schema": "5 canonical classes (Lying: 1848, Feeding: 1841, Standing: 1037, Drinking: 377, Walking: 171 [CVB only])",
+        "notes": "Unified canonical Primary Behavior training protocol combining CVB (2,481 segments across 66 source videos) and Kaggle Beef (2,793 clips across 201 sessions). 100% source-video / session disjoint across train (3,785), val (680), test (809). Seed 2026. Walking is CVB-only.",
+        "local_status_1050ti": "AVAILABLE",
+        "local_verified_date": "2026-09-23",
     },
 ]
 

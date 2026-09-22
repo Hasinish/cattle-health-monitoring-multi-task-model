@@ -1,3 +1,20 @@
+# Session Summary — 2026-09-23 (Dataset Registry Generator Synchronization & Probed Beef Metrics Reconciliation)
+
+- Updated `scripts/build_dataset_registry.py` to deterministically reproduce `datasets/dataset_registry.csv` with 100% fidelity to the canonical Phase 3 dataset stack.
+- Implemented dynamic recomputation of Kaggle Beef Cattle Behavior manifest metrics directly from `datasets/behavior/beef_cattle_behavior/manifest.csv`:
+  - Verified SHA-256: `3f3ef4aa10fa5fda01b0d3365cfb28a13a0a690e3a96826f3723713d8fe10e69`
+  - Recomputed total duration: exactly 43,039.2400 seconds = 11.9553 hours (~11.96h) across 4,337 clips (1,075,981 frames), superseding the earlier sampled estimate (~11.84h).
+- Implemented dynamic recomputation of `CVB_Beef_Behavior` protocol manifest metrics directly from `datasets/behavior/cvb_beef/manifest.csv`:
+  - Verified SHA-256: `cfe54ba2dc939c4329fd5683e2ff832d1fd3376d263a1400452b206f779d5c36` (5,274 samples).
+- Reconciled canonical Behavior dataset roles in both generator script and registry:
+  - `CVB`: `Behavior (Primary Dense-Video Training Stack)`
+  - `Kaggle_Beef_Cattle_Behavior`: `Behavior (Primary Dense-Video Training Stack)`
+  - `MmCows`: `Behavior (External Identity-Aware Validation)`
+  - `CBVD-5`: `Behavior (Secondary External Validation)`
+  - `CVB_Beef_Behavior`: `Behavior (Primary Dense-Video Training Protocol)`
+- Added `CVB_Beef_Behavior` row generator to `scripts/build_dataset_registry.py`.
+- Verified idempotency: running `scripts/build_dataset_registry.py` a second time produces 0 unintended diff.
+
 # Session Summary — 2026-09-23 (Canonical CVB + Kaggle Beef Behavior Protocol & Gate 1 Clearance)
 
 - Extracted and audited annotation-level bounding-box tracklet segments from CVB (Cattle Visual Behaviors) directly on Modal volume `cvb-data` (profile `tigerwood693`, minimal CPU/RAM). Parsed 1,163,408 bounding boxes from 502 `instances_default.json` files, yielding 2,481 canonical continuous single-behavior track segments (1,212 excluded) across 452 cuts and 66 original source videos (`arm01_{camera}_{date}_{time}`).
