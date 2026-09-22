@@ -3,11 +3,11 @@
 **Date:** 2026-09-20  
 **Dataset Version:** ScienceDB DOI `10.57760/sciencedb.16704`  
 **Evaluation Protocol:** Burst-Group-Disjoint / Sequence-Safe (Phase 3 Canonical)  
-**Audit Status:** VERIFIED LEAK-FREE & BURST-SAFE  
+**Audit Status:** VERIFIED UNDER THE IMPLEMENTED BURST/SEQUENCE CHECKS
 
 ## 1. Executive Summary & Forensic Context
 
-This report documents the repaired, leak-free partition protocol for the ScienceDB Cattle BCS dataset.
+This report documents the repaired, burst-group-disjoint / sequence-safe partition protocol for the ScienceDB Cattle BCS dataset.
 - **Total Verified Images:** 53,566 RGB images (and 53,566 corresponding Pascal VOC XML annotations).
 - **Original Parsed Passages:** 5,662 clusters.
 - **Repaired Burst Groups:** 5,653 unified burst groups (connected components).
@@ -18,6 +18,7 @@ This report documents the repaired, leak-free partition protocol for the Science
   - `val_burst_groups ∩ test_burst_groups = 0`
 - **Exact Duplicate Leakage:** 0 cross-partition duplicates (all byte duplicates locked into same partitions).
 - **Burst Leakage Prevention:** 0 confirmed overlapping burst frames cross partitions.
+- **Leakage Finding:** No cross-partition burst/sequence leakage detected under the implemented checks.
 
 ## 2. Correction of Outdated Claims & Forensic Discovery
 
