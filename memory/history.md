@@ -1,3 +1,18 @@
+# Session Summary — 2026-09-22 (Phase 3 1,000-Image Real-Cattle Visual Quality Reassessment & Contact Sheet Pack)
+
+- Executed formal evidence-preservation audit for the 1,000-image human real-cattle annotation review across ScienceDB (334), MmCows (333), and SideViewCows2026 (333) (`artifacts/perception_audit/viewpoint_1000_annotation_manifest.csv`).
+- Recomputed all statistics deterministically:
+  - Overall strict-clean rate: 34.20% (342/1000).
+  - MmCows: 39.94% (133/333) unknown/ambiguous viewpoints, 54.35% (181/333) combined occlusion (93 severe, 88 partial), 12.91% (43/333) strict-clean.
+  - ScienceDB: 91.02% rear views, 99.70% occlusion-free, but 38.32% (128/334) multiple cows and 12.87% (43/334) body cutoff.
+  - SideViewCows2026: 97.00% side views, 32.13% body cutoff, 30.93% occlusion, 38.44% (128/333) strict-clean.
+- Verified all 8 discussed claims (MmCows 333 samples, 133 ambiguous, 88 partial, 93 severe, 43 strict-clean; ScienceDB 334 samples, 128 multiple cows; SideView 333 samples).
+- Generated 42 contact sheets (`docs/audits/assets/real_cattle_visual_quality_reassessment/`) covering 100% of the 1,000 images exactly once, with visible metadata banners and status tags.
+- Authored full contact sheet index (`docs/audits/phase3_real_cattle_visual_quality_contact_sheet_index.md`) and comprehensive main audit report (`docs/audits/phase3_real_cattle_visual_quality_reassessment.md`).
+- Reconciled earlier 20-sample MmCows inspection as sample-size-limited without modifying historical reports.
+- Enforced strict scientific decision boundaries: NO dataset roles changed, NO roadmap changes, NO promotion of alternatives without empirical proof. Warranted next investigation: task-specific visual BCS quality audit of Ruchay et al. 2026 RGB-D BCS.
+- Documented in `docs/research_log/2026-09-22_real_cattle_visual_quality_reassessment.md` and updated research log hub index.
+
 # Session Summary — 2026-09-21 (Phase 3 Modal Cloud Volume Ingestion: MmCows, ScienceDB & MOO)
 
 - Ingested primary Phase 3 datasets into Modal persistent storage volumes with minimal compute footprints:

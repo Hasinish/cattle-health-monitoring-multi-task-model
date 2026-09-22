@@ -1,7 +1,7 @@
 # 📊 Live Modal Billing & Credit Dashboard
 
 > **Live Auto-Refreshed Monitor**  
-> **Last Synchronized:** `2026-09-21 14:00:53`  
+> **Last Synchronized:** `2026-09-22 03:15:39`  
 > **Active Target Account:** `hasinishrak74001`
 
 ---
@@ -12,10 +12,10 @@
 | :--- | :--- |
 | 👥 **Discovered Accounts** | **6** (`dryousufmozumder, hasinishrak2015, hasinishrak74001, mohtasimahmedsamii, tigerwood693, tigerwood697`) |
 | 🎁 **Total Credit Grants** | **$122.00** |
-| 💸 **Total Consumed** | **$16.13** |
-| 🟢 **Total Remaining Balance** | **$105.87** |
-| 🚀 **Total Combined L40S Runtime** | **~3255 mins (~54.2 hours)** |
-| ⚡ **Total Combined H100 Runtime** | **~1280 mins (~21.3 hours)** |
+| 💸 **Total Consumed** | **$20.89** |
+| 🟢 **Total Remaining Balance** | **$101.11** |
+| 🚀 **Total Combined L40S Runtime** | **~3109 mins (~51.8 hours)** |
+| ⚡ **Total Combined H100 Runtime** | **~1222 mins (~20.4 hours)** |
 
 ---
 
@@ -25,10 +25,10 @@
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `dryousufmozumder` | Standby | $30.00 | $0.00 | **$30.00** | ~923m | ~363m | 🟢 Healthy | [View Ledger](https://modal.com/settings/dryousufmozumder/billing) |
 | `hasinishrak2015` | Standby | $30.00 | $0.00 | **$30.00** | ~923m | ~363m | 🟢 Healthy | [View Ledger](https://modal.com/settings/hasinishrak2015/billing) |
-| `hasinishrak74001` | 🔥 **ACTIVE** | $1.00 | $0.42 | **$0.58** | ~17m | ~7m | 🟡 Low | [View Ledger](https://modal.com/settings/hasinishrak74001/billing) |
+| `hasinishrak74001` | 🔥 **ACTIVE** | $1.00 | $0.65 | **$0.35** | ~10m | ~4m | 🟡 Low | [View Ledger](https://modal.com/settings/hasinishrak74001/billing) |
 | `mohtasimahmedsamii` | Standby | $1.00 | $0.95 | **$0.05** | ~1m | ~0m | 🟡 Low | [View Ledger](https://modal.com/settings/mohtasimahmedsamii/billing) |
-| `tigerwood693` | Standby | $30.00 | $14.00 | **$16.00** | ~492m | ~193m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood693/billing) |
-| `tigerwood697` | Standby | $30.00 | $0.76 | **$29.24** | ~899m | ~354m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood697/billing) |
+| `tigerwood693` | Standby | $30.00 | $18.48 | **$11.52** | ~354m | ~139m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood693/billing) |
+| `tigerwood697` | Standby | $30.00 | $0.81 | **$29.19** | ~898m | ~353m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood697/billing) |
 
 ---
 
@@ -55,10 +55,10 @@
 ### 💳 Profile: `hasinishrak74001` (CURRENT ACTIVE)
 - **Status**: 🟡 Low
 - **Grant Ceiling**: `$1.00`
-- **Metered Usage**: `$0.42`
-- **Remaining Balance**: **`$0.58`**
-- **Est. L40S GPU Runtime**: **~17 minutes** (0h 17m)
-- **Est. H100 GPU Runtime**: **~7 minutes** (0h 7m)
+- **Metered Usage**: `$0.65`
+- **Remaining Balance**: **`$0.35`**
+- **Est. L40S GPU Runtime**: **~10 minutes** (0h 10m)
+- **Est. H100 GPU Runtime**: **~4 minutes** (0h 4m)
 - **Out-of-Pocket Billed**: `$0.00`
 - **Direct Modal Link**: `https://modal.com/settings/hasinishrak74001/billing`
 ### 💳 Profile: `mohtasimahmedsamii` 
@@ -73,19 +73,19 @@
 ### 💳 Profile: `tigerwood693` 
 - **Status**: 🟢 Healthy
 - **Grant Ceiling**: `$30.00`
-- **Metered Usage**: `$14.00`
-- **Remaining Balance**: **`$16.00`**
-- **Est. L40S GPU Runtime**: **~492 minutes** (8h 12m)
-- **Est. H100 GPU Runtime**: **~193 minutes** (3h 13m)
+- **Metered Usage**: `$18.48`
+- **Remaining Balance**: **`$11.52`**
+- **Est. L40S GPU Runtime**: **~354 minutes** (5h 54m)
+- **Est. H100 GPU Runtime**: **~139 minutes** (2h 19m)
 - **Out-of-Pocket Billed**: `$0.00`
 - **Direct Modal Link**: `https://modal.com/settings/tigerwood693/billing`
 ### 💳 Profile: `tigerwood697` 
 - **Status**: 🟢 Healthy
 - **Grant Ceiling**: `$30.00`
-- **Metered Usage**: `$0.76`
-- **Remaining Balance**: **`$29.24`**
-- **Est. L40S GPU Runtime**: **~899 minutes** (14h 59m)
-- **Est. H100 GPU Runtime**: **~354 minutes** (5h 54m)
+- **Metered Usage**: `$0.81`
+- **Remaining Balance**: **`$29.19`**
+- **Est. L40S GPU Runtime**: **~898 minutes** (14h 58m)
+- **Est. H100 GPU Runtime**: **~353 minutes** (5h 53m)
 - **Out-of-Pocket Billed**: `$0.00`
 - **Direct Modal Link**: `https://modal.com/settings/tigerwood697/billing`
 

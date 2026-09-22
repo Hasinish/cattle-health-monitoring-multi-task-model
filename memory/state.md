@@ -5,8 +5,9 @@
 - **Core Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning and improve robustness across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE | STEP 2.2: COMPLETE | STEP 2.3: COMPLETE | STEP 2.4: REOPENED | STEP 2: IN PROGRESS)
-- **Immediate next action:** Determine operational viewpoint strategy for Step 3 caching given that full synthetic MOO fine-tuning (27.37% diagnostic accuracy, strong rear/rear-oblique prediction bias) remains insufficient as a standalone operational real-cattle viewpoint generator.
+## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE | STEP 2.2: COMPLETE | STEP 2.3: COMPLETE | STEP 2.4: REOPENED | STEP 2 DATA QUALITY MILESTONE: COMPLETE | STEP 2: IN PROGRESS)
+- **Immediate next action:** Conduct task-specific visual BCS quality audit on candidate external benchmark (Ruchay et al. 2026 RGB-D BCS) to determine whether ScienceDB framing/multi-cow issues warrant alternative role consideration; concurrently resolve operational viewpoint strategy for Step 3 caching given that real-cattle data quality audit reveals 39.9% viewpoint ambiguity in MmCows and synthetic-only transfer achieves 27.37% real diagnostic accuracy.
+- [x] STEP 2 Data Quality Milestone (1,000-Image Human Visual Quality Reassessment & Contact Sheet Pack): Recomputed all statistics deterministically from `artifacts/perception_audit/viewpoint_1000_annotation_manifest.csv` across ScienceDB (334), MmCows (333), and SideViewCows2026 (333). Verified only 34.20% (342/1000) meet strict-clean criteria. Key findings: MmCows has 39.94% (133/333) unknown/ambiguous viewpoints, 54.35% (181/333) combined occlusion (93 severe, 88 partial), and 12.91% (43/333) strict-clean; ScienceDB has 91.02% rear views and 99.70% occlusion-free, but suffers from 38.32% (128/334) multiple cows and 12.87% (43/334) body cutoff; SideViewCows2026 has 97.00% side views, 32.13% body cutoff, 30.93% occlusion, and 38.44% strict-clean. Built 42-sheet visual contact pack (1,000 tiles, 100% unique) with visible metadata banners. Reconciled 20-sample MmCows inspection as sample-size-limited. Decisive scientific boundaries enforced: NO dataset-role change, NO roadmap change, NO promotion of alternatives without empirical proof. Deliverables: `docs/audits/phase3_real_cattle_visual_quality_reassessment.md`, `docs/audits/phase3_real_cattle_visual_quality_contact_sheet_index.md`, `docs/research_log/2026-09-22_real_cattle_visual_quality_reassessment.md`.
 - [ ] STEP 2.4 (MOO Synthetic-to-Real Viewpoint Transfer Audit & Full Directional Fine-Tuning):
   - Stage 1 (Frozen Linear Probe on CPU, 2026-09-20): 93.2% synthetic val acc; 12.63% real diagnostic accuracy (40 false fronts; clean baseline). Post-hoc 63.16% mapping classified as an `exploratory post-hoc benchmark fit; invalid as final held-out evaluation evidence`. Independent visual check refuted 90-degree anatomical mismatch.
   - Stage 2 (Full Fine-Tuned ResNet-18 on L4 GPU, 2026-09-21): Trained full 8-direction ResNet-18 on canonical identity-disjoint MOO split (`scripts/modal_moo_pipeline.py`, checkpoint `artifacts/checkpoints/moo_resnet18_viewpoint8_full_l4.pth`, commit `d2c6578eaea060c4aeae9300d95ce5c77bbf25a7`). Best epoch: 14. Synthetic validation: 99.59% accuracy, Macro-F1 0.9959. Synthetic held-out test: 99.44% accuracy, Macro-F1 0.9944 on 9,600 images from 100 unseen synthetic cow identities.
@@ -125,39 +126,26 @@
 > [!IMPORTANT]
 > **Multi-Environment Awareness**: Physical dataset availability may differ across machines and execution environments (e.g. this local laptop vs. Modal cloud volumes vs. the BRACU Lab Research PC with RTX 5090). Future agents MUST inspect physical files on disk before assuming a dataset is available locally.
 
-## Last Session (Convo e78aa1ac-ddc7-4c32-8bab-f25894ade0df)
-- Completed Step 2.4 (Manual Visual Taxonomy Review): Built deliberately diverse 60-image viewpoint review pack across ScienceDB (20), MmCows (20), and SideViewCows2026 (20).
-- Generated 6 high-resolution contact sheets (`docs/audits/assets/viewpoint_visual_review/`) and visual review index (`docs/audits/phase3_viewpoint_visual_review_index.md`).
-- Completed visual review with ChatGPT-assisted initial proposals and user verification/corrections:
-  - ScienceDB: 10 rear, 8 rear-oblique, 1 front-oblique, 1 unknown / ambiguous (strongly rear/rear-oblique dominated).
-  - MmCows: 9 side, 6 rear-oblique, 1 rear, 1 front-oblique, 3 unknown / ambiguous (broadest mixture, highest ambiguity due to stall bars/rails/top-down CCTV).
-  - SideViewCows2026: 18 side, 1 front-oblique, 1 unknown / ambiguous (overwhelmingly side-view dominated; 1 front-oblique parlor entry, 1 multi-cow barn alley ambiguity).
-  - Overall: 27 side, 14 rear-oblique, 11 rear, 3 front-oblique, 5 unknown / ambiguous, 0 front.
-- Persisted verified labels in `artifacts/perception_audit/viewpoint_manual_review_manifest.csv` with status `human_verified` and accurate provenance documentation.
-- Completed Step 2.4 (Manual Visual Taxonomy Review, 100-Sample Benchmark, & Operational Strategy Synthesis):
-  - Coarse viewpoint taxonomy (`rear`, `rear-oblique`, `side`, `front-oblique`, `front`, `unknown / ambiguous`): FEASIBLE / DEFINABLE.
-  - 100-sample dataset provenance: agent visual labeling, ChatGPT vision cross-check, user adjudication of 21 disagreements (79 consensus only; zero true `front` samples in ground truth).
-  - Evaluated frozen zero-shot VLMs on 100 samples across Method A (6-class explicit) and Method B (5-class raw physical N=95 + margin rejection N=100):
-    - OpenAI CLIP: Method A 30.0% acc, 0.2468 macro-F1, 16 false fronts; Method B raw 33.68% acc, 0.2711 macro-F1; margin rejection 27.0% acc (50/95 false ambiguous).
-    - OpenCLIP: Method A 6.0% acc; Method B raw 15.79% acc; margin rejection 8.0%.
-    - SigLIP: Method A 5.0% acc; Method B raw 12.63% acc; margin rejection 7.0%.
-    - Under the tested explicit ambiguous-prompt setup, OpenCLIP and SigLIP predicted `unknown / ambiguous` for the great majority of samples (do not generalize to all VLMs).
-    - Frozen zero-shot CLIP/OpenCLIP/SigLIP: REJECTED as operational viewpoint generator UNDER THE TESTED SETUP.
-  - Domain heuristics: INSUFFICIENT as a general solution (usable only as auxiliary prior for fixed chutes).
-  - Simple geometry / aspect ratio: REJECTED as standalone classifier.
-  - MOO synthetic viewpoint supervision: UNTESTED (canonical roadmap explicitly allows MOO synthetic supervision).
-  - Supervised cattle-specific classifier: UNTESTED (canonical roadmap explicitly allows simple classifier if needed; current review labels imbalanced).
-  - Ingested MmCows Behavior dataset (213,686 crops, 12.7 GB) into Modal volume `mmcows-data` on `tigerwood697` via Rust `hf_transfer` in ~90s and unzipped in ~19m; `cropped_bboxes.zip` purged to conserve quota.
-  - Ingested ScienceDB Cattle BCS dataset (107,132 files, 4.11 GB across classes 3.25, 3.5, 3.75, 4.0, 4.25) into Modal volume `sciencedb-data` on `tigerwood697` via 16-connection `aria2c` and `unar` (RAR5 supported); `dataset.rar` purged to reclaim quota.
-  - Ingested and extracted MOO (Multi-view Oriented Observations) 55.24 GB `data.hdf5` and 136.36 MB `metadata.json` into Modal volume `moo-data` on `tigerwood693`; `MOO.zip` purged to conserve quota; 100% verified.
-- Synthesized Step 2.4 findings and evidence into `docs/audits/phase3_perception_feasibility.md` (committed in `6d2a7d4`).
+## Last Session (Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5)
+- Executed formal evidence-preservation audit and visual contact-sheet inspection for the newly completed 1,000-image human-verified real-cattle review (`artifacts/perception_audit/viewpoint_1000_annotation_manifest.csv`) across ScienceDB (334), MmCows (333), and SideViewCows2026 (333).
+- Recomputed all statistics directly from the source manifest:
+  - Overall strict-clean rate: 34.20% (342/1000).
+  - MmCows: 39.94% (133/333) unknown/ambiguous viewpoints, 54.35% (181/333) combined occlusion (93 severe, 88 partial), and 12.91% (43/333) strict-clean.
+  - ScienceDB: 91.02% rear views, 99.70% occlusion-free, but 38.32% (128/334) multiple cows and 12.87% (43/334) body cutoff.
+  - SideViewCows2026: 97.00% side views, 32.13% body cutoff, 30.93% occlusion, and 38.44% (128/333) strict-clean.
+- Verified all 8 discussed claims (MmCows 333 samples, 133 ambiguous, 88 partial, 93 severe, 43 strict-clean; ScienceDB 334 samples, 128 multiple cows; SideView 333 samples).
+- Generated 42 contact sheets (`docs/audits/assets/real_cattle_visual_quality_reassessment/`) covering 100% of the 1,000 images exactly once, with visible metadata banners and status tags.
+- Authored full contact sheet index (`docs/audits/phase3_real_cattle_visual_quality_contact_sheet_index.md`) and comprehensive main audit report (`docs/audits/phase3_real_cattle_visual_quality_reassessment.md`).
+- Reconciled earlier 20-sample MmCows inspection as sample-size-limited without modifying historical reports.
+- Enforced strict scientific decision boundaries: NO dataset roles changed, NO roadmap changes, NO promotion of alternatives without empirical proof. Warranted next investigation: task-specific visual BCS quality audit of Ruchay et al. 2026 RGB-D BCS.
 
 ## Current Blockers & Notes
 - **STEP 1 IS 100% COMPLETE & LOCKED (Gate 1 Cleared)**.
 - **STEP 2.1 (Localization Feasibility) IS 100% COMPLETE**.
 - **STEP 2.2 (Segmentation Feasibility) IS 100% COMPLETE**.
 - **STEP 2.3 (Pose Feasibility) IS 100% COMPLETE**.
-- **STEP 2.4 REOPENED | STEP 2 IN PROGRESS**: Viewpoint taxonomy is FEASIBLE; frozen zero-shot REJECTED under tested setup; full MOO ResNet-18 fine-tuning completed (99.59% syn val, 99.44% syn test on 9,600 images from 100 cow IDs; 27.37% real diagnostic accuracy on N=95 non-ambiguous samples, 1 false front, strong rear/rear-oblique prediction bias). A substantial synthetic-to-real domain gap is observed; current synthetic-only transfer remains insufficient as a standalone operational real-cattle viewpoint generator under this diagnostic setup. Operational viewpoint generator: NOT YET SELECTED.
-- Deliverables updated: `docs/audits/phase3_perception_feasibility.md` and `docs/research_log/2026-09-21_moo_resnet18_full_viewpoint_training_and_real_diagnostic.md`.
-- Immediate next action: Determine operational viewpoint strategy for Step 3 caching.
+- **STEP 2.4 REOPENED | STEP 2 IN PROGRESS**: Viewpoint taxonomy is FEASIBLE; frozen zero-shot REJECTED under tested setup; full MOO ResNet-18 fine-tuning completed (99.59% syn val, 99.44% syn test on 9,600 images from 100 cow IDs; 27.37% real diagnostic accuracy on N=95 non-ambiguous samples, 1 false front, strong rear/rear-oblique prediction bias). Operational viewpoint generator remains unselected.
+- **DATASET QUALITY AUDIT COMPLETE**: 1,000-image review reveals significant photographic challenges (38.3% multi-cow in ScienceDB; 54.4% occlusion & 39.9% viewpoint ambiguity in MmCows; 32.1% cutoff in SideView). ScienceDB retained as primary BCS (framing issues do not invalidate rear pelvic scoring); MmCows retained as primary behavior. Next candidate investigation: Ruchay 2026 visual BCS audit.
+- Deliverables updated: `docs/audits/phase3_real_cattle_visual_quality_reassessment.md`, `docs/audits/phase3_real_cattle_visual_quality_contact_sheet_index.md`, `docs/research_log/2026-09-22_real_cattle_visual_quality_reassessment.md`.
+- Immediate next action: Conduct task-specific visual BCS quality audit on candidate external benchmark (Ruchay et al. 2026 RGB-D BCS); concurrently resolve operational viewpoint strategy for Step 3 caching.
 - Antigravity sync rule: changes mirrored to `D:\custom-antigravity`.
