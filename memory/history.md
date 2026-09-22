@@ -1,3 +1,14 @@
+# Session Summary — 2026-09-23 (ScienceDB Dataset Registry Reconciliation & Canonical Split Counts)
+
+- Reconciled the ScienceDB Cattle BCS registry entry in `scripts/build_dataset_registry.py` and regenerated `datasets/dataset_registry.csv` with verified canonical facts from `datasets/bcs/sciencedb/split_report.md`:
+  - `n_cows`: explicitly marked as `0 (Biological cow count unavailable; true biological cow IDs not recorded or provided by publisher)` (avoided misclassifying cluster counts as biological animals).
+  - Explicitly distinguished 5,662 original parsed passage clusters from 5,653 repaired canonical burst groups across `cow_id_available`, `tracklet_id_available`, and `notes`.
+  - Reconciled notes with verified canonical split counts: train 37,045 images (3,958 burst groups), val 8,481 images (850 burst groups), test 8,040 images (845 burst groups), total 53,566 images across 5 classes (3.25 to 4.25).
+  - Explicitly specified evaluation protocol terminology: `burst-group-disjoint / sequence-safe`.
+- Executed split verification suite: `python scripts/repair_sciencedb_splits.py --verify-only` exited code 0 (100% burst-group disjoint, 0 duplicate/burst leakage).
+- Executed `scripts/build_dataset_registry.py` twice; verified second pass produces zero diff (100% idempotent).
+- Confirmed all 5 canonical Behavior dataset roles and metrics remain 100% unchanged.
+
 # Session Summary — 2026-09-23 (Dataset Registry Generator Synchronization & Probed Beef Metrics Reconciliation)
 
 - Updated `scripts/build_dataset_registry.py` to deterministically reproduce `datasets/dataset_registry.csv` with 100% fidelity to the canonical Phase 3 dataset stack.
