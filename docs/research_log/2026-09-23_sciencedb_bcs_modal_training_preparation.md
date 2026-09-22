@@ -71,3 +71,32 @@ Canonical split files (`datasets/bcs/sciencedb/{train,val,test}.csv`) contain ho
 - **Seed**: 42
 - **Best Model Selection**: Lowest validation Real BCS MAE
 - **Test Set Evaluation**: Held-out canonical test set (`test.csv`, 8,040 images) evaluated exactly once using best checkpoint.
+
+---
+
+## 5. Hardware Target Upgrade: NVIDIA Tesla T4 -> NVIDIA L4
+
+To accelerate the 30-epoch training throughput and take advantage of modern Ada Lovelace tensor cores and expanded memory headroom, the execution target in `scripts/modal_train_sciencedb_bcs.py` was officially updated from `gpu="T4"` to `gpu="L4"`.
+
+### 5.1 Historical Provenance Preservation
+The initial pre-flight readiness audit was successfully conducted on an **NVIDIA Tesla T4** (App `ap-TrHVaxRLZvyJBANOPX4ODu`, 14.56 GB VRAM), verifying pipeline integrity, volume mounts, split hashes, and path resolution. That historical audit is permanently preserved in Section 3 above.
+
+### 5.2 NVIDIA L4 Pre-Flight Readiness Scorecard
+A separate pre-flight readiness audit was executed directly on an **NVIDIA L4** GPU container on Modal (`tigerwood697`, App `ap-LpbnMu603XOremldE0aTYr`):
+
+| Check Item | Target Requirement | Empirical Result (L4 Audit) | Status |
+| :--- | :--- | :--- | :---: |
+| **Modal Profile** | `tigerwood697` active | Balance `$29.14` healthy | **PASS** |
+| **Execution Hardware** | NVIDIA L4 GPU with CUDA | NVIDIA L4 (22.03 GB VRAM) | **PASS** |
+| **Dataset Volume** | `sciencedb-data` mounted at `/data` | `/data/dataset` found, 53,566 images | **PASS** |
+| **Class Distribution** | 5 discrete ordinal classes | `3.25`: 7,536; `3.5`: 13,256; `3.75`: 14,255; `4.0`: 12,556; `4.25`: 5,963 | **PASS** |
+| **Split Hashes** | Unmodified canonical hashes | Train `9f6b0b...`, Val `e223e3...`, Test `eae459...` verified | **PASS** |
+| **Path Resolution** | Remap Windows CSV paths to Linux | 15/15 samples opened successfully via PIL (1024x576) | **PASS** |
+| **Checkpoint Storage** | Persistent Modal volume `/checkpoints` | `/checkpoints/bcs_baseline` created, test write & commit verified | **PASS** |
+| **Progress Streaming** | TQDM batch updates | Live batch-level bars confirmed streaming | **PASS** |
+| **Overall Verdict** | All pre-flight conditions met on L4 | **100% READY FOR L4 TRAINING** | **READY** |
+
+### 5.3 Manual Launch Command for Full Run on L4
+```powershell
+$env:PYTHONIOENCODING="utf-8"; modal run --profile tigerwood697 scripts/modal_train_sciencedb_bcs.py --epochs 30 --head-type ordinal_bce --batch-size 32
+```

@@ -1,3 +1,19 @@
+# Session Summary — 2026-09-23 (ScienceDB RGB BCS Modal Hardware Upgrade: NVIDIA L4)
+
+- Upgraded ScienceDB RGB BCS baseline Modal wrapper (`scripts/modal_train_sciencedb_bcs.py`) from NVIDIA T4 to NVIDIA L4 for both readiness verification and full 30-epoch training.
+- Updated GPU-name assertion in `verify_readiness_remote` to verify `"L4" in gpu_name`.
+- Preserved historical Tesla T4 readiness audit provenance in `docs/research_log/2026-09-23_sciencedb_bcs_modal_training_preparation.md` and added dedicated Section 5 for NVIDIA L4.
+- Executed standalone pre-flight readiness audit on Modal (`tigerwood697`, App `ap-LpbnMu603XOremldE0aTYr`):
+  - CUDA / GPU: NVIDIA L4 (22.03 GB VRAM) verified.
+  - ScienceDB Image Root: `/data/dataset` found, all 53,566 images across 5 classes verified.
+  - Canonical Splits: Train, Val, Test split hashes, rows, and burst-groups verified unchanged.
+  - Path Resolution: 15/15 representative image paths resolved and opened with PIL (1024x576 px).
+  - Checkpoint Storage: `/checkpoints/bcs_baseline` writable and committed to volume `sciencedb-checkpoints`.
+  - TQDM Progress Streaming: verified cleanly.
+  - Verdict: **100% READY FOR L4 TRAINING**.
+- Full 30-epoch training NOT launched (reserved for manual user command).
+- Deliverables: `scripts/modal_train_sciencedb_bcs.py`, `docs/research_log/2026-09-23_sciencedb_bcs_modal_training_preparation.md`.
+
 # Session Summary — 2026-09-23 (ScienceDB RGB BCS Baseline Modal Preparation & Readiness Audit)
 
 - Prepared and audited the full 30-epoch training setup for Phase 3 Step 4 single-task ScienceDB RGB BCS baseline on Modal (`tigerwood697`).
@@ -524,7 +540,8 @@
 
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
 
-- **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Tested Kaggle Beef fallback rule (IF RT-DETR detects no cow -> SAM 2.1 with ONE center point (112, 112)) on the 3 known detection misses from fresh-40 audit on Modal (`tigerwood693`, T4). Achieved 100% recovery (3/3 non-empty masks; Drinking: 6 comps, Feeding: 146 comps, Lying: 25 comps). Generated master contact sheet (896x848 px) and 3 composites. Status: PENDING HUMAN REVIEW.
+- **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Upgraded ScienceDB RGB BCS baseline wrapper to NVIDIA L4 on Modal (`tigerwood697`, App `ap-LpbnMu603XOremldE0aTYr`). 100% passed all 6 pre-flight checks on L4 (22.03 GB VRAM). Preserved T4 audit history. Full training not launched.
+- **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Prepared full ScienceDB RGB BCS baseline training pipeline for Modal (App `ap-TrHVaxRLZvyJBANOPX4ODu`, T4). Verified 100% readiness across all 6 checks. Did not launch training.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Executed head-to-head comparison between detector-guided A4 (RT-DETR box -> SAM 2.1) and A5 (RT-DETR box + center point -> SAM 2.1) on 40 fresh canonical train samples (Seed 2026, 29 sessions; Modal profile tigerwood693, T4 GPU). Both achieved 92.5% mask return (37/40) with 3 upstream RT-DETR-L failures (7.5%); A5 reduced mean connected components by 37.6% (19.6 vs 31.4). Generated master 4x10 contact sheet (2688x2620 px) and 40 individual composites. Status: PENDING HUMAN REVIEW.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Executed Kaggle Beef SAM 2.1 prompt-rescue audit across 6 conditions (A0-A5, 120 evaluations) on Modal (`tigerwood693`, T4). Point prompts (A1-A3) completely rescued the 50% zero-mask failure (100% return rate, fragmentation reduced from 118 to 16.6 comps); detector prompts (A4, A5) achieved 95% return (1 recumbent failure). Visual status: PENDING HUMAN REVIEW.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Executed primary Behavior SAM 2.1 segmentation sanity check (`sam2.1_s.pt`) across 45 frames on Modal (`tigerwood693`, T4). Verified CVB 100% mask return (A: 0.9746 containment, B: 0.9526 containment); exposed Beef 50% technical failure (`sam_no_mask` on 10/20) and extreme stall-bar fragmentation (mean 118 components). Visual verdict: PENDING HUMAN REVIEW.

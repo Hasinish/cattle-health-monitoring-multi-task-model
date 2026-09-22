@@ -5,7 +5,7 @@ Modal Cloud Wrapper for Phase 3 ScienceDB RGB Single-Task BCS Baseline Training
 Profile Target   : tigerwood697
 Dataset Volume   : sciencedb-data (mounted at /data)
 Checkpoint Volume: sciencedb-checkpoints (mounted at /checkpoints)
-GPU Target       : NVIDIA T4 (16GB VRAM, lowest-cost tier)
+GPU Target       : NVIDIA L4 (24GB VRAM, Ada Lovelace tier)
 Primary Script   : scripts/train_sciencedb_bcs_baseline.py
 
 Usage:
@@ -62,7 +62,7 @@ app = modal.App("sciencedb-bcs-baseline", image=train_image)
 # READINESS VERIFICATION FUNCTION (CHECKS ONLY)
 # ==============================================================================
 @app.function(
-    gpu="T4",
+    gpu="L4",
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
     timeout=300,
     cpu=2.0,
@@ -91,7 +91,7 @@ def verify_readiness_remote():
     vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3) if cuda_avail else 0.0
     print(f"[*] CUDA Available: {cuda_avail} | GPU: {gpu_name} ({vram_gb:.2f} GB VRAM)")
     report["checks"]["cuda"] = {
-        "passed": cuda_avail and "T4" in gpu_name,
+        "passed": cuda_avail and "L4" in gpu_name,
         "gpu_name": gpu_name,
         "vram_gb": round(vram_gb, 2),
     }
@@ -204,7 +204,7 @@ def verify_readiness_remote():
 # FULL 30-EPOCH TRAINING REMOTE FUNCTION
 # ==============================================================================
 @app.function(
-    gpu="T4",
+    gpu="L4",
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
     timeout=3600 * 3,  # 3 hours max runtime
     cpu=4.0,
