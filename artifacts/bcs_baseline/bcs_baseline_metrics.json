@@ -2,10 +2,10 @@
   "metadata": {
     "task": "Body Condition Scoring (Single-Task Baseline)",
     "pipeline": "Phase 3 ScienceDB RGB ResNet-18 Baseline",
-    "timestamp": "2026-09-22T19:29:10Z",
-    "total_elapsed_sec": 18.05,
+    "timestamp": "2026-09-22T19:38:48Z",
+    "total_elapsed_sec": 32.3,
     "git": {
-      "commit": "848305477e42510d00570e8e8d1a9962a43e203a",
+      "commit": "3424fdd0778e739bcbb06dc2bdb079c50b6adb5d",
       "branch": "main",
       "is_dirty": true
     },
@@ -15,19 +15,27 @@
       "cow_disjoint_disclaimer": "ScienceDB is burst-group-disjoint; true biological cow IDs not provided by publisher.",
       "train_csv": {
         "path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb\\train.csv",
-        "sha256": "9f6b0bc716e01a2ab22208daff1c49e49fd450a4d7cf0a57b2979275ed33497a"
+        "sha256": "9f6b0bc716e01a2ab22208daff1c49e49fd450a4d7cf0a57b2979275ed33497a",
+        "total_images": 37045,
+        "burst_groups": 3958
       },
       "val_csv": {
         "path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb\\val.csv",
-        "sha256": "e223e3c4c081ca5c9f993f7156dc791df97b6ea6d011b8b4b6f068590b3d975d"
+        "sha256": "e223e3c4c081ca5c9f993f7156dc791df97b6ea6d011b8b4b6f068590b3d975d",
+        "total_images": 8481,
+        "burst_groups": 850
       },
       "test_csv": {
         "path": "D:\\cattle-health-monitoring-multi-task-model\\datasets\\bcs\\sciencedb\\test.csv",
-        "sha256": "eae459e031d06c4b1150ce2cbcdcb8259724b070b831341222b15c99e3626e5f"
+        "sha256": "eae459e031d06c4b1150ce2cbcdcb8259724b070b831341222b15c99e3626e5f",
+        "total_images": 8040,
+        "burst_groups": 845
       }
     },
     "device": "cuda",
-    "device_name": "NVIDIA GeForce GTX 1050 Ti"
+    "device_name": "NVIDIA GeForce GTX 1050 Ti",
+    "smoke_mode": true,
+    "test_split_touched": false
   },
   "config": {
     "epochs": 2,
@@ -36,12 +44,13 @@
     "weight_decay": 0.0001,
     "image_size": 224,
     "seed": 42,
-    "head_type": "coral",
+    "head_type": "ordinal_bce",
     "device": "cuda",
     "num_workers": 0,
     "output_dir": "artifacts/bcs_baseline",
     "resume": null,
     "smoke": true,
+    "dry_run": false,
     "max_samples": 250,
     "max_batches": 10,
     "test_save_resume": true
@@ -56,7 +65,7 @@
       "val_balanced_acc_pct": 14.400000000000002,
       "val_macro_f1": 0.1453089999431463,
       "is_best": true,
-      "duration_sec": 7.108020782470703
+      "duration_sec": 13.608252048492432
     },
     {
       "epoch": 2,
@@ -67,19 +76,19 @@
       "val_balanced_acc_pct": 18.4,
       "val_macro_f1": 0.1826788124156545,
       "is_best": true,
-      "duration_sec": 4.945788860321045
+      "duration_sec": 7.956031560897827
     }
   ],
   "best_val_real_mae": 0.42,
-  "final_test_metrics": {
-    "real_mae": 0.37,
-    "index_mae": 1.48,
-    "exact_accuracy_pct": 20.0,
-    "within_0_25_accuracy_pct": 53.6,
-    "balanced_accuracy_pct": 20.0,
-    "macro_f1": 0.19210166091453815,
-    "macro_precision": 0.19328968556657342,
-    "macro_recall": 0.2,
+  "smoke_validation_metrics": {
+    "real_mae": 0.42,
+    "index_mae": 1.68,
+    "exact_accuracy_pct": 18.4,
+    "within_0_25_accuracy_pct": 50.4,
+    "balanced_accuracy_pct": 18.4,
+    "macro_f1": 0.1826788124156545,
+    "macro_precision": 0.19608695652173913,
+    "macro_recall": 0.184,
     "per_class": {
       "3.25": {
         "class_index": 0,
@@ -89,87 +98,88 @@
         "precision": 0.0,
         "recall": 0.0,
         "f1": 0.0,
-        "real_mae": 0.65
+        "real_mae": 0.67
       },
       "3.5": {
         "class_index": 1,
         "real_bcs": 3.5,
         "support": 25,
-        "accuracy_pct": 20.0,
-        "precision": 0.20833333333333334,
-        "recall": 0.2,
-        "f1": 0.20408163265306123,
-        "real_mae": 0.32
+        "accuracy_pct": 24.0,
+        "precision": 0.42857142857142855,
+        "recall": 0.24,
+        "f1": 0.3076923076923077,
+        "real_mae": 0.23
       },
       "3.75": {
         "class_index": 2,
         "real_bcs": 3.75,
         "support": 25,
         "accuracy_pct": 24.0,
-        "precision": 0.13043478260869565,
+        "precision": 0.17142857142857143,
         "recall": 0.24,
-        "f1": 0.16901408450704225,
-        "real_mae": 0.29
+        "f1": 0.2,
+        "real_mae": 0.3
       },
       "4.0": {
         "class_index": 3,
         "real_bcs": 4.0,
         "support": 25,
-        "accuracy_pct": 28.000000000000004,
-        "precision": 0.25925925925925924,
-        "recall": 0.28,
-        "f1": 0.2692307692307692,
-        "real_mae": 0.25
+        "accuracy_pct": 32.0,
+        "precision": 0.25,
+        "recall": 0.32,
+        "f1": 0.2807017543859649,
+        "real_mae": 0.26
       },
       "4.25": {
         "class_index": 4,
         "real_bcs": 4.25,
         "support": 25,
-        "accuracy_pct": 28.000000000000004,
-        "precision": 0.3684210526315789,
-        "recall": 0.28,
-        "f1": 0.3181818181818182,
-        "real_mae": 0.34
+        "accuracy_pct": 12.0,
+        "precision": 0.13043478260869565,
+        "recall": 0.12,
+        "f1": 0.125,
+        "real_mae": 0.64
       }
     },
     "confusion_matrix": [
       [
         0,
-        2,
-        11,
-        7,
-        5
-      ],
-      [
         1,
-        5,
-        11,
-        4,
-        4
-      ],
-      [
-        7,
-        7,
-        6,
-        2,
-        3
-      ],
-      [
-        1,
-        5,
         12,
-        7,
+        6,
+        6
+      ],
+      [
+        6,
+        6,
+        9,
+        4,
         0
       ],
       [
+        1,
         0,
+        6,
+        8,
+        10
+      ],
+      [
+        2,
         5,
         6,
-        7,
-        7
+        8,
+        4
+      ],
+      [
+        12,
+        2,
+        2,
+        6,
+        3
       ]
     ],
     "total_evaluated_samples": 125,
-    "loss": 0.7743127021789551
-  }
+    "loss": 0.750702362537384
+  },
+  "final_test_metrics": null
 }

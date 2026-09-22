@@ -1,8 +1,8 @@
 # ==============================================================================
-# SETUP RESEARCH PC - MASTER DATASET RESTORATION PROTOCOL
+# SETUP RESEARCH PC - MASTER DATASET RESTORATION PROTOCOL (DEPRECATED)
 # ==============================================================================
-# Run this script in PowerShell on the Research PC (RTX 5090)
-# It downloads, extracts, and indexes all datasets directly into datasets/
+# NOTE: The BRACU Lab Research PC (RTX 5090) is disqualified due to environment bloat.
+# Heavy compute is dispatched to rotating Modal cloud profiles. Preserved for provenance.
 
 $ErrorActionPreference = "Continue"
 

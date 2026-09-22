@@ -19,14 +19,18 @@
    - Prepend new conversation summaries to `memory/history.md`.
    - Keep `memory/index.md` up to date with new directory trees and file purposes.
 
-4. **Git Hygiene & Dual-Device Sync**:
-   - Ensure all documentation, logs, manifests, and scripts are committed to Git so the local laptop and the BRACU Lab Research PC (RTX 5090) stay in 100% lockstep.
+4. **Git Hygiene & Environment Sync**:
+   - Ensure all documentation, logs, manifests, and scripts are committed to Git so the local laptop and remote cloud environments (rotating Modal profiles) stay in 100% lockstep.
    - Never commit `scratch/` or raw GB-scale video/image folders.
 
 5. **Antigravity Customization & Rules Sync**:
    - Whenever workspace rules, `.agents/rules/`, or global agent instructions are modified, immediately mirror them to `D:\custom-antigravity`, commit, and push to GitHub.
 
-6. **Cloud & Modal Cost Optimization**:
-   - Strictly use minimal container resources: `cpu=1.0, memory=2048` (or 1024) for downloads, data transfers, and extraction. NEVER attach GPUs or allocate excessive CPUs/RAM for pure network I/O.
+6. **Compute Execution Policy & Cloud / Modal Usage**:
+   - **Local Machine (GTX 1050 Ti)**: Strictly reserved for smoke tests, path checks, tensor/loss/metric unit checks, checkpoint save/resume verification, and tiny 1–2 epoch validation runs. NEVER run full training or heavy preprocessing locally.
+   - **Cloud Execution (Rotating Modal Profiles)**: All heavy preprocessing, full training runs, ablations, and final experimental suites are dispatched to Modal/cloud.
+   - **Rotating Modal Accounts**: Modal accounts/profiles rotate depending on available credits and resource quotas. Never hard-code one Modal account or profile as universally required.
+   - **Disqualified Hardware**: The BRACU Lab Research PC (RTX 5090) is permanently DISQUALIFIED and unusable due to an unrecoverable locked/bloated OS/driver environment. NEVER propose or schedule training runs on the RTX 5090.
+   - **Cost Optimization**: Strictly use minimal container resources: `cpu=1.0, memory=2048` (or 1024) for downloads, data transfers, and extraction. NEVER attach GPUs or allocate excessive CPUs/RAM for pure network I/O.
    - Always implement periodic `volume.commit()` checkpoints (e.g. every 60s) for long-running downloads so partial progress is saved and resumable if interrupted.
    - Default to lowest-cost GPU tier (e.g. `gpu="T4"`) for all smoke tests and feasibility runs.

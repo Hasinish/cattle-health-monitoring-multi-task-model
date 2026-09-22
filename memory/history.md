@@ -1,11 +1,13 @@
-# Session Summary — 2026-09-23 (Phase 3 ScienceDB RGB Single-Task BCS Baseline Pipeline)
+# Session Summary — 2026-09-23 (Phase 3 ScienceDB RGB Single-Task BCS Baseline Pipeline Corrections & Compute Realignment)
 
-- Implemented and verified clean Phase 3 ScienceDB RGB single-task BCS baseline pipeline (`scripts/train_sciencedb_bcs_baseline.py`) using the canonical leakage-safe 5,653-burst-group train/val/test split (`datasets/bcs/sciencedb/`).
-- Formally classified ScienceDB as burst-group-disjoint / sequence-safe (true biological cow IDs are not provided by publisher; disclaimed cow-disjointness).
-- Integrated ImageNet-pretrained ResNet-18 with CORAL ordinal regression (and linear classification head).
-- Implemented true physiological BCS MAE calculation (scale 3.25 to 4.25, step 0.25) alongside Balanced Accuracy, Macro-F1, Acc@0, Acc@1, and per-class metrics.
-- Verified checkpoint save/resume to be 100% bit-identical.
-- Executed 2-epoch smoke test on local GTX 1050 Ti (~16s runtime, zero warnings, real BCS MAE: 0.3700 units, Acc@1: 53.60%, resume verification tested). Full 30-epoch training reserved for Research PC (RTX 5090).
+- Implemented, corrected, and verified clean Phase 3 ScienceDB RGB single-task BCS baseline pipeline (`scripts/train_sciencedb_bcs_baseline.py`) using the canonical leakage-safe 5,653-burst-group train/val/test split (`datasets/bcs/sciencedb/`).
+- Fixed CLI arguments using `BooleanOptionalAction` supporting `--smoke`, `--no-smoke`, `--full-run`, and `--dry-run`. Verified full-run argument parsing without training.
+- Enforced strict canonical test-set isolation: smoke mode bypasses `test.csv` completely and evaluates solely on validation subsets, ensuring the held-out test split is never touched during development/smoke tests.
+- Recomputed exact split counts and SHA-256 hashes directly from active split files (`train.csv`: 37,045 imgs / 3,958 groups; `val.csv`: 8,481 imgs / 850 groups; `test.csv`: 8,040 imgs / 845 groups; total: 53,566 imgs / 5,653 groups), reconciling 100% with `datasets/bcs/sciencedb/split_report.md`.
+- Formally distinguished ordinal head formulations: Frank & Hall (2001) independent cumulative BCE (`ordinal_bce`, default) vs Cao et al. (2020) weight-shared CORAL (`coral`).
+- Verified checkpoint save/resume to be 100% bit-identical in model weights and optimizer state.
+- Executed 2-epoch smoke test on local GTX 1050 Ti (~32s runtime, code 0) verifying train, val, and save/resume (smoke val Real BCS MAE: 0.4200 units, Acc@1: 50.40%, canonical test split untouched).
+- COMPUTE POLICY REALIGNMENT: Disqualified the BRACU Lab Research PC (RTX 5090) due to unrecoverable locked/bloated OS/driver environment. Established policy: local GTX 1050 Ti strictly for smoke/path/metric unit tests; all heavy preprocessing, feature caching, full 30-epoch training runs, and ablations dispatched to rotating Modal cloud profiles.
 - Deliverables: `scripts/train_sciencedb_bcs_baseline.py`, `artifacts/bcs_baseline/bcs_baseline_metrics.json`, `artifacts/bcs_baseline/bcs_baseline_smoke_summary.md`, `docs/research_log/2026-09-23_sciencedb_bcs_baseline_pipeline.md`.
 
 # Session Summary — 2026-09-22 (Phase 3 Kaggle Beef Behavior Dataset Acquisition Verification & Scientific Audit)

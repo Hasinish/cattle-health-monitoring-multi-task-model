@@ -31,5 +31,5 @@ Whenever you conduct any technical investigation, forensic dataset audit, data l
 3. **Always update `memory/index.md`** when new directories or major files (such as research logs or audit reports) are created.
 
 ## 4. Git Synchronization Rule
-1. Audit reports (`docs/audits/`), research logs (`docs/research_log/`), manifests (`datasets/**/*.csv`), and memory files must be staged and committed so that work is safely preserved and transferable between the local laptop and the BRACU Lab Research PC.
+1. Audit reports (`docs/audits/`), research logs (`docs/research_log/`), manifests (`datasets/**/*.csv`), and memory files must be staged and committed so that work is safely preserved and transferable between the local laptop and remote execution environments (rotating Modal cloud profiles).
 2. Scratchpad directories (`scratch/`) containing temporary clones or gigabyte-scale archives must remain excluded via `.gitignore`.

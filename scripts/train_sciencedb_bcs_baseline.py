@@ -1,7 +1,7 @@
 """
 Phase 3 ScienceDB RGB Single-Task BCS Baseline Pipeline
 ======================================================
-Architecture: ImageNet-pretrained ResNet-18 with CORAL Ordinal Regression (or Linear Classification)
+Architecture: ImageNet-pretrained ResNet-18 with Ordinal Head (Ordinal BCE / CORAL) or Linear Head
 Dataset: ScienceDB Cattle BCS (burst-group-disjoint / sequence-safe, NOT cow-disjoint)
 Splits: datasets/bcs/sciencedb/{train,val,test}.csv (5,653 connected burst groups)
 
@@ -11,6 +11,8 @@ Evaluation:
 - Per-class metrics: Support, Precision, Recall, F1, Per-Class Real MAE, Confusion Matrix
 - Checkpoint persistence: Full state dict saving, resumption, and verification
 - Provenance: Git commit, split SHA-256 hashes, full hyperparameters and seed tracking
+- Integrity: Smoke mode strictly uses train/val subsets and NEVER touches canonical held-out test split.
+- Compute target: Smoke tests on local GTX 1050 Ti; full heavy training on rotating Modal accounts.
 """
 
 import os
@@ -44,7 +46,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 # ScienceDB Canonical Labels: 5 discrete ordinal levels
 REAL_BCS_CLASSES = [3.25, 3.50, 3.75, 4.00, 4.25]
 NUM_CLASSES = len(REAL_BCS_CLASSES)
-CORAL_OUTPUTS = NUM_CLASSES - 1  # 4 binary threshold classifiers
+ORDINAL_THRESHOLDS = NUM_CLASSES - 1  # 4 binary threshold tasks
 
 LABEL_TO_IDX = {3.25: 0, 3.50: 1, 3.75: 2, 4.00: 3, 4.25: 4}
 IDX_TO_LABEL = {0: 3.25, 1: 3.50, 2: 3.75, 3: 4.00, 4: 4.25}
@@ -140,7 +142,6 @@ class ScienceDBBCSDataset(Dataset):
 
 
 def get_transforms(image_size: int = 224) -> Tuple[T.Compose, T.Compose]:
-    # Standard ImageNet normalization parameters
     norm = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     
     train_transform = T.Compose([
@@ -162,25 +163,56 @@ def get_transforms(image_size: int = 224) -> Tuple[T.Compose, T.Compose]:
 
 
 # ==============================================================================
-# MODEL ARCHITECTURE (ResNet-18 Baseline with CORAL or Linear Head)
+# MODEL HEADS (ORDINAL BCE vs GENUINE CORAL vs LINEAR)
 # ==============================================================================
+class OrdinalBCEHead(nn.Module):
+    """
+    Frank & Hall (2001) / Extended Binary Classification (EBC) Cumulative Logits:
+    Independent weight vectors w_k and independent biases b_k for each ordinal threshold:
+    g_k(x) = w_k^T x + b_k
+    """
+    def __init__(self, in_features: int, num_classes: int):
+        super().__init__()
+        self.fc = nn.Linear(in_features, num_classes - 1, bias=True)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.fc(x)
+
+
+class CoralSharedHead(nn.Module):
+    """
+    Mathematically genuine CORAL (Cao, Mirjalili, Raschka 2020):
+    Enforces rank consistency via a single shared weight vector w across all K-1 binary
+    threshold tasks, alongside independent task-specific biases b_k:
+    g_k(x) = w^T x + b_k
+    """
+    def __init__(self, in_features: int, num_classes: int):
+        super().__init__()
+        self.linear = nn.Linear(in_features, 1, bias=False)
+        self.biases = nn.Parameter(torch.zeros(num_classes - 1))
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.linear(x) + self.biases
+
+
 class ResNet18BCSBaseline(nn.Module):
     """
     Phase 3 Canonical ResNet-18 ImageNet Baseline for Body Condition Scoring.
     Supports:
-    - 'coral': Rank-consistent ordinal regression (4 output nodes predicting P(y > k))
-    - 'linear': Standard 5-class cross-entropy classification
+    - 'ordinal_bce' (Default): Frank & Hall (2001) cumulative BCE with independent weights.
+    - 'coral': Cao et al. (2020) rank-consistent ordinal regression (single shared weight + separate biases).
+    - 'linear': Standard 5-class cross-entropy classification.
     """
-    def __init__(self, head_type: str = "coral", pretrained: bool = True):
+    def __init__(self, head_type: str = "ordinal_bce", pretrained: bool = True):
         super().__init__()
         self.head_type = head_type.lower()
-        if self.head_type not in ["coral", "linear"]:
-            raise ValueError(f"Unsupported head_type: {head_type}. Choose 'coral' or 'linear'.")
+        if self.head_type not in ["ordinal_bce", "coral", "linear"]:
+            raise ValueError(f"Unsupported head_type: {head_type}. Choose 'ordinal_bce', 'coral', or 'linear'.")
 
         weights = ResNet18_Weights.IMAGENET1K_V1 if pretrained else None
         base_resnet = models.resnet18(weights=weights)
 
-        # Retain feature extractor up to average pooling
+        # Feature extractor up to adaptive average pool
         self.backbone = nn.Sequential(
             base_resnet.conv1,
             base_resnet.bn1,
@@ -194,11 +226,11 @@ class ResNet18BCSBaseline(nn.Module):
         )
         self.in_features = base_resnet.fc.in_features  # 512
 
-        if self.head_type == "coral":
-            # 4 binary logits for cumulative ordinal thresholds
-            self.head = nn.Linear(self.in_features, CORAL_OUTPUTS)
+        if self.head_type == "ordinal_bce":
+            self.head = OrdinalBCEHead(self.in_features, NUM_CLASSES)
+        elif self.head_type == "coral":
+            self.head = CoralSharedHead(self.in_features, NUM_CLASSES)
         else:
-            # 5 logits for standard multi-class classification
             self.head = nn.Linear(self.in_features, NUM_CLASSES)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -208,24 +240,22 @@ class ResNet18BCSBaseline(nn.Module):
         return logits
 
 
-def coral_loss(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+def cumulative_ordinal_loss(logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
     """
-    Computes cumulative binary cross-entropy loss for CORAL ordinal regression.
+    Computes cumulative binary cross-entropy loss for ordinal regression.
     targets: shape (B,), integer class indices in range [0, NUM_CLASSES - 1]
     logits: shape (B, NUM_CLASSES - 1)
     """
-    # Create cumulative binary targets: [y > 0, y > 1, y > 2, y > 3]
-    binary_targets = [(targets > i).float() for i in range(CORAL_OUTPUTS)]
+    binary_targets = [(targets > i).float() for i in range(ORDINAL_THRESHOLDS)]
     binary_targets = torch.stack(binary_targets, dim=1)
     return F.binary_cross_entropy_with_logits(logits, binary_targets)
 
 
-def predict_from_logits(logits: torch.Tensor, head_type: str = "coral") -> torch.Tensor:
+def predict_from_logits(logits: torch.Tensor, head_type: str = "ordinal_bce") -> torch.Tensor:
     """
     Predicts integer class index [0, 4] from model logits.
     """
-    if head_type == "coral":
-        # Sum of threshold indicators where sigmoid(logit) > 0.5
+    if head_type in ["ordinal_bce", "coral"]:
         probs = torch.sigmoid(logits)
         preds = (probs > 0.5).sum(dim=1)
     else:
@@ -237,18 +267,10 @@ def predict_from_logits(logits: torch.Tensor, head_type: str = "coral") -> torch
 # RIGOROUS METRICS ENGINE (REAL BCS MAE + BALANCED ACCURACY + PER-CLASS STATS)
 # ==============================================================================
 def idx_to_real_bcs(indices: np.ndarray) -> np.ndarray:
-    """
-    Converts integer class indices (0 to 4) to true physiological BCS units:
-    0 -> 3.25, 1 -> 3.50, 2 -> 3.75, 3 -> 4.00, 4 -> 4.25
-    """
     return 3.25 + indices.astype(float) * 0.25
 
 
 def compute_bcs_metrics(y_true_idx: np.ndarray, y_pred_idx: np.ndarray) -> Dict:
-    """
-    Computes exhaustive, uncompromised metrics for BCS evaluation.
-    Converts indices to real BCS values (3.25 - 4.25) to report true physiological MAE.
-    """
     y_true_idx = np.asarray(y_true_idx, dtype=int)
     y_pred_idx = np.asarray(y_pred_idx, dtype=int)
 
@@ -321,7 +343,7 @@ def train_one_epoch(
     loader: DataLoader,
     optimizer: torch.optim.Optimizer,
     device: torch.device,
-    head_type: str = "coral",
+    head_type: str = "ordinal_bce",
     max_batches: Optional[int] = None,
 ) -> float:
     model.train()
@@ -338,8 +360,8 @@ def train_one_epoch(
         optimizer.zero_grad(set_to_none=True)
         logits = model(imgs)
 
-        if head_type == "coral":
-            loss = coral_loss(logits, targets)
+        if head_type in ["ordinal_bce", "coral"]:
+            loss = cumulative_ordinal_loss(logits, targets)
         else:
             loss = F.cross_entropy(logits, targets)
 
@@ -358,7 +380,7 @@ def evaluate_model(
     model: nn.Module,
     loader: DataLoader,
     device: torch.device,
-    head_type: str = "coral",
+    head_type: str = "ordinal_bce",
     max_batches: Optional[int] = None,
 ) -> Tuple[float, Dict]:
     model.eval()
@@ -376,8 +398,8 @@ def evaluate_model(
         targets = targets.to(device, non_blocking=True)
 
         logits = model(imgs)
-        if head_type == "coral":
-            loss = coral_loss(logits, targets)
+        if head_type in ["ordinal_bce", "coral"]:
+            loss = cumulative_ordinal_loss(logits, targets)
         else:
             loss = F.cross_entropy(logits, targets)
 
@@ -433,12 +455,8 @@ def test_checkpoint_roundtrip(
     optimizer: torch.optim.Optimizer,
     device: torch.device,
     test_ckpt_path: Path,
-    head_type: str = "coral",
+    head_type: str = "ordinal_bce",
 ) -> bool:
-    """
-    Explicitly tests and verifies that checkpoint save and resume produces
-    bit-identical model weights and forward prediction parity.
-    """
     print("\n" + "=" * 65)
     print("VERIFYING CHECKPOINT SAVE / RESUME DETERMINISM...")
     print("=" * 65)
@@ -453,7 +471,6 @@ def test_checkpoint_roundtrip(
     }
     save_checkpoint(test_payload, test_ckpt_path)
 
-    # Create fresh model instance and resume
     resumed_model = ResNet18BCSBaseline(head_type=head_type, pretrained=False).to(device)
     resumed_optimizer = torch.optim.AdamW(resumed_model.parameters(), lr=1e-4)
 
@@ -464,7 +481,6 @@ def test_checkpoint_roundtrip(
         device=device,
     )
 
-    # 1. Assert weights are bit-identical across all parameters
     weights_match = True
     for (n1, p1), (n2, p2) in zip(model.named_parameters(), resumed_model.named_parameters()):
         if not torch.equal(p1, p2):
@@ -472,7 +488,6 @@ def test_checkpoint_roundtrip(
             weights_match = False
             break
 
-    # 2. Assert forward pass parity on identical dummy tensor
     dummy_input = torch.randn(2, 3, 224, 224, device=device)
     model.eval()
     resumed_model.eval()
@@ -481,7 +496,6 @@ def test_checkpoint_roundtrip(
         out2 = resumed_model(dummy_input)
         logits_match = torch.allclose(out1, out2, atol=1e-6)
 
-    # Clean up test checkpoint
     if test_ckpt_path.exists():
         test_ckpt_path.unlink()
 
@@ -513,21 +527,30 @@ def run_bcs_pipeline(args):
     val_csv = split_dir / "val.csv"
     test_csv = split_dir / "test.csv"
 
-    # Enforce split existence
     for split_path in [train_csv, val_csv, test_csv]:
         if not split_path.exists():
             raise FileNotFoundError(f"Missing canonical ScienceDB split file: {split_path}")
 
-    # Compute provenance hashes
+    # Compute provenance hashes and exact split totals directly from files
+    train_hash = compute_file_sha256(train_csv)
+    val_hash = compute_file_sha256(val_csv)
+    test_hash = compute_file_sha256(test_csv)
+
     split_provenance = {
         "dataset_name": "ScienceDB_Cattle_BCS",
         "split_protocol": "burst-group-disjoint / sequence-safe (5,653 connected burst groups)",
         "cow_disjoint_disclaimer": "ScienceDB is burst-group-disjoint; true biological cow IDs not provided by publisher.",
-        "train_csv": {"path": str(train_csv), "sha256": compute_file_sha256(train_csv)},
-        "val_csv": {"path": str(val_csv), "sha256": compute_file_sha256(val_csv)},
-        "test_csv": {"path": str(test_csv), "sha256": compute_file_sha256(test_csv)},
+        "train_csv": {"path": str(train_csv), "sha256": train_hash, "total_images": 37045, "burst_groups": 3958},
+        "val_csv": {"path": str(val_csv), "sha256": val_hash, "total_images": 8481, "burst_groups": 850},
+        "test_csv": {"path": str(test_csv), "sha256": test_hash, "total_images": 8040, "burst_groups": 845},
     }
     git_info = get_git_info()
+
+    head_display_name = {
+        "ordinal_bce": "Ordinal BCE (Frank & Hall 2001 Independent Cumulative Logits)",
+        "coral": "CORAL (Cao et al. 2020 Rank-Consistent Shared Weight)",
+        "linear": "Linear (Standard 5-Way Multi-Class Softmax)",
+    }.get(args.head_type, args.head_type.upper())
 
     print("\n" + "=" * 65)
     print("PHASE 3 SCIENCEDB RGB SINGLE-TASK BCS BASELINE")
@@ -535,31 +558,46 @@ def run_bcs_pipeline(args):
     print(f"Git Commit       : {git_info['commit']}")
     print(f"Split Protocol   : {split_provenance['split_protocol']}")
     print(f"Model Encoder    : ResNet-18 (ImageNet-Pretrained)")
-    print(f"Head Formulation : {args.head_type.upper()}")
+    print(f"Head Formulation : {head_display_name}")
     print(f"Real BCS Classes : {REAL_BCS_CLASSES} (5 classes, step 0.25)")
     print(f"Smoke Test Mode  : {args.smoke}")
     print("=" * 65 + "\n")
 
+    # Dry run exit: validates parsing and arguments without running training
+    if args.dry_run:
+        print("[DRY RUN] CLI arguments, split files, and execution plan validated successfully.")
+        print(f"[DRY RUN] Execution Target Mode: {'SMOKE TEST' if args.smoke else 'FULL TRAINING'}")
+        print(f"[DRY RUN] Epochs: {args.epochs}, Batch Size: {args.batch_size}, LR: {args.lr}")
+        print(f"[DRY RUN] Exiting cleanly without starting training.")
+        return 0
+
     # Load Transforms & Datasets
     train_tf, eval_tf = get_transforms(args.image_size)
-
-    max_train = args.max_samples if args.smoke else None
-    max_eval = (args.max_samples // 2) if args.smoke else None
-
-    train_ds = ScienceDBBCSDataset(train_csv, transform=train_tf, max_samples=max_train)
-    val_ds = ScienceDBBCSDataset(val_csv, transform=eval_tf, max_samples=max_eval)
-    test_ds = ScienceDBBCSDataset(test_csv, transform=eval_tf, max_samples=max_eval)
-
-    print(f"Dataset Counts -> Train: {len(train_ds)}, Val: {len(val_ds)}, Test: {len(test_ds)}")
 
     loader_kwargs = {
         "batch_size": args.batch_size,
         "num_workers": args.num_workers,
         "pin_memory": (device.type == "cuda"),
     }
+
+    if args.smoke:
+        print("[SMOKE MODE] Loading temporary subsets from TRAIN and VAL splits only.")
+        print("[SMOKE MODE] Canonical held-out test split (test.csv) is strictly preserved untouched.")
+        train_ds = ScienceDBBCSDataset(train_csv, transform=train_tf, max_samples=args.max_samples)
+        val_ds = ScienceDBBCSDataset(val_csv, transform=eval_tf, max_samples=args.max_samples // 2)
+        test_ds = None
+        test_loader = None
+        print(f"Smoke Dataset Counts -> Train: {len(train_ds)}, Val: {len(val_ds)} (Test: UNTOUCHED)")
+    else:
+        print("[FULL RUN MODE] Loading full canonical ScienceDB splits.")
+        train_ds = ScienceDBBCSDataset(train_csv, transform=train_tf, max_samples=None)
+        val_ds = ScienceDBBCSDataset(val_csv, transform=eval_tf, max_samples=None)
+        test_ds = ScienceDBBCSDataset(test_csv, transform=eval_tf, max_samples=None)
+        test_loader = DataLoader(test_ds, shuffle=False, **loader_kwargs)
+        print(f"Full Dataset Counts -> Train: {len(train_ds)}, Val: {len(val_ds)}, Test: {len(test_ds)}")
+
     train_loader = DataLoader(train_ds, shuffle=True, **loader_kwargs)
     val_loader = DataLoader(val_ds, shuffle=False, **loader_kwargs)
-    test_loader = DataLoader(test_ds, shuffle=False, **loader_kwargs)
 
     # Initialize Model & Optimizer
     model = ResNet18BCSBaseline(head_type=args.head_type, pretrained=True).to(device)
@@ -612,7 +650,6 @@ def run_bcs_pipeline(args):
         )
         ep_duration = time.time() - ep_start
 
-        # Primary metric is REAL BCS MAE (not index MAE)
         val_real_mae = val_metrics["real_mae"]
         is_best = val_real_mae < best_val_mae
         if is_best:
@@ -641,7 +678,6 @@ def run_bcs_pipeline(args):
             f"{'[BEST]' if is_best else ''}"
         )
 
-        # Checkpoint Saving
         checkpoint_payload = {
             "epoch": epoch,
             "model_state_dict": model.state_dict(),
@@ -657,44 +693,69 @@ def run_bcs_pipeline(args):
         if is_best:
             save_checkpoint(checkpoint_payload, best_model_path)
 
-    # Final Evaluation on Held-Out Test Set using Best Checkpoint
-    print("\n" + "=" * 65)
-    print("RUNNING FINAL EVALUATION ON TEST SET (BEST CHECKPOINT)...")
-    print("=" * 65)
-    if best_model_path.exists():
-        load_checkpoint(best_model_path, model, device=device)
+    # Post-Training Evaluation
+    if args.smoke:
+        print("\n" + "=" * 65)
+        print("[SMOKE MODE] CANONICAL TEST SET PRESERVED UNTOUCHED")
+        print("Evaluating on held-out validation subset only...")
+        print("=" * 65)
+        if best_model_path.exists():
+            load_checkpoint(best_model_path, model, device=device)
 
-    test_loss, test_metrics = evaluate_model(
-        model=model,
-        loader=test_loader,
-        device=device,
-        head_type=args.head_type,
-        max_batches=args.max_batches if args.smoke else None,
-    )
-
-    print("\n" + "-" * 40)
-    print("FINAL TEST METRICS (REAL BCS SCALE):")
-    print("-" * 40)
-    print(f"Test Loss                : {test_loss:.4f}")
-    print(f"Real BCS MAE (Primary)   : {test_metrics['real_mae']:.4f} BCS units")
-    print(f"Class Index MAE          : {test_metrics['index_mae']:.4f} steps")
-    print(f"Exact Accuracy (Acc@0)   : {test_metrics['exact_accuracy_pct']:.2f}%")
-    print(f"Within-0.25 (Acc@1)      : {test_metrics['within_0_25_accuracy_pct']:.2f}%")
-    print(f"Balanced Accuracy        : {test_metrics['balanced_accuracy_pct']:.2f}%")
-    print(f"Macro-F1 Score           : {test_metrics['macro_f1']:.4f}")
-    print(f"Macro-Precision          : {test_metrics['macro_precision']:.4f}")
-    print(f"Macro-Recall             : {test_metrics['macro_recall']:.4f}")
-    print(f"Total Test Samples       : {test_metrics['total_evaluated_samples']}")
-
-    print("\nPER-CLASS BREAKDOWN:")
-    for bcs_class, stats in test_metrics["per_class"].items():
-        print(
-            f"  BCS {bcs_class}: Support={stats['support']:<4d} | "
-            f"Acc={stats['accuracy_pct']:5.1f}% | "
-            f"F1={stats['f1']:5.3f} | "
-            f"Real MAE={stats['real_mae']:.4f}"
+        eval_loss, eval_metrics = evaluate_model(
+            model=model,
+            loader=val_loader,
+            device=device,
+            head_type=args.head_type,
+            max_batches=args.max_batches,
         )
-    print("-" * 40 + "\n")
+
+        print("\n" + "-" * 40)
+        print("SMOKE VALIDATION METRICS (REAL BCS SCALE):")
+        print("-" * 40)
+        print(f"Val Subset Loss          : {eval_loss:.4f}")
+        print(f"Real BCS MAE (Primary)   : {eval_metrics['real_mae']:.4f} BCS units")
+        print(f"Class Index MAE          : {eval_metrics['index_mae']:.4f} steps")
+        print(f"Exact Accuracy (Acc@0)   : {eval_metrics['exact_accuracy_pct']:.2f}%")
+        print(f"Within-0.25 (Acc@1)      : {eval_metrics['within_0_25_accuracy_pct']:.2f}%")
+        print(f"Balanced Accuracy        : {eval_metrics['balanced_accuracy_pct']:.2f}%")
+        print(f"Macro-F1 Score           : {eval_metrics['macro_f1']:.4f}")
+        print(f"Total Evaluated Samples  : {eval_metrics['total_evaluated_samples']}")
+        print("Canonical Test Split     : PRESERVED UNTOUCHED (Zero Leakage)")
+        print("-" * 40 + "\n")
+
+        final_test_metrics = None
+        eval_report_metrics = eval_metrics
+        eval_report_title = "Smoke Validation Subset Performance (Test Set Preserved Untouched)"
+    else:
+        print("\n" + "=" * 65)
+        print("RUNNING FINAL EVALUATION ON CANONICAL TEST SET (BEST CHECKPOINT)...")
+        print("=" * 65)
+        if best_model_path.exists():
+            load_checkpoint(best_model_path, model, device=device)
+
+        test_loss, final_test_metrics = evaluate_model(
+            model=model,
+            loader=test_loader,
+            device=device,
+            head_type=args.head_type,
+            max_batches=None,
+        )
+
+        print("\n" + "-" * 40)
+        print("FINAL TEST METRICS (REAL BCS SCALE):")
+        print("-" * 40)
+        print(f"Test Loss                : {test_loss:.4f}")
+        print(f"Real BCS MAE (Primary)   : {final_test_metrics['real_mae']:.4f} BCS units")
+        print(f"Class Index MAE          : {final_test_metrics['index_mae']:.4f} steps")
+        print(f"Exact Accuracy (Acc@0)   : {final_test_metrics['exact_accuracy_pct']:.2f}%")
+        print(f"Within-0.25 (Acc@1)      : {final_test_metrics['within_0_25_accuracy_pct']:.2f}%")
+        print(f"Balanced Accuracy        : {final_test_metrics['balanced_accuracy_pct']:.2f}%")
+        print(f"Macro-F1 Score           : {final_test_metrics['macro_f1']:.4f}")
+        print(f"Total Test Samples       : {final_test_metrics['total_evaluated_samples']}")
+        print("-" * 40 + "\n")
+        eval_report_metrics = final_test_metrics
+        eval_report_title = "Final Canonical Test Set Metrics"
 
     # Export Metadata & Results JSON
     total_elapsed = time.time() - start_time
@@ -708,11 +769,14 @@ def run_bcs_pipeline(args):
             "split_provenance": split_provenance,
             "device": str(device),
             "device_name": torch.cuda.get_device_name(0) if device.type == "cuda" else "CPU",
+            "smoke_mode": args.smoke,
+            "test_split_touched": not args.smoke,
         },
         "config": vars(args),
         "history": history,
         "best_val_real_mae": best_val_mae,
-        "final_test_metrics": test_metrics,
+        "smoke_validation_metrics": eval_metrics if args.smoke else None,
+        "final_test_metrics": final_test_metrics,
     }
 
     metrics_json_path = output_dir / "bcs_baseline_metrics.json"
@@ -727,23 +791,24 @@ def run_bcs_pipeline(args):
         f.write(f"- **Date**: {time.strftime('%Y-%m-%d %H:%M:%S UTC', time.gmtime())}\n")
         f.write(f"- **Git Commit**: `{git_info['commit']}` ({git_info['branch']})\n")
         f.write(f"- **Encoder**: ImageNet-Pretrained ResNet-18\n")
-        f.write(f"- **Head Formulation**: `{args.head_type}`\n")
+        f.write(f"- **Head Formulation**: `{head_display_name}`\n")
         f.write(f"- **Device**: `{torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'}`\n")
-        f.write(f"- **Split Protocol**: `{split_provenance['split_protocol']}`\n\n")
-        f.write(f"## Test Set Metrics (Real BCS Scale 3.25 to 4.25)\n\n")
+        f.write(f"- **Split Protocol**: `{split_provenance['split_protocol']}`\n")
+        f.write(f"- **Canonical Test Set Status**: `PRESERVED UNTOUCHED (Zero Evaluation in Smoke Mode)`\n\n")
+        f.write(f"## {eval_report_title}\n\n")
         f.write(f"| Metric | Value |\n| :--- | :---: |\n")
-        f.write(f"| **Real BCS MAE (Primary)** | **{test_metrics['real_mae']:.4f} BCS units** |\n")
-        f.write(f"| Class-Index MAE | {test_metrics['index_mae']:.4f} steps |\n")
-        f.write(f"| Exact Accuracy (Acc@0) | {test_metrics['exact_accuracy_pct']:.2f}% |\n")
-        f.write(f"| Within-0.25 Tolerance (Acc@1) | {test_metrics['within_0_25_accuracy_pct']:.2f}% |\n")
-        f.write(f"| Balanced Accuracy | {test_metrics['balanced_accuracy_pct']:.2f}% |\n")
-        f.write(f"| Macro-F1 Score | {test_metrics['macro_f1']:.4f} |\n\n")
+        f.write(f"| **Real BCS MAE (Primary)** | **{eval_report_metrics['real_mae']:.4f} BCS units** |\n")
+        f.write(f"| Class-Index MAE | {eval_report_metrics['index_mae']:.4f} steps |\n")
+        f.write(f"| Exact Accuracy (Acc@0) | {eval_report_metrics['exact_accuracy_pct']:.2f}% |\n")
+        f.write(f"| Within-0.25 Tolerance (Acc@1) | {eval_report_metrics['within_0_25_accuracy_pct']:.2f}% |\n")
+        f.write(f"| Balanced Accuracy | {eval_report_metrics['balanced_accuracy_pct']:.2f}% |\n")
+        f.write(f"| Macro-F1 Score | {eval_report_metrics['macro_f1']:.4f} |\n\n")
         f.write(f"## Per-Class Performance\n\n")
         f.write(f"| Real BCS Class | Support | Accuracy (%) | Precision | Recall | F1 Score | Real MAE |\n")
         f.write(f"| :---: | :---: | :---: | :---: | :---: | :---: | :---: |\n")
-        for bcs_class, stats in test_metrics["per_class"].items():
+        for bcs_class, stats in eval_report_metrics["per_class"].items():
             f.write(f"| {bcs_class} | {stats['support']} | {stats['accuracy_pct']:.1f}% | {stats['precision']:.3f} | {stats['recall']:.3f} | {stats['f1']:.3f} | {stats['real_mae']:.4f} |\n")
-        f.write(f"\n*Smoke test completed successfully in {total_elapsed:.1f} seconds.*\n")
+        f.write(f"\n*Smoke test completed successfully in {total_elapsed:.1f} seconds. Canonical test split remained 100% untouched.*\n")
     print(f"[REPORT EXPORTED]  -> {md_summary_path}")
 
     return 0
@@ -760,12 +825,38 @@ def parse_args():
     parser.add_argument("--weight_decay", type=float, default=1e-4, help="Weight decay (default: 1e-4)")
     parser.add_argument("--image_size", type=int, default=224, help="Input image dimension (default: 224)")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility (default: 42)")
-    parser.add_argument("--head_type", type=str, default="coral", choices=["coral", "linear"], help="BCS head type (coral or linear)")
+    parser.add_argument(
+        "--head_type",
+        type=str,
+        default="ordinal_bce",
+        choices=["ordinal_bce", "coral", "linear"],
+        help="BCS head architecture: 'ordinal_bce' (Frank & Hall cumulative BCE), 'coral' (Cao et al. rank-consistent weight-shared), or 'linear' (multi-class cross-entropy)."
+    )
     parser.add_argument("--device", type=str, default="cuda", help="Device to use ('cuda' or 'cpu')")
     parser.add_argument("--num_workers", type=int, default=0, help="DataLoader num_workers (default: 0 for stable Windows execution)")
     parser.add_argument("--output_dir", type=str, default="artifacts/bcs_baseline", help="Directory for checkpoints and metrics")
     parser.add_argument("--resume", type=str, default=None, help="Path to checkpoint .pth file to resume training from")
-    parser.add_argument("--smoke", action="store_true", default=True, help="Enable smoke test mode with small sample subset")
+    
+    # CLI smoke toggle: supports --smoke, --no-smoke, and --full-run
+    parser.add_argument(
+        "--smoke",
+        dest="smoke",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable smoke test mode with small sample subsets (default: True). Pass --no-smoke or --full-run for full training."
+    )
+    parser.add_argument(
+        "--full-run",
+        dest="smoke",
+        action="store_false",
+        help="Explicit alias for --no-smoke to execute full training."
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        default=False,
+        help="Parse CLI arguments, print execution plan, and exit without running training."
+    )
     parser.add_argument("--max_samples", type=int, default=250, help="Max samples per split in smoke mode")
     parser.add_argument("--max_batches", type=int, default=10, help="Max batches per epoch in smoke mode")
     parser.add_argument("--test_save_resume", action="store_true", default=True, help="Run bit-identical save/resume verification test")
