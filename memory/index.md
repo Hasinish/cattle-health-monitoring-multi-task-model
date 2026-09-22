@@ -49,7 +49,7 @@ Dataset preprocessing routines, member work splits, and original problem context
 - `preprocess_sciencedb_bcs.py`: Preprocessing script for ScienceDB thermal/RGB cattle dataset.
 
 ### `phase3_canonical_roadmap.md` & `docs/phase3_canonical_roadmap.md`
-Master canonical 13-step roadmap locked for Phase 3 execution. Formulates the core thesis question: *"Which cattle-specific visual priors (localization, soft masks, anatomy/pose, viewpoint) are useful for which downstream task, and what information should each task preserve or suppress?"* Locks downstream scope to BCS (ScienceDB; Ruchay 2026 external), Behavior (MmCows; CBVD-5 external), and Re-ID (SideViewCows2026 as primary under approved contingency; BECA-L longitudinal external; BECA-D scale stress external; OpenCows2020 legacy baseline; MultiCamCows2024 contingency-excluded). Outlines a strict 13-step progression from Step 1 data registry to final 3-seed benchmark tables.
+Master canonical 13-step roadmap locked for Phase 3 execution. Formulates the core thesis question: *"Which cattle-specific visual priors (localization, soft masks, anatomy/pose, viewpoint) are useful for which downstream task, and what information should each task preserve or suppress?"* Locks downstream scope to BCS (ScienceDB; Ruchay 2026 external), Behavior (CVB + Kaggle Beef as the primary dense-video training stack; MmCows external identity-aware validation; CBVD-5 secondary external), and Re-ID (SideViewCows2026 as primary under approved contingency; BECA-L longitudinal external; BECA-D scale stress external; OpenCows2020 legacy baseline; MultiCamCows2024 contingency-excluded). Outlines a strict 13-step progression from Step 1 data registry to final 3-seed benchmark tables.
 
 ### `docs/`
 Structured project documentation, defense resources, forensic audits, and official deliverables.
@@ -81,6 +81,7 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `assets/agent_behavior_inspection/`: Staging directory containing 20 MmCows crops, 20 CBVD-5 crops, 20 CBVD-5 scenes, and `manifest.json`.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-23_behavior_primary_stack_correction.md`: Approved evidence-based roadmap correction replacing MmCows as the sole primary Behavior dataset with a combined CVB + Kaggle Beef dense-video training stack; retains MmCows as external identity-aware validation and requires new source/session-grouped splits before training.
   - `2026-09-22_real_cattle_visual_quality_reassessment.md`: Step 2 1,000-image human-verified real-cattle visual quality reassessment and contact sheet audit across ScienceDB, MmCows, and SideViewCows2026.
   - `2026-09-21_moo_resnet18_full_viewpoint_training_and_real_diagnostic.md`: Step 2.4 full fine-tuning of ResNet-18 on 8-direction MOO synthetic split and real cattle diagnostic benchmark evaluation.
   - `2026-09-20_cattle_viewpoint_taxonomy_manual_review.md`: Step 2.4 viewpoint taxonomy manual review feasibility audit across ScienceDB, MmCows, and SideViewCows2026.

@@ -2,7 +2,7 @@
 
 **Project:** Vision-Based AI for Cattle Health Monitoring  
 **Roadmap status:** CANONICAL / LOCKED FOR EXECUTION  
-**Last updated:** 2026-09-20 — ScienceDB identity/leakage audit incorporated  
+**Last updated:** 2026-09-23 — Behavior primary stack corrected to CVB + Kaggle Beef after completed temporal/provenance audits and explicit user approval  
 **Purpose:** Single source of truth for the coding/research agent.  
 **Important:** Do not restart the project from zero. Do not silently change the scope without recording the decision in the research log.
 
@@ -124,42 +124,74 @@ Role:
 
 ## 2.2 Behavior
 
-### Primary
+### Primary dense-video training stack
+**CVB + Kaggle Beef Cattle Behavior**
+
+Role:
+- Main Phase 3 Behavior training stack
+- Dense temporal behavior learning across two distinct environments: open pasture (CVB) and captive barn (Kaggle Beef)
+- Primary source for temporal Behavior experiments
+
+Canonical 5-class thesis taxonomy:
+
+```text
+Standing
+Lying
+Feeding
+Drinking
+Walking
+```
+
+Defensible label mapping for the primary stack:
+
+**CVB**
+- `resting-standing` -> Standing
+- `resting-lying` -> Lying
+- `grazing` -> Feeding
+- `drinking` -> Drinking
+- `walking` -> Walking
+- Exclude `ruminating-standing`, `ruminating-lying`, `hidden`, `other`, `grooming`, `none`, and `running` from the canonical 5-class baseline unless a later controlled experiment explicitly adds them.
+
+**Kaggle Beef**
+- `stand` -> Standing
+- `lie` -> Lying
+- `eat` -> Feeding
+- `drink` -> Drinking
+- `ruminate` excluded from the canonical 5-class baseline.
+- Walking is not present in Kaggle Beef.
+
+Important source-confounding guardrail:
+- Walking is contributed by CVB only in the combined training stack.
+- Therefore pooled accuracy alone is insufficient.
+- Always report per-dataset and per-class metrics.
+- Do not claim cross-domain Walking generalization from Kaggle Beef.
+- Use held-out CVB source videos and the external MmCows cow-disjoint benchmark to test Walking generalization.
+
+### External identity-aware validation
 **MmCows**
 
 Role:
-- Main behavior training/evaluation dataset
-- Identity-aware behavior evaluation
-- Temporal modeling experiments
+- Cow-disjoint external stress test
+- Tests whether a model trained on CVB + Kaggle Beef transfers to unseen biological cows and synchronized multi-camera barn imagery
+- Map `Feeding_head_up` and `Feeding_head_down` -> Feeding; retain Walking, Standing, Drinking, and Lying; exclude Licking from the shared 5-class comparison
 
-Main strengths:
-- Cow IDs
-- Timestamps
-- Multi-camera data
-- Behavior labels
-- Strong provenance
-
-Main weakness:
-- Only 16 cows
-- Highly correlated video-derived frames
-- Severe class imbalance
-
-### Primary external validation
+### Secondary external validation
 **CBVD-5**
 
 Role:
-- Larger-herd external behavior test
-- Cross-dataset / cross-environment evaluation
-
-Important:
+- Additional cross-dataset / cross-environment stress test on defensibly compatible labels
 - Do not claim cow-disjoint evaluation unless persistent biological cow IDs are verified.
 
 ### Optional external behavior datasets
-- CVB
 - XGain
 - 2026 Simmental behavior dataset
 
 Use only for compatible label intersections.
+
+Important:
+- Historical MmCows-primary audit documents remain preserved as historical evidence.
+- This 2026-09-23 correction supersedes their dataset-role recommendation.
+- Existing perception feasibility results obtained on MmCows apply to MmCows only; do not silently assume identical failure rates on CVB or Kaggle Beef.
 
 ---
 
@@ -358,60 +390,76 @@ Acceptance criteria:
 
 ---
 
-## 4.2 MmCows split
+## 4.2 CVB + Kaggle Beef combined Behavior protocol
 
-Do not randomly split frames.
+**Status: REOPENED / REQUIRED BEFORE BEHAVIOR TRAINING (2026-09-23)**
+
+Do not randomly split frames, tracklets, or short clips.
+
+### CVB grouping
 
 Primary grouping:
 
 ```text
-cow_id
+source_video_id
 ```
 
-Secondary protection:
+The official AVA split must not be reused because the completed audit found source-video overlap across train/validation. All cuts from the same source video must remain in one partition.
+
+### Kaggle Beef grouping
+
+Primary grouping:
 
 ```text
-timestamp / contiguous time block / synchronized multi-view event
+recording_session_id / source_video_id
 ```
 
-Preferred evaluation:
+All derived single-cow clips from the same recording session/source surveillance video must remain in one partition.
 
-- repeated Group K-Fold
-- or repeated leave-k-cows-out
-- report per-cow metrics
-- confidence intervals must resample cows, not frames
-
-Required outputs:
+### Canonical combined outputs
 
 ```text
-datasets/behavior/mmcows/folds/
-datasets/behavior/mmcows/manifest.csv
-datasets/behavior/mmcows/provenance_audit.csv
-datasets/behavior/mmcows/split_report.md
+datasets/behavior/cvb_beef/manifest.csv
+datasets/behavior/cvb_beef/train.csv
+datasets/behavior/cvb_beef/val.csv
+datasets/behavior/cvb_beef/test.csv
+datasets/behavior/cvb_beef/label_mapping.csv
+datasets/behavior/cvb_beef/split_report.md
 ```
 
-Manifest should contain:
+Manifest should preserve at minimum:
 
 ```text
-image_path
-cow_id
-behavior
+dataset
+source_path
+source_video_id
+session_id
+tracklet_id
+behavior_original
+behavior_canonical
+fps
+clip_start
+clip_end
 camera_id
-timestamp
-source_video
-time_block_id
-sync_group_id
-bbox
+split
 ```
+
+Evaluation requirements:
+
+- report CVB and Kaggle Beef metrics separately in addition to any pooled metric
+- report per-class Macro-F1 / balanced metrics
+- Walking must be marked CVB-only within the primary training stack
+- external MmCows evaluation remains cow-disjoint and frozen
 
 Acceptance criteria:
 
-- [ ] no cow crosses train/test within a fold
-- [ ] synchronized views do not leak across partitions
-- [ ] time blocks protected
-- [ ] behavior counts per cow recorded
-- [ ] class imbalance documented
-- [ ] source provenance recoverable
+- [ ] CVB source-video groups never cross train/val/test
+- [ ] Kaggle Beef session/source-video groups never cross train/val/test
+- [ ] canonical 5-class mapping recorded and versioned
+- [ ] no random frame/clip leakage
+- [ ] per-dataset class counts recorded
+- [ ] Walking source-confounding limitation explicitly documented
+- [ ] split seed and manifest hashes recorded
 
 ---
 
@@ -497,7 +545,7 @@ Use a small representative sample first.
 Recommended sample:
 
 - 100–300 ScienceDB images
-- 100–300 MmCows images
+- 100–300 Behavior samples spanning CVB + Kaggle Beef
 - 100–300 SideViewCows2026 images
 
 Include difficult examples:
@@ -758,7 +806,7 @@ Parallel execution is allowed after Gate 1 and the shared perception pipeline is
 
 ```text
 BCS environment      → ScienceDB / BCS datasets
-Behavior environment → MmCows / behavior datasets
+Behavior environment → CVB + Kaggle Beef / behavior datasets
 Re-ID environment    → SideViewCows2026 / Re-ID datasets
 ```
 
@@ -945,7 +993,7 @@ Acceptance criteria:
 
 # 11. STEP 8 — Temporal Behavior Experiments
 
-**Status:** BLOCKED BY CLEAN MmCows PROVENANCE
+**Status:** BLOCKED BY CLEAN CVB + KAGGLE BEEF COMBINED PROTOCOL
 
 ## Goal
 
@@ -1003,7 +1051,8 @@ Acceptance criteria:
 - [ ] no frame leakage
 - [ ] D1 average-pooling baseline included
 - [ ] temporal window length recorded
-- [ ] per-cow metrics reported
+- [ ] per-dataset and per-class metrics reported
+- [ ] Walking results clearly marked as CVB-only within the primary training stack unless externally tested
 - [ ] heavy video models only considered after lightweight models justify temporal complexity
 
 ---
@@ -1110,26 +1159,32 @@ Questions:
 
 ## 13.2 Behavior external evaluation
 
-Primary:
+Primary development:
 
 ```text
-Train: MmCows
-External test: CBVD-5
+Train/develop: CVB + Kaggle Beef
+In-domain held-out: CVB source-video groups + Kaggle Beef session/source-video groups
 ```
 
-Optional:
+Primary external identity-aware stress test:
 
 ```text
-CVB
-XGain
-Simmental 2026
+MmCows cow-disjoint evaluation on the shared 5-class mapping
+```
+
+Secondary external:
+
+```text
+CBVD-5 on defensibly compatible labels
+XGain / Simmental 2026 only if independently audited and mapping is defensible
 ```
 
 Important:
 
-Only map behavior labels with defensible semantic overlap.
-
-Do not force ambiguous mappings.
+- Never use external test data for hyperparameter tuning.
+- Report CVB and Kaggle Beef separately, not only as a pooled score.
+- Walking is absent from Kaggle Beef; cross-domain Walking claims require a held-out CVB and/or external MmCows result.
+- Do not force ambiguous label mappings.
 
 ---
 
@@ -1432,14 +1487,17 @@ Do not create a second competing memory system.
 # 20. Go / No-Go Gates
 
 ## Gate 1 — Data Ready
-**Status: PASSED & LOCKED (2026-09-20)**
+**Status: REOPENED FOR BEHAVIOR PRIMARY-STACK CORRECTION (2026-09-23)**
 
-Proceed to perception/baselines only if:
+Proceed with full Behavior training only if:
 
 - [x] ScienceDB burst-group-disjoint / sequence-safe split verified (repaired 2026-09-20; 0 cross-burst leakage)
-- [x] MmCows grouped evaluation defined (canonical split + 4-fold GroupKFold suite verified 2026-09-20; 0 cow overlap)
 - [x] SideViewCows2026 protocols generated and duplicate audit passed (4 canonical protocols verified 2026-09-20; 0 exact duplicates, min perceptual distance 7 bits)
-- [x] required duplicate / near-duplicate and protocol leakage checks pass across all primary splits
+- [x] MmCows grouped protocol remains valid for external identity-aware validation
+- [ ] CVB source-video grouped train/val/test protocol built and verified
+- [ ] Kaggle Beef session/source-video grouped train/val/test protocol built and verified
+- [ ] combined CVB + Kaggle Beef manifest and canonical 5-class mapping versioned
+- [ ] required duplicate / provenance leakage checks pass for the new primary Behavior stack
 
 ---
 
@@ -1508,56 +1566,51 @@ Do not spend paid GPU time debugging basic script failures that can be reproduce
 
 ## Current state
 
-**STEP 1 — Data Registry and Clean Splits: COMPLETE (2026-09-20)**
-**GATE 1: PASSED & LOCKED**
+**STEP 1 — Data Registry and Clean Splits: REOPENED FOR BEHAVIOR STACK CORRECTION (2026-09-23)**
+**GATE 1: REOPENED FOR BEHAVIOR ONLY**
 
-Completed deliverables:
+Already-complete deliverables remain valid:
 
-1. [x] Build canonical dataset registry (`datasets/dataset_registry.csv` verified)
-2. [x] Audit ScienceDB identity semantics and repair burst-group split (`datasets/bcs/sciencedb/` verified leak-free)
+1. [x] Build canonical dataset registry
+2. [x] Audit ScienceDB identity semantics and repair burst-group split
 3. [x] Retrieve/index Ruchay 2026 metadata and manifest
-4. [x] Rebuild MmCows grouped evaluation protocol with cow, time-block, and synchronized-view protection (`datasets/behavior/mmcows/folds/` verified)
-5. [x] Document MultiCamCows2024 upstream blocker and formally adopt SideViewCows2026 contingency (`docs/research_log/2026-09-20_multicam_contingency_assessment.md`)
-6. [x] Download/index SideViewCows2026 (80,260 images + masks verified on disk)
-7. [x] Download/index BECA-D / BECA-L (29,061 images verified on disk)
-8. [x] Verify/index CBVD-5 raw data and identity metadata (887 videos, 206,100 frames verified on disk)
-9. [x] Run automatic duplicate / near-duplicate audit across ScienceDB, MmCows, OpenCows
-10. [x] Build and verify deterministic SideViewCows2026 primary Re-ID protocols and run duplicate/near-duplicate audit (`datasets/id/sideviewcows2026/` verified)
+4. [x] Preserve MmCows cow-disjoint protocol for external identity-aware validation
+5. [x] Document MultiCamCows2024 upstream blocker and adopt SideViewCows2026 contingency
+6. [x] Download/index SideViewCows2026
+7. [x] Download/index BECA-D / BECA-L
+8. [x] Audit and physically verify CVB
+9. [x] Audit and physically verify Kaggle Beef Cattle Behavior
+10. [x] Build and verify deterministic SideViewCows2026 primary Re-ID protocols
+
+New required Behavior deliverable:
+
+- [ ] Build the canonical combined CVB + Kaggle Beef 5-class manifest and leakage-safe source/session-grouped split protocol.
 
 ---
 
 # 22. Agent Instruction — What To Do Next
 
-Gate 1 is fully CLEARED. Step 1 is COMPLETE.
-
 Immediate next task:
 
-> **STEP 2 — Cattle-Perception Feasibility Audit**
+> **Build the canonical CVB + Kaggle Beef Behavior manifest, label mapping, and leakage-safe split protocol. Do not train yet.**
 
-Required next deliverable:
+Required next outputs:
 
 ```text
-docs/audits/phase3_perception_feasibility.md
+datasets/behavior/cvb_beef/manifest.csv
+datasets/behavior/cvb_beef/train.csv
+datasets/behavior/cvb_beef/val.csv
+datasets/behavior/cvb_beef/test.csv
+datasets/behavior/cvb_beef/label_mapping.csv
+datasets/behavior/cvb_beef/split_report.md
 ```
 
 Then update:
 - `memory/state.md`
+- `datasets/dataset_registry.csv`
 - `docs/research_log/README.md`
 
-Then update:
-
-```text
-memory/state.md
-```
-
-with:
-
-- datasets downloaded
-- verified metadata
-- split status
-- leakage status
-- unresolved issues
-- next action
+Do not begin full Behavior training until this corrected Gate 1 requirement passes.
 
 ---
 
