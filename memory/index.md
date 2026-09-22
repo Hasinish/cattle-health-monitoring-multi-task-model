@@ -57,6 +57,8 @@ Structured project documentation, defense resources, forensic audits, and offici
 - `phase3_canonical_roadmap.md`: Canonical Phase 3 execution roadmap mirror.
 - `audits/`: Detailed dataset forensic investigations, anti-leakage manifests, and cross-validation architectures.
   - `phase3_real_cattle_visual_quality_reassessment.md`: Formal evidence-preservation audit report for the 1,000-image human-verified real-cattle review across ScienceDB (334), MmCows (333), and SideViewCows2026 (333), detailing exact distributions (34.20% strict-clean, 39.94% MmCows viewpoint ambiguity, 54.35% MmCows occlusion, 38.32% ScienceDB multi-cow), verifying 8 discussed claims, and preserving dataset roles.
+  - `phase3_mmcows_sequential_clips_verification.md`: Comprehensive audit report on MmCows temporal sampling rate (15s intervals) and sequential clip utility with 8 embedded panoramic sequential filmstrips (6 consecutive frames, +0s to +75s).
+  - `assets/mmcows_sequential_verification/`: Directory containing 8 high-resolution sequential filmstrip contact sheets (`mmcows_seq_<behavior>.jpg` and `mmcows_seq_transition.jpg`) with temporal metadata banners (rel time, clock time, cow ID, camera ID, resolution).
   - `phase3_mmcows_behavior_visual_verification.md`: Comprehensive visual verification report and qualitative assessment for MmCows behavior crops across all 7 active categories with 7 embedded high-resolution contact sheets (3x3 grid, 9 samples per class, 560x445 px per tile).
   - `assets/mmcows_behavior_verification/`: Directory containing 7 high-resolution contact sheets (`mmcows_<behavior>_sheet.jpg`) with metadata banners (Cow ID, Camera ID, Split, Resolution, Filename) evaluating crop usability.
   - `phase3_real_cattle_visual_quality_contact_sheet_index.md`: Contact sheet index document for the 42-sheet visual audit pack covering all 1,000 reviewed images with per-sheet summaries and targeted issue navigation.
@@ -208,6 +210,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `build_manual_dataset_visual_verification.py`: Deterministic generator for manual human visual inspection pack across ScienceDB, MmCows, and SideViewCows2026 with 4-stage progress UI and 3-panel mask composites.
 - `audit_behavior_dataset_candidates.py`: Forensic audit script comparing MmCows vs. CBVD-5 across 10 dimensions, scanning video properties, analyzing crop sizes, generating 14 paired comparison review assets, and producing evaluation guides.
 - `build_mmcows_behavior_contact_sheets.py`: Generates 7 high-resolution contact sheets (3x3 grid, 9 samples per class, 560x445 px per tile, 1720x1450 px per sheet) with provenance metadata banners for MmCows behavior visual verification.
+- `build_mmcows_sequential_contact_sheets.py`: Generates 8 panoramic sequential filmstrips (6 consecutive frames per sequence, +0s to +75s @ 15s intervals) and dynamic behavior transition sheets for MmCows temporal continuity verification.
 - `fast_download_sideviewcows.py`: Multi-threaded (16-thread) resumable chunk downloader and 7-Zip extractor for SideViewCows2026.
 - `fast_download_beca.py`: Multi-threaded (16-thread) resumable chunk downloader and extractor for BECA dataset.
 - `download_cbvd5.py`: Automated Kagglehub downloader and normalizer for CBVD-5 dataset.

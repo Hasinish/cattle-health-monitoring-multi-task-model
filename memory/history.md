@@ -1,3 +1,12 @@
+# Session Summary — 2026-09-22 (Phase 3 MmCows Sequential Clips & Temporal Continuity Audit)
+
+- Investigated temporal sampling characteristics of MmCows behavior crops:
+  - Proved that consecutive frames are sampled at exactly 15-second intervals (0.067 Hz; standard ethological scan sampling).
+  - Cataloged over 180,000 consecutive 15-second frame transitions across the dataset (max run 829 frames = 3.5 hours of continuous lying).
+  - Built 8 panoramic sequential filmstrip contact sheets (`docs/audits/assets/mmcows_sequential_verification/`): 7 behavior sequence sheets (6 frames per sequence, +0s to +75s) and 1 dynamic behavior transition sheet (`Feeding_head_down` <-> `Feeding_head_up`).
+  - Authored comprehensive audit report `docs/audits/phase3_mmcows_sequential_clips_verification.md` and research log `docs/research_log/2026-09-22_mmcows_sequential_clips_verification.md`.
+  - Clarified modeling utility: 100% useful for 2D spatial feature learning and macro-behavior temporal state modeling (LSTM/GRU/Markov), but not intended for 30 fps micro-kinematics / dense optical flow.
+
 # Session Summary — 2026-09-22 (Phase 3 MmCows Behavior Visual Verification & Crop Quality Audit)
 
 - Generated 7 high-resolution contact sheets (3x3 grid, 9 samples per class, 560x445 px per tile, 1720x1450 px per sheet) with complete provenance metadata banners (Cow ID, Camera ID, Split, Resolution, Filename) for all 7 active MmCows behavior categories (`Walking`, `Standing`, `Feeding_head_up`, `Feeding_head_down`, `Licking`, `Drinking`, `Lying`).
