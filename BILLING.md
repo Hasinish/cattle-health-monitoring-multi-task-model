@@ -1,7 +1,7 @@
 # 📊 Live Modal Billing & Credit Dashboard
 
 > **Live Auto-Refreshed Monitor**  
-> **Last Synchronized:** `2026-09-22 20:28:10`  
+> **Last Synchronized:** `2026-09-22 20:36:06`  
 > **Active Target Account:** `hasinishrak74001`
 
 ---
@@ -12,8 +12,8 @@
 | :--- | :--- |
 | 👥 **Discovered Accounts** | **6** (`dryousufmozumder, hasinishrak2015, hasinishrak74001, mohtasimahmedsamii, tigerwood693, tigerwood697`) |
 | 🎁 **Total Credit Grants** | **$122.00** |
-| 💸 **Total Consumed** | **$22.30** |
-| 🟢 **Total Remaining Balance** | **$99.70** |
+| 💸 **Total Consumed** | **$22.31** |
+| 🟢 **Total Remaining Balance** | **$99.69** |
 | 🚀 **Total Combined L40S Runtime** | **~3065 mins (~51.1 hours)** |
 | ⚡ **Total Combined H100 Runtime** | **~1205 mins (~20.1 hours)** |
 
@@ -27,7 +27,7 @@
 | `hasinishrak2015` | Standby | $30.00 | $0.00 | **$30.00** | ~923m | ~363m | 🟢 Healthy | [View Ledger](https://modal.com/settings/hasinishrak2015/billing) |
 | `hasinishrak74001` | 🔥 **ACTIVE** | $1.00 | $0.89 | **$0.11** | ~3m | ~1m | 🟡 Low | [View Ledger](https://modal.com/settings/hasinishrak74001/billing) |
 | `mohtasimahmedsamii` | Standby | $1.00 | $0.95 | **$0.05** | ~1m | ~0m | 🟡 Low | [View Ledger](https://modal.com/settings/mohtasimahmedsamii/billing) |
-| `tigerwood693` | Standby | $30.00 | $19.61 | **$10.39** | ~319m | ~125m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood693/billing) |
+| `tigerwood693` | Standby | $30.00 | $19.62 | **$10.38** | ~319m | ~125m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood693/billing) |
 | `tigerwood697` | Standby | $30.00 | $0.86 | **$29.14** | ~896m | ~353m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood697/billing) |
 
 ---
@@ -73,8 +73,8 @@
 ### 💳 Profile: `tigerwood693` 
 - **Status**: 🟢 Healthy
 - **Grant Ceiling**: `$30.00`
-- **Metered Usage**: `$19.61`
-- **Remaining Balance**: **`$10.39`**
+- **Metered Usage**: `$19.62`
+- **Remaining Balance**: **`$10.38`**
 - **Est. L40S GPU Runtime**: **~319 minutes** (5h 19m)
 - **Est. H100 GPU Runtime**: **~125 minutes** (2h 5m)
 - **Out-of-Pocket Billed**: `$0.00`

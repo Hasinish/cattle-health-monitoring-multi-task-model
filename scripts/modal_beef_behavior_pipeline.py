@@ -57,12 +57,13 @@ app = modal.App("beef-cattle-behavior-pipeline", image=image)
 
 @app.function(
     volumes={VOLUME_DIR: volume},
-    timeout=7200,  # 2 hours max
-    cpu=2.0,       # Fast I/O & multi-threaded decompression
-    memory=4096,   # 4 GB RAM for smooth extraction
+    timeout=7200,               # 2 hours max
+    cpu=4.0,                    # 4 vCPUs for TLS line rate & 7z decompression
+    memory=8192,                # 8 GB RAM
+    ephemeral_disk=120 * 1024,  # 120 GB ultra-fast local NVMe SSD (bypasses network volume locking!)
 )
 def download_beef_behavior():
-    """Download Kaggle 49 GB beef cattle behavior dataset via multi-connection aria2c and extract."""
+    """Download Kaggle 49 GB beef cattle behavior dataset via multi-connection aria2c on NVMe and extract."""
     import shutil
     import subprocess
     import threading
@@ -75,13 +76,21 @@ def download_beef_behavior():
     from kagglehub.http_resolver import _build_dataset_download_request, _get_current_version
 
     os.makedirs(DATASET_DIR, exist_ok=True)
-    archive_path = os.path.join(DATASET_DIR, "archive.zip")
+    # Download directly to local fast NVMe SSD at /tmp
+    archive_path = "/tmp/archive.zip"
+
+    # Clean up any partial files from previous interrupted runs
+    old_partial = os.path.join(DATASET_DIR, "archive.zip")
+    if os.path.exists(old_partial):
+        print("  Cleaning up old partial archive from previous run on volume...")
+        os.remove(old_partial)
+        volume.commit()
 
     print("=" * 75)
     print("  KAGGLE BEEF CATTLE BEHAVIOR DATASET (lucyfirst/beef-cattle-behavior-data-set)")
     print("  Target Volume: beef-behavior-data mounted at /data/beef_behavior")
     print("  Target Archive: 48.55 GB (GCS Presigned Direct Stream)")
-    print("  Engine: aria2c (16 parallel connections) + 7z multi-threaded extract")
+    print("  Engine: aria2c (16 parallel connections) on 120GB NVMe SSD + 7z multi-threaded extract")
     print("=" * 75)
 
     # 1. Resolve direct Google Cloud Storage pre-signed URL via Kaggle public API
@@ -108,38 +117,40 @@ def download_beef_behavior():
         total_gb = content_len / (1024 ** 3)
         print(f"  ✓ Remote File Size: {total_gb:.2f} GB ({content_len:,} bytes)")
 
-    # 2. Launch background periodic volume commit worker
+    # 2. Launch background periodic NVMe progress monitor thread (ZERO volume locking!)
     stop_event = threading.Event()
 
-    def checkpoint_worker():
-        while not stop_event.wait(60.0):
+    def progress_worker():
+        while not stop_event.wait(15.0):
             try:
                 curr_size = os.path.getsize(archive_path) if os.path.exists(archive_path) else 0
                 size_gb = curr_size / (1024 ** 3)
                 pct = (curr_size / content_len) * 100 if content_len > 0 else 0
-                volume.commit()
                 print(
-                    f"\n>>> [CHECKPOINT] Downloaded {size_gb:.2f} / {total_gb:.2f} GB ({pct:.1f}%) | Volume committed! <<<\n",
+                    f"\n>>> [NVMe PROGRESS] Downloaded {size_gb:.2f} / {total_gb:.2f} GB ({pct:.1f}%) <<<\n",
                     flush=True
                 )
             except Exception as e:
-                print(f"[WARN] Checkpoint error: {e}", flush=True)
+                pass
 
-    monitor_thread = threading.Thread(target=checkpoint_worker, daemon=True)
+    monitor_thread = threading.Thread(target=progress_worker, daemon=True)
     monitor_thread.start()
 
-    # 3. Fast multi-threaded download via aria2c
-    print("\n[2/4] Starting turbo download with aria2c (16 parallel streams)...")
+    # 3. Maximum-speed multi-threaded download to local NVMe SSD via aria2c
+    print("\n[2/4] Starting turbo NVMe download with aria2c (16 parallel streams)...")
     cmd = [
         "aria2c",
         "-x", "16",
         "-s", "16",
         "-j", "16",
-        "-k", "10M",
+        "-k", "2M",                     # Fast split into 16 connections within 32MB
+        "--file-allocation=none",        # Start writing immediately without preallocating 49 GB
+        "--disk-cache=128M",             # 128 MB RAM write buffer
+        "--max-connection-per-server=16",
         "--continue=true",
         "--auto-file-renaming=false",
         "--allow-overwrite=true",
-        f"--dir={DATASET_DIR}",
+        "--dir=/tmp",
         "-o", "archive.zip",
         "--summary-interval=5",
         "--console-log-level=error",
@@ -149,7 +160,7 @@ def download_beef_behavior():
     t_dl_start = time.time()
     proc = subprocess.Popen(
         cmd,
-        cwd=DATASET_DIR,
+        cwd="/tmp",
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
@@ -169,21 +180,20 @@ def download_beef_behavior():
 
     if proc.returncode != 0:
         print(f"\n[ERROR] aria2c exited with code {proc.returncode}")
-        volume.commit()
         return
 
     dl_duration = time.time() - t_dl_start
     avg_speed = (total_gb * 1024) / dl_duration if dl_duration > 0 else 0
-    print(f"\n✓ Download completed in {dl_duration / 60:.1f} minutes ({avg_speed:.1f} MB/s avg)!")
-    volume.commit()
+    print(f"\n✓ NVMe Download completed in {dl_duration / 60:.1f} minutes ({avg_speed:.1f} MB/s avg)!")
 
-    # 4. Multi-threaded extraction via 7z
-    print("\n[3/4] Extracting 49 GB archive with multi-threaded 7z...")
+    # 4. Multi-threaded extraction via 7z directly into persistent volume
+    print("\n[3/4] Extracting 49 GB archive with multi-threaded 7z into volume...")
     t_ext_start = time.time()
     ext_cmd = [
         "7z",
         "x",
         "-y",
+        "-mmt=on",
         archive_path,
         f"-o{DATASET_DIR}",
     ]
@@ -195,13 +205,13 @@ def download_beef_behavior():
         return
 
     ext_duration = time.time() - t_ext_start
-    print(f"✓ Extracted successfully in {ext_duration / 60:.1f} minutes!")
+    print(f"✓ Extracted successfully into volume in {ext_duration / 60:.1f} minutes!")
 
-    # 5. Purge archive.zip to reclaim 48.55 GB of volume storage
-    print("\n[4/4] Purging archive.zip to save volume quota...")
+    # 5. Purge /tmp/archive.zip to free ephemeral disk
+    print("\n[4/4] Purging /tmp/archive.zip...")
     if os.path.exists(archive_path):
         os.remove(archive_path)
-        print("✓ archive.zip removed from volume.")
+        print("✓ /tmp/archive.zip deleted.")
 
     # Final volume commit
     print("\n[FINAL] Committing final volume state...")
