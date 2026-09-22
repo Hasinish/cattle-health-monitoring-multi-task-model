@@ -22,8 +22,9 @@ import json
 import hashlib
 import argparse
 import subprocess
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Dict, Tuple, List, Optional
+from tqdm import tqdm
 
 import numpy as np
 import pandas as pd
@@ -88,6 +89,40 @@ def compute_file_sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def resolve_image_path(raw_path: str, data_root: Optional[Path] = None) -> Path:
+    """
+    Robust runtime path resolver for ScienceDB images across Windows and Linux/Modal.
+    Preserves canonical CSV paths without altering scientific split files.
+    """
+    p = Path(raw_path)
+    if data_root is None:
+        if p.exists():
+            return p
+        if Path("/data").exists():
+            data_root = Path("/data")
+        elif Path("/data/dataset").exists():
+            data_root = Path("/data/dataset")
+
+    if data_root is not None:
+        data_root = Path(data_root)
+        parts = PureWindowsPath(raw_path).parts
+        # Canonical structure ends with: ('dataset', '<class>', '<filename>.jpg')
+        if len(parts) >= 3 and parts[-3] == "dataset":
+            c1 = data_root / parts[-3] / parts[-2] / parts[-1]  # data_root / dataset / 4.25 / GS_1_1.jpg
+            if c1.exists():
+                return c1
+            c2 = data_root / parts[-2] / parts[-1]            # data_root / 4.25 / GS_1_1.jpg
+            if c2.exists():
+                return c2
+            return c1
+        elif len(parts) >= 2:
+            candidate = data_root / parts[-2] / parts[-1]
+            if candidate.exists():
+                return candidate
+            return candidate
+    return p
+
+
 # ==============================================================================
 # DATASET & TRANSFORMS
 # ==============================================================================
@@ -97,11 +132,18 @@ class ScienceDBBCSDataset(Dataset):
     Provenance Note: ScienceDB is sequence-safe / burst-group-disjoint.
     True biological cow IDs are NOT provided by publisher.
     """
-    def __init__(self, csv_path: Path, transform=None, max_samples: Optional[int] = None):
-        self.csv_path = csv_path
+    def __init__(
+        self,
+        csv_path: Path,
+        transform=None,
+        max_samples: Optional[int] = None,
+        data_root: Optional[Path] = None,
+    ):
+        self.csv_path = Path(csv_path)
         self.transform = transform
+        self.data_root = Path(data_root) if data_root else None
         
-        df = pd.read_csv(csv_path)
+        df = pd.read_csv(self.csv_path)
         if max_samples and max_samples < len(df):
             # Deterministic stratified sample for smoke testing (zero pandas warnings)
             samples_per_class = max(1, max_samples // NUM_CLASSES)
@@ -118,12 +160,13 @@ class ScienceDBBCSDataset(Dataset):
         # Pre-verify paths and parse integer targets
         self.samples = []
         for idx, row in self.df.iterrows():
-            img_path = str(row["image_path"])
+            raw_path = str(row["image_path"])
+            resolved_path = resolve_image_path(raw_path, data_root=self.data_root)
             raw_label = float(row["label"])
             if raw_label not in LABEL_TO_IDX:
                 raise ValueError(f"Encountered unexpected BCS label {raw_label} at row {idx}")
             target_idx = LABEL_TO_IDX[raw_label]
-            self.samples.append((img_path, target_idx, raw_label))
+            self.samples.append((str(resolved_path), target_idx, raw_label))
 
     def __len__(self) -> int:
         return len(self.samples)
@@ -345,10 +388,23 @@ def train_one_epoch(
     device: torch.device,
     head_type: str = "ordinal_bce",
     max_batches: Optional[int] = None,
+    epoch: int = 1,
+    total_epochs: int = 30,
 ) -> float:
     model.train()
     running_loss = 0.0
     total_samples = 0
+    total_batches = max_batches if max_batches else len(loader)
+
+    pbar = tqdm(
+        total=total_batches,
+        desc=f"Epoch {epoch}/{total_epochs} | Train",
+        unit="batch",
+        bar_format="{desc} | {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} batches [{elapsed}<{remaining}, {rate_fmt}{postfix}]",
+        dynamic_ncols=True,
+        file=sys.stdout,
+        leave=False,
+    )
 
     for batch_idx, (imgs, targets, _) in enumerate(loader):
         if max_batches and batch_idx >= max_batches:
@@ -369,9 +425,15 @@ def train_one_epoch(
         optimizer.step()
 
         batch_sz = imgs.size(0)
-        running_loss += loss.item() * batch_sz
+        batch_loss = loss.item()
+        running_loss += batch_loss * batch_sz
         total_samples += batch_sz
 
+        current_avg_loss = running_loss / max(1, total_samples)
+        pbar.set_postfix_str(f"loss={current_avg_loss:.4f}")
+        pbar.update(1)
+
+    pbar.close()
     return running_loss / max(1, total_samples)
 
 
@@ -382,10 +444,29 @@ def evaluate_model(
     device: torch.device,
     head_type: str = "ordinal_bce",
     max_batches: Optional[int] = None,
+    epoch: Optional[int] = None,
+    total_epochs: Optional[int] = None,
+    split_name: str = "Val",
 ) -> Tuple[float, Dict]:
     model.eval()
     running_loss = 0.0
     total_samples = 0
+    total_batches = max_batches if max_batches else len(loader)
+
+    if epoch is not None and total_epochs is not None:
+        desc = f"Epoch {epoch}/{total_epochs} | {split_name}"
+    else:
+        desc = f"{split_name}"
+
+    pbar = tqdm(
+        total=total_batches,
+        desc=desc,
+        unit="batch",
+        bar_format="{desc} | {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} batches [{elapsed}<{remaining}, {rate_fmt}{postfix}]",
+        dynamic_ncols=True,
+        file=sys.stdout,
+        leave=False,
+    )
 
     all_preds = []
     all_targets = []
@@ -404,13 +485,19 @@ def evaluate_model(
             loss = F.cross_entropy(logits, targets)
 
         batch_sz = imgs.size(0)
-        running_loss += loss.item() * batch_sz
+        batch_loss = loss.item()
+        running_loss += batch_loss * batch_sz
         total_samples += batch_sz
 
         preds = predict_from_logits(logits, head_type=head_type)
         all_preds.extend(preds.cpu().numpy().tolist())
         all_targets.extend(targets.cpu().numpy().tolist())
 
+        current_avg_loss = running_loss / max(1, total_samples)
+        pbar.set_postfix_str(f"loss={current_avg_loss:.4f}")
+        pbar.update(1)
+
+    pbar.close()
     epoch_loss = running_loss / max(1, total_samples)
     metrics = compute_bcs_metrics(np.array(all_targets), np.array(all_preds))
     metrics["loss"] = epoch_loss
@@ -511,7 +598,7 @@ def test_checkpoint_roundtrip(
 # ==============================================================================
 # MAIN PIPELINE RUNNER
 # ==============================================================================
-def run_bcs_pipeline(args):
+def run_bcs_pipeline(args, on_epoch_end_callback=None):
     start_time = time.time()
     set_seed(args.seed)
 
@@ -522,7 +609,7 @@ def run_bcs_pipeline(args):
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Split Paths (Canonical Phase 3 ScienceDB Burst-Group-Disjoint Splits)
-    split_dir = REPO_ROOT / "datasets" / "bcs" / "sciencedb"
+    split_dir = Path(args.split_dir) if getattr(args, "split_dir", None) else (REPO_ROOT / "datasets" / "bcs" / "sciencedb")
     train_csv = split_dir / "train.csv"
     val_csv = split_dir / "val.csv"
     test_csv = split_dir / "test.csv"
@@ -580,19 +667,20 @@ def run_bcs_pipeline(args):
         "pin_memory": (device.type == "cuda"),
     }
 
+    data_root = getattr(args, "data_root", None)
     if args.smoke:
         print("[SMOKE MODE] Loading temporary subsets from TRAIN and VAL splits only.")
         print("[SMOKE MODE] Canonical held-out test split (test.csv) is strictly preserved untouched.")
-        train_ds = ScienceDBBCSDataset(train_csv, transform=train_tf, max_samples=args.max_samples)
-        val_ds = ScienceDBBCSDataset(val_csv, transform=eval_tf, max_samples=args.max_samples // 2)
+        train_ds = ScienceDBBCSDataset(train_csv, transform=train_tf, max_samples=args.max_samples, data_root=data_root)
+        val_ds = ScienceDBBCSDataset(val_csv, transform=eval_tf, max_samples=args.max_samples // 2, data_root=data_root)
         test_ds = None
         test_loader = None
         print(f"Smoke Dataset Counts -> Train: {len(train_ds)}, Val: {len(val_ds)} (Test: UNTOUCHED)")
     else:
         print("[FULL RUN MODE] Loading full canonical ScienceDB splits.")
-        train_ds = ScienceDBBCSDataset(train_csv, transform=train_tf, max_samples=None)
-        val_ds = ScienceDBBCSDataset(val_csv, transform=eval_tf, max_samples=None)
-        test_ds = ScienceDBBCSDataset(test_csv, transform=eval_tf, max_samples=None)
+        train_ds = ScienceDBBCSDataset(train_csv, transform=train_tf, max_samples=None, data_root=data_root)
+        val_ds = ScienceDBBCSDataset(val_csv, transform=eval_tf, max_samples=None, data_root=data_root)
+        test_ds = ScienceDBBCSDataset(test_csv, transform=eval_tf, max_samples=None, data_root=data_root)
         test_loader = DataLoader(test_ds, shuffle=False, **loader_kwargs)
         print(f"Full Dataset Counts -> Train: {len(train_ds)}, Val: {len(val_ds)}, Test: {len(test_ds)}")
 
@@ -638,6 +726,8 @@ def run_bcs_pipeline(args):
             device=device,
             head_type=args.head_type,
             max_batches=args.max_batches if args.smoke else None,
+            epoch=epoch,
+            total_epochs=total_epochs,
         )
         scheduler.step()
 
@@ -647,6 +737,9 @@ def run_bcs_pipeline(args):
             device=device,
             head_type=args.head_type,
             max_batches=args.max_batches if args.smoke else None,
+            epoch=epoch,
+            total_epochs=total_epochs,
+            split_name="Val",
         )
         ep_duration = time.time() - ep_start
 
@@ -693,6 +786,12 @@ def run_bcs_pipeline(args):
         if is_best:
             save_checkpoint(checkpoint_payload, best_model_path)
 
+        if on_epoch_end_callback is not None:
+            try:
+                on_epoch_end_callback(epoch, is_best, checkpoint_payload)
+            except Exception as e:
+                print(f"[CALLBACK WARNING] on_epoch_end callback failed: {e}")
+
     # Post-Training Evaluation
     if args.smoke:
         print("\n" + "=" * 65)
@@ -708,6 +807,9 @@ def run_bcs_pipeline(args):
             device=device,
             head_type=args.head_type,
             max_batches=args.max_batches,
+            epoch=None,
+            total_epochs=None,
+            split_name="Val",
         )
 
         print("\n" + "-" * 40)
@@ -740,6 +842,9 @@ def run_bcs_pipeline(args):
             device=device,
             head_type=args.head_type,
             max_batches=None,
+            epoch=None,
+            total_epochs=None,
+            split_name="Test",
         )
 
         print("\n" + "-" * 40)
@@ -857,6 +962,8 @@ def parse_args():
         default=False,
         help="Parse CLI arguments, print execution plan, and exit without running training."
     )
+    parser.add_argument("--data_root", type=str, default=None, help="Root directory for ScienceDB images (e.g. /data or /data/dataset)")
+    parser.add_argument("--split_dir", type=str, default=None, help="Directory containing canonical train.csv, val.csv, and test.csv")
     parser.add_argument("--max_samples", type=int, default=250, help="Max samples per split in smoke mode")
     parser.add_argument("--max_batches", type=int, default=10, help="Max batches per epoch in smoke mode")
     parser.add_argument("--test_save_resume", action="store_true", default=True, help="Run bit-identical save/resume verification test")

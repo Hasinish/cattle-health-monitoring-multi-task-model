@@ -1,3 +1,25 @@
+# Session Summary — 2026-09-23 (ScienceDB RGB BCS Baseline Modal Preparation & Readiness Audit)
+
+- Prepared and audited the full 30-epoch training setup for Phase 3 Step 4 single-task ScienceDB RGB BCS baseline on Modal (`tigerwood697`).
+- Enhanced `scripts/train_sciencedb_bcs_baseline.py`:
+  - Added clean live `tqdm` progress bars with running loss, batch counters, ETA, and percentages for Train (1,158 batches), Val (266 batches), and Test (252 batches).
+  - Implemented runtime path remapping (`resolve_image_path`) using `PureWindowsPath` to transparently resolve host Windows paths to Linux mount `/data/dataset` without touching canonical split CSVs.
+  - Added `--data_root` and `--split_dir` CLI arguments.
+  - Added `on_epoch_end_callback` hook for persistent volume commits.
+- Created Modal wrapper `scripts/modal_train_sciencedb_bcs.py`:
+  - Mounts `sciencedb-data` at `/data` and `sciencedb-checkpoints` at `/checkpoints`.
+  - Configured Tesla T4 GPU (16GB VRAM, lowest-cost tier) with 4 CPUs and 16GB RAM.
+  - Automatically commits checkpoints to persistent storage at the end of every epoch.
+- Executed remote pre-flight readiness audit (`verify_readiness_remote`) on Modal (`tigerwood697`, App `ap-TrHVaxRLZvyJBANOPX4ODu`):
+  - Verified CUDA: Tesla T4 (14.56 GB VRAM).
+  - Verified ScienceDB image root `/data/dataset`: 53,566 images across 5 classes (`3.25`: 7,536; `3.5`: 13,256; `3.75`: 14,255; `4.0`: 12,556; `4.25`: 5,963).
+  - Verified split hashes and records: Train 37,045 imgs (3,958 groups), Val 8,481 imgs (850 groups), Test 8,040 imgs (845 groups).
+  - Verified path resolution: 15/15 representative samples opened with PIL (1024x576 px).
+  - Verified persistent checkpoint storage: `/checkpoints/bcs_baseline` writable and committed to `sciencedb-checkpoints`.
+  - Verified live tqdm batch progress streaming.
+  - Pre-flight readiness verdict: **READY** (100% passed).
+- Deliverables: `scripts/train_sciencedb_bcs_baseline.py`, `scripts/modal_train_sciencedb_bcs.py`, `docs/research_log/2026-09-23_sciencedb_bcs_modal_training_preparation.md`.
+
 # Session Summary — 2026-09-23 (Kaggle Beef RT-DETR Failure Fallback Audit)
 
 - Empirically verified proposed fallback perception rule (*IF RT-DETR-L detects no cow -> SAM 2.1 with ONE center point (112, 112)*) on the exact 3 known RT-DETR-L detection misses from the fresh-40 audit (`beef_4_4_clip_0` in Drinking, `beef_131_5_clip_0` in Feeding, `beef_00000000580000000_27_clip_3` in Lying; midpoint frame 125, Modal profile `tigerwood693`, GPU Tier `T4`).
