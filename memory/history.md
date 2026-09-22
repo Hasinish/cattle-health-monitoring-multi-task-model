@@ -1,3 +1,14 @@
+# Session Summary — 2026-09-22 (Phase 3 CVB Behavior Scientific & Provenance Audit)
+
+- Completed exhaustive forensic scientific and provenance audit of the Cattle Visual Behaviors (CVB) dataset on Modal volume `cvb-data` across all 226,344 files, 502 video cuts, 225,829 1080p JPEG frames, and 1,163,408 bounding boxes.
+- Disproved legacy "589 cuts" myth (proven to be an artifact of CSIRO DAP deposit ID `58916v001`); verified exactly 502 cuts matching 502 annotation directories 1-to-1.
+- Verified 30.0 FPS dense temporal video across 15.0s continuous clips ($dt = 0.033\text{s}$).
+- Audited 12 official behaviors (`grazing`: 42.7%, `resting-lying`: 17.9%, `resting-standing`: 11.9%, `hidden`: 9.3%, `ruminating-lying`: 6.5%, `drinking`: 2.9%, `ruminating-standing`: 2.5%, etc.). Proved defensible mapping to 4-class compact set (`Standing`, `Lying`, `Walking`, `Feeding`) yields 971,999 boxes (83.5%).
+- Identified critical limitations: median bounding box is only 104x85 px (occupies 0.41% of 1080p frame; 16.3x smaller than MmCows crops), zero biological cow IDs exist, and official AVA split suffers from 88.9% source-video leakage across train/val.
+- Generated 18 visual review assets (16 consecutive filmstrips, 2 diagnostic edge cases) under `docs/audits/assets/cvb_behavior_audit/`.
+- Final verdict: **PARTIALLY SUITABLE — WITH SPECIFIC LIMITATIONS**. MmCows retained as canonical Primary Behavior benchmark; CVB preserved as Optional External Validation benchmark; Phase 3 canonical roadmap remains unchanged.
+- Deliverables: `docs/audits/phase3_cvb_behavior_scientific_audit.md`, `docs/research_log/2026-09-22_cvb_behavior_scientific_audit.md`, `datasets/behavior/cvb/cvb_cuts_manifest.csv`, `artifacts/behavior_audit/cvb_audit_summary.csv`, `datasets/dataset_registry.csv`.
+
 # Session Summary — 2026-09-22 (Phase 3 Ruchay 2026 BCS Manual Visual Quality Verdict)
 
 - Completed formal manual visual-quality inspection (Hasin Ishrak assisted by ChatGPT vision) across all 10 contact sheets (100 samples, 10 Ferguson BCS classes, 94 unique biological cow IDs) of candidate Primary External BCS validation benchmark Ruchay et al. (2026).
