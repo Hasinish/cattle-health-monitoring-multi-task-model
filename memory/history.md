@@ -1,3 +1,23 @@
+# Session Summary — 2026-09-23 (Behavior Primary Stack RT-DETR-L Localization Sanity Check)
+
+- Executed small empirical cattle localization sanity check using pretrained RT-DETR-L (`rtdetr-l.pt`, COCO class 19 `cow`, conf >= 0.25) directly on the newly approved primary Behavior training partition (`datasets/behavior/cvb_beef/train.csv`).
+- Evaluated 45 deterministic midpoint frames across 5 canonical behaviors (Seed 2026, Modal profile `tigerwood693`, GPU Tier `T4`):
+  - **CVB (25 samples across 25 unique source videos, 5 per class):**
+    - GT Availability: 100.0% (25/25) recovered from authentic COCO annotations (`instances_default.json`).
+    - Target Overlap Rate (IoU > 0.0): 100.0% (25/25).
+    - Target Localization Hit Rate (IoU >= 0.50): 96.0% (24/25).
+    - Mean Target IoU: 0.8227 (Median: 0.8671; Feeding: 0.9105, Lying: 0.9031, Standing: 0.8020, Drinking: 0.7998, Walking: 0.6980).
+    - Identified sole sub-0.50 IoU case: `cvb_0400..._tr9_seg0` (IoU 0.4404) due to overlapping sister cow at feeding trough.
+    - Verified CVB frames contain an average of 13.04 cows per frame; upstream target localization is mandatory and highly effective.
+  - **Kaggle Beef (20 samples across 19 unique sessions, 5 per class):**
+    - Raw Cow Detection Rate: 95.0% (19/20).
+    - No-Detection Count: 1/20 (5.0%; `beef_00000000580000000_2_clip_3`, recumbent cow obscured behind thick intersecting stall pipes).
+    - Partial Detection: `beef_00000000109000000_4_clip_105` (area ratio 0.093, only cow face/ear tag detected).
+    - Detected-box Area Fraction: Mean = 0.6678, Min = 0.0000, Max = 0.8906.
+    - Observed severe fragmentation: detector averages 4.35 cattle boxes per 224x224 pre-cropped clip, picking up fragmented body parts and neighboring stall cattle.
+- Architectural Verdict: Upstream RT-DETR-L localization is **operationally validated and essential for CVB**, but **unnecessary and counterproductive for Kaggle Beef** (which is already single-cow cropped). Cleared to proceed to SAM 2.1 segmentation sanity check.
+- Deliverables: `scripts/audit_behavior_primary_localization.py`, `artifacts/perception_audit/behavior_primary_localization_sanity.csv`, `docs/audits/assets/behavior_primary_localization_sanity/`, `docs/research_log/2026-09-23_behavior_primary_localization_sanity.md`.
+
 # Session Summary — 2026-09-23 (ScienceDB Dataset Registry Reconciliation & Canonical Split Counts)
 
 - Reconciled the ScienceDB Cattle BCS registry entry in `scripts/build_dataset_registry.py` and regenerated `datasets/dataset_registry.csv` with verified canonical facts from `datasets/bcs/sciencedb/split_report.md`:
