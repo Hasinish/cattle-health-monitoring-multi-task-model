@@ -48,6 +48,9 @@ Dataset preprocessing routines, member work splits, and original problem context
 - `preprocess_mmcows_behavior.py`: Data loader and bounding-box crop generator for MMCows behavior dataset.
 - `preprocess_sciencedb_bcs.py`: Preprocessing script for ScienceDB thermal/RGB cattle dataset.
 
+### `thesis_marking_rubrics.md`
+Official BRAC University CSE400 Thesis Marking Rubrics markdown sheet detailing full mark distributions (100 total: Pre-thesis 1: 5, Pre-Thesis 2: 10, Defense Panel: 30, Supervisor: 55), Course Outcomes (CO1 to CO14), Program Outcomes (PO 2 to PO 12), chapter content mappings, and assessment strategies.
+
 ### `phase3_deadline_execution_2026-09-26.md`
 Active deadline execution priority overlay for the 26 September 2026 thesis deadline. Enforces the guiding principle: "Before the 26 Sep deadline, execute only the minimum defensible thesis runs. All exhaustive ablations remain deferred roadmap work and can be completed later if needed." Preserves the full canonical roadmap without scientific cancellation. Codifies the 8-run sequence (3 single-task baselines, 3 perception-enhanced models, E1 basic hard sharing control, E3 main deadline MTL model with modular adapters/private pathways). Enforces strict viewpoint rules (tested/deferred, never camera ID) and scientific claim boundaries.
 
