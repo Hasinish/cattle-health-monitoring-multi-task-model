@@ -216,3 +216,129 @@ def main(
     checkpoint_volume.commit()
     print("\n✓ Committed checkpoints and training metrics to persistent volume 'viewpoint-checkpoints'.", flush=True)
     return metrics
+
+
+@app.function(
+    volumes={
+        "/data": real_data_volume,
+        "/checkpoints": checkpoint_volume,
+    },
+    cpu=4.0,
+    memory=8192,
+    timeout=600,
+)
+def evaluate_test():
+    """Evaluate best checkpoint on frozen test.csv (131 samples)."""
+    import sys
+    sys.path.insert(0, "/root")
+    import torch
+    import torch.nn as nn
+    from torch.utils.data import DataLoader
+    from PIL import Image
+    import pandas as pd
+    from torchvision import models
+    import torchvision.transforms as T
+    from sklearn.metrics import (
+        accuracy_score,
+        balanced_accuracy_score,
+        f1_score,
+        recall_score,
+        classification_report,
+        confusion_matrix,
+    )
+    import json
+
+    print("\n" + "=" * 70, flush=True)
+    print("  EVALUATING BEST VIEWPOINT MODEL ON FROZEN HELD-OUT TEST SPLIT", flush=True)
+    print("=" * 70, flush=True)
+
+    data_dir = Path("/data/self_clean_v1_rtdetr_crop")
+    ckpt_path = Path("/checkpoints/viewpoint_real_finetune/viewpoint_resnet18_real_best.pth")
+    assert ckpt_path.exists(), f"Checkpoint not found: {ckpt_path}"
+
+    test_csv = data_dir / "test.csv"
+    if not test_csv.exists():
+        test_csv = data_dir / "splits" / "test.csv"
+    assert test_csv.exists(), f"Test split CSV not found: {test_csv}"
+
+    from train_moo_real_viewpoint import ViewpointCropDataset, CLASS_NAMES, CLASS_TO_IDX
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Device: {device}", flush=True)
+
+    ckpt = torch.load(ckpt_path, map_location=device)
+    print(f"Loaded checkpoint from Epoch {ckpt.get('epoch', 'unknown')} (Val F1: {ckpt.get('val_macro_f1', 0):.4f})", flush=True)
+
+    model = models.resnet18(weights=None)
+    model.fc = nn.Linear(512, len(CLASS_NAMES))
+    model.load_state_dict(ckpt["model_state_dict"])
+    model.to(device)
+    model.eval()
+
+    val_transform = T.Compose([
+        T.Resize((224, 224)),
+        T.ToTensor(),
+        T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    df_test = pd.read_csv(test_csv)
+    test_dataset = ViewpointCropDataset(df_test, data_dir, transform=val_transform)
+    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, num_workers=2)
+
+    all_preds, all_labels = [], []
+    with torch.no_grad():
+        for imgs, lbls, _ in test_loader:
+            imgs = imgs.to(device)
+            outputs = model(imgs)
+            preds = torch.argmax(outputs, dim=1).cpu().numpy()
+            all_preds.extend(preds)
+            all_labels.extend(lbls.numpy())
+
+    acc = accuracy_score(all_labels, all_preds)
+    bal_acc = balanced_accuracy_score(all_labels, all_preds)
+    macro_f1 = f1_score(all_labels, all_preds, average="macro", zero_division=0)
+    per_class_rec = recall_score(all_labels, all_preds, average=None, zero_division=0)
+    cm = confusion_matrix(all_labels, all_preds).tolist()
+    report = classification_report(all_labels, all_preds, target_names=CLASS_NAMES, digits=4)
+
+    test_res = {
+        "checkpoint_epoch": ckpt.get("epoch"),
+        "best_val_macro_f1": ckpt.get("val_macro_f1"),
+        "test_samples": len(all_labels),
+        "test_accuracy": round(float(acc), 4),
+        "test_balanced_accuracy": round(float(bal_acc), 4),
+        "test_macro_f1": round(float(macro_f1), 4),
+        "per_class_recall": {cls: round(float(rec), 4) for cls, rec in zip(CLASS_NAMES, per_class_rec)},
+        "confusion_matrix": cm,
+        "class_names": CLASS_NAMES,
+    }
+
+    out_json = Path("/checkpoints/viewpoint_real_finetune/test_evaluation_metrics.json")
+    with open(out_json, "w", encoding="utf-8") as f:
+        json.dump(test_res, f, indent=2)
+    checkpoint_volume.commit()
+
+    print("\n" + "=" * 70, flush=True)
+    print("  HELD-OUT TEST SET EVALUATION SCORECARD (N=131)")
+    print("=" * 70, flush=True)
+    print(f"  Test Accuracy:          {acc*100:.2f}% ({sum(p==l for p,l in zip(all_preds, all_labels))}/{len(all_labels)})", flush=True)
+    print(f"  Test Balanced Accuracy: {bal_acc*100:.2f}%", flush=True)
+    print(f"  Test Macro-F1:          {macro_f1:.4f}", flush=True)
+    for cls, rec in zip(CLASS_NAMES, per_class_rec):
+        print(f"    - Recall {cls:5s}:       {rec*100:.2f}%", flush=True)
+    print("\nClassification Report:\n" + report, flush=True)
+    print("Confusion Matrix (rows=true, cols=pred):", flush=True)
+    print(f"         {CLASS_NAMES}", flush=True)
+    for i, row in enumerate(cm):
+        print(f"  {CLASS_NAMES[i]:5s}: {row}", flush=True)
+    return test_res
+
+
+@app.local_entrypoint()
+def run_eval():
+    """Local entry point to trigger remote held-out test evaluation."""
+    print("Invoking remote evaluate_test on Modal...", flush=True)
+    res = evaluate_test.remote()
+    print("Completed test evaluation:", res, flush=True)
+
+

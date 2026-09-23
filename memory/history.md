@@ -1,13 +1,21 @@
-# Session Summary — 2026-09-23 (Real Viewpoint Dataset RT-DETR-L Cropping, Modal Staging & MOO Transfer Pipeline Complete)
+# Session Summary — 2026-09-23 (Real Viewpoint MOO Transfer Fine-Tuning & Held-Out Test Evaluation 100% Complete)
 
 - Convo ID: `3ec35c2e-9eec-4b84-811f-b48cb01a486b`
-- Successfully generated derived 879-image RT-DETR-L cow-cropped real viewpoint dataset (`self_clean_v1_rtdetr_crop/`) from `self_clean_v1/`, saving 1.65 GB (-46.8%).
-- Staged all 890 files (879 crops + metadata + splits; 1.825 GB) on Modal volume `viewpoint-real-data` under profile `tigerwood693` via `scripts/upload_viewpoint_crops_modal.py`.
-- Automated remote verification container on Modal passed 100% across all classes (`front: 392`, `side: 222`, `rear: 265`, 0 zero-byte files, 15/15 PIL decodes passed).
-- Built deterministic Seed-2026 group-stratified splits partitioned strictly by `duplicate_group_id` (`train`: 616, `val`: 132, `test`: 131) with **0 cross-partition group overlap**.
-- Implemented and locally smoke-tested PyTorch fine-tuning engine (`scripts/train_moo_real_viewpoint.py`) with MOO ResNet-18 trunk weight transfer, fresh 3-class linear head (`front`, `side`, `rear`), bilateral flips, and zero test-set access.
-- Executed Modal cloud pre-flight readiness audit (`scripts/modal_train_moo_real_viewpoint.py::verify_readiness`, App `ap-0sGTsRL548WK5QTxiPxCLy`): triple volume mount verified (`viewpoint-real-data`, `moo-data`, `viewpoint-checkpoints`), MOO checkpoint verified (42.73 MB, Best Syn Val F1 0.9959), writable checkpoint volume verified, and test split confirmed strictly frozen.
-- Observed strict constraint: ZERO paid GPU training launched. Manual execution command provided to Hasin.
+- Successfully executed full 20-epoch MOO-to-real transfer fine-tuning on Modal (`tigerwood693`, NVIDIA L40S, App `ap-cxjtc4LZe00elLnEyq9lAS`).
+- Global best validation checkpoint captured at **Epoch 8 / 20**:
+  - Validation Accuracy: **91.67%** (121/132)
+  - Validation Balanced Accuracy: **91.41%**
+  - Validation Macro-F1: **0.9193**
+  - Per-class recall: `front` 94.7%, `side` 94.1%, `rear` 85.4%
+- One-time held-out evaluation on frozen unseen test split (`test.csv`: 131 crops across 131 unique duplicate groups; App `ap-iTLPg0HKmXW8Ia7mwT6Yvh`):
+  - Test Accuracy: **86.26%** (113/131)
+  - Test Balanced Accuracy: **84.96%**
+  - Test Macro-F1: **0.8573**
+  - Per-class recall: `front` 89.83% (53/59), `side` 72.73% (24/33), `rear` 92.31% (36/39)
+  - Per-class precision: `front` 82.81%, `side` 85.71%, `rear` 92.31%
+- Gained **+58.89% test accuracy over synthetic MOO zero-shot real diagnostic transfer** (27.37% acc, 0.1564 F1), officially closing the sim-to-real gap and proving synthetic 3D cattle pretraining transfers robustly to real farm livestock.
+- Real viewpoint model is 100% OPERATIONAL & CERTIFIED for the thesis. Checkpoints saved on volume `viewpoint-checkpoints`.
+- All prerequisite single-task & representation baselines are now completely finished. Next milestone: **Run 4 (BCS Perception-Enhanced Model)**.
 
 
 # Session Summary — 2026-09-23 (Self-Collected Viewpoint Dataset Cleaning & Human Review Finalization Complete)

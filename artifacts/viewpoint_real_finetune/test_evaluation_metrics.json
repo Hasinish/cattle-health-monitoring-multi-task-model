@@ -1,0 +1,35 @@
+{
+  "checkpoint_epoch": 8,
+  "best_val_macro_f1": 0.9193,
+  "test_samples": 131,
+  "test_accuracy": 0.8626,
+  "test_balanced_accuracy": 0.8496,
+  "test_macro_f1": 0.8573,
+  "per_class_recall": {
+    "front": 0.8983,
+    "side": 0.7273,
+    "rear": 0.9231
+  },
+  "confusion_matrix": [
+    [
+      53,
+      4,
+      2
+    ],
+    [
+      8,
+      24,
+      1
+    ],
+    [
+      3,
+      0,
+      36
+    ]
+  ],
+  "class_names": [
+    "front",
+    "side",
+    "rear"
+  ]
+}
