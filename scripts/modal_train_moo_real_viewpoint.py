@@ -186,14 +186,14 @@ def main(
     smoke: bool = False,
 ):
     """
-    Main training entry point dispatched to an NVIDIA Tesla T4 GPU container.
+    Main training entry point dispatched to a GPU container (Default: NVIDIA L40S).
     """
     import sys
     sys.path.insert(0, "/root")
     from train_moo_real_viewpoint import train_pipeline
 
     print("\n" + "=" * 70, flush=True)
-    print("  LAUNCHING MOO -> REAL VIEWPOINT FINE-TUNING ON MODAL (T4)", flush=True)
+    print(f"  LAUNCHING MOO -> REAL VIEWPOINT FINE-TUNING ON MODAL ({MODAL_GPU})", flush=True)
     print("=" * 70, flush=True)
 
     data_dir = Path("/data/self_clean_v1_rtdetr_crop")
