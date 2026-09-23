@@ -257,7 +257,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 
 ### `artifacts/`
 Generated manifests, audit CSVs, and model evaluation outputs.
-- `bcs_baseline/`: Phase 3 single-task ScienceDB BCS baseline outputs, containing `bcs_baseline_smoke_summary.md` (markdown validation report) and `bcs_baseline_metrics.json` (structured training curves, provenance metadata, split hashes, and smoke metrics).
+- `bcs_baseline/`: Phase 3 single-task ScienceDB BCS baseline outputs, containing `bcs_baseline_metrics.json` (structured training curves, provenance metadata, split hashes, full 30-epoch history, per-class metrics, and confusion matrix), `bcs_baseline_30epoch_summary.md` (30-epoch training and test evaluation report), and `bcs_baseline_smoke_summary.md` (smoke test summary).
 - `perception_audit/`:
   - `beef_rtdetr_failure_fallback.csv`: 3-row evaluation results verifying the fallback rule (IF RT-DETR detects no cow -> SAM 2.1 with ONE center point (112, 112)) on the 3 known detection misses from fresh-40 audit, recording mask return flags, area ratios, connected components, and latencies.
   - `beef_A4_A5_fresh40.csv`: 80-row evaluation results comparing detector-guided conditions A4 vs A5 on 40 fresh Kaggle Beef canonical train frames (Seed 2026, 29 sessions) with prompt coordinates, return flags, area ratios, components, RT-DETR detection counts, and latencies.
