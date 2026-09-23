@@ -17,7 +17,7 @@ Usage:
      modal run --profile tigerwood697 scripts/modal_train_sideview_reid.py::smoke_test
 
   3. Full 30-Epoch Baseline Training & Held-Out Retrieval (User-Run):
-     modal run --profile tigerwood697 scripts/modal_train_sideview_reid.py::main --epochs 30 --batch-size 64
+     modal run --detach --profile tigerwood697 scripts/modal_train_sideview_reid.py::main --epochs 30 --batch-size 64
 """
 
 import os
