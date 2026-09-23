@@ -1,3 +1,20 @@
+# Session Summary — 2026-09-23 (ScienceDB Modal Volume 1,753-File Repair & Exhaustive 53,566-Image Verification)
+
+- Diagnosed Epoch 1 ScienceDB BCS training crash (`PIL.UnidentifiedImageError` on `/data/dataset/4.25/GS_72_3.jpg`) on Modal (`tigerwood697`).
+- Forensic audit revealed silent `unar` extraction failures during initial RAR unpacking created exactly **1,753 zero-byte JPG files** (3.25: 251, 3.5: 440, 3.75: 468, 4.0: 382, 4.25: 212) out of 53,566 on volume `sciencedb-data`.
+- Verified all 1,753 affected paths locally: 100% exist, non-zero, and open cleanly with PIL (`artifacts/bcs_baseline/sciencedb_volume_zero_bytes.json`).
+- Packaged minimal 84.75 MB patch archive (`sciencedb_patch_1753.zip`), uploaded directly to volume, extracted directly over zero-byte stubs, unlinked zip, and committed persistent storage.
+- Executed exhaustive integrity verification across ALL 53,566 ScienceDB images on Modal (`tigerwood697`, App `ap-eLDSfIXS0NLpyBhJ6TEbE2`):
+  - Pre-repair zero-byte count: 1,753
+  - Post-repair zero-byte count: **0** across all 53,566 images
+  - PIL Readability Audit: **53,566 / 53,566 images opened successfully with PIL** (0 errors)
+  - Verified class counts: `3.25`=7,536; `3.5`=13,256; `3.75`=14,255; `4.0`=12,556; `4.25`=5,963 (Total: 53,566)
+  - Canonical split hashes re-verified bit-identical (`train`: `9f6b0b...`, `val`: `e223e3...`, `test`: `eae459...`)
+  - First 5 samples per split verified readable from volume with shape `(1024, 576), RGB`
+- Hardened `verify_readiness_remote()` in `scripts/modal_train_sciencedb_bcs.py` to enforce `st_size > 0` and `zero_byte_count == 0` for all 53,566 files before any future training can launch.
+- Strictly preserved compute execution policy: full training was NOT started; ready for manual trigger.
+- Deliverables: `scripts/repair_sciencedb_volume.py`, `artifacts/bcs_baseline/sciencedb_volume_zero_bytes.json`, `docs/research_log/2026-09-23_sciencedb_bcs_modal_training_preparation.md`.
+
 # Session Summary — 2026-09-23 (ScienceDB RGB BCS Modal Hardware Upgrade: NVIDIA L4)
 
 - Upgraded ScienceDB RGB BCS baseline Modal wrapper (`scripts/modal_train_sciencedb_bcs.py`) from NVIDIA T4 to NVIDIA L4 for both readiness verification and full 30-epoch training.

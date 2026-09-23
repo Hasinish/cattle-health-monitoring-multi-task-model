@@ -101,3 +101,55 @@ A separate pre-flight readiness audit was executed directly on an **NVIDIA L4** 
 $env:PYTHONIOENCODING="utf-8"; modal run --profile tigerwood697 scripts/modal_train_sciencedb_bcs.py::main --epochs 30 --head-type ordinal_bce --batch-size 32
 ```
 
+---
+
+## 6. Forensic Volume Corruption Audit, Minimal Patch Repair, & Exhaustive Verification
+
+### 6.1 Epoch 1 DataLoader Crash
+During the initial full training launch attempt on Modal profile `tigerwood697`, PyTorch DataLoader worker 2 crashed in Epoch 1 with:
+```
+PIL.UnidentifiedImageError: cannot identify image file '/data/dataset/4.25/GS_72_3.jpg'
+```
+
+### 6.2 Forensic Diagnosis & Root Cause
+Inspection revealed `/data/dataset/4.25/GS_72_3.jpg` was exactly 0 bytes on Modal Volume `sciencedb-data`, whereas the local copy was healthy (36,870 bytes, 1024x576 RGB).
+A forensic census across the entire volume revealed that silent `unar` extraction failures during initial cloud dataset setup created exactly **1,753 zero-byte stub files** out of 53,566 total images:
+
+| BCS Class | Total Images | Healthy Files | Zero-Byte Stubs | Zero-Byte % |
+| :--- | :--- | :--- | :--- | :--- |
+| **3.25** | 7,536 | 7,285 | **251** | 3.33% |
+| **3.50** | 13,256 | 12,816 | **440** | 3.32% |
+| **3.75** | 14,255 | 13,787 | **468** | 3.28% |
+| **4.00** | 12,556 | 12,174 | **382** | 3.04% |
+| **4.25** | 5,963 | 5,751 | **212** | 3.55% |
+| **TOTAL** | **53,566** | **51,813** | **1,753** | **3.27%** |
+
+The affected-file manifest was recorded deterministically in `artifacts/bcs_baseline/sciencedb_volume_zero_bytes.json`.
+
+### 6.3 Minimal Patch Creation & Application
+1. **Local Verification**: 100% of the 1,753 affected paths were confirmed present in `datasets/bcs/sciencedb_bcs/dataset/`, non-zero, and readable with PIL.
+2. **Patch Archive**: A minimal zip archive `scratch/sciencedb_patch_1753.zip` (84.75 MB, containing exactly the 1,753 healthy images) was constructed.
+3. **Volume Injection**: Uploaded directly to Modal Volume `sciencedb-data` at `/sciencedb_patch_1753.zip`.
+4. **Extraction & Volume Commit**: Using dedicated script `scripts/repair_sciencedb_volume.py`, the archive was extracted directly over `/data/dataset/`, overwriting the 1,753 zero-byte stubs, unlinked, and committed to persistent storage.
+
+### 6.4 Exhaustive Integrity Verification Results (App `ap-eLDSfIXS0NLpyBhJ6TEbE2`)
+An exhaustive audit was executed across all 53,566 images using 64 parallel worker threads:
+- **Repaired Target Check**: 1,753/1,753 patched files verified non-zero and readable with PIL (100% PASS).
+- **Post-Repair Zero-Byte Census**: Exactly **0 zero-byte files** across the entire volume.
+- **Exhaustive PIL Readability Audit**: **53,566 / 53,566 images opened successfully with PIL** (0 decode errors, 100% PASS).
+- **Class Breakdown Verification**:
+  - `3.25`: 7,536 images (MATCH)
+  - `3.50`: 13,256 images (MATCH)
+  - `3.75`: 14,255 images (MATCH)
+  - `4.00`: 12,556 images (MATCH)
+  - `4.25`: 5,963 images (MATCH)
+- **Canonical Split CSV Hashes**:
+  - `train.csv`: `9f6b0bc716e01a2ab22208daff1c49e49fd450a4d7cf0a57b2979275ed33497a` (37,496 rows) -> MATCH
+  - `val.csv`: `e223e3c4c081ca5c9f993f7156dc791df97b6ea6d011b8b4b6f068590b3d975d` (8,035 rows) -> MATCH
+  - `test.csv`: `eae459e031d06c4b1150ce2cbcdcb8259724b070b831341222b15c99e3626e5f` (8,035 rows) -> MATCH
+- **Split Sample Resolution**: 15/15 samples (first 5 from train, val, test) confirmed existing on volume and opening cleanly as `(1024, 576), RGB`.
+
+### 6.5 Pre-Flight Code Hardening
+`scripts/modal_train_sciencedb_bcs.py` was updated in `verify_readiness_remote()` to enforce `st_size > 0` across all files during pre-flight checks, asserting `zero_byte_count == 0` and total images == 53,566 before training can ever initiate.
+
+

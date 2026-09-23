@@ -99,23 +99,31 @@ def verify_readiness_remote():
     # 2. Volume & Image Root Verification
     dataset_dir = Path("/data/dataset")
     expected_classes = ["3.25", "3.5", "3.75", "4.0", "4.25"]
+    expected_counts = {"3.25": 7536, "3.5": 13256, "3.75": 14255, "4.0": 12556, "4.25": 5963}
     volume_ok = dataset_dir.exists() and all((dataset_dir / c).exists() for c in expected_classes)
     
     class_counts = {}
     total_images_found = 0
+    zero_byte_count = 0
     if volume_ok:
         for c in expected_classes:
             c_dir = dataset_dir / c
-            n_imgs = len([f for f in c_dir.iterdir() if f.suffix.lower() == ".jpg"])
+            files = [f for f in c_dir.iterdir() if f.suffix.lower() == ".jpg"]
+            n_imgs = len(files)
             class_counts[c] = n_imgs
             total_images_found += n_imgs
+            for f in files:
+                if f.stat().st_size == 0:
+                    zero_byte_count += 1
     
     print(f"[*] ScienceDB Image Root: {dataset_dir} (Exists: {volume_ok})")
     print(f"[*] Verified Images on Volume: {total_images_found} images across 5 classes: {class_counts}")
+    print(f"[*] Zero-byte corrupted files on volume: {zero_byte_count}")
     report["checks"]["dataset_volume"] = {
-        "passed": volume_ok and total_images_found >= 50000,
+        "passed": volume_ok and total_images_found == 53566 and zero_byte_count == 0 and class_counts == expected_counts,
         "root_path": str(dataset_dir),
         "total_images": total_images_found,
+        "zero_byte_count": zero_byte_count,
         "class_counts": class_counts,
     }
 
