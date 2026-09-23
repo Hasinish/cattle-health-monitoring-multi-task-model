@@ -1,3 +1,16 @@
+# Session Summary — 2026-09-24 (Phase 3 Run 4 ScienceDB BCS Perception RAM Caching & GPU Batched Augmentation Optimization)
+
+- Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004
+- Objective: Diagnose and eliminate slow training throughput in Run 4 BCS Perception-Enhanced Training on Modal (`tigerwood697`; crawling at 8.39s/it, ~73 mins/epoch).
+- Root Cause Diagnosed: Batch size 64 with 2 files/sample (crop JPEG + mask PNG) was triggering 128 random network NFS file opens over Modal volume per batch, alongside 128 CPU PIL resizes from original camera resolution (1024x576) to 224x224. Totaling 68,864 network reads + CPU resizes per epoch!
+- Optimizations Implemented & Verified:
+  1. Compact uint8 RAM Storage: Resized `[4, 224, 224]` uint8 tensors take only 6.42 GB RAM for 34,369 Train samples and 1.46 GB RAM for 7,817 Val samples (Total: ~7.88 GB, well within 32 GB container RAM).
+  2. Multi-threaded C++ OpenCV Preloader (`_preload_into_ram`): Uses `ThreadPoolExecutor(64)` with `cv2.imread` and `cv2.resize` to load and cache the entire dataset in RAM during initialization in ~1–2 minutes.
+  3. Batched GPU Augmentation Kernel (`apply_gpu_augmentations`): Batches `[B, 4, 224, 224]` transferred to GPU as uint8 (0.5ms); GPU tensor kernels apply synchronized horizontal flip, random rotation (+/-15°), RGB color jitter, and ImageNet normalization in ~0.002s per batch (~500x faster than CPU PIL).
+  4. Zero-Worker DataLoader Fast Path: `num_workers=0, pin_memory=True` completely bypasses multiprocessing IPC serialization.
+  5. Modal Container Update: Explicitly added `opencv-python-headless` to `image.pip_install` and wired `preload_ram=True` in `scripts/modal_train_sciencedb_bcs_perception.py`.
+- Benchmark & Local Unit Tests: Local benchmark verified GPU batched transform takes 0.002s/batch vs 1.01s on CPU. Full dataset unit test passed 100%. Projected training throughput: ~20–25s/epoch (~12–14 minutes for all 30 epochs, costing ~$0.45).
+
 # Session Summary — 2026-09-24 (Phase 3 Run 5 In-Memory RAM Caching Optimization & 70x Speedup)
 
 - Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004

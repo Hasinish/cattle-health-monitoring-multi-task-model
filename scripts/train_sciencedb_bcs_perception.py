@@ -39,8 +39,10 @@ import sys
 import time
 import json
 import argparse
+import concurrent.futures
 from pathlib import Path, PureWindowsPath
 from typing import Dict, Tuple, List, Optional
+import cv2
 from tqdm import tqdm
 
 import numpy as np
@@ -118,6 +120,38 @@ def set_seed(seed: int = 42):
     torch.backends.cudnn.benchmark = False
 
 
+def apply_gpu_augmentations(batch: torch.Tensor, is_train: bool = True) -> torch.Tensor:
+    """
+    Batched GPU data augmentation and ImageNet normalization.
+    Input: batch of shape [B, 4, 224, 224] uint8 on GPU (RGB 0..255, Mask 0..1).
+    Output: batch of shape [B, 4, 224, 224] float32 on GPU.
+    """
+    if is_train:
+        # 1. Synchronized Random Horizontal Flip (p=0.5)
+        if torch.rand(1).item() < 0.5:
+            batch = torch.flip(batch, dims=[-1])
+
+        # 2. Synchronized Random Rotation (+/- 15 degrees)
+        angle = float(torch.empty(1).uniform_(-15.0, 15.0))
+        rgb = TF.rotate(batch[:, :3], angle, interpolation=TF.InterpolationMode.BILINEAR)
+        mask = TF.rotate(batch[:, 3:4], angle, interpolation=TF.InterpolationMode.NEAREST)
+
+        # 3. ColorJitter on RGB ONLY (never mask)
+        if torch.rand(1).item() < 0.5:
+            b_factor = float(torch.empty(1).uniform_(0.9, 1.1))
+            rgb = TF.adjust_brightness(rgb, b_factor)
+        if torch.rand(1).item() < 0.5:
+            c_factor = float(torch.empty(1).uniform_(0.9, 1.1))
+            rgb = TF.adjust_contrast(rgb, c_factor)
+    else:
+        rgb = batch[:, :3]
+        mask = batch[:, 3:4]
+
+    # 4. ImageNet Normalization on RGB, strictly binary float on Mask
+    rgb_norm = TF.normalize(rgb.float().div(255.0), mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    return torch.cat([rgb_norm, mask.float()], dim=1)
+
+
 class ScienceDBPerceptionDataset(Dataset):
     """
     Dataset loader for ScienceDB perception crops and masks.
@@ -129,6 +163,8 @@ class ScienceDBPerceptionDataset(Dataset):
         * RandomRotation(15 degrees) synchronized across RGB + mask
         * ColorJitter(brightness=0.1, contrast=0.1) on RGB ONLY (never mask)
       - Mask values in {0.0, 1.0} representing BINARY foreground mask guidance.
+      - In-Memory RAM Preloading: loads all crops/masks into compact uint8 tensors [4, 224, 224] in RAM.
+        Zero network disk seeks and zero PIL CPU resizing overhead during training!
     """
     def __init__(
         self,
@@ -137,11 +173,14 @@ class ScienceDBPerceptionDataset(Dataset):
         is_train: bool = True,
         image_size: int = 224,
         max_samples: Optional[int] = None,
+        preload_ram: bool = True,
+        num_preload_workers: int = 64,
     ):
         self.manifest_path = Path(manifest_path)
         self.cache_dir = Path(cache_dir)
         self.is_train = is_train
         self.image_size = image_size
+        self.preload_ram = preload_ram
 
         df = pd.read_csv(self.manifest_path)
         total_raw = len(df)
@@ -178,13 +217,66 @@ class ScienceDBPerceptionDataset(Dataset):
         self.rgb_norm = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.color_jitter = T.ColorJitter(brightness=0.1, contrast=0.1)
 
+        self.cached_tensors: Optional[torch.Tensor] = None
+        self.cached_targets: Optional[torch.Tensor] = None
+        self.cached_raw_labels: Optional[torch.Tensor] = None
+
+        if self.preload_ram and len(self.samples) > 0:
+            self._preload_into_ram(num_workers=num_preload_workers)
+
+    def _preload_into_ram(self, num_workers: int = 64):
+        t0 = time.time()
+        split_name = self.manifest_path.stem.replace("_perception", "")
+        desc = f"Preloading {split_name} into RAM"
+        N = len(self.samples)
+        cached_data = np.empty((N, 4, self.image_size, self.image_size), dtype=np.uint8)
+
+        def _load_single(idx: int):
+            crop_path, mask_path, _, _, _ = self.samples[idx]
+            crop_bgr = cv2.imread(crop_path, cv2.IMREAD_COLOR)
+            if crop_bgr is None:
+                raise IOError(f"Failed to read crop at {crop_path}")
+            if crop_bgr.shape[0] != self.image_size or crop_bgr.shape[1] != self.image_size:
+                crop_224 = cv2.resize(crop_bgr, (self.image_size, self.image_size), interpolation=cv2.INTER_LINEAR)
+            else:
+                crop_224 = crop_bgr
+            rgb_224 = cv2.cvtColor(crop_224, cv2.COLOR_BGR2RGB)
+
+            mask_gray = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+            if mask_gray is None:
+                raise IOError(f"Failed to read mask at {mask_path}")
+            if mask_gray.shape[0] != self.image_size or mask_gray.shape[1] != self.image_size:
+                mask_224 = cv2.resize(mask_gray, (self.image_size, self.image_size), interpolation=cv2.INTER_NEAREST)
+            else:
+                mask_224 = mask_gray
+            mask_bin = (mask_224 > 127).astype(np.uint8)
+
+            cached_data[idx, :3] = rgb_224.transpose(2, 0, 1)
+            cached_data[idx, 3] = mask_bin
+
+        workers = max(1, min(num_workers, 64))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
+            list(tqdm(ex.map(_load_single, range(N)), total=N, desc=desc, ncols=80, file=sys.stdout))
+
+        self.cached_tensors = torch.from_numpy(cached_data)
+        self.cached_targets = torch.tensor([s[2] for s in self.samples], dtype=torch.long)
+        self.cached_raw_labels = torch.tensor([s[3] for s in self.samples], dtype=torch.float32)
+
+        elapsed = time.time() - t0
+        mb = (self.cached_tensors.element_size() * self.cached_tensors.nelement()) / (1024 * 1024)
+        print(f"[*] RAM Preload Complete: {N} samples ({mb:.1f} MB) in {elapsed:.1f}s ({N/max(0.1, elapsed):.1f} samples/s).", flush=True)
+
     def __len__(self) -> int:
         return len(self.samples)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, float]:
+        if self.cached_tensors is not None:
+            # Sliced in RAM as uint8 tensor [4, 224, 224]; transforms are performed on GPU batch
+            return self.cached_tensors[idx], self.cached_targets[idx], float(self.cached_raw_labels[idx])
+
+        # Fallback disk path (when preload_ram=False)
         crop_path, mask_path, target_idx, raw_label, _ = self.samples[idx]
 
-        # Load RGB crop and grayscale binary mask
         try:
             crop_img = Image.open(crop_path).convert("RGB")
         except Exception as e:
@@ -195,31 +287,25 @@ class ScienceDBPerceptionDataset(Dataset):
         except Exception as e:
             raise IOError(f"Error opening mask at {mask_path}: {e}")
 
-        # 1. Resize to target dimension
         crop_img = TF.resize(crop_img, (self.image_size, self.image_size), interpolation=TF.InterpolationMode.BILINEAR)
         mask_img = TF.resize(mask_img, (self.image_size, self.image_size), interpolation=TF.InterpolationMode.NEAREST)
 
-        # 2. Synchronized augmentations matching Run 1 baseline
         if self.is_train:
-            # Synchronized random horizontal flip (p=0.5)
             if np.random.rand() > 0.5:
                 crop_img = TF.hflip(crop_img)
                 mask_img = TF.hflip(mask_img)
 
-            # Synchronized random rotation (+/- 15 degrees)
             angle = float(np.random.uniform(-15.0, 15.0))
             crop_img = TF.rotate(crop_img, angle, interpolation=TF.InterpolationMode.BILINEAR)
             mask_img = TF.rotate(mask_img, angle, interpolation=TF.InterpolationMode.NEAREST)
 
-            # ColorJitter applied to RGB ONLY, NEVER to mask
             crop_img = self.color_jitter(crop_img)
 
-        # 3. Convert to float tensors
-        rgb_tensor = TF.to_tensor(crop_img)  # [3, H, W] in [0.0, 1.0]
+        rgb_tensor = TF.to_tensor(crop_img)
         rgb_normed = self.rgb_norm(rgb_tensor)
 
-        mask_tensor = TF.to_tensor(mask_img)  # [1, H, W] in {0.0, 1.0}
-        four_channel = torch.cat([rgb_normed, mask_tensor], dim=0)  # [4, H, W]
+        mask_tensor = TF.to_tensor(mask_img)
+        four_channel = torch.cat([rgb_normed, mask_tensor], dim=0)
 
         return four_channel, torch.tensor(target_idx, dtype=torch.long), raw_label
 
@@ -238,15 +324,13 @@ class MatchedRGBDataset(Dataset):
         matched_df: pd.DataFrame,
         data_dir: Optional[Path] = None,
         image_size: int = 224,
+        preload_ram: bool = True,
+        num_preload_workers: int = 64,
     ):
         self.df = matched_df.reset_index(drop=True)
         self.data_dir = Path(data_dir) if data_dir else None
         self.image_size = image_size
-        self.transform = T.Compose([
-            T.Resize((image_size, image_size)),
-            T.ToTensor(),
-            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ])
+        self.preload_ram = preload_ram
         self.samples = []
         for _, row in self.df.iterrows():
             raw_path = str(row["image_path"])
@@ -255,10 +339,58 @@ class MatchedRGBDataset(Dataset):
             target_idx = LABEL_TO_IDX[raw_label]
             self.samples.append((str(resolved), raw_path, target_idx, raw_label))
 
+        self.transform = T.Compose([
+            T.Resize((image_size, image_size)),
+            T.ToTensor(),
+            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+        self.cached_tensors: Optional[torch.Tensor] = None
+        self.cached_targets: Optional[torch.Tensor] = None
+        self.cached_raw_labels: Optional[torch.Tensor] = None
+
+        if self.preload_ram and len(self.samples) > 0:
+            self._preload_into_ram(num_workers=num_preload_workers)
+
+    def _preload_into_ram(self, num_workers: int = 64):
+        t0 = time.time()
+        desc = "Preloading Matched RGB Baseline test images into RAM"
+        N = len(self.samples)
+        cached_data = np.empty((N, 3, self.image_size, self.image_size), dtype=np.uint8)
+
+        def _load_single(idx: int):
+            resolved, _, _, _ = self.samples[idx]
+            bgr = cv2.imread(resolved, cv2.IMREAD_COLOR)
+            if bgr is None:
+                raise IOError(f"Failed to read image at {resolved}")
+            if bgr.shape[0] != self.image_size or bgr.shape[1] != self.image_size:
+                r224 = cv2.resize(bgr, (self.image_size, self.image_size), interpolation=cv2.INTER_LINEAR)
+            else:
+                r224 = bgr
+            rgb_224 = cv2.cvtColor(r224, cv2.COLOR_BGR2RGB)
+            cached_data[idx] = rgb_224.transpose(2, 0, 1)
+
+        workers = max(1, min(num_workers, 64))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
+            list(tqdm(ex.map(_load_single, range(N)), total=N, desc=desc, ncols=80, file=sys.stdout))
+
+        self.cached_tensors = torch.from_numpy(cached_data)
+        self.cached_targets = torch.tensor([s[2] for s in self.samples], dtype=torch.long)
+        self.cached_raw_labels = torch.tensor([s[3] for s in self.samples], dtype=torch.float32)
+
+        elapsed = time.time() - t0
+        mb = (self.cached_tensors.element_size() * self.cached_tensors.nelement()) / (1024 * 1024)
+        print(f"[*] RAM Preload Complete (Matched RGB): {N} samples ({mb:.1f} MB) in {elapsed:.1f}s ({N/max(0.1, elapsed):.1f} samples/s).", flush=True)
+
     def __len__(self) -> int:
         return len(self.samples)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, float]:
+        if self.cached_tensors is not None:
+            rgb = self.cached_tensors[idx].float().div(255.0)
+            norm = TF.normalize(rgb, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            return norm, self.cached_targets[idx], float(self.cached_raw_labels[idx])
+
         resolved_p, raw_p, target_idx, raw_label = self.samples[idx]
         try:
             img = Image.open(resolved_p).convert("RGB")
@@ -492,7 +624,7 @@ def evaluate_test_split(
     print("  Note: Model selection conducted strictly on validation Real MAE (train/val only).")
     print("=" * 75)
 
-    num_workers = 0 if sys.platform == "win32" else 4
+    num_workers = 0 if sys.platform == "win32" else 8
 
     # --------------------------------------------------------------------------
     # Tier 3: Run 4 Perception-Enhanced Model on Successful Perception Test Samples
@@ -501,8 +633,15 @@ def evaluate_test_split(
         manifest_path=test_manifest,
         cache_dir=cache_dir,
         is_train=False,
+        preload_ram=True,
     )
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=(device.type == "cuda"),
+    )
 
     model.eval()
     criterion = nn.BCEWithLogitsLoss()
@@ -513,8 +652,10 @@ def evaluate_test_split(
     pbar = tqdm(test_loader, desc="[Test] Run 4 Perception (Matched)", file=sys.stdout, leave=True, dynamic_ncols=True)
     with torch.no_grad():
         for imgs, target_indices, _ in pbar:
-            imgs = imgs.to(device)
-            target_indices = target_indices.to(device)
+            imgs = imgs.to(device, non_blocking=True)
+            target_indices = target_indices.to(device, non_blocking=True)
+            if imgs.dtype == torch.uint8:
+                imgs = apply_gpu_augmentations(imgs, is_train=False)
             targets = ordinal_targets_from_class_indices(target_indices, device=device)
 
             logits = model(imgs)
@@ -751,6 +892,8 @@ def train_pipeline(
     max_samples: Optional[int] = None,
     eval_test: bool = False,
     device_name: Optional[str] = None,
+    preload_ram: bool = True,
+    num_preload_workers: int = 64,
 ) -> Dict:
     """
     Main training and validation loop for Run 4 Perception-Enhanced Model.
@@ -768,6 +911,7 @@ def train_pipeline(
     print(f"  Mask Init:      {mask_init} (conv1 weights: +3,136 params)")
     print(f"  Mode:           {'SMOKE TEST (10 samples)' if smoke else 'FULL TRAINING'}")
     print(f"  Epochs:         {epochs} | Batch Size: {batch_size} | LR: {lr}")
+    print(f"  Preload RAM:    {preload_ram} (workers: {num_preload_workers})")
     print(f"  Test Eval:      {'YES (post-training one-time)' if (eval_test and not smoke) else 'NO (smoke / train-val only)'}")
     print("=" * 75)
 
@@ -778,15 +922,37 @@ def train_pipeline(
 
     n_samples = 10 if smoke else max_samples
     train_dataset = ScienceDBPerceptionDataset(
-        manifest_path=train_manifest, cache_dir=cache_dir, is_train=True, max_samples=n_samples,
+        manifest_path=train_manifest,
+        cache_dir=cache_dir,
+        is_train=True,
+        max_samples=n_samples,
+        preload_ram=preload_ram,
+        num_preload_workers=num_preload_workers,
     )
     val_dataset = ScienceDBPerceptionDataset(
-        manifest_path=val_manifest, cache_dir=cache_dir, is_train=False, max_samples=n_samples,
+        manifest_path=val_manifest,
+        cache_dir=cache_dir,
+        is_train=False,
+        max_samples=n_samples,
+        preload_ram=preload_ram,
+        num_preload_workers=num_preload_workers,
     )
 
-    num_workers = 0 if smoke or sys.platform == "win32" else 4
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    num_workers = 0 if preload_ram else (0 if smoke or sys.platform == "win32" else 8)
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+        pin_memory=(device.type == "cuda"),
+    )
+    val_loader = DataLoader(
+        val_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+        pin_memory=(device.type == "cuda"),
+    )
 
     print(f"\nLoaded {len(train_dataset)} train samples, {len(val_dataset)} val samples.", flush=True)
 
@@ -825,8 +991,10 @@ def train_pipeline(
             dynamic_ncols=True,
         )
         for imgs, target_indices, _ in pbar_train:
-            imgs = imgs.to(device)
-            target_indices = target_indices.to(device)
+            imgs = imgs.to(device, non_blocking=True)
+            target_indices = target_indices.to(device, non_blocking=True)
+            if imgs.dtype == torch.uint8:
+                imgs = apply_gpu_augmentations(imgs, is_train=True)
             targets = ordinal_targets_from_class_indices(target_indices, device=device)
 
             optimizer.zero_grad()
@@ -857,8 +1025,10 @@ def train_pipeline(
         )
         with torch.no_grad():
             for imgs, target_indices, _ in pbar_val:
-                imgs = imgs.to(device)
-                target_indices = target_indices.to(device)
+                imgs = imgs.to(device, non_blocking=True)
+                target_indices = target_indices.to(device, non_blocking=True)
+                if imgs.dtype == torch.uint8:
+                    imgs = apply_gpu_augmentations(imgs, is_train=False)
                 targets = ordinal_targets_from_class_indices(target_indices, device=device)
 
                 logits = model(imgs)
@@ -967,6 +1137,7 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
     parser.add_argument("--mask-init", type=str, default="mean", choices=["mean", "zero"], help="Initialization of 4th mask channel in conv1")
     parser.add_argument("--smoke", action="store_true", help="Smoke test on small subset")
+    parser.add_argument("--no-preload-ram", action="store_true", help="Disable RAM preloading and read directly from disk")
     parser.add_argument("--eval-test", action="store_true", help="Run test evaluation after training completes")
     parser.add_argument("--device", type=str, default=None, help="Device (cuda or cpu)")
     args = parser.parse_args()
@@ -984,6 +1155,7 @@ def main():
         smoke=args.smoke,
         eval_test=args.eval_test,
         device_name=args.device,
+        preload_ram=not args.no_preload_ram,
     )
 
 

@@ -66,6 +66,7 @@ image = (
         "scikit-learn",
         "pillow",
         "tqdm",
+        "opencv-python-headless",
     )
     .run_commands(
         "python -c \"from ultralytics import RTDETR, SAM; RTDETR('rtdetr-l.pt'); SAM('sam2.1_s.pt')\""
@@ -287,6 +288,7 @@ def main(
         mask_init=mask_init,
         smoke=smoke,
         eval_test=(eval_test and not smoke),
+        preload_ram=True,
     )
 
     checkpoint_volume.commit()
