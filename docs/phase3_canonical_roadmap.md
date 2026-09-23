@@ -7,6 +7,12 @@
 **Purpose:** Single source of truth for the coding/research agent.  
 **Important:** Do not restart the project from zero. Do not silently change the scope without recording the decision in the research log.
 
+> [!IMPORTANT]
+> **Active Deadline Execution Priority Overlay (Target: 26 September 2026)**  
+> An active execution priority overlay is currently in effect: [`phase3_deadline_execution_2026-09-26.md`](file:///d:/cattle-health-monitoring-multi-task-model/phase3_deadline_execution_2026-09-26.md).  
+> **Core Policy:** Before the 26 Sep deadline, execute only the minimum defensible thesis runs (the focused 8-run sequence: 3 single-task baselines, 3 perception-enhanced models, E1 basic MTL control, E3 main deadline MTL model). All exhaustive ablations (full ladders A0–A4, B0–B3, C0–C3, D0–D6, E2, E4, E5) remain deferred roadmap work and can be completed later if needed.  
+> **THIS IS NOT A SCIENTIFIC CANCELLATION OF THE CANONICAL ROADMAP.** The full canonical roadmap remains the long-term scientific plan; this overlay governs execution priority under deadline constraints.
+
 ---
 
 # 0. Current Thesis Direction

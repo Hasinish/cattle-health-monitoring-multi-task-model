@@ -1,3 +1,13 @@
+# Session Summary — 2026-09-23 (Phase 3 Deadline Execution Priority Overlay Activation)
+
+- Activated Phase 3 Deadline Execution Priority Overlay for the 26 September 2026 thesis submission deadline (`phase3_deadline_execution_2026-09-26.md`).
+- Guiding principle: "Before the 26 Sep deadline, execute only the minimum defensible thesis runs. All exhaustive ablations remain deferred roadmap work and can be completed later if needed."
+- Preserved canonical 13-step roadmap without cancellation; exhaustive ablations (A0-A4, B0-B3, C0-C3, D0-D6, E2, E4, E5, Step 12 pretraining) deferred post-deadline.
+- Codified focused 8-run sequence: (1) BCS RGB baseline (Done ✅), (2) Behavior RGB baseline (smoke-tested; full run immediate next action), (3) Re-ID RGB baseline, (4) BCS perception-enhanced model, (5) Behavior perception-enhanced temporal model (TCN), (6) Re-ID perception-enhanced model, (7) E1 basic hard-shared MTL control, (8) E3 main deadline MTL model (modular / adapters / task-private).
+- Locked viewpoint rule: real generator not selected, MOO 27.37% diagnostic transfer, viewpoint must NOT be silently forced into deadline training, mark as tested/deferred if not ready, NEVER substitute camera ID.
+- Established scientific claim boundaries: combined perception improvements may be claimed; individual component attribution is impermissible without isolated ablations.
+- Updated `phase3_canonical_roadmap.md`, `docs/phase3_canonical_roadmap.md`, `memory/state.md`, `docs/research_log/README.md`, and created research log `docs/research_log/2026-09-23_phase3_deadline_execution_plan_september_26.md`.
+
 # Session Summary — 2026-09-23 (Full 30-Epoch ScienceDB BCS Baseline Launched on NVIDIA L4)
 
 - Configured and dispatched the full 30-epoch ScienceDB RGB single-task BCS baseline (`scripts/modal_train_sciencedb_bcs.py`) in detached cloud mode on Modal profile `tigerwood697` (App `ap-FHBAIXp72qdVFazPPVfNUu`).
@@ -565,6 +575,7 @@
 
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
 
+- **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Activated Phase 3 Deadline Execution Priority Overlay for 26 September 2026 thesis deadline (`phase3_deadline_execution_2026-09-26.md`), focusing on the 8 minimum defensible thesis runs and deferring exhaustive ablations while preserving the canonical roadmap.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Upgraded ScienceDB RGB BCS baseline wrapper to NVIDIA L4 on Modal (`tigerwood697`, App `ap-LpbnMu603XOremldE0aTYr`). 100% passed all 6 pre-flight checks on L4 (22.03 GB VRAM). Preserved T4 audit history. Full training not launched.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Prepared full ScienceDB RGB BCS baseline training pipeline for Modal (App `ap-TrHVaxRLZvyJBANOPX4ODu`, T4). Verified 100% readiness across all 6 checks. Did not launch training.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Executed head-to-head comparison between detector-guided A4 (RT-DETR box -> SAM 2.1) and A5 (RT-DETR box + center point -> SAM 2.1) on 40 fresh canonical train samples (Seed 2026, 29 sessions; Modal profile tigerwood693, T4 GPU). Both achieved 92.5% mask return (37/40) with 3 upstream RT-DETR-L failures (7.5%); A5 reduced mean connected components by 37.6% (19.6 vs 31.4). Generated master 4x10 contact sheet (2688x2620 px) and 40 individual composites. Status: PENDING HUMAN REVIEW.

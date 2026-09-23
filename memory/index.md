@@ -48,6 +48,9 @@ Dataset preprocessing routines, member work splits, and original problem context
 - `preprocess_mmcows_behavior.py`: Data loader and bounding-box crop generator for MMCows behavior dataset.
 - `preprocess_sciencedb_bcs.py`: Preprocessing script for ScienceDB thermal/RGB cattle dataset.
 
+### `phase3_deadline_execution_2026-09-26.md`
+Active deadline execution priority overlay for the 26 September 2026 thesis deadline. Enforces the guiding principle: "Before the 26 Sep deadline, execute only the minimum defensible thesis runs. All exhaustive ablations remain deferred roadmap work and can be completed later if needed." Preserves the full canonical roadmap without scientific cancellation. Codifies the 8-run sequence (3 single-task baselines, 3 perception-enhanced models, E1 basic hard sharing control, E3 main deadline MTL model with modular adapters/private pathways). Enforces strict viewpoint rules (tested/deferred, never camera ID) and scientific claim boundaries.
+
 ### `phase3_canonical_roadmap.md` & `docs/phase3_canonical_roadmap.md`
 Master canonical 13-step roadmap locked for Phase 3 execution. Formulates the core thesis question: *"Which cattle-specific visual priors (localization, soft masks, anatomy/pose, viewpoint) are useful for which downstream task, and what information should each task preserve or suppress?"* Locks downstream scope to BCS (ScienceDB; Ruchay 2026 external), Behavior (CVB + Kaggle Beef as the primary dense-video training stack; MmCows external identity-aware validation; CBVD-5 secondary external), and Re-ID (SideViewCows2026 as primary under approved contingency; BECA-L longitudinal external; BECA-D scale stress external; OpenCows2020 legacy baseline; MultiCamCows2024 contingency-excluded). Outlines a strict 13-step progression from Step 1 data registry to final 3-seed benchmark tables.
 
