@@ -1,3 +1,23 @@
+# Session Summary — 2026-09-23 (SideViewCows2026 Re-ID RGB Baseline Full 30-Epoch Training & Protocol A Evaluation Complete)
+
+- Successfully executed full 30-epoch training and held-out Protocol A retrieval evaluation of Phase 3 Step 4.3 SideViewCows2026 RGB Re-ID baseline (Run 3 of 8 in Deadline Execution Plan) on Modal profile `tigerwood697` (App `ap-2v7eXL7tv414v518NkLBPN`, NVIDIA L40S, 8 CPUs, 32GB RAM).
+- Full 30-epoch training completed in 1,049.05s (~17.48m; ~21.8s/epoch on cached epochs 2–30 at 11.5 it/s).
+- Best validation representation checkpoint captured at Epoch 13 (Val Top-1 Acc 98.73%, Val Bal Acc 98.65%, Val Macro-F1 0.9871).
+- Canonical Protocol A held-out retrieval evaluation on 69 unseen cows (62,678 total images) against 36,811 parlor gallery images:
+  - Query Barn -> Gallery Parlor (25,260 queries, 69 unseen cows):
+    - Rank-1: 58.64%
+    - Rank-5: 78.19%
+    - Rank-10: 83.72%
+    - mAP: 38.32%
+  - Query Snapshots -> Gallery Parlor (607 handheld queries, 63 unseen cows):
+    - Rank-1: 38.88%
+    - Rank-5: 57.17%
+    - Rank-10: 64.58%
+    - mAP: 27.05%
+- Massive gap between in-domain parlor validation (98.73%) and cross-domain retrieval (58.64% barn, 38.88% snapshots) proves generic RGB models latch heavily onto parlor background/lighting shortcuts, providing the ideal baseline control for Run 6 perception-enhanced Re-ID.
+- Model checkpoints committed on persistent volume `reid-checkpoints`. Metrics verified at `artifacts/reid_baseline/reid_baseline_metrics.json`.
+- All Step 4 Single-Task RGB Baselines are now 100% COMPLETE (Run 1 BCS, Run 2 Behavior, Run 3 Re-ID). Next target: Run 4 BCS Perception-Enhanced Model.
+
 # Session Summary — 2026-09-23 (CVB + Kaggle Beef Behavior RGB Baseline Full 30-Epoch Training Complete)
 
 - Successfully executed full 30-epoch training and held-out test evaluation of Phase 3 Step 4.2 Behavior RGB baseline (Run 2 of 8 in Deadline Execution Plan) on Modal profile `tigerwood693` (App `ap-ZrBKKvGcVzM7IB1AYMs2LH`, NVIDIA L40S, 8 CPUs, 32GB RAM).
