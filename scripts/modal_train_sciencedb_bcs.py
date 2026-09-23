@@ -62,11 +62,11 @@ app = modal.App("sciencedb-bcs-baseline", image=train_image)
 # READINESS VERIFICATION FUNCTION (CHECKS ONLY)
 # ==============================================================================
 @app.function(
-    gpu=os.environ.get("MODAL_GPU", "L40S"),
+    gpu=os.environ.get("MODAL_GPU", "L4"),
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
     timeout=300,
-    cpu=4.0,
-    memory=8192,
+    cpu=2.0,
+    memory=4096,
 )
 def verify_readiness_remote():
     """Performs exhaustive pre-flight verification without training."""
@@ -212,11 +212,11 @@ def verify_readiness_remote():
 # FULL 30-EPOCH TRAINING REMOTE FUNCTION
 # ==============================================================================
 @app.function(
-    gpu=os.environ.get("MODAL_GPU", "L40S"),
+    gpu=os.environ.get("MODAL_GPU", "L4"),
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
     timeout=3600 * 3,  # 3 hours max runtime
-    cpu=8.0,
-    memory=32768,     # 32 GB RAM
+    cpu=4.0,
+    memory=16384,     # 16 GB RAM
 )
 def train_sciencedb_bcs_remote(
     epochs: int = 30,
@@ -230,7 +230,7 @@ def train_sciencedb_bcs_remote(
     max_samples: int = 250,
     max_batches: int = 10,
     test_save_resume: bool = True,
-    num_workers: int = 8,
+    num_workers: int = 4,
 ):
     """
     Executes Phase 3 ScienceDB RGB single-task BCS baseline training on Modal.
@@ -303,7 +303,7 @@ def main(
     seed: int = 42,
     smoke: bool = False,
     resume: Optional[str] = None,
-    num_workers: int = 8,
+    num_workers: int = 4,
 ):
     """Default entrypoint to trigger training with CLI parameters."""
     train_sciencedb_bcs_remote.remote(
