@@ -1,3 +1,15 @@
+# Session Summary — 2026-09-24 (Phase 3 Run 5 Behavior Perception Suite Certification Defects Repaired)
+
+- Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004
+- Objective: Repair remaining certification issues in the Run 5 Behavior execution suite without launching heavy compute (zero GPU benchmarks, zero full caching, zero training, zero test evaluation).
+- Certification Defects Repaired:
+  1. Scientifically Controlled L4 vs L40S Benchmarks: Standardized both remote benchmark functions (`benchmark_cache_l4_remote` and `benchmark_cache_l40s_remote`) to use identical `cpu=4.0, memory=16384`, identical container image (`train_image`), volumes, candidate ordering (`get_benchmark_sequence_subset`), perception policy, and 300s time limit. Only GPU model differs.
+  2. Corrected Full-Cache Runtime Projection: Calculated projected time for all 4,465 Train+Val candidates using attempted-candidate throughput (`total_candidates * (wall_clock_seconds / candidate_sequences_attempted)`), since failed perception attempts consume processing time; reports both `seconds_per_attempted_sequence` and `seconds_per_successful_sequence` (diagnostic).
+  3. Complete Full-Training Reproducibility & Provenance: Implemented explicit training seed = 2026 across Python random, NumPy, PyTorch CPU and CUDA; enforced cuDNN deterministic flags; persisted active Git commit SHA, SHA-256 hashes of canonical train/val CSVs and retained train/val CSVs, exact retained Train and Val sample ID lists, and complete per-epoch history (`epoch_history`) in checkpoint metadata (`latest.pth`, `best.pth`) and `behavior_tcn_metrics.json`.
+  4. Hardened Run 2 Matched-Subset Evaluation: Enforced strict check against authentic historical Run 2 cached inputs (`/checkpoints/behavior_cache/{sample_id}.jpg`), asserted non-empty, and failed loudly with `RuntimeError` listing missing IDs with zero fallback/dummy generation. Integrated zero-GPU readiness check in `inspect_cache_status` verifying 809 / 809 canonical Run 2 test cache files are present and valid on volume (`READY`).
+  5. Progressive Manifest Provenance: Preserved separate progressive manifests for Train, Val, and later Test (`perception_manifest_train.csv`, `perception_manifest_val.csv`, `perception_manifest_test.csv`) to prevent split overwriting during caching; combined master manifest (`perception_manifest.csv`) generated only upon completion.
+- Non-goals strictly honored: Zero full caching, zero 30-epoch training, zero canonical test evaluation launched.
+
 # Session Summary — 2026-09-24 (Phase 3 Run 5 Behavior Perception Suite Preparation & Certification)
 
 - Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004

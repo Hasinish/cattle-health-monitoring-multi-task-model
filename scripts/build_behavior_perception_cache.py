@@ -110,17 +110,23 @@ def save_cache_manifest_and_summary(
     retained_df: pd.DataFrame,
     failed_df: Optional[pd.DataFrame] = None,
     split_name: Optional[str] = None,
+    is_master: bool = False,
 ):
     """
     Persists progressive or final perception manifest and summary to cache_dir.
-    Ensures interrupted caching sessions leave a consistent on-disk audit trail.
+    Guarantees:
+      - Split-specific progressive manifests (perception_manifest_{split_name}.csv)
+        are preserved and NOT overwritten by subsequent split caching.
+      - Split-specific progressive summaries (perception_summary_{split_name}.json)
+        are preserved.
+      - Final combined runs can additionally save the master perception_manifest.csv
+        and perception_summary.json.
     """
     cache_dir.mkdir(parents=True, exist_ok=True)
-    if frame_records:
-        manifest_df = pd.DataFrame(frame_records)
-        manifest_df.to_csv(cache_dir / "perception_manifest.csv", index=False)
+    manifest_df = pd.DataFrame(frame_records) if frame_records else None
 
     summary_data = {
+        "split": split_name or "master",
         "stats": {k: v for k, v in stats.items() if k not in ("failed_records", "failed_df")},
         "total_sequences_requested": stats.get("total_requested", len(retained_df)),
         "total_sequences_retained": len(retained_df),
@@ -132,13 +138,23 @@ def save_cache_manifest_and_summary(
         "already_cached_count": stats.get("already_cached", 0),
         "last_updated": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
-    with open(cache_dir / "perception_summary.json", "w", encoding="utf-8") as f:
-        json.dump(summary_data, f, indent=2)
 
     if split_name:
+        # Save split-specific progressive manifest & summary
+        if manifest_df is not None:
+            manifest_df.to_csv(cache_dir / f"perception_manifest_{split_name}.csv", index=False)
+        with open(cache_dir / f"perception_summary_{split_name}.json", "w", encoding="utf-8") as f:
+            json.dump(summary_data, f, indent=2)
         retained_df.to_csv(cache_dir / f"retained_{split_name}.csv", index=False)
         if failed_df is not None and len(failed_df) > 0:
             failed_df.to_csv(cache_dir / f"failed_{split_name}.csv", index=False)
+
+    if split_name is None or is_master:
+        # Save master manifest & summary
+        if manifest_df is not None:
+            manifest_df.to_csv(cache_dir / "perception_manifest.csv", index=False)
+        with open(cache_dir / "perception_summary.json", "w", encoding="utf-8") as f:
+            json.dump(summary_data, f, indent=2)
 
 
 # ==============================================================================

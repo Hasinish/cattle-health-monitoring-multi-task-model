@@ -592,77 +592,6 @@ class BehaviorTemporalDataset(Dataset):
             raise ValueError(f"Unknown input_mode: {self.input_mode}. Choose 'rgb' or 'rgb_mask'.")
 
 
-class MatchedBehaviorRGBDataset(Dataset):
-    """
-    Dataset loader for original RGB midpoint crops corresponding to the
-    EXACT SAME successful-perception subset from retained_test.csv.
-    Evaluates the historical Run 2 RGB baseline model without retraining.
-    """
-    def __init__(
-        self,
-        matched_df: pd.DataFrame,
-        run2_cache_dir: Optional[Path] = None,
-        cvb_dir: Optional[Path] = None,
-        beef_dir: Optional[Path] = None,
-        image_size: int = 224,
-    ):
-        self.df = matched_df.reset_index(drop=True)
-        self.run2_cache_dir = Path(run2_cache_dir) if run2_cache_dir else None
-        self.cvb_dir = Path(cvb_dir) if cvb_dir else None
-        self.beef_dir = Path(beef_dir) if beef_dir else None
-        self.image_size = image_size
-        self.transform = transforms.Compose([
-            transforms.Resize((image_size, image_size)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
-        ])
-        self.cached_cvb_jsons = {}
-
-    def __len__(self) -> int:
-        return len(self.df)
-
-    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int, str, str]:
-        row = self.df.iloc[idx]
-        sample_id = str(row["sample_id"])
-        dataset_name = str(row["dataset"])
-        behavior_cls = str(row["behavior_canonical"])
-        target = CLASS_TO_IDX[behavior_cls]
-
-        img_pil = None
-        # 1. Primary path: Load from existing Run 2 pre-cached crops (/checkpoints/behavior_cache/{sample_id}.jpg)
-        if self.run2_cache_dir is not None:
-            cached_img_path = self.run2_cache_dir / f"{sample_id}.jpg"
-            if cached_img_path.exists() and cached_img_path.stat().st_size > 0:
-                try:
-                    img_pil = Image.open(cached_img_path).convert("RGB")
-                except Exception:
-                    img_pil = None
-
-        # 2. Secondary fallback: Extract on the fly from raw source video/frames
-        if img_pil is None:
-            rec = row.to_dict()
-            img_bgr = None
-            try:
-                from scripts.train_cvb_beef_behavior_baseline import extract_cvb_crop, extract_beef_frame
-            except ImportError:
-                try:
-                    from train_cvb_beef_behavior_baseline import extract_cvb_crop, extract_beef_frame
-                except ImportError:
-                    extract_cvb_crop, extract_beef_frame = None, None
-
-            if dataset_name == "cvb" and self.cvb_dir is not None and extract_cvb_crop is not None:
-                img_bgr = extract_cvb_crop(rec, self.cvb_dir, self.cached_cvb_jsons)
-            elif dataset_name == "beef_cattle_behavior" and self.beef_dir is not None and extract_beef_frame is not None:
-                img_bgr = extract_beef_frame(rec, self.beef_dir)
-
-            if img_bgr is not None:
-                img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
-                img_pil = Image.fromarray(img_rgb)
-            else:
-                img_pil = Image.new("RGB", (self.image_size, self.image_size), (0, 0, 0))
-
-        tensor = self.transform(img_pil)
-        return tensor, target, sample_id, dataset_name
 
 
 # ==============================================================================
@@ -1163,6 +1092,59 @@ def get_balanced_smoke_subset(
 
 
 # ==============================================================================
+# REPRODUCIBILITY & PROVENANCE HELPERS
+# ==============================================================================
+def set_reproducibility_seeds(seed: int = 2026):
+    """
+    Configures deterministic seeds across Python random, NumPy, and PyTorch (CPU & CUDA)
+    and enforces cuDNN deterministic behavior consistent with thesis methodology.
+    """
+    import random
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
+def compute_file_sha256(file_path: Optional[Path]) -> Optional[str]:
+    """Computes deterministic SHA-256 hash of a file if it exists and is non-empty."""
+    if file_path is None:
+        return None
+    p = Path(file_path)
+    if not p.exists() or not p.is_file():
+        return None
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        while chunk := f.read(65536):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def get_git_commit_sha(fallback: str = "UNKNOWN") -> str:
+    """Retrieves current git commit SHA for provenance recording."""
+    env_sha = os.environ.get("GIT_COMMIT_SHA")
+    if env_sha:
+        return env_sha.strip()
+    try:
+        import subprocess
+        res = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
+        )
+        return res.stdout.strip()
+    except Exception:
+        return fallback
+
+
+# ==============================================================================
 # MAIN TRAINING PIPELINE
 # ==============================================================================
 def train_temporal_pipeline(
@@ -1181,6 +1163,8 @@ def train_temporal_pipeline(
     num_frames: int = 8,
     smoke: bool = True,
     input_mode: str = "rgb_mask",
+    seed: int = 2026,
+    git_commit_sha: Optional[str] = None,
     device: Optional[torch.device] = None,
     epoch_commit_callback: Optional[Any] = None,
 ) -> Dict[str, Any]:
@@ -1194,6 +1178,10 @@ def train_temporal_pipeline(
     if device is None:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    # Strict reproducibility seeds
+    set_reproducibility_seeds(seed)
+    active_git_sha = git_commit_sha or get_git_commit_sha()
+
     output_dir.mkdir(parents=True, exist_ok=True)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -1201,6 +1189,7 @@ def train_temporal_pipeline(
 
     print("\n" + "=" * 70)
     print(f"  BEHAVIOR TEMPORAL PIPELINE: Mode={input_mode} (in_channels={in_channels}), Device={device}, Smoke={smoke}")
+    print(f"  Provenance: Seed={seed}, cuDNN Deterministic=True, Git SHA={active_git_sha}")
     print("=" * 70)
 
     # 1. Load canonical split CSVs if not passed in
@@ -1212,11 +1201,15 @@ def train_temporal_pipeline(
     assert val_csv.exists(), f"val.csv missing at {val_csv}"
     assert test_csv.exists(), f"test.csv missing at {test_csv}"
 
+    canonical_train_sha256 = compute_file_sha256(train_csv)
+    canonical_val_sha256 = compute_file_sha256(val_csv)
+
     if train_df is None:
         train_df = pd.read_csv(train_csv)
     if val_df is None:
         val_df = pd.read_csv(val_csv)
     print(f"[*] Input split rows: Train={len(train_df)}, Val={len(val_df)}")
+    print(f"[*] Canonical split SHA-256: train.csv={canonical_train_sha256[:16]}..., val.csv={canonical_val_sha256[:16]}...")
 
     # 2. Select balanced smoke subset if smoke and full split was passed
     smoke_counts = {}
@@ -1355,6 +1348,31 @@ def train_temporal_pipeline(
     best_ckpt_path = output_dir / "behavior_tcn_best.pth"
     latest_ckpt_path = output_dir / "behavior_tcn_latest.pth"
 
+    # Retained split provenance & exact sample IDs
+    retained_train_csv = cache_dir / "retained_train.csv"
+    retained_val_csv = cache_dir / "retained_val.csv"
+    retained_train_sha256 = compute_file_sha256(retained_train_csv)
+    retained_val_sha256 = compute_file_sha256(retained_val_csv)
+
+    retained_train_sample_ids = [str(sid) for sid in train_df["sample_id"].tolist()]
+    retained_val_sample_ids = [str(sid) for sid in val_df["sample_id"].tolist()]
+
+    reproducibility_meta = {
+        "seed": seed,
+        "python_hash_seed": str(seed),
+        "cudnn_deterministic": True,
+        "cudnn_benchmark": False,
+        "git_commit_sha": active_git_sha,
+        "canonical_train_csv_sha256": canonical_train_sha256,
+        "canonical_val_csv_sha256": canonical_val_sha256,
+        "retained_train_csv_sha256": retained_train_sha256,
+        "retained_val_csv_sha256": retained_val_sha256,
+        "retained_train_sample_ids": retained_train_sample_ids,
+        "retained_val_sample_ids": retained_val_sample_ids,
+    }
+
+    epoch_history = []
+
     # 7. Training Loop
     print("\n[*] Starting training loop...")
     for epoch in range(1, epochs + 1):
@@ -1403,7 +1421,21 @@ def train_temporal_pipeline(
             f"Val Macro-F1: {val_metrics['macro_f1']:.4f}"
         )
 
-        # Save latest checkpoint
+        epoch_record = {
+            "epoch": epoch,
+            "train_loss": round(float(train_loss), 6),
+            "val_loss": round(float(val_loss), 6),
+            "val_overall_accuracy": round(float(val_metrics["overall_accuracy"]), 6),
+            "val_balanced_accuracy": round(float(val_metrics["balanced_accuracy"]), 6),
+            "val_macro_f1": round(float(val_metrics["macro_f1"]), 6),
+            "val_macro_precision": round(float(val_metrics["macro_precision"]), 6),
+            "val_macro_recall": round(float(val_metrics["macro_recall"]), 6),
+            "val_per_class_f1": {k: round(float(v), 6) for k, v in val_metrics["per_class_f1"].items()},
+            "duration_sec": round(epoch_dur, 2),
+        }
+        epoch_history.append(epoch_record)
+
+        # Save latest checkpoint with full reproducibility & history metadata
         ckpt_data = {
             "epoch": epoch,
             "model_state_dict": model.state_dict(),
@@ -1415,6 +1447,8 @@ def train_temporal_pipeline(
             "num_classes": NUM_CLASSES,
             "num_frames": num_frames,
             "total_params": total_trainable_params,
+            "reproducibility": reproducibility_meta,
+            "epoch_history": list(epoch_history),
         }
         torch.save(ckpt_data, latest_ckpt_path)
 
@@ -1488,6 +1522,10 @@ def train_temporal_pipeline(
         },
         "contact_sheet": str(contact_sheet_path),
         "missing_bbox_records_count": len(train_missing_bboxes) + len(val_missing_bboxes),
+        "reproducibility": reproducibility_meta,
+        "retained_train_sample_ids": retained_train_sample_ids,
+        "retained_val_sample_ids": retained_val_sample_ids,
+        "epoch_history": epoch_history,
     }
 
     metrics_out = output_dir / "behavior_tcn_metrics.json"
@@ -1513,27 +1551,38 @@ def train_temporal_pipeline(
 class MatchedBehaviorRGBDataset(Dataset):
     """
     Dataset to load single-frame RGB midpoint crops for Run 2 ResNet-18 baseline evaluation.
-    Prioritizes loading pre-cached crops from Run 2's cache directory:
+    STRICT REQUIREMENT: Loads the authentic historical Run 2 cached crops directly from:
       run2_cache_dir / f"{sample_id}.jpg"
     (where Run 2 saved crops at /checkpoints/behavior_cache/{sample_id}.jpg during baseline training).
-    Falls back to deterministic midpoint frame extraction if cache file is missing.
+    Zero fallback, zero dummy crops, zero on-the-fly video decoding.
     """
     def __init__(
         self,
         df: pd.DataFrame,
-        run2_cache_dir: Optional[Path] = None,
-        cvb_dir: Optional[Path] = None,
-        beef_dir: Optional[Path] = None,
+        run2_cache_dir: Path,
         image_size: int = 224,
     ):
         self.df = df.reset_index(drop=True)
-        self.run2_cache_dir = run2_cache_dir
-        self.cvb_dir = cvb_dir
-        self.beef_dir = beef_dir
+        self.run2_cache_dir = Path(run2_cache_dir)
         self.image_size = image_size
         self.sample_ids = self.df["sample_id"].tolist()
         self.labels = [CLASS_TO_IDX[b] for b in self.df["behavior_canonical"]]
         self.dataset_names = self.df["dataset"].tolist()
+
+        assert self.run2_cache_dir.exists(), f"Run 2 cache directory does not exist: {self.run2_cache_dir}"
+
+        # Assert all requested sample crops exist and are non-empty
+        missing = [
+            sid for sid in self.sample_ids
+            if not (self.run2_cache_dir / f"{sid}.jpg").exists() or (self.run2_cache_dir / f"{sid}.jpg").stat().st_size == 0
+        ]
+        if missing:
+            raise RuntimeError(
+                f"MatchedBehaviorRGBDataset failed: {len(missing)} / {len(self.sample_ids)} "
+                f"Run 2 cache files are missing or 0 bytes in {self.run2_cache_dir}! "
+                f"Missing sample IDs (first 20): {missing[:20]}. "
+                "Silent fallback or reconstruction is strictly prohibited."
+            )
 
         self.transform = transforms.Compose([
             transforms.Resize((image_size, image_size)),
@@ -1549,49 +1598,12 @@ class MatchedBehaviorRGBDataset(Dataset):
         target = self.labels[idx]
         d_name = self.dataset_names[idx]
 
-        # 1. Try Run 2 cache file
-        img = None
-        if self.run2_cache_dir is not None:
-            cache_p = self.run2_cache_dir / f"{sample_id}.jpg"
-            if cache_p.exists() and cache_p.stat().st_size > 0:
-                try:
-                    img = Image.open(cache_p).convert("RGB")
-                except Exception:
-                    img = None
+        cache_path = self.run2_cache_dir / f"{sample_id}.jpg"
+        if not cache_path.exists() or cache_path.stat().st_size == 0:
+            raise FileNotFoundError(f"Missing authentic Run 2 cache file: {cache_path}")
 
-        # 2. Fallback to extracting midpoint frame if not pre-cached
-        if img is None:
-            rec = self.df.iloc[idx].to_dict()
-            if d_name == "cvb" and self.cvb_dir is not None:
-                cut_name = str(rec["session_id"])
-                mid_f = (int(rec["start_frame"]) + int(rec["end_frame"])) // 2
-                for cand in [
-                    self.cvb_dir / "data" / "raw_frames" / cut_name / f"img_{mid_f:05d}.jpg",
-                    self.cvb_dir / "raw_frames" / cut_name / f"img_{mid_f:05d}.jpg",
-                ]:
-                    if cand.exists():
-                        bgr = cv2.imread(str(cand))
-                        if bgr is not None:
-                            img = Image.fromarray(cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB))
-                        break
-            elif d_name == "beef_cattle_behavior" and self.beef_dir is not None:
-                clip_rel = rec.get("clip_path")
-                if clip_rel:
-                    vpath = self.beef_dir / clip_rel
-                    if vpath.exists():
-                        cap = cv2.VideoCapture(str(vpath))
-                        total_f = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                        mid_f = total_f // 2
-                        cap.set(cv2.CAP_PROP_POS_FRAMES, mid_f)
-                        ret, f_bgr = cap.read()
-                        cap.release()
-                        if ret and f_bgr is not None:
-                            img = Image.fromarray(cv2.cvtColor(f_bgr, cv2.COLOR_BGR2RGB))
-
-        if img is None:
-            img = Image.new("RGB", (self.image_size, self.image_size), color=(128, 128, 128))
-
-        tensor = self.transform(img)
+        image = Image.open(cache_path).convert("RGB")
+        tensor = self.transform(image)
         return tensor, target, sample_id, d_name
 
 
@@ -1623,6 +1635,20 @@ def evaluate_matched_run2_vs_run5(
     assert run5_checkpoint_path.exists(), f"Run 5 checkpoint missing at {run5_checkpoint_path}"
     assert run2_checkpoint_path.exists(), f"Run 2 checkpoint missing at {run2_checkpoint_path}"
     assert len(retained_test_df) > 0, "Empty retained_test_df provided for evaluation!"
+    assert run2_cache_dir is not None and run2_cache_dir.exists(), f"Run 2 cache directory missing at {run2_cache_dir}"
+
+    # Strict audit: verify that authentic historical Run 2 cache file exists for EVERY retained test ID
+    missing_run2_crops = [
+        sid for sid in retained_test_df["sample_id"]
+        if not (run2_cache_dir / f"{sid}.jpg").exists() or (run2_cache_dir / f"{sid}.jpg").stat().st_size == 0
+    ]
+    if missing_run2_crops:
+        raise RuntimeError(
+            f"CRITICAL: Authentic Run 2 baseline cache missing {len(missing_run2_crops)} / {len(retained_test_df)} "
+            f"retained test samples at {run2_cache_dir}! Missing sample IDs (first 20): {missing_run2_crops[:20]}... "
+            "Silent reconstruction or fallback is strictly prohibited. Historical Run 2 cached crops are required."
+        )
+    print(f"[*] Verified authentic Run 2 test cache: all {len(retained_test_df)} retained test crops present in {run2_cache_dir}.")
 
     print("\n" + "=" * 70)
     print(f"  FAIR MATCHED TEST EVALUATION: Run 5 Perception+TCN vs Run 2 RGB Baseline")
@@ -1679,8 +1705,6 @@ def evaluate_matched_run2_vs_run5(
     run2_dataset = MatchedBehaviorRGBDataset(
         retained_test_df,
         run2_cache_dir=run2_cache_dir,
-        cvb_dir=cvb_dir,
-        beef_dir=beef_dir,
         image_size=224,
     )
     run2_loader = DataLoader(
@@ -1930,6 +1954,12 @@ def main():
         help="Number of temporal frames per sequence (T)",
     )
     parser.add_argument(
+        "--seed",
+        type=int,
+        default=2026,
+        help="Explicit training seed for Python, NumPy, PyTorch CPU & CUDA",
+    )
+    parser.add_argument(
         "--smoke",
         action="store_true",
         default=True,
@@ -1952,6 +1982,7 @@ def main():
         num_frames=args.num_frames,
         smoke=args.smoke,
         input_mode=args.input_mode,
+        seed=args.seed,
     )
 
 

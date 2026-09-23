@@ -772,7 +772,7 @@ def _run_benchmark(gpu_name: str, time_limit_sec: float = 300.0) -> dict:
     assert test_stat_before.st_mtime == test_stat_after.st_mtime, "CRITICAL: test.csv was modified!"
     print("[*] Strict canonical test-set isolation PASS: test.csv was not parsed, loaded, sampled, tuned, or evaluated.")
 
-    # 7. Compute exact benchmark metrics
+    # 7. Compute exact benchmark metrics & corrected projection
     n_success = stats["extracted_success"]
     n_failed = stats["failed_sequences"]
     n_attempted = n_success + n_failed
@@ -781,12 +781,17 @@ def _run_benchmark(gpu_name: str, time_limit_sec: float = 300.0) -> dict:
     beef_a5 = stats["beef_a5_frames_generated"]
     beef_fallback = stats["beef_fallback_frames_generated"]
 
-    sec_per_seq = round(t_elapsed / max(1, n_success), 3)
+    sec_per_attempted = round(t_elapsed / max(1, n_attempted), 3)
+    sec_per_successful = round(t_elapsed / max(1, n_success), 3)
+    attempted_per_min = round((n_attempted / max(1e-5, t_elapsed)) * 60, 2)
     seqs_per_min = round((n_success / max(1e-5, t_elapsed)) * 60, 2)
     fps = round(total_masks / max(1e-5, t_elapsed), 2)
 
     total_candidates = 4465  # 3,785 train + 680 val
-    proj_sec = total_candidates * (t_elapsed / max(1, n_success))
+    # Full-cache runtime projection MUST use attempted-candidate throughput:
+    # wall_clock_seconds / candidate_sequences_attempted
+    # because failed perception attempts also consume processing time.
+    proj_sec = total_candidates * (t_elapsed / max(1, n_attempted))
     proj_hours = round(proj_sec / 3600, 2)
     proj_str = f"{proj_hours:.2f} hours ({proj_sec / 60:.1f} minutes)"
 
@@ -800,11 +805,15 @@ def _run_benchmark(gpu_name: str, time_limit_sec: float = 300.0) -> dict:
         "cvb_frames": cvb_frames,
         "beef_a5_frames": beef_a5,
         "beef_fallback_frames": beef_fallback,
-        "seconds_per_successful_sequence": sec_per_seq,
+        "seconds_per_attempted_sequence": sec_per_attempted,
+        "seconds_per_successful_sequence": sec_per_successful,
+        "attempted_per_minute": attempted_per_min,
         "sequences_per_minute": seqs_per_min,
         "frames_per_second": fps,
         "projected_full_train_val_caching_time_hours": proj_hours,
         "projected_full_train_val_caching_time_str": proj_str,
+        "projection_throughput_basis": "candidate_sequences_attempted",
+        "projection_formula": "total_candidates (4465) * (wall_clock_seconds / candidate_sequences_attempted)",
         "total_full_candidates": total_candidates,
         "cache_dir": str(cache_dir),
     }
@@ -827,8 +836,8 @@ def _run_benchmark(gpu_name: str, time_limit_sec: float = 300.0) -> dict:
         "/checkpoints": checkpoint_vol,
     },
     timeout=600,
-    cpu=2.0,
-    memory=8192,
+    cpu=4.0,
+    memory=16384,
 )
 def benchmark_cache_l4_remote(time_limit_sec: float = 300.0) -> dict:
     return _run_benchmark(gpu_name="L4", time_limit_sec=time_limit_sec)
@@ -863,10 +872,12 @@ def _print_benchmark_report(rep: dict):
     print(f"  CVB frames (GT BBox)                 : {rep['cvb_frames']}")
     print(f"  Beef A5 frames (RT-DETR+Center)      : {rep['beef_a5_frames']}")
     print(f"  Beef fallback frames (Center Point)  : {rep['beef_fallback_frames']}")
-    print(f"  Seconds per successful sequence      : {rep['seconds_per_successful_sequence']:.3f} s/seq")
-    print(f"  Sequences / minute                   : {rep['sequences_per_minute']:.2f} seq/min")
+    print(f"  Seconds per attempted candidate      : {rep['seconds_per_attempted_sequence']:.3f} s/cand")
+    print(f"  Seconds per successful sequence      : {rep['seconds_per_successful_sequence']:.3f} s/seq (diagnostic)")
+    print(f"  Attempted candidates / minute        : {rep['attempted_per_minute']:.2f} cand/min")
+    print(f"  Successful sequences / minute        : {rep['sequences_per_minute']:.2f} seq/min")
     print(f"  Frames / second                      : {rep['frames_per_second']:.2f} fps")
-    print(f"  Projected Full Train+Val Time (4465) : {rep['projected_full_train_val_caching_time_str']}")
+    print(f"  Projected Full Train+Val Time (4465) : {rep['projected_full_train_val_caching_time_str']} (basis: attempted throughput)")
     print("=" * 70)
 
 
@@ -1020,15 +1031,22 @@ def _run_production_caching(gpu_name: str) -> dict:
     assert test_stat_before.st_mtime == test_stat_after.st_mtime, "CRITICAL: test.csv was modified during caching!"
     print("[*] Strict canonical test-set isolation PASS: test.csv was not parsed, loaded, sampled, tuned, or evaluated.")
 
-    # 4. Save Final Production Split Manifests & Master Summary
+    # 4. Save Final Production Split Manifests & Combined Master Manifest
     retained_train_df.to_csv(cache_dir / "retained_train.csv", index=False)
     retained_val_df.to_csv(cache_dir / "retained_val.csv", index=False)
     train_stats["failed_df"].to_csv(cache_dir / "failed_train.csv", index=False)
     val_stats["failed_df"].to_csv(cache_dir / "failed_val.csv", index=False)
 
-    all_records = train_records + val_records
-    master_manifest_df = pd.DataFrame(all_records)
-    master_manifest_df.to_csv(cache_dir / "perception_manifest.csv", index=False)
+    # Combine separate progressive manifests into master manifest
+    train_manifest_p = cache_dir / "perception_manifest_train.csv"
+    val_manifest_p = cache_dir / "perception_manifest_val.csv"
+    if train_manifest_p.exists() and val_manifest_p.exists():
+        master_manifest_df = pd.concat([pd.read_csv(train_manifest_p), pd.read_csv(val_manifest_p)], ignore_index=True)
+        master_manifest_df.to_csv(cache_dir / "perception_manifest.csv", index=False)
+    else:
+        all_records = train_records + val_records
+        master_manifest_df = pd.DataFrame(all_records)
+        master_manifest_df.to_csv(cache_dir / "perception_manifest.csv", index=False)
 
     # Compile failure reason breakdown
     all_failed_records = train_stats["failed_records"] + val_stats["failed_records"]
@@ -1259,6 +1277,7 @@ def train_full_run5_remote(batch_size: int = 16, epochs: int = 30) -> dict:
         num_frames=8,
         smoke=False,
         input_mode="rgb_mask",
+        seed=2026,
         epoch_commit_callback=lambda ep, is_best: checkpoint_vol.commit(),
     )
 
@@ -1501,7 +1520,9 @@ def inspect_cache_status_remote() -> dict:
             "exists": True,
             "sequence_count": len(subdirs),
             "valid_metadata_count": valid_meta,
-            "manifest_exists": (p / "perception_manifest.csv").exists(),
+            "manifest_train_exists": (p / "perception_manifest_train.csv").exists(),
+            "manifest_val_exists": (p / "perception_manifest_val.csv").exists(),
+            "manifest_master_exists": (p / "perception_manifest.csv").exists(),
             "summary_exists": (p / "perception_summary.json").exists(),
         }
 
@@ -1513,6 +1534,45 @@ def inspect_cache_status_remote() -> dict:
         except Exception:
             pass
 
+    # Run 2 historical baseline test cache readiness audit (809 canonical test samples)
+    test_csv_path = Path("/root/datasets/behavior/cvb_beef/test.csv")
+    run2_cache_dir = Path("/checkpoints/behavior_cache")
+    run2_status = {
+        "cache_dir": str(run2_cache_dir),
+        "exists": run2_cache_dir.exists(),
+        "total_canonical_test_samples": 809,
+        "present_count": 0,
+        "missing_count": 809,
+        "zero_byte_count": 0,
+        "is_ready_for_matched_evaluation": False,
+        "sample_missing_ids": [],
+    }
+    if test_csv_path.exists() and run2_cache_dir.exists():
+        import pandas as pd
+        test_df = pd.read_csv(test_csv_path)
+        test_sids = test_df["sample_id"].astype(str).tolist()
+        run2_status["total_canonical_test_samples"] = len(test_sids)
+
+        present = 0
+        missing = []
+        zero_byte = 0
+        for sid in test_sids:
+            p = run2_cache_dir / f"{sid}.jpg"
+            if p.exists():
+                if p.stat().st_size > 0:
+                    present += 1
+                else:
+                    zero_byte += 1
+                    missing.append(sid)
+            else:
+                missing.append(sid)
+
+        run2_status["present_count"] = present
+        run2_status["missing_count"] = len(missing)
+        run2_status["zero_byte_count"] = zero_byte
+        run2_status["is_ready_for_matched_evaluation"] = (len(missing) == 0)
+        run2_status["sample_missing_ids"] = missing[:20]
+
     return {
         "production_cache": inspect_folder(cache_dir),
         "production_test_cache": inspect_folder(test_cache_dir),
@@ -1521,6 +1581,7 @@ def inspect_cache_status_remote() -> dict:
         "production_summary": prod_summary,
         "run5_checkpoint_exists": (ckpt_dir / "behavior_tcn_best.pth").exists(),
         "run2_baseline_checkpoint_exists": (baseline_dir / "behavior_baseline_best.pth").exists(),
+        "run2_test_cache": run2_status,
     }
 
 
@@ -1542,6 +1603,12 @@ def inspect_cache_status():
     print(f"  Benchmark L40S (/cache/benchmark_l40s)    : {res['benchmark_l40s']}")
     print(f"  Run 5 Best Checkpoint Exists              : {res['run5_checkpoint_exists']}")
     print(f"  Run 2 Baseline Checkpoint Exists          : {res['run2_baseline_checkpoint_exists']}")
+    if res.get("run2_test_cache"):
+        r2 = res["run2_test_cache"]
+        print(f"  Run 2 Historical Test Cache Present       : {r2['present_count']} / {r2['total_canonical_test_samples']} (Missing: {r2['missing_count']}, 0-byte: {r2['zero_byte_count']})")
+        print(f"  Run 2 Matched Readiness Status            : {'READY' if r2['is_ready_for_matched_evaluation'] else 'INCOMPLETE'}")
+        if r2["missing_count"] > 0:
+            print(f"    Sample missing IDs (first 10)           : {r2['sample_missing_ids'][:10]}")
     if res.get("production_summary"):
         ps = res["production_summary"]
         print(f"  Production Summary Total Retained         : {ps.get('total_retained')} / {ps.get('total_requested')}")
