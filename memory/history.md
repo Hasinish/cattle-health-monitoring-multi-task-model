@@ -1,3 +1,16 @@
+# Session Summary — 2026-09-24 (Run 5 Single-GPU Fast Perception Caching Optimization & Scientific Equivalence Gate)
+
+- Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004
+- Objective: Optimize Phase 3 Run 5 perception caching for maximum single-GPU L40S throughput without changing scientific perception policy; execute forensic equivalence gate against certified serial reference path; prepare 60-second L40S fast benchmark entrypoint.
+- Optimizations Implemented:
+  1. Monotonic Single-Pass Beef Video Decoder (`decode_beef_video_monotonic`): Replaced repeated `cap.set` seeks with forward `cap.grab()` and `cap.read()` in ascending frame order. Decoded 304/304 frames with 0 pixel difference (100% bit-identical).
+  2. Batched RT-DETR-L Detection: Batched all 8 frames in a single inference call per sequence (`conf=0.25`, COCO cow `class=19`) with independent per-frame largest-box selection and condition A5 vs fallback logic.
+  3. Pure FP32 Precision (`allow_tf32=False`): Enforced `torch.backends.cudnn.allow_tf32 = False` and `torch.backends.cuda.matmul.allow_tf32 = False` during caching, eliminating Tensor Core mantissa truncation and elevating minimum mask IoU from 0.998380 to 1.000000 (100.00% exact binary mask equality across all 304 frames).
+  4. Forensic Equivalence Gate: Verified 100% agreement on retained sequence IDs (38/38), excluded sequence IDs (2/2), sampled frame indices (320/320), prompt strategies (192 CVB GT bbox, 93 Beef A5, 19 Beef fallback), and binary masks (min IoU 1.000000, mean IoU 1.000000, exact match rate 100.00%).
+  5. L40S Throughput Gain: Improved throughput from 140.8 to 180.1 candidates/minute (17.8 to 22.8 fps, 0.333 s/cand), projecting full Train+Val cache (4,465 candidates) in 0.41 hours (~24.6 minutes).
+  6. Fast Benchmark Entrypoint: Added `benchmark_cache_l40s_fast` (60s benchmark duration, isolated `/cache/benchmark_l40s_fast`).
+- Non-goals strictly honored: Zero full caching, zero training, zero canonical test evaluation launched.
+
 # Session Summary — 2026-09-24 (Phase 3 Run 5 Behavior Perception Suite Certification Defects Repaired)
 
 - Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004

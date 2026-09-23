@@ -1,0 +1,303 @@
+{
+  "status": "PASS",
+  "gate_passed": true,
+  "gpu": "L40S",
+  "total_smoke_candidates": 40,
+  "retained_sequences": 38,
+  "excluded_sequences": 2,
+  "total_frames_compared": 304,
+  "exact_mask_matches": 304,
+  "exact_mask_rate": 1.0,
+  "minimum_mask_iou": 1.0,
+  "mean_mask_iou": 1.0,
+  "cvb_min_iou": 1.0,
+  "cvb_mean_iou": 1.0,
+  "beef_min_iou": 1.0,
+  "beef_mean_iou": 1.0,
+  "rgb_exact_matches": 304,
+  "rgb_exact_rate": 1.0,
+  "max_rgb_diff": 0,
+  "frame_index_equality_rate": 1.0,
+  "prompt_strategy_equality_rate": 1.0,
+  "decision_equality_rate": 1.0,
+  "serial_runtime_sec": 17.04,
+  "fast_runtime_sec": 13.32,
+  "serial_sec_per_cand": 0.426,
+  "fast_sec_per_cand": 0.333,
+  "serial_cand_per_min": 140.81,
+  "fast_cand_per_min": 180.11,
+  "serial_fps": 17.84,
+  "fast_fps": 22.81,
+  "speedup_multiple": 1.28,
+  "serial_projected_hours": 0.53,
+  "fast_projected_hours": 0.41,
+  "per_sequence_reports": [
+    {
+      "sample_id": "beef_00000000109000000_1_clip_125",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_00000000109000000_1_clip_126",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_00000000109000000_1_clip_127",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0051_arm01_gopro1_20200322_235424_beh8_ani1_ins2_cut_2_tr2_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0051_arm01_gopro1_20200322_235424_beh8_ani1_ins2_cut_2_tr3_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0082_arm01_gopro1_20200323_001206_beh7_ani4_ins1_cut_1_tr10_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_00000000109000000_19_clip_0",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_00000000109000000_19_clip_1",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0198_arm01_gopro1_20200323_023342_beh5_ani2_ins1_cut_1_tr3_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0198_arm01_gopro1_20200323_023342_beh5_ani2_ins1_cut_1_tr4_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0199_arm01_gopro1_20200323_023342_beh3_ani3_ins1_cut_1_tr1_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_101_1_clip_0",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_101_3_clip_0",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_101_4_clip_0",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0002_arm01_gopro1_20200322_222554_beh7_ani1_ins1_cut_1_tr0_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0002_arm01_gopro1_20200322_222554_beh7_ani1_ins1_cut_1_tr11_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0002_arm01_gopro1_20200322_222554_beh7_ani1_ins1_cut_1_tr1_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_11_1_clip_0",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_11_3_clip_0",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_11_4_clip_0",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0002_arm01_gopro1_20200322_222554_beh7_ani1_ins1_cut_1_tr2_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0047_arm01_gopro1_20200322_235424_beh7_ani1_ins1_cut_1_tr10_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0047_arm01_gopro1_20200322_235424_beh7_ani1_ins1_cut_1_tr12_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0002_arm01_gopro1_20200322_222554_beh7_ani1_ins1_cut_1_tr12_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0002_arm01_gopro1_20200322_222554_beh7_ani1_ins1_cut_1_tr5_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0004_arm01_gopro1_20200322_222554_beh1_ani2_ins1_cut_39_tr7_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0047_arm01_gopro1_20200322_235424_beh7_ani1_ins1_cut_1_tr7_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0047_arm01_gopro1_20200322_235424_beh7_ani1_ins1_cut_1_tr8_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0051_arm01_gopro1_20200322_235424_beh8_ani1_ins2_cut_3_tr4_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_1_1_clip_0",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0040_arm01_gopro1_20200322_233642_beh7_ani8_ins1_cut_4_tr4_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_1282_arm01_gopro3_20200326_033755_beh8_ani1_ins1_cut_00001_tr1_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_104_2_clip_0",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0040_arm01_gopro1_20200322_233642_beh7_ani8_ins1_cut_1_tr0_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "beef_1_4_clip_0",
+      "dataset": "beef",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0040_arm01_gopro1_20200322_233642_beh7_ani8_ins1_cut_1_tr4_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0482_arm01_gopro1_20200324_020435_beh9_ani5_ins1_cut_1_tr9_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    },
+    {
+      "sample_id": "cvb_0680_arm01_gopro1_20200325_002001_beh8_ani8_ins4_cut_2_tr4_seg0",
+      "dataset": "cvb",
+      "min_iou": 1.0,
+      "mean_iou": 1.0,
+      "max_rgb_diff": 0
+    }
+  ],
+  "md_report": "# Scientific Equivalence Audit: Serial Reference vs Fast Caching Path\n\n**Date:** 2026-09-23 21:23:30  \n**Target GPU:** NVIDIA L40S  \n**Candidate Sequences Evaluated:** 40 (Certified balanced smoke subset: 30 train, 10 val)  \n**Total Frames Evaluated:** 304 (38 retained sequences * 8 frames)  \n**Equivalence Status:** **PASS (CERTIFIED)**  \n\n---\n\n## 1. Executive Summary\nValidated the single-GPU optimized fast perception caching pipeline against the certified serial reference implementation on the exact 40-sequence balanced smoke subset. The fast path incorporates:\n1. **Monotonic single-pass Beef video decoding**: eliminates repeated `cap.set` seeking calls while producing bit-identical video frames.\n2. **Batched RT-DETR-L detection**: feeds all 8 frames in a single batch forward pass (`conf=0.25`, COCO cow `class=19`) with independent per-frame largest-box selection.\n3. **Validated SAM 2.1 Small prompt execution**: exact GT bbox prompts for CVB and exact A5 / center-point fallback prompts for Kaggle Beef.\n\nThe scientific equivalence gate requirements were met with zero discrepancies in dataset partitioning decisions:\n- **Retained Sequence IDs**: 100% agreement (38/38)\n- **Excluded Sequence IDs**: 100% agreement (2/2)\n- **Sampled Frame Indices**: 100% bit-identical across all 320 frames\n- **Prompt Strategy**: 100% identical (192 CVB GT bbox, 93 Beef A5, 19 Beef center fallback)\n- **Minimum Mask IoU**: **1.000000** (Target: >= 0.999)\n- **Mean Mask IoU**: **1.000000**\n- **Exact Mask Equality Rate**: **100.00%**\n- **Maximum RGB Pixel Diff**: **0**\n\n---\n\n## 2. Quantitative Equivalence Gate Metrics\n\n| Metric | Target | Serial Reference | Fast Optimized | Equivalence Result |\n| :--- | :--- | :--- | :--- | :--- |\n| **Retained Sequences** | 38 | 38 | 38 | **100% Match** |\n| **Excluded Sequences** | 2 | 2 | 2 | **100% Match** |\n| **Sampled Frame Indices** | 100% Match | 320 / 320 | 320 / 320 | **100% Match** |\n| **CVB GT Prompt Frames** | 192 | 192 | 192 | **100% Match** |\n| **Beef A5 Prompt Frames** | 93 | 93 | 93 | **100% Match** |\n| **Beef Fallback Frames** | 19 | 19 | 19 | **100% Match** |\n| **Minimum Mask IoU** | >= 0.999 | 1.000000 | **1.000000** | **PASS** |\n| **Mean Mask IoU** | >= 0.999 | 1.000000 | **1.000000** | **PASS** |\n| **Exact Mask Equality** | High | 100% | **100.00%** | **PASS** |\n| **Max RGB Pixel Diff** | <= 1 | 0 | **0** | **PASS** |\n\n---\n\n## 3. Throughput & Speedup Comparison on NVIDIA L40S\n\n| Metric | Serial Reference | Fast Optimized | Gain / Speedup |\n| :--- | :--- | :--- | :--- |\n| **Wall-clock Runtime (40 seqs)** | 17.04 s | **13.32 s** | **1.28x Faster** |\n| **Sec / Attempted Candidate** | 0.426 s/cand | **0.333 s/cand** | -0.093 s |\n| **Attempted Candidates / Min** | 140.8 cand/min | **180.1 cand/min** | +39.3 cand/min |\n| **Frames / Second** | 17.8 fps | **22.8 fps** | **1.28x Throughput** |\n| **Projected Full Cache Time (4,465)** | 0.53 hours | **0.41 hours** | -0.12 hours |\n\n---\n"
+}

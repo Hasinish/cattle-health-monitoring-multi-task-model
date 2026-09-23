@@ -406,6 +406,222 @@ def extract_cvb_perception_sequence(
 
 
 # ==============================================================================
+# FAST PERCEPTION EXTRACTION: CVB (PRE-CHECK BBOXES + BATCHED/PRELOADED I/O)
+# ==============================================================================
+def extract_cvb_perception_sequence_fast(
+    rec: dict,
+    cvb_dir: Path,
+    ann_cache: CVBExactAnnotationCache,
+    sam_model: Any,
+    num_frames: int = 8,
+    device: str = "cuda",
+) -> Tuple[Optional[List[np.ndarray]], Optional[List[np.ndarray]], List[Dict[str, Any]]]:
+    """
+    Optimized single-GPU fast extraction for CVB:
+      - Validates all 8 target GT bboxes before loading any 1080p images
+      - Preloads images
+      - Executes SAM 2.1 Small with exact GT bbox prompt on full frame
+      - Crops both RGB and mask to target bbox, resizes to 224x224
+    Guarantees bit-identical output to extract_cvb_perception_sequence.
+    """
+    cut_name = str(rec["session_id"])
+    track_id = int(rec["tracklet_id"])
+    start_f = int(rec["start_frame"])
+    end_f = int(rec["end_frame"])
+    sample_id = str(rec["sample_id"])
+
+    frame_indices = compute_sampled_frame_indices(start_f, end_f, num_frames=num_frames)
+
+    # 1. Pre-check all exact target GT bboxes to avoid wasted image decoding
+    bboxes = []
+    for t_step, f_idx in enumerate(frame_indices):
+        bbox = ann_cache.get_exact_target_bbox(cut_name, track_id, f_idx)
+        if bbox is None:
+            frame_meta = {
+                "sample_id": sample_id,
+                "dataset": "cvb",
+                "t": t_step,
+                "frame_index": f_idx,
+                "tracklet_id": track_id,
+                "bbox": None,
+                "prompt_strategy": "cvb_gt_bbox",
+                "fallback_used": False,
+                "mask_success": False,
+                "mask_pixels": 0,
+                "mask_area_ratio": 0.0,
+                "failure_reason": "exact_target_bbox_missing",
+            }
+            return None, None, [frame_meta]
+        bboxes.append(bbox)
+
+    # 2. Preload frames
+    raw_images = []
+    for t_step, f_idx in enumerate(frame_indices):
+        img_path = resolve_cvb_frame_path(cvb_dir, cut_name, f_idx)
+        if img_path is None:
+            frame_meta = {
+                "sample_id": sample_id,
+                "dataset": "cvb",
+                "t": t_step,
+                "frame_index": f_idx,
+                "tracklet_id": track_id,
+                "bbox": None,
+                "prompt_strategy": "cvb_gt_bbox",
+                "fallback_used": False,
+                "mask_success": False,
+                "mask_pixels": 0,
+                "mask_area_ratio": 0.0,
+                "failure_reason": "frame_image_not_found",
+            }
+            return None, None, [frame_meta]
+        img_bgr = cv2.imread(str(img_path))
+        if img_bgr is None:
+            frame_meta = {
+                "sample_id": sample_id,
+                "dataset": "cvb",
+                "t": t_step,
+                "frame_index": f_idx,
+                "tracklet_id": track_id,
+                "bbox": None,
+                "prompt_strategy": "cvb_gt_bbox",
+                "fallback_used": False,
+                "mask_success": False,
+                "mask_pixels": 0,
+                "mask_area_ratio": 0.0,
+                "failure_reason": "frame_decode_failed",
+            }
+            return None, None, [frame_meta]
+        raw_images.append(img_bgr)
+
+    rgb_crops = []
+    mask_crops = []
+    frame_records = []
+
+    # 3. Prompt SAM 2.1 Small using target GT bbox on full frame
+    for t_step, (f_idx, bbox, img_bgr) in enumerate(zip(frame_indices, bboxes, raw_images)):
+        frame_meta = {
+            "sample_id": sample_id,
+            "dataset": "cvb",
+            "t": t_step,
+            "frame_index": f_idx,
+            "tracklet_id": track_id,
+            "bbox": None,
+            "prompt_strategy": "cvb_gt_bbox",
+            "fallback_used": False,
+            "mask_success": False,
+            "mask_pixels": 0,
+            "mask_area_ratio": 0.0,
+            "failure_reason": None,
+        }
+
+        img_h, img_w = img_bgr.shape[:2]
+        x1 = max(0, min(int(round(bbox[0])), img_w - 1))
+        y1 = max(0, min(int(round(bbox[1])), img_h - 1))
+        x2 = max(x1 + 1, min(int(round(bbox[2])), img_w))
+        y2 = max(y1 + 1, min(int(round(bbox[3])), img_h))
+        clean_box = [float(x1), float(y1), float(x2), float(y2)]
+        frame_meta["bbox"] = json.dumps(clean_box)
+
+        try:
+            sam_res = sam_model(img_bgr, bboxes=[clean_box], device=device, verbose=False)
+            if sam_res[0].masks is not None and len(sam_res[0].masks.data) > 0:
+                raw_mask = sam_res[0].masks.data[0].cpu().numpy().astype(bool)
+                if raw_mask.shape != (img_h, img_w):
+                    full_mask = cv2.resize(raw_mask.astype(np.uint8), (img_w, img_h), interpolation=cv2.INTER_NEAREST).astype(bool)
+                else:
+                    full_mask = raw_mask
+            else:
+                full_mask = None
+        except Exception as e:
+            frame_meta["failure_reason"] = f"sam_inference_error_{str(e)[:30]}"
+            frame_records.append(frame_meta)
+            return None, None, frame_records
+
+        if full_mask is None or np.sum(full_mask) == 0:
+            frame_meta["failure_reason"] = "sam_returned_empty_mask"
+            frame_records.append(frame_meta)
+            return None, None, frame_records
+
+        # Spatially aligned cow crop
+        rgb_crop = img_bgr[y1:y2, x1:x2]
+        mask_crop = full_mask[y1:y2, x1:x2]
+
+        if np.sum(mask_crop) == 0:
+            frame_meta["failure_reason"] = "crop_mask_empty"
+            frame_records.append(frame_meta)
+            return None, None, frame_records
+
+        # Resize both to 224x224
+        rgb_224 = cv2.resize(rgb_crop, (224, 224), interpolation=cv2.INTER_LINEAR)
+        mask_224 = cv2.resize(mask_crop.astype(np.uint8), (224, 224), interpolation=cv2.INTER_NEAREST)
+
+        pix_count = int(np.sum(mask_224 > 0))
+        if pix_count == 0 or pix_count == (224 * 224):
+            frame_meta["failure_reason"] = "mask_trivial_zero_or_all_ones"
+            frame_records.append(frame_meta)
+            return None, None, frame_records
+
+        frame_meta["mask_success"] = True
+        frame_meta["mask_pixels"] = pix_count
+        frame_meta["mask_area_ratio"] = round(float(pix_count) / (224 * 224), 4)
+
+        rgb_crops.append(rgb_224)
+        mask_crops.append((mask_224 > 0).astype(np.uint8))
+        frame_records.append(frame_meta)
+
+    return rgb_crops, mask_crops, frame_records
+
+
+# ==============================================================================
+# MONOTONIC VIDEO DECODER: KAGGLE BEEF
+# ==============================================================================
+def decode_beef_video_monotonic(
+    vid_path: Path,
+    frame_indices: List[int],
+) -> Optional[List[np.ndarray]]:
+    """
+    Decodes the requested frame indices from vid_path in a single forward pass.
+    Advances monotonically without calling cap.set(CAP_PROP_POS_FRAMES) repeatedly.
+    Guarantees:
+      - Opens video container exactly once
+      - Forward monotonic reading (cap.read() on target frames, cap.grab() on skipped frames)
+      - Returns frames in exact order of frame_indices (supports duplicate indices cleanly)
+      - Zero backward seeks
+    """
+    cap = cv2.VideoCapture(str(vid_path))
+    if not cap.isOpened():
+        return None
+
+    # Map each unique target frame index to the list of output positions
+    target_pos: Dict[int, List[int]] = {}
+    for pos, idx in enumerate(frame_indices):
+        target_pos.setdefault(idx, []).append(pos)
+
+    frames: List[Optional[np.ndarray]] = [None] * len(frame_indices)
+    curr_frame = 0
+    max_target = max(frame_indices) if frame_indices else -1
+
+    while curr_frame <= max_target:
+        if curr_frame in target_pos:
+            ret, frame = cap.read()
+            if not ret or frame is None:
+                cap.release()
+                return None
+            for pos in target_pos[curr_frame]:
+                frames[pos] = frame
+        else:
+            ret = cap.grab()
+            if not ret:
+                cap.release()
+                return None
+        curr_frame += 1
+
+    cap.release()
+    if any(f is None for f in frames):
+        return None
+    return frames
+
+# ==============================================================================
 # PERCEPTION EXTRACTION: KAGGLE BEEF
 # ==============================================================================
 def extract_beef_perception_sequence(
@@ -593,6 +809,213 @@ def extract_beef_perception_sequence(
 
 
 # ==============================================================================
+# FAST PERCEPTION EXTRACTION: KAGGLE BEEF (MONOTONIC DECODE + BATCHED RT-DETR)
+# ==============================================================================
+def extract_beef_perception_sequence_fast(
+    rec: dict,
+    beef_dir: Path,
+    rtdetr_model: Any,
+    sam_model: Any,
+    num_frames: int = 8,
+    device: str = "cuda",
+) -> Tuple[Optional[List[np.ndarray]], Optional[List[np.ndarray]], List[Dict[str, Any]]]:
+    """
+    Optimized single-GPU fast extraction for Kaggle Beef clips.
+    Preserves exact scientific perception policy:
+      - T=8 temporal sampling (compute_sampled_frame_indices)
+      - Monotonic single-pass video decode (zero seek jitter)
+      - Batched RT-DETR-L (batch size = 8 frames in single forward pass)
+      - Exact largest-box selection per frame (conf=0.25, class=19)
+      - Exact A5 (largest box + center point) vs fallback (112, 112 center point) prompt selection
+      - SAM 2.1 Small inference with exact prompts
+      - Identical output resize (224x224), mask validation, and per-frame provenance metadata
+    """
+    rel_path = str(rec["source_path"])
+    sample_id = str(rec["sample_id"])
+    vid_path = resolve_beef_video_path(beef_dir, rel_path)
+
+    frame_records = []
+    if vid_path is None:
+        frame_records.append({
+            "sample_id": sample_id,
+            "dataset": "beef_cattle_behavior",
+            "t": 0,
+            "frame_index": 0,
+            "tracklet_id": None,
+            "bbox": None,
+            "prompt_strategy": "beef_unresolved",
+            "fallback_used": False,
+            "mask_success": False,
+            "mask_pixels": 0,
+            "mask_area_ratio": 0.0,
+            "failure_reason": "video_file_not_found",
+        })
+        return None, None, frame_records
+
+    # Determine frame count exactly as in reference serial code
+    cap = cv2.VideoCapture(str(vid_path))
+    cap_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    cap.release()
+
+    n_frames = int(rec.get("n_frames", 250))
+    max_f = min(cap_frames - 1, n_frames - 1) if cap_frames > 0 else n_frames - 1
+    frame_indices = compute_sampled_frame_indices(0, max(0, max_f), num_frames=num_frames)
+
+    # 1. Monotonic single-pass decode
+    raw_frames = decode_beef_video_monotonic(vid_path, frame_indices)
+    if raw_frames is None or len(raw_frames) != num_frames:
+        frame_meta = {
+            "sample_id": sample_id,
+            "dataset": "beef_cattle_behavior",
+            "t": 0,
+            "frame_index": frame_indices[0] if frame_indices else 0,
+            "tracklet_id": None,
+            "bbox": None,
+            "prompt_strategy": None,
+            "fallback_used": False,
+            "mask_success": False,
+            "mask_pixels": 0,
+            "mask_area_ratio": 0.0,
+            "failure_reason": "video_read_frame_failed",
+        }
+        return None, None, [frame_meta]
+
+    # 2. Batched RT-DETR-L detection across all 8 frames
+    try:
+        rt_results = rtdetr_model(raw_frames, conf=0.25, classes=[19], verbose=False, device=device)
+    except Exception as e:
+        frame_meta = {
+            "sample_id": sample_id,
+            "dataset": "beef_cattle_behavior",
+            "t": 0,
+            "frame_index": frame_indices[0],
+            "tracklet_id": None,
+            "bbox": None,
+            "prompt_strategy": None,
+            "fallback_used": False,
+            "mask_success": False,
+            "mask_pixels": 0,
+            "mask_area_ratio": 0.0,
+            "failure_reason": f"rtdetr_inference_error_{str(e)[:30]}",
+        }
+        return None, None, [frame_meta]
+
+    rgb_frames = []
+    mask_frames = []
+
+    # 3. Process each frame: prompt determination and SAM inference
+    for t_step, f_idx in enumerate(frame_indices):
+        frame_meta = {
+            "sample_id": sample_id,
+            "dataset": "beef_cattle_behavior",
+            "t": t_step,
+            "frame_index": f_idx,
+            "tracklet_id": None,
+            "bbox": None,
+            "prompt_strategy": None,
+            "fallback_used": False,
+            "mask_success": False,
+            "mask_pixels": 0,
+            "mask_area_ratio": 0.0,
+            "failure_reason": None,
+        }
+
+        frame_bgr = raw_frames[t_step]
+        img_h, img_w = frame_bgr.shape[:2]
+        boxes_obj = rt_results[t_step].boxes
+
+        if len(boxes_obj) > 0:
+            xyxy_arr = boxes_obj.xyxy.cpu().numpy()
+            areas = (xyxy_arr[:, 2] - xyxy_arr[:, 0]) * (xyxy_arr[:, 3] - xyxy_arr[:, 1])
+            best_idx = int(np.argmax(areas))
+            largest_box = [round(float(c), 1) for c in xyxy_arr[best_idx].tolist()]
+            box_cx = round(float((largest_box[0] + largest_box[2]) / 2.0), 1)
+            box_cy = round(float((largest_box[1] + largest_box[3]) / 2.0), 1)
+
+            pts = np.array([[[box_cx, box_cy]]], dtype=np.float32)
+            lbls = np.array([[1]], dtype=np.int32)
+            prompt_strategy = "beef_A5_rtdetr_box_center_point"
+            fallback_used = False
+            used_bbox = largest_box
+
+            try:
+                sam_res = sam_model(
+                    frame_bgr,
+                    bboxes=[largest_box],
+                    points=pts,
+                    labels=lbls,
+                    device=device,
+                    verbose=False,
+                )
+            except Exception as e:
+                frame_meta["failure_reason"] = f"sam_a5_error_{str(e)[:30]}"
+                frame_records.append(frame_meta)
+                return None, None, frame_records
+        else:
+            # Fallback: center point (112, 112)
+            cx, cy = 112.0, 112.0
+            pts = np.array([[[cx, cy]]], dtype=np.float32)
+            lbls = np.array([[1]], dtype=np.int32)
+            prompt_strategy = "beef_center_point_fallback"
+            fallback_used = True
+            used_bbox = None
+
+            try:
+                sam_res = sam_model(
+                    frame_bgr,
+                    points=pts,
+                    labels=lbls,
+                    device=device,
+                    verbose=False,
+                )
+            except Exception as e:
+                frame_meta["failure_reason"] = f"sam_fallback_error_{str(e)[:30]}"
+                frame_records.append(frame_meta)
+                return None, None, frame_records
+
+        frame_meta["prompt_strategy"] = prompt_strategy
+        frame_meta["fallback_used"] = fallback_used
+        frame_meta["bbox"] = json.dumps(used_bbox) if used_bbox else None
+
+        # Parse SAM mask
+        if sam_res[0].masks is not None and len(sam_res[0].masks.data) > 0:
+            raw_mask = sam_res[0].masks.data[0].cpu().numpy().astype(bool)
+            if raw_mask.shape != (img_h, img_w):
+                mask_224 = cv2.resize(raw_mask.astype(np.uint8), (img_w, img_h), interpolation=cv2.INTER_NEAREST)
+            else:
+                mask_224 = raw_mask.astype(np.uint8)
+        else:
+            mask_224 = None
+
+        if mask_224 is None or np.sum(mask_224) == 0:
+            frame_meta["failure_reason"] = "sam_returned_empty_mask"
+            frame_records.append(frame_meta)
+            return None, None, frame_records
+
+        # Ensure 224x224
+        if (img_h, img_w) != (224, 224):
+            frame_224 = cv2.resize(frame_bgr, (224, 224), interpolation=cv2.INTER_LINEAR)
+            mask_224 = cv2.resize(mask_224, (224, 224), interpolation=cv2.INTER_NEAREST)
+        else:
+            frame_224 = frame_bgr
+
+        pix_count = int(np.sum(mask_224 > 0))
+        if pix_count == 0 or pix_count == (224 * 224):
+            frame_meta["failure_reason"] = "mask_trivial_zero_or_all_ones"
+            frame_records.append(frame_meta)
+            return None, None, frame_records
+
+        frame_meta["mask_success"] = True
+        frame_meta["mask_pixels"] = pix_count
+        frame_meta["mask_area_ratio"] = round(float(pix_count) / (224 * 224), 4)
+
+        rgb_frames.append(frame_224)
+        mask_frames.append((mask_224 > 0).astype(np.uint8))
+        frame_records.append(frame_meta)
+
+    return rgb_frames, mask_frames, frame_records
+
+# ==============================================================================
 # BATCH PERCEPTION CACHE BUILDER
 # ==============================================================================
 def build_behavior_perception_cache(
@@ -611,6 +1034,7 @@ def build_behavior_perception_cache(
     clean_corrupt_folders: bool = True,
     save_progressive_manifest: bool = True,
     split_name: Optional[str] = None,
+    use_fast_path: bool = True,
 ) -> Tuple[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
     """
     Builds the authentic perception cache for df (train, val, or benchmark sequences).
@@ -627,6 +1051,11 @@ def build_behavior_perception_cache(
     """
     cache_dir.mkdir(parents=True, exist_ok=True)
     ann_cache = CVBExactAnnotationCache(cvb_dir)
+
+    import torch
+    if torch.cuda.is_available():
+        torch.backends.cudnn.allow_tf32 = False
+        torch.backends.cuda.matmul.allow_tf32 = False
 
     # Initialize models if not provided
     if rtdetr_model is None or sam_model is None:
@@ -729,13 +1158,23 @@ def build_behavior_perception_cache(
 
         rec = row.to_dict()
         if dataset_name == "cvb":
-            rgb_seq, mask_seq, frame_records = extract_cvb_perception_sequence(
-                rec, cvb_dir, ann_cache, sam_model, num_frames=num_frames, device=device
-            )
+            if use_fast_path:
+                rgb_seq, mask_seq, frame_records = extract_cvb_perception_sequence_fast(
+                    rec, cvb_dir, ann_cache, sam_model, num_frames=num_frames, device=device
+                )
+            else:
+                rgb_seq, mask_seq, frame_records = extract_cvb_perception_sequence(
+                    rec, cvb_dir, ann_cache, sam_model, num_frames=num_frames, device=device
+                )
         elif dataset_name == "beef_cattle_behavior":
-            rgb_seq, mask_seq, frame_records = extract_beef_perception_sequence(
-                rec, beef_dir, rtdetr_model, sam_model, num_frames=num_frames, device=device
-            )
+            if use_fast_path:
+                rgb_seq, mask_seq, frame_records = extract_beef_perception_sequence_fast(
+                    rec, beef_dir, rtdetr_model, sam_model, num_frames=num_frames, device=device
+                )
+            else:
+                rgb_seq, mask_seq, frame_records = extract_beef_perception_sequence(
+                    rec, beef_dir, rtdetr_model, sam_model, num_frames=num_frames, device=device
+                )
 
         all_frame_records.extend(frame_records)
 
