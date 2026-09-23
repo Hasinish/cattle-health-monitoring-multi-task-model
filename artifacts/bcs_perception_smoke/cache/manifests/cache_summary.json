@@ -1,0 +1,13 @@
+{
+  "train": {
+    "split": "train",
+    "total_processed": 10,
+    "detected": 10,
+    "segmented": 10,
+    "detection_failures": 0,
+    "sam_failures": 0,
+    "det_rate_pct": 100.0,
+    "seg_rate_pct": 100.0,
+    "elapsed_seconds": 6.53
+  }
+}

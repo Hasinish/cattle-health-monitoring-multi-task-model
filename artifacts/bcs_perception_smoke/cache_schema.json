@@ -1,0 +1,63 @@
+{
+  "dataset": "ScienceDB Cattle BCS",
+  "task": "Phase 3 Run 4: BCS Perception-Enhanced Model",
+  "volume_name": "sciencedb-perception-cache",
+  "volume_mount": "/cache",
+  "source_volume": "sciencedb-data (/data)",
+  "canonical_splits": {
+    "train": "datasets/bcs/sciencedb/train.csv (37,045 images, 3,958 burst groups)",
+    "val": "datasets/bcs/sciencedb/val.csv (8,481 images, 850 burst groups)",
+    "test": "datasets/bcs/sciencedb/test.csv (8,040 images, 845 burst groups; STRICTLY FROZEN)"
+  },
+  "perception_pipeline": {
+    "localization_model": "RT-DETR-L (rtdetr-l.pt, COCO class 19)",
+    "primary_cow_rule": "Maximum bounding-box area (w * h), confidence tie-breaker",
+    "margin_expansion": "5% proportional margin on each boundary: [max(0, x1 - 0.05*w), max(0, y1 - 0.05*h), min(W, x2 + 0.05*w), min(H, y2 + 0.05*h)]",
+    "segmentation_model": "SAM 2.1 Small (sam2.1_s.pt / sam2.1_hiera_small)",
+    "segmentation_prompt": "Primary cow bounding box coordinates",
+    "mask_semantics": "Binary boolean segmentation {0 = background, 1 = cow foreground}. Stored as 8-bit grayscale PNG {0, 255}. Note: Ultralytics SAM 2.1 output is discrete boolean, NOT continuous soft probability.",
+    "excluded_modalities": [
+      "SuperAnimal-Quadruped Pose: Excluded due to Step 2.3 audit demonstrating anatomically unreliable rear-view keypoints and total lack of skeletal pelvic landmarks (hooks/pins)",
+      "Viewpoint: Excluded from automatic insertion pending empirical cross-domain transfer validation on ScienceDB"
+    ]
+  },
+  "directory_structure": {
+    "crops": "/cache/crops/{split}/{class_score}/{image_stem}.jpg (JPEG Quality 95)",
+    "masks": "/cache/masks/{split}/{class_score}/{image_stem}.png (8-bit PNG, lossless)",
+    "manifests": "/cache/manifests/{split}_perception.csv",
+    "summary": "/cache/manifests/cache_summary.json"
+  },
+  "manifest_columns": {
+    "image_path": "Canonical original image path from ScienceDB split CSV",
+    "label": "Physical BCS ground-truth score (3.25, 3.50, 3.75, 4.00, 4.25)",
+    "burst_group_id": "Canonical connected-component burst group ID for anti-leakage grouping",
+    "crop_rel_path": "Relative path to cropped JPEG image within cache volume",
+    "mask_rel_path": "Relative path to binary PNG mask within cache volume",
+    "detection_status": "String flag: 'detected' if RT-DETR-L found >= 1 cow; 'no_detection' if 0 cows detected",
+    "sam_status": "String flag: 'segmented' (valid mask returned), 'sam_no_mask' (SAM produced no mask), 'upstream_localization_failure' (no detector box available)",
+    "bbox_x1": "Original detected cow box left coordinate (float, or null)",
+    "bbox_y1": "Original detected cow box top coordinate (float, or null)",
+    "bbox_x2": "Original detected cow box right coordinate (float, or null)",
+    "bbox_y2": "Original detected cow box bottom coordinate (float, or null)",
+    "crop_x1": "Margin-expanded crop boundary left (int)",
+    "crop_y1": "Margin-expanded crop boundary top (int)",
+    "crop_x2": "Margin-expanded crop boundary right (int)",
+    "crop_y2": "Margin-expanded crop boundary bottom (int)",
+    "confidence": "RT-DETR-L detection confidence score (float, 0.0 to 1.0)",
+    "num_cow_detections": "Total number of cows detected in the source frame (int)",
+    "mask_area_ratio": "Ratio of foreground cow mask pixels to total crop area (float, 0.0 to 1.0)",
+    "crop_w": "Width of the extracted crop (int)",
+    "crop_h": "Height of the extracted crop (int)"
+  },
+  "failure_policies": {
+    "zero_rtdetr_detections": "Explicitly recorded in manifest as 'no_detection'. Zero detector box is fabricated. Crop falls back to full image. SAM status set to 'upstream_localization_failure'.",
+    "sam_no_mask": "Explicitly recorded in manifest as 'sam_no_mask'. Empty mask saved; no synthetic mask fabricated."
+  },
+  "training_integration": {
+    "architecture": "ResNet-18 (ImageNet pretrained trunk)",
+    "conv1_modification": "nn.Conv2d(4, 64, kernel_size=7, stride=2, padding=3, bias=False)",
+    "conv1_initialization": "Channels 0-2 from ImageNet; Channel 3 from channel-mean of ImageNet conv1 weights (or zero)",
+    "parameter_count": "11,181,700 total parameters (+3,136 parameters vs 11,178,564 baseline; +0.028%)",
+    "input_channels": "Channels 0-2 = RGB normalized with ImageNet mean/std; Channel 3 = SAM 2.1 mask in [0.0, 1.0]"
+  }
+}

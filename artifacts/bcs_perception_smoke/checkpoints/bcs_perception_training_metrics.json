@@ -1,0 +1,164 @@
+{
+  "model_type": "ResNet18BCSPerception_4Ch",
+  "parameters": 11181700,
+  "parameter_delta": 5188,
+  "epochs_trained": 2,
+  "best_epoch": 2,
+  "best_val_real_mae": 0.25,
+  "best_metrics": {
+    "epoch": 2,
+    "train_loss": 0.5765,
+    "val_loss": 0.6816,
+    "real_mae": 0.25,
+    "acc_0": 0.3,
+    "acc_1": 0.7,
+    "balanced_accuracy": 0.3,
+    "macro_f1": 0.2,
+    "precision": 0.1667,
+    "recall": 0.3,
+    "confusion_matrix": [
+      [
+        0,
+        1,
+        1,
+        0,
+        0
+      ],
+      [
+        0,
+        2,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        2,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        1,
+        0,
+        1,
+        0
+      ],
+      [
+        0,
+        0,
+        1,
+        1,
+        0
+      ]
+    ],
+    "lr": 1e-06,
+    "epoch_time_s": 0.61,
+    "best_epoch": 2
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.7255,
+      "val_loss": 0.6732,
+      "real_mae": 0.275,
+      "acc_0": 0.3,
+      "acc_1": 0.7,
+      "balanced_accuracy": 0.3,
+      "macro_f1": 0.2143,
+      "precision": 0.18,
+      "recall": 0.3,
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          1,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          1,
+          0
+        ]
+      ],
+      "lr": 5.1e-05,
+      "epoch_time_s": 0.93
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.5765,
+      "val_loss": 0.6816,
+      "real_mae": 0.25,
+      "acc_0": 0.3,
+      "acc_1": 0.7,
+      "balanced_accuracy": 0.3,
+      "macro_f1": 0.2,
+      "precision": 0.1667,
+      "recall": 0.3,
+      "confusion_matrix": [
+        [
+          0,
+          1,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          1,
+          0
+        ]
+      ],
+      "lr": 1e-06,
+      "epoch_time_s": 0.61
+    }
+  ]
+}

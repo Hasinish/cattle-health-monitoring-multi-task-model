@@ -1,3 +1,15 @@
+# Session Summary — 2026-09-24 (ScienceDB BCS Perception Pipeline Prepared & Smoke-Tested for Run 4)
+
+- Convo ID: `3ec35c2e-9eec-4b84-811f-b48cb01a486b`
+- Implemented ScienceDB perception cache engine (`scripts/build_sciencedb_perception_cache.py`) extracting primary cow bounding-box crops via RT-DETR-L (max area, confidence tie-breaker, 5% proportional margin) and binary foreground masks via SAM 2.1.
+- Resolved mask semantics empirically: verified Ultralytics SAM 2.1 outputs strictly boolean masks {0, 1}; documented as binary foreground segmentation (not continuous probability).
+- Excluded SuperAnimal pose from BCS based on audited rear-view chute unreliability and missing pelvic skeletal landmarks.
+- Excluded viewpoint from automatic insertion pending empirical cross-domain transfer validation.
+- Implemented 4-channel ResNet-18 training engine (`scripts/train_sciencedb_bcs_perception.py`) with Ordinal BCE head: channels 0-2 from ImageNet, channel 3 initialized from conv1 channel mean (+3,136 params, 11,181,700 vs 11,178,564 baseline).
+- Executed 10-sample local smoke test across all 5 BCS classes: verified forward/backward loss backpropagation (Val MAE: 0.2500, Acc@1: 70.0%), 100% bit-identical checkpoint save/resume, and generated 4-panel visual contact sheet (`docs/audits/assets/bcs_perception/bcs_perception_contact_sheet.jpg`).
+- Prepared Modal cloud wrapper (`scripts/modal_train_sciencedb_bcs_perception.py`) mounting `sciencedb-data`, `sciencedb-perception-cache`, and `sciencedb-checkpoints` on profile `tigerwood697`.
+- Zero full training or paid Modal runs launched.
+
 # Session Summary — 2026-09-23 (Real Viewpoint MOO Transfer Fine-Tuning & Held-Out Test Evaluation 100% Complete)
 
 - Convo ID: `3ec35c2e-9eec-4b84-811f-b48cb01a486b`
