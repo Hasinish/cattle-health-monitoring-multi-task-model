@@ -226,6 +226,8 @@ Reference materials, prior sample defense posters, and official CSE400 formattin
 - `MODAL_PROFILES.md`: Cheatsheet and multi-account mapping across all 6 Modal profiles (`tigerwood693`, `tigerwood697`, `hasinishrak74001`, `dryousufmozumder`, `hasinishrak2015`, `mohtasimahmedsamii`) with role descriptions, command reference, and grant tracking.
 ### `scripts/`
 Automation utilities for batch experiments, metric aggregation, dataset restoration, and environment setup.
+- `train_cvb_beef_behavior_tcn.py`: Phase 3 Run 5 Behavior Temporal Core training and verification pipeline. Couples ImageNet-pretrained ResNet-18 (512-D per frame) with lightweight 1D TCN (2 Conv1d blocks, GELU, BatchNorm1d, Dropout=0.2, AdaptiveAvgPool1d, Linear head; 11,900,485 trainable params). Extensible `FrameFeatureExtractor` supporting `in_channels=4` for future binary mask guidance without modifying TCN. Implements deterministic T=8 temporal sampling, authentic CVB target tracklet bbox preservation, and Kaggle Beef single-cow clip sampling.
+- `modal_train_cvb_beef_behavior_tcn.py`: Modal cloud wrapper for Run 5 Behavior Temporal Core smoke test on profile `tigerwood693` (NVIDIA T4 GPU, 2 CPUs, 4GB RAM), mounting `cvb-data`, `beef-behavior-data`, and `behavior-checkpoints`.
 - `crop_self_viewpoint_rtdetr.py`: Standalone reproducible RT-DETR-L cattle localization and cropping pipeline with 5% margin expansion for `self_clean_v1/`, generating 879 crops in `self_clean_v1_rtdetr_crop/`.
 - `build_viewpoint_crop_splits.py`: Deterministic Seed-2026 group-stratified train/val/test split generator partitioned strictly by `duplicate_group_id` for `self_clean_v1_rtdetr_crop/` with 0 cross-split leakage.
 - `upload_viewpoint_crops_modal.py`: Resumable live-progress Modal volume uploader for `self_clean_v1_rtdetr_crop/` to volume `viewpoint-real-data` on profile `tigerwood693`, with automated zero-GPU verification container.
@@ -292,6 +294,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 
 ### `artifacts/`
 Generated manifests, audit CSVs, and model evaluation outputs.
+- `behavior_temporal_smoke/`: Phase 3 Run 5 Behavior Temporal Core smoke test artifacts on profile `tigerwood693` (NVIDIA T4), containing `behavior_tcn_metrics.json` (architecture parameters, balanced smoke counts by dataset and class, loss, validation metrics, and bit-identical checkpoint reload verification) and `temporal_samples_contact_sheet.jpg` (visual verification of 8-frame progression across CVB and Beef sequences).
 - `bcs_baseline/`: Phase 3 single-task ScienceDB BCS baseline outputs, containing `bcs_baseline_metrics.json` (structured training curves, provenance metadata, split hashes, full 30-epoch history, per-class metrics, and confusion matrix), `bcs_baseline_30epoch_summary.md` (30-epoch training and test evaluation report), and `bcs_baseline_smoke_summary.md` (smoke test summary).
 - `bcs_perception_smoke/`: Phase 3 Run 4 BCS perception pipeline smoke test artifacts, containing `cache_schema.json` (canonical 18-column manifest schema defining crop geometry, detection status, SAM return codes, and fallback semantics), smoke split CSVs, metrics, and checkpoint resumption logs.
 - `perception_audit/`:

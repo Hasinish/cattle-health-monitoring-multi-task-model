@@ -1,0 +1,165 @@
+{
+  "status": "SMOKE_SUCCESS",
+  "task": "Phase 3 Run 5 Temporal Core Smoke Test",
+  "mode": "smoke",
+  "architecture": {
+    "backbone": "ImageNet-pretrained ResNet-18 (512-D features per frame)",
+    "temporal_module": "1D TCN (2 Conv1d blocks, GELU, BatchNorm1d, Dropout=0.2, AdaptiveAvgPool1d, Linear head)",
+    "sequence_length_T": 8,
+    "input_resolution": "224x224 RGB",
+    "backbone_params": 11176512,
+    "tcn_params": 723973,
+    "total_trainable_params": 11900485,
+    "mask_readiness": "in_channels=4 supported in FrameFeatureExtractor without modifying TCN"
+  },
+  "temporal_sampling_rule": "Deterministic: T=8 approximately evenly spaced frames selected across [start_frame, end_frame]. CVB preserves target tracklet identity using authentic per-frame bboxes. Kaggle Beef samples directly from single-cow video clips.",
+  "smoke_dataset_counts": {
+    "train": {
+      "total": 30,
+      "by_source": {
+        "cvb": 18,
+        "beef_cattle_behavior": 12
+      },
+      "by_class": {
+        "Standing": 6,
+        "Lying": 6,
+        "Feeding": 6,
+        "Drinking": 6,
+        "Walking": 6
+      },
+      "by_source_and_class": {
+        "beef_cattle_behavior_Drinking": 3,
+        "beef_cattle_behavior_Feeding": 3,
+        "beef_cattle_behavior_Lying": 3,
+        "beef_cattle_behavior_Standing": 3,
+        "cvb_Drinking": 3,
+        "cvb_Feeding": 3,
+        "cvb_Lying": 3,
+        "cvb_Standing": 3,
+        "cvb_Walking": 6
+      }
+    },
+    "val": {
+      "total": 10,
+      "by_source": {
+        "cvb": 6,
+        "beef_cattle_behavior": 4
+      },
+      "by_class": {
+        "Standing": 2,
+        "Lying": 2,
+        "Feeding": 2,
+        "Drinking": 2,
+        "Walking": 2
+      },
+      "by_source_and_class": {
+        "beef_cattle_behavior_Drinking": 1,
+        "beef_cattle_behavior_Feeding": 1,
+        "beef_cattle_behavior_Lying": 1,
+        "beef_cattle_behavior_Standing": 1,
+        "cvb_Drinking": 1,
+        "cvb_Feeding": 1,
+        "cvb_Lying": 1,
+        "cvb_Standing": 1,
+        "cvb_Walking": 2
+      }
+    }
+  },
+  "best_epoch": 2,
+  "best_val_metrics": {
+    "overall_accuracy": 0.3,
+    "balanced_accuracy": 0.3,
+    "macro_f1": 0.2667,
+    "per_class": {
+      "Standing": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "Lying": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6667,
+        "support": 2
+      },
+      "Feeding": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 2
+      },
+      "Drinking": {
+        "precision": 0.25,
+        "recall": 0.5,
+        "f1": 0.3333,
+        "support": 2
+      },
+      "Walking": {
+        "precision": 0.25,
+        "recall": 0.5,
+        "f1": 0.3333,
+        "support": 2
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        1
+      ],
+      [
+        0,
+        0,
+        0,
+        1,
+        1
+      ]
+    ],
+    "cvb_metrics": {
+      "support": 6,
+      "overall_accuracy": 0.3333,
+      "balanced_accuracy": 0.3,
+      "macro_f1": 0.2667
+    },
+    "beef_metrics": {
+      "support": 4,
+      "overall_accuracy": 0.25,
+      "balanced_accuracy": 0.25,
+      "macro_f1": 0.125
+    },
+    "walking_is_cvb_only": true
+  },
+  "max_logit_diff_after_reload": 0.0,
+  "test_csv_evaluated": false,
+  "total_duration_sec": 58.68,
+  "checkpoints": {
+    "best": "/checkpoints/behavior_temporal_smoke/behavior_tcn_best.pth",
+    "latest": "/checkpoints/behavior_temporal_smoke/behavior_tcn_latest.pth"
+  },
+  "contact_sheet": "/checkpoints/behavior_temporal_smoke/temporal_samples_contact_sheet.jpg",
+  "missing_bbox_records_count": 0
+}

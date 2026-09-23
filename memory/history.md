@@ -1,3 +1,25 @@
+# Session Summary — 2026-09-24 (Run 5 Behavior Temporal Core Implementation & T4 Smoke Test)
+
+- Convo ID: `de641380-9bcd-46ed-acad-26e9309ddb2d`
+- Objective: Implement lightweight temporal backbone (ResNet-18 + 1D TCN, T=8 frames) for Phase 3 Run 5 behavior core and execute cheap smoke test on Modal profile `tigerwood693` (T4 only).
+- Non-goals: Full perception cache, full training, touching `test.csv`, L40S, or spending significant credits.
+- Architecture implemented:
+  * FrameFeatureExtractor: ImageNet-pretrained ResNet-18 (512-D features per frame, 11,176,512 params). Designed to support in_channels=4 without rewriting TCN.
+  * TemporalConvNet: 2 Conv1d blocks with GELU, BatchNorm1d, Dropout=0.2, 1x1 projection and identity residual shortcuts, AdaptiveAvgPool1d, Linear(256, 5) head (723,973 params).
+  * Total trainable parameters: 11,900,485.
+  * No GRU, no LSTM, no Transformer, no VideoMAE, no SlowFast.
+- Deterministic temporal sampling rule: T=8 approximately evenly spaced frames across `[start_frame, end_frame]`. CVB preserves target tracklet identity using authentic per-frame GT bboxes (0 missing bboxes, 0 silent cow substitutions). Kaggle Beef samples directly from single-cow video clips. All resized to 224x224 RGB.
+- Cloud execution on Modal profile `tigerwood693` on NVIDIA T4 GPU (App `ap-S28P53jyMZxAlEkhDMLka9`):
+  * Smoke dataset: 30 train sequences (18 CVB, 12 Beef; exactly 6 per class), 10 val sequences (6 CVB, 4 Beef; exactly 2 per class).
+  * Temporal caching of 40 sequences (320 frames) completed in 49.8s.
+  * 2 epochs completed in 4.9s. Total container runtime 58.7s (82.2s app lifetime; cost ~$0.015).
+  * Validation Macro-F1: 0.2667 (best at Epoch 2).
+  * Checkpoint reload verified BIT-IDENTICALLY: Max Logit Diff = 0.00000000.
+  * Strict test-set protection verified: canonical `test.csv` (809 samples) was NEVER loaded, opened, or evaluated (`test_csv_evaluated: false`).
+  * Visual contact sheet generated and saved to `artifacts/behavior_temporal_smoke/temporal_samples_contact_sheet.jpg` and `docs/audits/assets/behavior_temporal_smoke/temporal_samples_contact_sheet.jpg`.
+- Deliverables: `scripts/train_cvb_beef_behavior_tcn.py`, `scripts/modal_train_cvb_beef_behavior_tcn.py`, `artifacts/behavior_temporal_smoke/behavior_tcn_metrics.json`, `docs/research_log/2026-09-24_cvb_beef_behavior_tcn_temporal_core_smoke_test.md`.
+- Status: Run 5 temporal core prepared and smoke-tested; full perception integration and training pending. Run 5 NOT marked complete.
+
 # Session Summary — 2026-09-24 (Run 4 BCS Perception Final Hardening: Failure Counter Consistency & Matched Baseline Evaluator)
 
 - Convo ID: `3ec35c2e-9eec-4b84-811f-b48cb01a486b`
