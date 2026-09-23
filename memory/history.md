@@ -1,3 +1,17 @@
+# Session Summary — 2026-09-23 (CVB + Kaggle Beef Behavior RGB Baseline Full 30-Epoch Training Complete)
+
+- Successfully executed full 30-epoch training and held-out test evaluation of Phase 3 Step 4.2 Behavior RGB baseline (Run 2 of 8 in Deadline Execution Plan) on Modal profile `tigerwood693` (App `ap-ZrBKKvGcVzM7IB1AYMs2LH`, NVIDIA L40S, 8 CPUs, 32GB RAM).
+- Pre-cached all midpoint crops to persistent cloud storage (`behavior-checkpoints/behavior_cache`), finishing all 30 epochs in 821.5s (~13.69m) at ~8.3s/epoch.
+- Global best validation checkpoint captured at Epoch 25 (Val Acc 87.06%, Val Bal Acc 73.40%, Val Macro-F1 0.7399).
+- Evaluated on held-out sequence-safe test split (809 unseen clips from 44 groups):
+  - Overall Accuracy: 88.88% (719 / 809 correct)
+  - Balanced Accuracy: 71.72% (>3.5x random baseline)
+  - Macro-F1: 0.7413
+  - Test Loss: 0.5312
+- Per-Class F1: Lying 0.9552, Feeding 0.9225, Drinking 0.8430, Standing 0.7684, Walking 0.2174 (CVB-only; 19/26 misclassified as feeding due to head-down grazing posture, empirically demonstrating why the temporal TCN model in Run 5 is essential).
+- Sub-Dataset Performance: Kaggle Beef: 94.06% Acc / 0.9113 Macro-F1; CVB: 84.12% Acc / 0.6541 Macro-F1.
+- Checkpoints and metrics archived on persistent volume `behavior-checkpoints`. Run 2 officially certified.
+
 # Session Summary — 2026-09-23 (Phase 3 Deadline Execution Priority Overlay Activation)
 
 - Activated Phase 3 Deadline Execution Priority Overlay for the 26 September 2026 thesis submission deadline (`phase3_deadline_execution_2026-09-26.md`).
@@ -575,6 +589,7 @@
 
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
 
+- **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Completed full 30-epoch training and test evaluation of Run 2 Behavior RGB baseline on Modal L40S (88.88% test acc, 71.72% bal acc, 0.7413 macro-F1). Certified Run 2 in deadline plan.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Activated Phase 3 Deadline Execution Priority Overlay for 26 September 2026 thesis deadline (`phase3_deadline_execution_2026-09-26.md`), focusing on the 8 minimum defensible thesis runs and deferring exhaustive ablations while preserving the canonical roadmap.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Upgraded ScienceDB RGB BCS baseline wrapper to NVIDIA L4 on Modal (`tigerwood697`, App `ap-LpbnMu603XOremldE0aTYr`). 100% passed all 6 pre-flight checks on L4 (22.03 GB VRAM). Preserved T4 audit history. Full training not launched.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Prepared full ScienceDB RGB BCS baseline training pipeline for Modal (App `ap-TrHVaxRLZvyJBANOPX4ODu`, T4). Verified 100% readiness across all 6 checks. Did not launch training.

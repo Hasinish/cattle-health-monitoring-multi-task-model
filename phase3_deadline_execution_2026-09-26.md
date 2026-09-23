@@ -26,7 +26,7 @@ To satisfy the thesis scope while respecting the strict time constraint, Phase 3
 
 ```text
                [SINGLE-TASK BASELINES]
-1. BCS RGB Baseline (Done)      2. Behavior RGB Baseline      3. Re-ID RGB Baseline
+1. BCS RGB Baseline (Done)      2. Behavior RGB Baseline (Done) 3. Re-ID RGB Baseline
          ↓                                ↓                            ↓
                [PERCEPTION-ENHANCED SINGLE-TASK]
 4. BCS Perception Model         5. Behavior Perception+TCN    6. Re-ID Perception Model

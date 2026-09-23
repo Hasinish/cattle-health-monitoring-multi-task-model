@@ -1,0 +1,186 @@
+{
+  "status": "FULL_SUCCESS",
+  "mode": "full",
+  "best_epoch": 25,
+  "best_val_metrics": {
+    "overall_accuracy": 0.8706,
+    "balanced_accuracy": 0.734,
+    "macro_f1": 0.7399,
+    "per_class": {
+      "Standing": {
+        "precision": 0.726,
+        "recall": 0.5146,
+        "f1": 0.6023,
+        "support": 103
+      },
+      "Lying": {
+        "precision": 0.9061,
+        "recall": 0.9921,
+        "f1": 0.9472,
+        "support": 253
+      },
+      "Feeding": {
+        "precision": 0.9157,
+        "recall": 0.9447,
+        "f1": 0.93,
+        "support": 253
+      },
+      "Drinking": {
+        "precision": 0.8367,
+        "recall": 0.9111,
+        "f1": 0.8723,
+        "support": 45
+      },
+      "Walking": {
+        "precision": 0.4,
+        "recall": 0.3077,
+        "f1": 0.3478,
+        "support": 26
+      }
+    },
+    "confusion_matrix": [
+      [
+        53,
+        21,
+        17,
+        5,
+        7
+      ],
+      [
+        1,
+        251,
+        0,
+        0,
+        1
+      ],
+      [
+        6,
+        4,
+        239,
+        0,
+        4
+      ],
+      [
+        4,
+        0,
+        0,
+        41,
+        0
+      ],
+      [
+        9,
+        1,
+        5,
+        3,
+        8
+      ]
+    ],
+    "cvb_metrics": {
+      "support": 312,
+      "overall_accuracy": 0.8141,
+      "balanced_accuracy": 0.7335,
+      "macro_f1": 0.6964
+    },
+    "beef_metrics": {
+      "support": 368,
+      "overall_accuracy": 0.9185,
+      "balanced_accuracy": 0.854,
+      "macro_f1": 0.7002
+    },
+    "walking_is_cvb_only": true,
+    "loss": 0.5833
+  },
+  "test_metrics": {
+    "overall_accuracy": 0.8888,
+    "balanced_accuracy": 0.7172,
+    "macro_f1": 0.7413,
+    "per_class": {
+      "Standing": {
+        "precision": 0.9481,
+        "recall": 0.646,
+        "f1": 0.7684,
+        "support": 113
+      },
+      "Lying": {
+        "precision": 0.9608,
+        "recall": 0.9496,
+        "f1": 0.9552,
+        "support": 258
+      },
+      "Feeding": {
+        "precision": 0.8647,
+        "recall": 0.9885,
+        "f1": 0.9225,
+        "support": 349
+      },
+      "Drinking": {
+        "precision": 0.8793,
+        "recall": 0.8095,
+        "f1": 0.843,
+        "support": 63
+      },
+      "Walking": {
+        "precision": 0.25,
+        "recall": 0.1923,
+        "f1": 0.2174,
+        "support": 26
+      }
+    },
+    "confusion_matrix": [
+      [
+        73,
+        9,
+        14,
+        7,
+        10
+      ],
+      [
+        1,
+        245,
+        10,
+        0,
+        2
+      ],
+      [
+        1,
+        0,
+        345,
+        0,
+        3
+      ],
+      [
+        1,
+        0,
+        11,
+        51,
+        0
+      ],
+      [
+        1,
+        1,
+        19,
+        0,
+        5
+      ]
+    ],
+    "cvb_metrics": {
+      "support": 422,
+      "overall_accuracy": 0.8412,
+      "balanced_accuracy": 0.6062,
+      "macro_f1": 0.6541
+    },
+    "beef_metrics": {
+      "support": 387,
+      "overall_accuracy": 0.9406,
+      "balanced_accuracy": 0.9084,
+      "macro_f1": 0.9113
+    },
+    "walking_is_cvb_only": true,
+    "loss": 0.5312
+  },
+  "total_duration_sec": 821.47,
+  "checkpoints": {
+    "best": "/checkpoints/behavior_baseline/behavior_baseline_best.pth",
+    "latest": "/checkpoints/behavior_baseline/behavior_baseline_latest.pth"
+  }
+}
