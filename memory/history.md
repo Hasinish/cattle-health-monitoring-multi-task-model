@@ -1,3 +1,10 @@
+# Session Summary — 2026-09-23 (Real Viewpoint Dataset RT-DETR-L Cow Crop Generation In Progress)
+
+- Convo ID: `3ec35c2e-9eec-4b84-811f-b48cb01a486b`
+- Executing derived RT-DETR-L cow-cropped version of the finalized 880-image real viewpoint dataset (`datasets/viewpoint/self_clean_v1/`).
+- Verified git HEAD matches `2aeefb2a4a66aea95b409be594a774b5d11dd410` exactly.
+- Preserved `self_clean_v1` 100% untouched.
+
 # Session Summary — 2026-09-23 (Self-Collected Viewpoint Dataset Cleaning & Human Review Finalization Complete)
 
 - Convo ID: `27258369-7cbf-4892-a73a-a5cd707dc4d5`
@@ -630,6 +637,7 @@
 
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
 
+- **[2026-09-23] Convo 3ec35c2e-9eec-4b84-811f-b48cb01a486b**: Executing derived RT-DETR-L cow-cropped version of the finalized 880-image real viewpoint dataset (`self_clean_v1`) locally.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Completed full 30-epoch training and test evaluation of Run 2 Behavior RGB baseline on Modal L40S (88.88% test acc, 71.72% bal acc, 0.7413 macro-F1). Certified Run 2 in deadline plan.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Activated Phase 3 Deadline Execution Priority Overlay for 26 September 2026 thesis deadline (`phase3_deadline_execution_2026-09-26.md`), focusing on the 8 minimum defensible thesis runs and deferring exhaustive ablations while preserving the canonical roadmap.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Upgraded ScienceDB RGB BCS baseline wrapper to NVIDIA L4 on Modal (`tigerwood697`, App `ap-LpbnMu603XOremldE0aTYr`). 100% passed all 6 pre-flight checks on L4 (22.03 GB VRAM). Preserved T4 audit history. Full training not launched.

@@ -197,8 +197,14 @@ Canonical benchmark data and task registries.
     - `front/` (392 clean images), `rear/` (266 clean images), `side/` (222 clean images): Canonical 3-class normalized viewpoint dataset (880 images total).
     - `metadata/`:
       - `manifest.csv`: 1,050-row master audit manifest with 18 columns (`clean_id`, `clean_path`, `normalized_class`, `original_path`, `original_label`, `source_url`, `source_domain`, `width`, `height`, `sha256`, `perceptual_hash`, `duplicate_group_id`, `duplicate_status`, `stock_flag`, `quality_status`, `inclusion_status`, `exclusion_reason`, `notes`).
-      - `review_required.csv`: 33-row review manifest flagging commercial stock exclusions and edge-case candidates.
+      - `review_required.csv`: 33-row review manifest flagging commercial stock exclusions and edge-case candidates (100% resolved by Hasin Ishrak).
       - `cleaning_report.md`: Comprehensive audit and leakage report documenting all rules and counts.
+  - `self_clean_v1_rtdetr_crop/`:
+    - `front/` (392 crops), `side/` (222 crops), `rear/` (265 crops): Derived RT-DETR-L cattle-cropped real viewpoint dataset (879 crops total, JPEG Quality 95, 1,867.40 MB / 1.824 GB; -46.8% size reduction vs source).
+    - `metadata/`:
+      - `crop_manifest.csv`: Master 879-row manifest with 26 columns containing bounding box coordinates, 5% proportional margin parameters, dimensions, file sizes, and preserved `duplicate_group_id` provenance.
+      - `detection_failures.csv`: 1-row quarantine record documenting the single detection failure (`rear_0003`, working oxen with farmer) without fabricating crops.
+      - `crop_report.md`: Comprehensive audit report detailing counts, class distributions, and compression metrics.
 - `lameness/`:
   - `cattle_lameness_manifest.csv`: 50-clip master manifest defining filename, class, source URLs, proposed group IDs, confidence scores, evidence, and 5-fold cross-validation assignments.
   - `lameness_index.csv`: Extracted frame index mapping 9,950 frames across 50 video clips to labels and splits.

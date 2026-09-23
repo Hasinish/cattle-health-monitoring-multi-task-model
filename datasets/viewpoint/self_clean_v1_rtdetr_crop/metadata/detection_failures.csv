@@ -1,0 +1,2 @@
+clean_id,class,source_clean_path,duplicate_group_id,source_sha256,source_url,source_domain,detection_status,detection_count,failure_reason,source_width,source_height,source_file_size_bytes
+rear_0003,rear,datasets/viewpoint/self_clean_v1/rear/rear_0003.jpg,dup_0249,b1ca16ed9b34910f8d84e7566d4dcd858210863986541059c2316751ee26b831,https://www.pexels.com/photo/farmer-with-oxen-in-field-15275563/,www.pexels.com,detection_failed,0,zero_cattle_detected,4000,6000,2361926
