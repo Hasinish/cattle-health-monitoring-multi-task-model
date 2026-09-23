@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-09-23 22:30:00",
+  "gpu": "L40S",
+  "total_requested": 4465,
+  "total_retained": 4271,
+  "total_excluded": 194,
+  "split_counts": {
+    "train": {
+      "requested": 3785,
+      "retained": 3641,
+      "excluded": 144,
+      "already_cached": 0
+    },
+    "val": {
+      "requested": 680,
+      "retained": 630,
+      "excluded": 50,
+      "already_cached": 0
+    }
+  },
+  "frames_generated": {
+    "total_real_masks": 34168,
+    "cvb_gt_bbox_frames": 16464,
+    "beef_a5_frames": 14688,
+    "beef_fallback_frames": 3016
+  },
+  "failure_reasons_breakdown": {
+    "sam_returned_empty_mask": 194
+  },
+  "class_distribution_before_exclusions": {
+    "train": {
+      "Lying": 1337,
+      "Feeding": 1239,
+      "Standing": 821,
+      "Drinking": 269,
+      "Walking": 119
+    },
+    "val": {
+      "Feeding": 253,
+      "Lying": 253,
+      "Standing": 103,
+      "Drinking": 45,
+      "Walking": 26
+    }
+  },
+  "class_distribution_after_exclusions": {
+    "train": {
+      "Lying": 1231,
+      "Feeding": 1216,
+      "Standing": 816,
+      "Drinking": 259,
+      "Walking": 119
+    },
+    "val": {
+      "Feeding": 251,
+      "Lying": 217,
+      "Standing": 94,
+      "Drinking": 42,
+      "Walking": 26
+    }
+  },
+  "source_distribution_before_exclusions": {
+    "train": {
+      "beef_cattle_behavior": 2038,
+      "cvb": 1747
+    },
+    "val": {
+      "beef_cattle_behavior": 368,
+      "cvb": 312
+    }
+  },
+  "source_distribution_after_exclusions": {
+    "train": {
+      "beef_cattle_behavior": 1895,
+      "cvb": 1746
+    },
+    "val": {
+      "beef_cattle_behavior": 318,
+      "cvb": 312
+    }
+  },
+  "runtimes_sec": {
+    "train": 2949.1,
+    "val": 543.2,
+    "total": 3492.3
+  }
+}
