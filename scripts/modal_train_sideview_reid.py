@@ -6,7 +6,7 @@ Profile Target   : tigerwood697
 Dataset Volume   : sideview-data (mounted at /data)
 Checkpoint Volume: reid-checkpoints (mounted at /checkpoints)
 Default Smoke GPU: NVIDIA T4 (Low-cost verification)
-Default Full GPU : NVIDIA L4 (24GB Ada Lovelace tier) or NVIDIA L40S
+Default Full GPU : NVIDIA L40S (48GB Ada Lovelace monster; configurable via MODAL_GPU)
 Primary Script   : scripts/train_sideview_reid_baseline.py
 
 Usage:
@@ -264,7 +264,7 @@ def smoke_test_remote(smoke_samples: int = 64) -> dict:
 # FULL TRAINING REMOTE FUNCTION
 # ==============================================================================
 @app.function(
-    gpu="L4",
+    gpu=os.environ.get("MODAL_GPU", "L40S"),
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
     timeout=14400,  # 4 hours
     cpu=8.0,
