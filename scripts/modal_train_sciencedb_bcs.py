@@ -13,7 +13,7 @@ Usage:
      modal run --profile tigerwood697 scripts/modal_train_sciencedb_bcs.py::verify_readiness
 
   2. Full 30-Epoch Baseline Training (Manual execution by user):
-     modal run --profile tigerwood697 scripts/modal_train_sciencedb_bcs.py --epochs 30 --head-type ordinal_bce --batch-size 32
+     modal run --profile tigerwood697 scripts/modal_train_sciencedb_bcs.py::main --epochs 30 --head-type ordinal_bce --batch-size 32
 """
 
 import sys

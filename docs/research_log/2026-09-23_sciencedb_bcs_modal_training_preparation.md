@@ -98,5 +98,6 @@ A separate pre-flight readiness audit was executed directly on an **NVIDIA L4** 
 
 ### 5.3 Manual Launch Command for Full Run on L4
 ```powershell
-$env:PYTHONIOENCODING="utf-8"; modal run --profile tigerwood697 scripts/modal_train_sciencedb_bcs.py --epochs 30 --head-type ordinal_bce --batch-size 32
+$env:PYTHONIOENCODING="utf-8"; modal run --profile tigerwood697 scripts/modal_train_sciencedb_bcs.py::main --epochs 30 --head-type ordinal_bce --batch-size 32
 ```
+
