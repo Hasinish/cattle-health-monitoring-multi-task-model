@@ -157,8 +157,11 @@ class SideViewReIDDataset(Dataset):
 
         self.records = []
         for _, row in self.df.iterrows():
+            raw_p = str(row["image_path"])
+            res_p = resolve_sideview_image_path(raw_p, self.data_root)
             self.records.append({
-                "raw_image_path": str(row["image_path"]),
+                "raw_image_path": raw_p,
+                "resolved_path": res_p,
                 "cow_id": str(row["individual_id"]),
                 "label": self.cow_to_label.get(str(row["individual_id"]), -1),
                 "subset": str(row.get("subset", "")),
@@ -170,7 +173,9 @@ class SideViewReIDDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int, str]:
         rec = self.records[idx]
-        resolved = resolve_sideview_image_path(rec["raw_image_path"], self.data_root)
+        resolved = rec.get("resolved_path")
+        if resolved is None:
+            resolved = resolve_sideview_image_path(rec["raw_image_path"], self.data_root)
         if resolved is None:
             raise FileNotFoundError(f"Failed to resolve image path: {rec['raw_image_path']} under {self.data_root}")
 
@@ -322,7 +327,7 @@ def extract_dataset_embeddings(
     all_embeddings = []
     all_ids = []
 
-    pbar = tqdm(loader, desc=desc, leave=False)
+    pbar = tqdm(loader, desc=desc, leave=False, file=sys.stdout, mininterval=1.0)
     for imgs, _, cow_ids in pbar:
         imgs = imgs.to(device)
         _, norm_embs = model.extract_features(imgs)
@@ -489,22 +494,27 @@ def train_sideview_reid(
     train_ds = SideViewReIDDataset(df_train, data_root=data_root, cow_to_label=cow_to_label, transform=train_transform)
     val_ds = SideViewReIDDataset(df_val, data_root=data_root, cow_to_label=cow_to_label, transform=val_transform)
 
+    loader_kwargs = {
+        "num_workers": num_workers,
+        "pin_memory": (device.type == "cuda"),
+        "drop_last": False,
+    }
+    if num_workers > 0:
+        loader_kwargs["persistent_workers"] = True
+        loader_kwargs["prefetch_factor"] = 2
+
     train_loader = DataLoader(
         train_ds,
         batch_size=batch_size,
         shuffle=True,
-        num_workers=num_workers,
-        pin_memory=(device.type == "cuda"),
-        drop_last=False,
+        **loader_kwargs,
     )
 
     val_loader = DataLoader(
         val_ds,
         batch_size=batch_size,
         shuffle=False,
-        num_workers=num_workers,
-        pin_memory=(device.type == "cuda"),
-        drop_last=False,
+        **loader_kwargs,
     )
 
     # 6. Model, Optimizer, Loss, Scheduler
@@ -546,7 +556,7 @@ def train_sideview_reid(
         train_correct = 0
         train_total = 0
 
-        pbar = tqdm(train_loader, desc=f"Epoch {epoch:02d}/{epochs:02d} [Train]", leave=True)
+        pbar = tqdm(train_loader, desc=f"Epoch {epoch:02d}/{epochs:02d} [Train]", leave=True, file=sys.stdout, mininterval=1.0)
         for imgs, targets, _ in pbar:
             imgs = imgs.to(device)
             targets = targets.to(device)
