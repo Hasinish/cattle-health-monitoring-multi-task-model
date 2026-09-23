@@ -440,13 +440,22 @@ def build_temporal_cache(
 # ==============================================================================
 # PYTORCH DATASET WITH SYNCHRONIZED TEMPORAL AUGMENTATION
 # ==============================================================================
+# ==============================================================================
+# PYTORCH DATASET WITH SYNCHRONIZED TEMPORAL AUGMENTATION
+# ==============================================================================
 class BehaviorTemporalDataset(Dataset):
     """
     Loads pre-extracted T=8 frame sequences from cache.
     Outputs:
-      images: [T, C, H, W]
+      images: [T, C, H, W] where C=3 for 'rgb' mode and C=4 for 'rgb_mask' mode
       target: int class label (0..4)
     Supports synchronized temporal transforms (e.g., all T frames flipped together).
+    In perception mode ('rgb_mask'):
+      - missing RGB or mask -> hard failure (no black image fallback)
+      - empty or all-ones mask -> hard failure
+      - synchronized flip on RGB AND mask
+      - color jitter on RGB ONLY
+      - ImageNet normalize on RGB ONLY; mask is strictly {0.0, 1.0} float
     """
     def __init__(
         self,
@@ -454,13 +463,36 @@ class BehaviorTemporalDataset(Dataset):
         cache_dir: Path,
         num_frames: int = 8,
         is_train: bool = False,
+        input_mode: str = "rgb_mask",
     ):
         self.df = df.reset_index(drop=True)
         self.cache_dir = cache_dir
         self.num_frames = num_frames
         self.is_train = is_train
+        self.input_mode = input_mode
 
         self.normalize = transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
+
+        # Integrity check for perception mode: zero missing/empty files allowed
+        if self.input_mode == "rgb_mask":
+            missing_items = []
+            for _, row in self.df.iterrows():
+                sid = str(row["sample_id"])
+                s_dir = self.cache_dir / sid
+                if not s_dir.exists():
+                    missing_items.append(f"{sid} (folder missing)")
+                    continue
+                for t in range(self.num_frames):
+                    f_p = s_dir / f"frame_{t:02d}.jpg"
+                    m_p = s_dir / f"mask_{t:02d}.png"
+                    if not f_p.exists() or f_p.stat().st_size == 0 or not m_p.exists() or m_p.stat().st_size == 0:
+                        missing_items.append(f"{sid}_t{t}")
+                        break
+            if missing_items:
+                raise RuntimeError(
+                    f"Perception cache integrity check FAILED: {len(missing_items)} missing/empty sequence items in {self.cache_dir}. "
+                    f"First missing items: {missing_items[:5]}. No silent black or dummy fallback allowed in perception mode!"
+                )
 
     def __len__(self) -> int:
         return len(self.df)
@@ -474,43 +506,90 @@ class BehaviorTemporalDataset(Dataset):
 
         sample_folder = self.cache_dir / sample_id
 
-        # Load all T frames as PIL Images
-        frames: List[Image.Image] = []
-        for t in range(self.num_frames):
-            frame_path = sample_folder / f"frame_{t:02d}.jpg"
-            if frame_path.exists():
+        if self.input_mode == "rgb":
+            # Legacy RGB path (strictly preserved for historical reproducibility)
+            frames: List[Image.Image] = []
+            for t in range(self.num_frames):
+                frame_path = sample_folder / f"frame_{t:02d}.jpg"
+                if frame_path.exists():
+                    try:
+                        img = Image.open(frame_path).convert("RGB")
+                    except Exception:
+                        img = Image.new("RGB", (224, 224), (0, 0, 0))
+                else:
+                    img = Image.new("RGB", (224, 224), (0, 0, 0))
+                frames.append(img)
+
+            if self.is_train:
+                if torch.rand(1).item() < 0.5:
+                    frames = [TF.hflip(f) for f in frames]
+                if torch.rand(1).item() < 0.5:
+                    brightness_factor = 1.0 + float(torch.empty(1).uniform_(-0.1, 0.1))
+                    contrast_factor = 1.0 + float(torch.empty(1).uniform_(-0.1, 0.1))
+                    frames = [TF.adjust_brightness(f, brightness_factor) for f in frames]
+                    frames = [TF.adjust_contrast(f, contrast_factor) for f in frames]
+
+            tensor_frames = [self.normalize(TF.to_tensor(f)) for f in frames]
+            seq_tensor = torch.stack(tensor_frames, dim=0)  # [T, 3, 224, 224]
+            return seq_tensor, target, sample_id, dataset_name
+
+        elif self.input_mode == "rgb_mask":
+            # Real Perception Path: T=8 cattle-centered RGB + real SAM 2.1 binary mask
+            frames_rgb = []
+            frames_mask = []
+            for t in range(self.num_frames):
+                frame_path = sample_folder / f"frame_{t:02d}.jpg"
+                mask_path = sample_folder / f"mask_{t:02d}.png"
+
+                if not frame_path.exists() or not mask_path.exists():
+                    raise RuntimeError(f"Missing perception frame or mask for {sample_id} at t={t}")
+
                 try:
                     img = Image.open(frame_path).convert("RGB")
-                except Exception:
-                    img = Image.new("RGB", (224, 224), (0, 0, 0))
-            else:
-                img = Image.new("RGB", (224, 224), (0, 0, 0))
-            frames.append(img)
+                except Exception as e:
+                    raise RuntimeError(f"Failed to read RGB frame {frame_path}: {e}")
 
-        # Synchronized Temporal Augmentations
-        if self.is_train:
-            # 1. Synchronized Random Horizontal Flip
-            if torch.rand(1).item() < 0.5:
-                frames = [TF.hflip(f) for f in frames]
+                mask_cv = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+                if mask_cv is None:
+                    raise RuntimeError(f"Failed to read binary mask {mask_path}")
 
-            # 2. Sequence-Consistent Color Jitter
-            if torch.rand(1).item() < 0.5:
-                brightness_factor = 1.0 + float(torch.empty(1).uniform_(-0.1, 0.1))
-                contrast_factor = 1.0 + float(torch.empty(1).uniform_(-0.1, 0.1))
-                frames = [TF.adjust_brightness(f, brightness_factor) for f in frames]
-                frames = [TF.adjust_contrast(f, contrast_factor) for f in frames]
+                pix_count = int(np.sum(mask_cv > 127))
+                if pix_count == 0:
+                    raise RuntimeError(f"Empty mask detected for {sample_id} at t={t}. Zero masks strictly prohibited!")
+                if pix_count == mask_cv.size:
+                    raise RuntimeError(f"All-ones mask detected for {sample_id} at t={t}. All-one masks strictly prohibited!")
 
-        # Convert to tensors and normalize
-        tensor_frames = []
-        for f in frames:
-            t_img = TF.to_tensor(f)  # [3, 224, 224], range [0, 1]
-            t_img = self.normalize(t_img)
-            tensor_frames.append(t_img)
+                mask_pil = Image.fromarray(mask_cv)
+                frames_rgb.append(img)
+                frames_mask.append(mask_pil)
 
-        # Stack into [T, 3, 224, 224]
-        seq_tensor = torch.stack(tensor_frames, dim=0)
+            # Synchronized Temporal Augmentations
+            if self.is_train:
+                # 1. Synchronized Random Horizontal Flip (RGB AND Mask)
+                if torch.rand(1).item() < 0.5:
+                    frames_rgb = [TF.hflip(f) for f in frames_rgb]
+                    frames_mask = [TF.hflip(m) for m in frames_mask]
 
-        return seq_tensor, target, sample_id, dataset_name
+                # 2. Sequence-Consistent Color Jitter (RGB ONLY; never alter mask)
+                if torch.rand(1).item() < 0.5:
+                    b_factor = 1.0 + float(torch.empty(1).uniform_(-0.1, 0.1))
+                    c_factor = 1.0 + float(torch.empty(1).uniform_(-0.1, 0.1))
+                    frames_rgb = [TF.adjust_brightness(f, b_factor) for f in frames_rgb]
+                    frames_rgb = [TF.adjust_contrast(f, c_factor) for f in frames_rgb]
+
+            tensor_frames_4ch = []
+            for f_rgb, f_mask in zip(frames_rgb, frames_mask):
+                t_rgb = TF.to_tensor(f_rgb)          # [3, 224, 224], range [0, 1]
+                t_rgb = self.normalize(t_rgb)        # ImageNet normalization
+                m_np = np.array(f_mask)
+                t_mask = torch.from_numpy((m_np > 127).astype(np.float32)).unsqueeze(0)  # [1, 224, 224], strictly {0.0, 1.0}
+                t_4ch = torch.cat([t_rgb, t_mask], dim=0)  # [4, 224, 224]
+                tensor_frames_4ch.append(t_4ch)
+
+            seq_tensor = torch.stack(tensor_frames_4ch, dim=0)  # [T=8, 4, 224, 224]
+            return seq_tensor, target, sample_id, dataset_name
+        else:
+            raise ValueError(f"Unknown input_mode: {self.input_mode}. Choose 'rgb' or 'rgb_mask'.")
 
 
 # ==============================================================================
@@ -862,6 +941,154 @@ def generate_temporal_contact_sheet(
     return True
 
 
+def generate_perception_contact_sheet(
+    df: pd.DataFrame,
+    cache_dir: Path,
+    out_path: Path,
+    num_samples: int = 6,
+    num_frames: int = 8,
+) -> bool:
+    """
+    Generates visual contact sheet for perception mode showing aligned RGB + SAM mask:
+    For each representative sequence:
+      - Header banner: [DATASET] Class | Tracklet ID | Sample ID
+      - Row A: Clean RGB crop (t=0..7)
+      - Row B: RGB + SAM 2.1 mask overlay (green transparent fill + contour, t=0..7)
+    """
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    selected_rows = []
+    walk_rows = df[df["behavior_canonical"] == "Walking"]
+    if len(walk_rows) > 0:
+        selected_rows.append(walk_rows.iloc[0])
+
+    for beh in ["Feeding", "Lying", "Standing", "Drinking"]:
+        sub_cvb = df[(df["dataset"] == "cvb") & (df["behavior_canonical"] == beh)]
+        if len(sub_cvb) > 0 and len(selected_rows) < num_samples // 2 + 1:
+            selected_rows.append(sub_cvb.iloc[0])
+
+    for beh in ["Feeding", "Lying", "Drinking", "Standing"]:
+        sub_beef = df[(df["dataset"] == "beef_cattle_behavior") & (df["behavior_canonical"] == beh)]
+        if len(sub_beef) > 0 and len(selected_rows) < num_samples:
+            selected_rows.append(sub_beef.iloc[0])
+
+    for _, row in df.iterrows():
+        if len(selected_rows) >= num_samples:
+            break
+        if not any(r["sample_id"] == row["sample_id"] for r in selected_rows):
+            selected_rows.append(row)
+
+    if not selected_rows:
+        return False
+
+    tile_w, tile_h = 224, 224
+    header_h = 32
+    seq_h = header_h + tile_h * 2  # Header + RGB row + Mask overlay row
+    total_w = tile_w * num_frames
+    total_h = seq_h * len(selected_rows)
+
+    sheet = np.zeros((total_h, total_w, 3), dtype=np.uint8)
+
+    for i, row in enumerate(selected_rows):
+        sample_id = str(row["sample_id"])
+        dataset = str(row["dataset"])
+        beh = str(row["behavior_canonical"])
+        track_id = row.get("tracklet_id", "N/A")
+        y_seq = i * seq_h
+
+        # Header banner
+        header_text = f"[{dataset.upper()}] Class: {beh} | Tracklet: {track_id} | Sample: {sample_id}"
+        cv2.rectangle(sheet, (0, y_seq), (total_w, y_seq + header_h), (35, 35, 35), -1)
+        cv2.putText(sheet, header_text, (10, y_seq + 22), cv2.FONT_HERSHEY_SIMPLEX, 0.50, (255, 255, 255), 1, cv2.LINE_AA)
+
+        sample_folder = cache_dir / sample_id
+        for t in range(num_frames):
+            x_offset = t * tile_w
+            f_path = sample_folder / f"frame_{t:02d}.jpg"
+            m_path = sample_folder / f"mask_{t:02d}.png"
+
+            frame_bgr = cv2.imread(str(f_path)) if f_path.exists() else None
+            mask_gray = cv2.imread(str(m_path), cv2.IMREAD_GRAYSCALE) if m_path.exists() else None
+
+            if frame_bgr is None:
+                frame_bgr = np.zeros((tile_h, tile_w, 3), dtype=np.uint8)
+            else:
+                frame_bgr = cv2.resize(frame_bgr, (tile_w, tile_h))
+
+            # Row A: Clean RGB
+            row_a_y = y_seq + header_h
+            p_rgb = frame_bgr.copy()
+            cv2.putText(p_rgb, f"t={t} RGB", (8, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.44, (255, 255, 255), 1, cv2.LINE_AA)
+            cv2.rectangle(p_rgb, (0, 0), (tile_w - 1, tile_h - 1), (60, 60, 60), 1)
+            sheet[row_a_y : row_a_y + tile_h, x_offset : x_offset + tile_w] = p_rgb
+
+            # Row B: RGB + SAM 2.1 Mask Overlay
+            row_b_y = row_a_y + tile_h
+            p_mask = frame_bgr.copy()
+            if mask_gray is not None and np.sum(mask_gray > 127) > 0:
+                mask_bool = mask_gray > 127
+                overlay = p_mask.copy()
+                overlay[mask_bool] = (overlay[mask_bool] * 0.45 + np.array([0, 220, 0]) * 0.55).astype(np.uint8)
+                p_mask = overlay
+                contours, _ = cv2.findContours(mask_bool.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+                cv2.drawContours(p_mask, contours, -1, (0, 255, 0), 1)
+                ar = float(np.sum(mask_bool)) / (tile_w * tile_h)
+                cv2.putText(p_mask, f"t={t} Mask (ar={ar:.2f})", (8, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (0, 255, 255), 1, cv2.LINE_AA)
+            else:
+                cv2.putText(p_mask, f"t={t} NO MASK", (8, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.42, (0, 0, 255), 1, cv2.LINE_AA)
+            cv2.rectangle(p_mask, (0, 0), (tile_w - 1, tile_h - 1), (60, 60, 60), 1)
+            sheet[row_b_y : row_b_y + tile_h, x_offset : x_offset + tile_w] = p_mask
+
+    cv2.imwrite(str(out_path), sheet, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+    print(f"[*] Perception contact sheet saved: {out_path} ({total_w}x{total_h} px, {len(selected_rows)} sequences)")
+    return True
+
+
+# ==============================================================================
+# SHARED DETERMINISTIC SMOKE SUBSET SELECTOR
+# ==============================================================================
+def get_balanced_smoke_subset(
+    train_df: pd.DataFrame,
+    val_df: pd.DataFrame,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Deterministically selects the shared canonical 40-sequence balanced smoke subset:
+      - Train: 30 sequences (6 per class)
+        * For Standing, Lying, Feeding, Drinking: 3 Beef + 3 CVB = 6 per class
+        * For Walking: 6 CVB = 6
+      - Val: 10 sequences (2 per class)
+        * For Standing, Lying, Feeding, Drinking: 1 Beef + 1 CVB = 2 per class
+        * For Walking: 2 CVB = 2
+    Deterministic: uses df head/filtering on canonical splits.
+    Guarantees selected cache IDs == selected training IDs.
+    """
+    smoke_train = []
+    for c in CANONICAL_CLASSES:
+        if c == "Walking":
+            sub = train_df[(train_df["behavior_canonical"] == c) & (train_df["dataset"] == "cvb")]
+            smoke_train.append(sub.head(6))
+        else:
+            sub_beef = train_df[(train_df["behavior_canonical"] == c) & (train_df["dataset"] == "beef_cattle_behavior")]
+            sub_cvb = train_df[(train_df["behavior_canonical"] == c) & (train_df["dataset"] == "cvb")]
+            smoke_train.append(sub_beef.head(3))
+            smoke_train.append(sub_cvb.head(3))
+    train_sub = pd.concat(smoke_train).reset_index(drop=True)
+
+    smoke_val = []
+    for c in CANONICAL_CLASSES:
+        if c == "Walking":
+            sub = val_df[(val_df["behavior_canonical"] == c) & (val_df["dataset"] == "cvb")]
+            smoke_val.append(sub.head(2))
+        else:
+            sub_beef = val_df[(val_df["behavior_canonical"] == c) & (val_df["dataset"] == "beef_cattle_behavior")]
+            sub_cvb = val_df[(val_df["behavior_canonical"] == c) & (val_df["dataset"] == "cvb")]
+            smoke_val.append(sub_beef.head(1))
+            smoke_val.append(sub_cvb.head(1))
+    val_sub = pd.concat(smoke_val).reset_index(drop=True)
+
+    return train_sub, val_sub
+
+
 # ==============================================================================
 # MAIN TRAINING PIPELINE
 # ==============================================================================
@@ -871,6 +1098,8 @@ def train_temporal_pipeline(
     beef_dir: Path,
     cache_dir: Path,
     output_dir: Path,
+    train_df: Optional[pd.DataFrame] = None,
+    val_df: Optional[pd.DataFrame] = None,
     epochs: int = 2,
     batch_size: int = 4,
     lr: float = 1e-4,
@@ -878,10 +1107,14 @@ def train_temporal_pipeline(
     num_workers: int = 0,
     num_frames: int = 8,
     smoke: bool = True,
+    input_mode: str = "rgb_mask",
     device: Optional[torch.device] = None,
 ) -> Dict[str, Any]:
     """
     Executes the Behavior Temporal TCN training and verification pipeline.
+    Supports:
+      input_mode='rgb'      -> 3-channel [B, T=8, 3, 224, 224] (historical RGB temporal baseline)
+      input_mode='rgb_mask' -> 4-channel [B, T=8, 4, 224, 224] (real Run 5 perception model)
     """
     start_time = time.perf_counter()
     if device is None:
@@ -890,11 +1123,13 @@ def train_temporal_pipeline(
     output_dir.mkdir(parents=True, exist_ok=True)
     cache_dir.mkdir(parents=True, exist_ok=True)
 
+    in_channels = 4 if input_mode == "rgb_mask" else 3
+
     print("\n" + "=" * 70)
-    print(f"  BEHAVIOR TEMPORAL CORE PIPELINE (Device: {device}, Smoke: {smoke})")
+    print(f"  BEHAVIOR TEMPORAL PIPELINE: Mode={input_mode} (in_channels={in_channels}), Device={device}, Smoke={smoke}")
     print("=" * 70)
 
-    # 1. Load canonical split CSVs
+    # 1. Load canonical split CSVs if not passed in
     train_csv = data_dir / "train.csv"
     val_csv = data_dir / "val.csv"
     test_csv = data_dir / "test.csv"
@@ -903,45 +1138,21 @@ def train_temporal_pipeline(
     assert val_csv.exists(), f"val.csv missing at {val_csv}"
     assert test_csv.exists(), f"test.csv missing at {test_csv}"
 
-    train_df = pd.read_csv(train_csv)
-    val_df = pd.read_csv(val_csv)
-    print(f"[*] Canonical split rows: Train={len(train_df)}, Val={len(val_df)}")
+    if train_df is None:
+        train_df = pd.read_csv(train_csv)
+    if val_df is None:
+        val_df = pd.read_csv(val_csv)
+    print(f"[*] Input split rows: Train={len(train_df)}, Val={len(val_df)}")
 
-    # 2. Select balanced smoke subset
+    # 2. Select balanced smoke subset if smoke and full split was passed
     smoke_counts = {}
     if smoke:
-        # STRICT RULE: test.csv must NEVER be loaded in smoke mode!
+        # STRICT RULE: test.csv must NOT be parsed, loaded into a DataFrame, sampled, used for tuning, or evaluated!
         print("[*] Smoke mode active: test.csv is EXPLICITLY UNTOUCHED.")
 
-        # Train subset: 30 sequences total (6 per class)
-        # For classes 0..3: 3 Beef + 3 CVB = 6
-        # For Walking (4): 6 CVB = 6
-        smoke_train = []
-        for c in CANONICAL_CLASSES:
-            if c == "Walking":
-                sub = train_df[(train_df["behavior_canonical"] == c) & (train_df["dataset"] == "cvb")]
-                smoke_train.append(sub.head(6))
-            else:
-                sub_beef = train_df[(train_df["behavior_canonical"] == c) & (train_df["dataset"] == "beef_cattle_behavior")]
-                sub_cvb = train_df[(train_df["behavior_canonical"] == c) & (train_df["dataset"] == "cvb")]
-                smoke_train.append(sub_beef.head(3))
-                smoke_train.append(sub_cvb.head(3))
-        train_df = pd.concat(smoke_train).reset_index(drop=True)
-
-        # Val subset: 10 sequences total (2 per class)
-        # For classes 0..3: 1 Beef + 1 CVB = 2
-        # For Walking (4): 2 CVB = 2
-        smoke_val = []
-        for c in CANONICAL_CLASSES:
-            if c == "Walking":
-                sub = val_df[(val_df["behavior_canonical"] == c) & (val_df["dataset"] == "cvb")]
-                smoke_val.append(sub.head(2))
-            else:
-                sub_beef = val_df[(val_df["behavior_canonical"] == c) & (val_df["dataset"] == "beef_cattle_behavior")]
-                sub_cvb = val_df[(val_df["behavior_canonical"] == c) & (val_df["dataset"] == "cvb")]
-                smoke_val.append(sub_beef.head(1))
-                smoke_val.append(sub_cvb.head(1))
-        val_df = pd.concat(smoke_val).reset_index(drop=True)
+        # If train_df has > 30 rows, filter to balanced smoke subset
+        if len(train_df) > 30:
+            train_df, val_df = get_balanced_smoke_subset(train_df, val_df)
 
         smoke_counts = {
             "train": {
@@ -957,7 +1168,6 @@ def train_temporal_pipeline(
                 "by_source_and_class": val_df.groupby(["dataset", "behavior_canonical"]).size().to_dict(),
             },
         }
-        # Convert tuple keys to str for JSON serialization
         smoke_counts["train"]["by_source_and_class"] = {f"{k[0]}_{k[1]}": v for k, v in smoke_counts["train"]["by_source_and_class"].items()}
         smoke_counts["val"]["by_source_and_class"] = {f"{k[0]}_{k[1]}": v for k, v in smoke_counts["val"]["by_source_and_class"].items()}
 
@@ -965,27 +1175,54 @@ def train_temporal_pipeline(
         print(f"    Train distribution: {train_df['dataset'].value_counts().to_dict()} | Classes: {train_df['behavior_canonical'].value_counts().to_dict()}")
         print(f"    Val distribution  : {val_df['dataset'].value_counts().to_dict()} | Classes: {val_df['behavior_canonical'].value_counts().to_dict()}")
 
-    # 3. Persistent Temporal Caching
-    t0_cache = time.perf_counter()
-    train_cache_stats, train_missing_bboxes = build_temporal_cache(
-        train_df, cvb_dir, beef_dir, cache_dir, num_frames=num_frames, desc="Train Temporal Cache"
-    )
-    val_cache_stats, val_missing_bboxes = build_temporal_cache(
-        val_df, cvb_dir, beef_dir, cache_dir, num_frames=num_frames, desc="Val Temporal Cache"
-    )
-    t_cache = time.perf_counter() - t0_cache
-    print(f"[*] Caching complete in {t_cache:.1f}s. Train: {train_cache_stats}, Val: {val_cache_stats}")
-    print(f"[*] Missing target bbox records: Train={len(train_missing_bboxes)}, Val={len(val_missing_bboxes)}")
+    # 3. Cache handling
+    train_missing_bboxes = []
+    val_missing_bboxes = []
+    if input_mode == "rgb_mask":
+        # IN PERCEPTION MODE: Do NOT run legacy build_temporal_cache!
+        # Expect pre-built real perception cache from build_behavior_perception_cache.py
+        print(f"[*] Perception mode ('rgb_mask'): Bypassing legacy build_temporal_cache(). Using perception cache at {cache_dir}.")
+        train_sids = set(train_df["sample_id"].astype(str))
+        val_sids = set(val_df["sample_id"].astype(str))
+        cached_dirs = set(os.listdir(cache_dir)) if cache_dir.exists() else set()
+
+        missing_train = train_sids - cached_dirs
+        missing_val = val_sids - cached_dirs
+        assert not missing_train, f"Perception cache missing {len(missing_train)} train sequences! First: {list(missing_train)[:3]}"
+        assert not missing_val, f"Perception cache missing {len(missing_val)} val sequences! First: {list(missing_val)[:3]}"
+        print(f"[*] Verified perception cache: all {len(train_df)} train and {len(val_df)} val sequences present.")
+    else:
+        # IN RGB MODE: Run legacy temporal cache builder
+        t0_cache = time.perf_counter()
+        train_cache_stats, train_missing_bboxes = build_temporal_cache(
+            train_df, cvb_dir, beef_dir, cache_dir, num_frames=num_frames, desc="Train Temporal Cache"
+        )
+        val_cache_stats, val_missing_bboxes = build_temporal_cache(
+            val_df, cvb_dir, beef_dir, cache_dir, num_frames=num_frames, desc="Val Temporal Cache"
+        )
+        t_cache = time.perf_counter() - t0_cache
+        print(f"[*] Caching complete in {t_cache:.1f}s. Train: {train_cache_stats}, Val: {val_cache_stats}")
+        print(f"[*] Missing target bbox records: Train={len(train_missing_bboxes)}, Val={len(val_missing_bboxes)}")
 
     # 4. Generate Visual Contact Sheet
-    contact_sheet_path = output_dir / "temporal_samples_contact_sheet.jpg"
-    generate_temporal_contact_sheet(
-        train_df, cache_dir, contact_sheet_path, num_samples=6, num_frames=num_frames
-    )
+    if input_mode == "rgb_mask":
+        contact_sheet_path = output_dir / "temporal_perception_contact_sheet.jpg"
+        generate_perception_contact_sheet(
+            train_df, cache_dir, contact_sheet_path, num_samples=6, num_frames=num_frames
+        )
+    else:
+        contact_sheet_path = output_dir / "temporal_samples_contact_sheet.jpg"
+        generate_temporal_contact_sheet(
+            train_df, cache_dir, contact_sheet_path, num_samples=6, num_frames=num_frames
+        )
 
     # 5. Data Loaders
-    train_dataset = BehaviorTemporalDataset(train_df, cache_dir, num_frames=num_frames, is_train=True)
-    val_dataset = BehaviorTemporalDataset(val_df, cache_dir, num_frames=num_frames, is_train=False)
+    train_dataset = BehaviorTemporalDataset(
+        train_df, cache_dir, num_frames=num_frames, is_train=True, input_mode=input_mode
+    )
+    val_dataset = BehaviorTemporalDataset(
+        val_df, cache_dir, num_frames=num_frames, is_train=False, input_mode=input_mode
+    )
 
     train_loader = DataLoader(
         train_dataset,
@@ -1005,21 +1242,33 @@ def train_temporal_pipeline(
     # 6. Model, Optimizer, Criterion
     model = BehaviorTemporalModel(
         num_classes=NUM_CLASSES,
-        in_channels=3,
+        in_channels=in_channels,
         hidden_dim=256,
         dropout=0.2,
         pretrained_backbone=True,
     ).to(device)
 
-    # Parameter Breakdown
+    # Parameter Verification
     backbone_params = sum(p.numel() for p in model.backbone.parameters() if p.requires_grad)
     tcn_params = sum(p.numel() for p in model.tcn.parameters() if p.requires_grad)
     total_trainable_params = backbone_params + tcn_params
 
+    if input_mode == "rgb_mask":
+        expected_params = 11903621
+        assert total_trainable_params == expected_params, (
+            f"Param mismatch for 4-channel model! Expected {expected_params:,}, got {total_trainable_params:,}"
+        )
+    else:
+        expected_params = 11900485
+        assert total_trainable_params == expected_params, (
+            f"Param mismatch for 3-channel model! Expected {expected_params:,}, got {total_trainable_params:,}"
+        )
+
     print("\n[*] Model Architecture & Parameter Verification:")
+    print(f"    Input Mode                      : {input_mode} (in_channels={in_channels})")
     print(f"    Backbone (ResNet-18 without fc) : {backbone_params:,} params")
     print(f"    TCN (2 Conv1d blocks + Linear)  : {tcn_params:,} params")
-    print(f"    Total Trainable Parameters      : {total_trainable_params:,} params")
+    print(f"    Total Trainable Parameters      : {total_trainable_params:,} params (Exact Verified)")
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     criterion = nn.CrossEntropyLoss()
@@ -1047,7 +1296,7 @@ def train_temporal_pipeline(
             # Assert input tensor shapes
             B, T, C, H, W = seq_images.shape
             assert T == num_frames, f"Expected T={num_frames}, got {T}"
-            assert C == 3, f"Expected C=3, got {C}"
+            assert C == in_channels, f"Expected C={in_channels}, got {C}"
             assert H == 224 and W == 224, f"Expected 224x224, got {H}x{W}"
 
             optimizer.zero_grad()
@@ -1058,6 +1307,7 @@ def train_temporal_pipeline(
             assert logits.shape == (B, NUM_CLASSES), f"Expected logits [B, 5], got {logits.shape}"
 
             loss = criterion(logits, targets)
+            assert torch.isfinite(loss), f"Loss is not finite: {loss.item()}"
             loss.backward()
             optimizer.step()
 
@@ -1086,6 +1336,8 @@ def train_temporal_pipeline(
             "optimizer_state_dict": optimizer.state_dict(),
             "val_metrics": val_metrics,
             "architecture": "ResNet18_TCN2",
+            "input_mode": input_mode,
+            "in_channels": in_channels,
             "num_classes": NUM_CLASSES,
             "num_frames": num_frames,
             "total_params": total_trainable_params,
@@ -1106,7 +1358,7 @@ def train_temporal_pipeline(
     resume_ckpt = torch.load(best_ckpt_path, map_location=device, weights_only=False)
     resume_model = BehaviorTemporalModel(
         num_classes=NUM_CLASSES,
-        in_channels=3,
+        in_channels=in_channels,
         hidden_dim=256,
         dropout=0.2,
         pretrained_backbone=False,
@@ -1125,17 +1377,18 @@ def train_temporal_pipeline(
     # 9. Save Summary Artifacts
     summary = {
         "status": "SMOKE_SUCCESS" if smoke else "FULL_SUCCESS",
-        "task": "Phase 3 Run 5 Temporal Core Smoke Test",
+        "task": f"Phase 3 Run 5 Behavior ({input_mode.upper()}) Smoke Test",
         "mode": "smoke" if smoke else "full",
+        "input_mode": input_mode,
+        "in_channels": in_channels,
         "architecture": {
-            "backbone": "ImageNet-pretrained ResNet-18 (512-D features per frame)",
+            "backbone": f"ImageNet-pretrained ResNet-18 ({in_channels}-channel conv1, 512-D features per frame)",
             "temporal_module": "1D TCN (2 Conv1d blocks, GELU, BatchNorm1d, Dropout=0.2, AdaptiveAvgPool1d, Linear head)",
             "sequence_length_T": num_frames,
-            "input_resolution": "224x224 RGB",
+            "input_resolution": f"224x224 ({in_channels} channels)",
             "backbone_params": backbone_params,
             "tcn_params": tcn_params,
             "total_trainable_params": total_trainable_params,
-            "mask_readiness": "in_channels=4 supported in FrameFeatureExtractor without modifying TCN",
         },
         "temporal_sampling_rule": (
             f"Deterministic: T={num_frames} approximately evenly spaced frames selected across [start_frame, end_frame]. "
@@ -1146,6 +1399,7 @@ def train_temporal_pipeline(
         "best_epoch": best_epoch,
         "best_val_metrics": best_metrics,
         "max_logit_diff_after_reload": max_logit_diff,
+        "test_set_protection": "Canonical test.csv was not parsed, loaded into a DataFrame, sampled, used for tuning, or evaluated.",
         "test_csv_evaluated": False,
         "total_duration_sec": round(total_duration, 2),
         "checkpoints": {
@@ -1162,7 +1416,7 @@ def train_temporal_pipeline(
     print(f"[*] Metrics saved to: {metrics_out}")
 
     print("\n" + "=" * 70)
-    print(f"  TEMPORAL CORE PIPELINE COMPLETE (Runtime: {total_duration:.1f}s)")
+    print(f"  BEHAVIOR PIPELINE COMPLETE (Runtime: {total_duration:.1f}s)")
     print("=" * 70)
     return summary
 
@@ -1172,7 +1426,7 @@ def train_temporal_pipeline(
 # ==============================================================================
 def main():
     parser = argparse.ArgumentParser(
-        description="Phase 3 Run 5 Behavior Temporal Core Training Pipeline",
+        description="Phase 3 Run 5 Behavior Temporal Training Pipeline",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
@@ -1196,14 +1450,21 @@ def main():
     parser.add_argument(
         "--cache-dir",
         type=Path,
-        default=Path("artifacts/behavior_temporal_cache"),
-        help="Directory to cache pre-extracted 224x224 RGB temporal sequences",
+        default=Path("artifacts/behavior_perception_cache"),
+        help="Directory to cache pre-extracted temporal sequences",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("artifacts/behavior_temporal"),
+        default=Path("artifacts/behavior_perception"),
         help="Directory to save checkpoints, contact sheet, and metrics",
+    )
+    parser.add_argument(
+        "--input-mode",
+        type=str,
+        choices=["rgb", "rgb_mask"],
+        default="rgb_mask",
+        help="Input mode: 'rgb' (3 channels, legacy) or 'rgb_mask' (4 channels, perception)",
     )
     parser.add_argument(
         "--epochs",
@@ -1263,8 +1524,10 @@ def main():
         num_workers=args.num_workers,
         num_frames=args.num_frames,
         smoke=args.smoke,
+        input_mode=args.input_mode,
     )
 
 
 if __name__ == "__main__":
     main()
+

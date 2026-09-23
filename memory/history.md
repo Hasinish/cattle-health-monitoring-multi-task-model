@@ -1,3 +1,21 @@
+# Session Summary — 2026-09-24 (Run 5 Real Behavior Perception Integration: T=8 RGB + SAM 2.1 Mask -> 4-Channel ResNet18 + TCN Smoke Test)
+
+- Convo ID: `540530b4-9a5f-4d20-b0aa-fe673856f004`
+- Objective: Implement real Behavior Run 5 perception integration (T=8 cattle-centered RGB + real SAM 2.1 binary mask -> 4-channel ResNet18 + TCN) and execute tiny smoke test on Modal profile `tigerwood693` on NVIDIA T4.
+- Accomplishments & Certifications:
+  * Implemented `scripts/build_behavior_perception_cache.py`: exact CVB GT tracklet bboxes -> full-frame SAM 2.1 Small; Kaggle Beef RT-DETR-L -> A5 (bbox + center point) -> SAM 2.1 Small with center point fallback.
+  * Generated 304 real masks across 40 candidate sequences (192 CVB exact GT, 93 Beef A5, 19 Beef fallback) in 65s on NVIDIA T4 GPU.
+  * Exactly 2 occluded Beef sequences were excluded per the strict zero-dummy-black rule; retained 29 train and 9 val sequences.
+  * Verified 4-channel ResNet18 + TCN architecture: 11,903,621 trainable parameters (+3,136 over 3-channel RGB baseline; conv1 mask channel initialized from RGB channel mean).
+  * Executed 2-epoch forward/backward training pass on Modal (App `ap-AsaXHJW9XRmrEmEJrOo6C7`, T4 GPU): Train Loss 1.5794 -> 0.9135, Val Loss 1.3117, Val Macro-F1 0.4600.
+  * Bit-identical checkpoint reload verified: Max Logit Diff = 0.00000000.
+  * Canonical test split (`test.csv`, 809 sequences) strictly untouched (`test_csv_evaluated: false`).
+  * Generated 6-sequence visual perception contact sheet (`temporal_perception_contact_sheet.jpg`).
+  * Artifacts and checkpoints committed to `behavior-checkpoints` volume and synchronized locally to `artifacts/behavior_perception_smoke/` and `docs/audits/assets/behavior_perception_smoke/`.
+  * Multi-agent coordination: Codex Run 6 Re-ID work on branch remained untouched.
+  * Created research log `docs/research_log/2026-09-24_cvb_beef_behavior_perception_integration_smoke_test.md` and updated README.md index table.
+- Non-goals honored: Full perception caching and full training were NOT launched.
+
 # Session Summary — 2026-09-24 (Run 5 Behavior Temporal Core Implementation & T4 Smoke Test)
 
 - Convo ID: `de641380-9bcd-46ed-acad-26e9309ddb2d`

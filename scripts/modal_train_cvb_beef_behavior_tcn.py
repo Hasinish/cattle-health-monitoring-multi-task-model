@@ -1,27 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-Modal Cloud Wrapper for Phase 3 Run 5: Behavior Temporal Core Smoke Test
-========================================================================
+Modal Cloud Wrapper for Phase 3 Run 5: Behavior Perception Integration Smoke Test
+================================================================================
 Profile Target   : tigerwood693
 CVB Volume       : cvb-data (mounted at /mnt/cvb)
 Beef Volume      : beef-behavior-data (mounted at /mnt/beef)
 Checkpoint Volume: behavior-checkpoints (mounted at /checkpoints)
 GPU Target       : NVIDIA T4 (T4 ONLY for smoke test; low cost)
-Primary Script   : scripts/train_cvb_beef_behavior_tcn.py
+Perception Cache : /checkpoints/behavior_perception_smoke_cache
+Output Dir       : /checkpoints/behavior_perception_smoke
 
 Execution Goal:
-Verify the lightweight temporal core (ResNet-18 + 1D TCN, T=8 frames):
-  - Deterministic temporal sampling for CVB & Beef
-  - Correct target-cow crop for CVB using authentic per-frame bboxes
-  - Beef temporal clip decode
-  - [B, T, 3, 224, 224] input tensor shapes
-  - [B, T, 512] frame features
-  - 1D TCN forward and backward passes
-  - Cross-entropy loss computation
-  - 2-epoch training on balanced smoke subset (Train=30, Val=10)
-  - Validation metrics computation (overall acc, balanced acc, macro-F1, sub-metrics)
-  - Checkpoint save and bit-identical reload verification (assert max_diff < 1e-5)
-  - Strict canonical test isolation: test.csv is NEVER touched or evaluated
+Verify the REAL Behavior Run 5 perception integration:
+  - T=8 cattle-centered RGB + real SAM 2.1 binary mask -> 4-channel ResNet18 + TCN
+  - CVB: Authentic target-tracklet GT bbox -> SAM 2.1 Small -> aligned 224x224 crop
+  - Beef: Single-cow frame -> RT-DETR-L -> A5 (box + center point) -> SAM 2.1 Small;
+    Fallback: image center point (112, 112) -> SAM 2.1 Small
+  - Real perception cache generation for balanced 40-sequence smoke subset (30 train, 10 val = 320 frames)
+  - Zero fake/zero/dummy masks or black sequences
+  - 4-channel ResNet18 initialization (conv1: RGB from ImageNet, mask from RGB channel mean)
+  - Parameter assertion: exactly 11,903,621 total trainable parameters
+  - 2-epoch forward/backward training pass on NVIDIA T4
+  - Bit-identical checkpoint reload verification (max logit diff < 1e-5)
+  - Strict test set protection: test.csv is never parsed, loaded, sampled, tuned, or evaluated
+  - Perception manifest and temporal perception contact sheet saved
 
 Usage:
   modal run --profile tigerwood693 scripts/modal_train_cvb_beef_behavior_tcn.py::smoke_test
@@ -60,13 +62,14 @@ cvb_vol = modal.Volume.from_name("cvb-data")
 beef_vol = modal.Volume.from_name("beef-behavior-data")
 checkpoint_vol = modal.Volume.from_name("behavior-checkpoints", create_if_missing=True)
 
-# Container image
+# Container image with pre-cached RT-DETR-L and SAM 2.1 weights
 train_image = (
     modal.Image.debian_slim(python_version="3.11")
     .apt_install("libgl1", "libglib2.0-0")
     .pip_install(
         "torch==2.5.1",
         "torchvision==0.20.1",
+        "ultralytics>=8.1.0",
         "numpy",
         "pandas",
         "pillow",
@@ -74,9 +77,16 @@ train_image = (
         "scikit-learn",
         "tqdm",
     )
+    .run_commands(
+        "python -c \"from ultralytics import RTDETR, SAM; RTDETR('rtdetr-l.pt'); SAM('sam2.1_s.pt')\""
+    )
     .add_local_dir(
         str(REPO_ROOT / "datasets" / "behavior" / "cvb_beef"),
         remote_path="/root/datasets/behavior/cvb_beef",
+    )
+    .add_local_file(
+        str(REPO_ROOT / "scripts" / "build_behavior_perception_cache.py"),
+        remote_path="/root/scripts/build_behavior_perception_cache.py",
     )
     .add_local_file(
         str(REPO_ROOT / "scripts" / "train_cvb_beef_behavior_tcn.py"),
@@ -84,11 +94,11 @@ train_image = (
     )
 )
 
-app = modal.App("cvb-beef-behavior-temporal-smoke", image=train_image)
+app = modal.App("cvb-beef-behavior-perception-smoke", image=train_image)
 
 
 # ==============================================================================
-# REMOTE SMOKE TEST FUNCTION (T4 GPU ONLY)
+# REMOTE PERCEPTION SMOKE TEST FUNCTION (T4 GPU ONLY)
 # ==============================================================================
 @app.function(
     gpu="T4",
@@ -97,40 +107,47 @@ app = modal.App("cvb-beef-behavior-temporal-smoke", image=train_image)
         "/mnt/beef": beef_vol,
         "/checkpoints": checkpoint_vol,
     },
-    timeout=900,
+    timeout=1200,
     cpu=2.0,
-    memory=4096,
+    memory=8192,
 )
 def smoke_test_remote() -> dict:
     """
-    Executes the temporal core smoke test on Modal (NVIDIA T4):
-    1. Verifies physical paths on /mnt/cvb and /mnt/beef
+    Executes the Run 5 perception smoke test on Modal (NVIDIA T4):
+    1. Verifies dataset paths on /mnt/cvb and /mnt/beef
     2. Verifies canonical split files (asserts test.csv is never loaded)
-    3. Runs 2-epoch balanced smoke training (Train=30, Val=10, T=8 frames)
-    4. Evaluates validation metrics
-    5. Verifies checkpoint save and bit-identical reload
-    6. Generates visual contact sheet
-    7. Asserts test.csv remained 100% untouched
-    8. Returns summary dictionary and contact sheet bytes
+    3. Selects the canonical 40-sequence balanced smoke subset (30 train, 10 val)
+    4. Generates real perception cache (SAM 2.1 masks + cattle RGB crops)
+    5. Runs 2-epoch 4-channel TCN training ([B, 8, 4, 224, 224] -> [B, 5])
+    6. Evaluates validation metrics
+    7. Verifies checkpoint save and bit-identical reload
+    8. Generates visual perception contact sheet
+    9. Asserts test.csv remained untouched and was never evaluated
+    10. Commits volume and returns artifacts
     """
     import os
     import sys
     from pathlib import Path
     import pandas as pd
+    import json
 
     sys.path.insert(0, "/root")
-    from scripts.train_cvb_beef_behavior_tcn import train_temporal_pipeline
+    from scripts.train_cvb_beef_behavior_tcn import (
+        train_temporal_pipeline,
+        get_balanced_smoke_subset,
+    )
+    from scripts.build_behavior_perception_cache import build_behavior_perception_cache
 
     print("\n" + "=" * 70)
-    print("  MODAL SMOKE TEST: RUN 5 BEHAVIOR TEMPORAL CORE (NVIDIA T4)")
+    print("  MODAL SMOKE TEST: RUN 5 BEHAVIOR PERCEPTION (4-CHANNEL TCN, NVIDIA T4)")
     print("=" * 70)
 
     # 1. Verify physical dataset paths
     cvb_dir = Path("/mnt/cvb/cvb/000058916v001")
     beef_dir = Path("/mnt/beef/beef_behavior")
     data_dir = Path("/root/datasets/behavior/cvb_beef")
-    cache_dir = Path("/checkpoints/behavior_temporal_smoke_cache")
-    output_dir = Path("/checkpoints/behavior_temporal_smoke")
+    cache_dir = Path("/checkpoints/behavior_perception_smoke_cache")
+    output_dir = Path("/checkpoints/behavior_perception_smoke")
 
     assert cvb_dir.exists(), f"CVB dataset directory not found: {cvb_dir}"
     assert beef_dir.exists(), f"Beef dataset directory not found: {beef_dir}"
@@ -156,13 +173,82 @@ def smoke_test_remote() -> dict:
     # Strict rule: record test.csv mtime and size before run
     test_stat_before = test_csv.stat()
 
-    # 3. Execute temporal pipeline
+    # 3. Deterministic Smoke Subset Selection (shared selector)
+    smoke_train_df, smoke_val_df = get_balanced_smoke_subset(train_df, val_df)
+    print(f"[*] Shared smoke subset selected: Train={len(smoke_train_df)} sequences, Val={len(smoke_val_df)} sequences")
+
+    # 4. Generate Real Perception Cache (SAM 2.1 + RT-DETR-L)
+    print("\n[*] Stage 1: Building real perception cache (SAM 2.1 Small masks + cattle crops)...")
+    from ultralytics import RTDETR, SAM
+    rtdetr_model = RTDETR("rtdetr-l.pt")
+    sam_model = SAM("sam2.1_s.pt")
+
+    retained_train_df, train_stats, train_frame_records = build_behavior_perception_cache(
+        df=smoke_train_df,
+        cvb_dir=cvb_dir,
+        beef_dir=beef_dir,
+        cache_dir=cache_dir,
+        rtdetr_model=rtdetr_model,
+        sam_model=sam_model,
+        num_frames=8,
+        device="cuda",
+        desc="Train Perception Cache",
+    )
+
+    retained_val_df, val_stats, val_frame_records = build_behavior_perception_cache(
+        df=smoke_val_df,
+        cvb_dir=cvb_dir,
+        beef_dir=beef_dir,
+        cache_dir=cache_dir,
+        rtdetr_model=rtdetr_model,
+        sam_model=sam_model,
+        num_frames=8,
+        device="cuda",
+        desc="Val Perception Cache",
+    )
+
+    # Save perception manifest and summary to cache_dir
+    all_records = train_frame_records + val_frame_records
+    manifest_df = pd.DataFrame(all_records)
+    manifest_path = cache_dir / "perception_manifest.csv"
+    manifest_df.to_csv(manifest_path, index=False)
+
+    perception_summary = {
+        "train_stats": train_stats,
+        "val_stats": val_stats,
+        "total_sequences_requested": len(smoke_train_df) + len(smoke_val_df),
+        "total_sequences_retained": len(retained_train_df) + len(retained_val_df),
+        "total_real_masks_generated": train_stats["total_real_masks_generated"] + val_stats["total_real_masks_generated"],
+        "cvb_frames_generated": train_stats["cvb_frames_generated"] + val_stats["cvb_frames_generated"],
+        "beef_a5_frames_generated": train_stats["beef_a5_frames_generated"] + val_stats["beef_a5_frames_generated"],
+        "beef_fallback_frames_generated": train_stats["beef_fallback_frames_generated"] + val_stats["beef_fallback_frames_generated"],
+    }
+    summary_path = cache_dir / "perception_summary.json"
+    with open(summary_path, "w", encoding="utf-8") as f:
+        json.dump(perception_summary, f, indent=2)
+
+    print(f"[*] Perception caching complete: {perception_summary['total_real_masks_generated']} real masks generated.")
+    print(f"    CVB frames: {perception_summary['cvb_frames_generated']}")
+    print(f"    Beef A5 frames: {perception_summary['beef_a5_frames_generated']}")
+    print(f"    Beef Fallback frames: {perception_summary['beef_fallback_frames_generated']}")
+
+    # Assert retained sequence sets are valid and non-empty
+    assert len(retained_train_df) > 0, "No train sequences retained after perception filtering!"
+    assert len(retained_val_df) > 0, "No val sequences retained after perception filtering!"
+    print(f"[*] Sequence retention verification: Train={len(retained_train_df)}/{len(smoke_train_df)}, Val={len(retained_val_df)}/{len(smoke_val_df)}")
+    print(f"    Train retained IDs: {list(retained_train_df['sample_id'])}")
+    print(f"    Val retained IDs: {list(retained_val_df['sample_id'])}")
+
+    # 5. Execute 4-Channel Temporal Training Pipeline with retained perception sequences
+    print("\n[*] Stage 2: Training 4-channel ResNet18 + TCN model...")
     summary = train_temporal_pipeline(
         data_dir=data_dir,
         cvb_dir=cvb_dir,
         beef_dir=beef_dir,
         cache_dir=cache_dir,
         output_dir=output_dir,
+        train_df=retained_train_df,
+        val_df=retained_val_df,
         epochs=2,
         batch_size=4,
         lr=1e-4,
@@ -170,29 +256,39 @@ def smoke_test_remote() -> dict:
         num_workers=0,
         num_frames=8,
         smoke=True,
+        input_mode="rgb_mask",
     )
 
-    # 4. Assert test.csv was NEVER touched
+    # 6. Assert test.csv was NEVER touched or evaluated
     test_stat_after = test_csv.stat()
     assert test_stat_before.st_mtime == test_stat_after.st_mtime, "CRITICAL: test.csv was modified!"
     assert summary.get("test_csv_evaluated") is False, "CRITICAL: test.csv was evaluated in smoke mode!"
-    print("[*] Strict canonical test-set isolation PASS: test.csv was NEVER loaded or evaluated.")
+    print("[*] Strict canonical test-set isolation PASS: test.csv was not parsed, loaded, sampled, tuned, or evaluated.")
 
-    # 5. Read contact sheet bytes for local preservation
-    contact_sheet_p = output_dir / "temporal_samples_contact_sheet.jpg"
+    # 7. Read contact sheet and manifest bytes
+    contact_sheet_p = output_dir / "temporal_perception_contact_sheet.jpg"
     contact_sheet_bytes = None
     if contact_sheet_p.exists():
         with open(contact_sheet_p, "rb") as f:
             contact_sheet_bytes = f.read()
-        print(f"[*] Loaded contact sheet bytes ({len(contact_sheet_bytes):,} bytes)")
+        print(f"[*] Loaded perception contact sheet ({len(contact_sheet_bytes):,} bytes)")
 
-    # 6. Commit checkpoints and cache to volume
+    manifest_bytes = None
+    if manifest_path.exists():
+        with open(manifest_path, "rb") as f:
+            manifest_bytes = f.read()
+
+    # Attach perception summary to metrics summary
+    summary["perception_summary"] = perception_summary
+
+    # 8. Commit volume
     checkpoint_vol.commit()
     print("[*] Persistent volume 'behavior-checkpoints' committed successfully.")
 
     result = {
         "summary": summary,
         "contact_sheet_bytes": contact_sheet_bytes,
+        "manifest_bytes": manifest_bytes,
     }
     return result
 
@@ -210,18 +306,19 @@ def smoke_test():
     import time
     t0 = time.perf_counter()
 
-    print("Launching Run 5 Behavior Temporal Core Smoke Test on Modal (profile tigerwood693, GPU T4)...")
+    print("Launching Run 5 Behavior Perception Smoke Test on Modal (profile tigerwood693, GPU T4)...")
     res = smoke_test_remote.remote()
     total_time = time.perf_counter() - t0
 
     summary = res["summary"]
     contact_sheet_bytes = res["contact_sheet_bytes"]
+    manifest_bytes = res.get("manifest_bytes")
 
-    # Save local artifacts
-    local_art_dir = REPO_ROOT / "artifacts" / "behavior_temporal_smoke"
+    # Save local artifacts in separate perception directory
+    local_art_dir = REPO_ROOT / "artifacts" / "behavior_perception_smoke"
     local_art_dir.mkdir(parents=True, exist_ok=True)
 
-    local_audit_dir = REPO_ROOT / "docs" / "audits" / "assets" / "behavior_temporal_smoke"
+    local_audit_dir = REPO_ROOT / "docs" / "audits" / "assets" / "behavior_perception_smoke"
     local_audit_dir.mkdir(parents=True, exist_ok=True)
 
     summary_path = local_art_dir / "behavior_tcn_metrics.json"
@@ -229,9 +326,15 @@ def smoke_test():
         json.dump(summary, f, indent=2)
     print(f"[*] Local metrics saved: {summary_path}")
 
+    if manifest_bytes:
+        manifest_out = local_art_dir / "perception_manifest.csv"
+        with open(manifest_out, "wb") as f:
+            f.write(manifest_bytes)
+        print(f"[*] Local perception manifest saved: {manifest_out}")
+
     if contact_sheet_bytes:
-        sheet_art_p = local_art_dir / "temporal_samples_contact_sheet.jpg"
-        sheet_audit_p = local_audit_dir / "temporal_samples_contact_sheet.jpg"
+        sheet_art_p = local_art_dir / "temporal_perception_contact_sheet.jpg"
+        sheet_audit_p = local_audit_dir / "temporal_perception_contact_sheet.jpg"
         with open(sheet_art_p, "wb") as f:
             f.write(contact_sheet_bytes)
         with open(sheet_audit_p, "wb") as f:
@@ -239,12 +342,18 @@ def smoke_test():
         print(f"[*] Local contact sheet saved: {sheet_art_p}")
         print(f"[*] Local audit contact sheet saved: {sheet_audit_p}")
 
+    p_sum = summary.get("perception_summary", {})
+
     print("\n" + "=" * 70)
-    print(f"  SMOKE TEST PASSED SUCCESSFULLY IN {total_time:.1f}s!")
+    print(f"  PERCEPTION SMOKE TEST PASSED SUCCESSFULLY IN {total_time:.1f}s!")
     print("=" * 70)
     print(f"  Status                 : {summary.get('status')}")
-    print(f"  Total Trainable Params : {summary['architecture']['total_trainable_params']:,}")
+    print(f"  Input Mode             : {summary.get('input_mode')} (in_channels={summary.get('in_channels')})")
+    print(f"  Total Trainable Params : {summary['architecture']['total_trainable_params']:,} (Expected: 11,903,621)")
+    print(f"  Sequences Processed    : Train={summary['smoke_dataset_counts']['train']['total']}, Val={summary['smoke_dataset_counts']['val']['total']}")
+    print(f"  Total Real Masks       : {p_sum.get('total_real_masks_generated')} (CVB={p_sum.get('cvb_frames_generated')}, Beef A5={p_sum.get('beef_a5_frames_generated')}, Beef Fallback={p_sum.get('beef_fallback_frames_generated')})")
     print(f"  Best Val Macro-F1      : {summary['best_val_metrics']['macro_f1']:.4f}")
     print(f"  Logit Reload Diff      : {summary['max_logit_diff_after_reload']:.8f}")
     print(f"  Test CSV Evaluated     : {summary.get('test_csv_evaluated')}")
+    print(f"  Test Set Protection    : {summary.get('test_set_protection')}")
     print("=" * 70)
