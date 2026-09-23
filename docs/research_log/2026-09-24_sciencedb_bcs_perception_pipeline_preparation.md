@@ -39,12 +39,19 @@ Save Crop (.jpg, Q95) + Binary Mask (.png, lossless) + Manifest (.csv)
 - Direct tensor inspection of `res[0].masks.data` on authentic ScienceDB samples confirmed:
   `dtype: torch.bool, unique: [False, True]`.
 - The raw mask is **binary boolean**, NOT a continuous confidence map.
-- Saved as single-channel 8-bit PNG (0 = background, 255 = foreground cow).
-- In the DataLoader, resized to 224x224 (bilinear anti-aliasing) and converted to float `[0.0, 1.0]`.
+- Stored as single-channel 8-bit PNG (0 = background, 255 = foreground cow).
+- Documented strictly as **BINARY foreground mask guidance** (zero claims of soft probability).
+- In DataLoader, converted to float tensor with values in `{0.0, 1.0}`.
 
-### 2.3 Explicit Failure Handling
-- **Zero RT-DETR Detections:** Recorded explicitly in manifest with `detection_status='no_detection'` and `sam_status='upstream_localization_failure'`. Zero artificial detector boxes are fabricated. Crop falls back to full image with an empty mask.
-- **SAM Zero Mask:** Recorded explicitly with `sam_status='sam_no_mask'`. Zero artificial masks are fabricated.
+### 2.3 Explicit Failure Handling & Strict Exclusion Policy
+- **Zero RT-DETR Detections:** Recorded explicitly in manifest with `detection_status='no_detection'` and `sam_status='upstream_localization_failure'`. Zero artificial detector boxes, fake crops, or zero masks are written to disk (`crop_rel_path=null`, `mask_rel_path=null`).
+- **SAM Zero Mask:** Recorded explicitly with `sam_status='sam_no_mask'`. Zero artificial masks are written to disk (`mask_rel_path=null`).
+- **Training Exclusion Policy:** Downstream training dataset strictly requires `detection_status == 'detected'` AND `sam_status == 'segmented'`. Non-successful perception rows are completely excluded from model training, validation, and test evaluation. Excluded counts are reported per split. Zero fabricated full-image or zero-mask samples are fed to the network.
+
+### 2.4 Resumable Cache Architecture
+- Periodic checkpoint commits: writes manifest and calls Modal `cache_volume.commit()` every 100 samples and upon split completion.
+- Re-run safe: reads existing split manifests, verifies physical existence and non-zero size (`st_size > 0`) of crops and masks on disk, increments `skip` count, and avoids redundant GPU compute.
+- Live `tqdm` progress tracking with real-time `skip`, `det`, `seg`, and `fail` counters.
 
 ---
 
@@ -57,23 +64,37 @@ To isolate the empirical effect of cattle-centered localization and foreground m
   - Channel 3: Initialized deterministically from channel-mean of ImageNet conv1 weights (`old_conv1.weight.mean(dim=1, keepdim=True)`).
 - **Head:** Frank & Hall (2001) Ordinal BCE head (`Linear(512, 4)`).
 - **Exact Parameter Counts:**
-  - Baseline 3-Channel ResNet-18 BCS: **11,178,564** parameters.
-  - Perception 4-Channel ResNet-18 BCS: **11,181,700** parameters.
+  - Baseline 3-Channel ResNet-18 BCS (Run 1): **11,178,564** parameters.
+  - Perception 4-Channel ResNet-18 BCS (Run 4): **11,181,700** parameters.
   - **Exact Delta:** **+3,136 parameters (+0.028%)**, completely confined to `conv1`.
 
 ---
 
-## 4. Local Smoke Test Verification
+## 4. Augmentation Matching & Test Isolation
 
-Executed on local GTX 1050 Ti across 10 train and 10 validation samples representing all 5 canonical BCS classes (3.25, 3.50, 3.75, 4.00, 4.25):
-- **Crop & Mask Generation:** 10/10 samples localized and segmented at 1.9 imgs/s.
-- **Synchronized Augmentations:** RGB crop and mask merged into 4-channel RGBA before joint spatial transforms (`RandomHorizontalFlip`, `RandomRotation`), guaranteeing 100% spatial alignment.
-- **Forward & Backward Pass:** Successfully executed forward pass, BCEWithLogits loss calculation, and backward gradient backpropagation across 2 epochs:
-  - Epoch 1: Train Loss 0.7255, Val Loss 0.6732, Val Real MAE: 0.2750 BCS.
-  - Epoch 2: Train Loss 0.5765, Val Loss 0.6816, Val Real MAE: 0.2500 BCS.
-- **Checkpoint Determinism:** Bit-identical checkpoint save and reload verified (`scratch/verify_checkpoint_resume.py` max absolute logit difference = `0.00000000`).
-- **Test Isolation:** `test.csv` was strictly excluded from training and validation.
-- **Visual Audit:** Generated 4-panel master contact sheet (`docs/audits/assets/bcs_perception/bcs_perception_contact_sheet.jpg`, 1280x1250 px) confirming clean separation of cows from metal chute rails and concrete floors.
+- **Run 1 Augmentation Fair Match:**
+  - Resize 224
+  - RandomHorizontalFlip(p=0.5) [Synchronized across RGB + mask]
+  - RandomRotation(15 degrees) [Synchronized across RGB + mask]
+  - ColorJitter(brightness=0.1, contrast=0.1) [Applied to RGB ONLY, never mask]
+- **Strict Test Set Isolation:**
+  - Training and checkpoint selection strictly evaluate TRAIN and VAL splits only.
+  - Best checkpoint is selected by validation Real MAE.
+  - Frozen test split is evaluated exactly ONCE post-training using the best checkpoint (`bcs_perception_best.pth`).
+  - Test metrics are saved independently to `bcs_perception_test_metrics.json`.
+  - Test data NEVER influences checkpoint selection or training decisions.
+
+---
+
+## 5. Local Smoke Test Verification
+
+Executed on local GTX 1050 Ti:
+- **Failure Exclusion Verified:** Smoke validation manifest filtered from 10 raw rows down to 6 usable samples (4 perception failures explicitly excluded).
+- **Live TQDM Verified:** Progress bars streamed for training and validation batches.
+- **Forward & Backward Pass:** Successfully executed forward pass, loss calculation, and backward gradient backpropagation across 2 epochs (Val MAE: 0.4167 BCS).
+- **Checkpoint Determinism:** Bit-identical checkpoint save and reload verified (max absolute output difference = `0.00000000`).
+- **Post-Training Test Evaluation:** Verified one-time post-training test evaluation function on 7 valid test samples (`bcs_perception_test_metrics.json`).
+- **Visual Audit:** Generated 4-panel master contact sheet (`docs/audits/assets/bcs_perception/bcs_perception_contact_sheet.jpg`, 1280x1250 px).
 
 ---
 

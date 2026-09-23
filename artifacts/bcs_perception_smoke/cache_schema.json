@@ -50,8 +50,9 @@
     "crop_h": "Height of the extracted crop (int)"
   },
   "failure_policies": {
-    "zero_rtdetr_detections": "Explicitly recorded in manifest as 'no_detection'. Zero detector box is fabricated. Crop falls back to full image. SAM status set to 'upstream_localization_failure'.",
-    "sam_no_mask": "Explicitly recorded in manifest as 'sam_no_mask'. Empty mask saved; no synthetic mask fabricated."
+    "zero_rtdetr_detections": "Explicitly recorded in manifest as 'no_detection' with sam_status='upstream_localization_failure'. Zero detector box is fabricated, and zero fake crops or masks are written. crop_rel_path and mask_rel_path are null. Downstream training strictly excludes these rows.",
+    "sam_no_mask": "Explicitly recorded in manifest as 'sam_no_mask'. Zero fake zero-mask is written. mask_rel_path is null. Downstream training strictly excludes these rows.",
+    "training_exclusion_rule": "Downstream training strictly requires detection_status == 'detected' AND sam_status == 'segmented'. Non-successful perception rows are excluded from model training, validation, and test evaluation. Excluded counts are reported per split."
   },
   "training_integration": {
     "architecture": "ResNet-18 (ImageNet pretrained trunk)",

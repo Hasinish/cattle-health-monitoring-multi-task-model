@@ -10,7 +10,7 @@ Pipeline:
     -> Deterministic Primary Cow Selection (max area, confidence tie-breaker)
     -> Crop with fixed documented 5% proportional margin
     -> SAM 2.1 instance segmentation using detector box prompt
-    -> Save crop image (.jpg) + binary foreground mask (.png) + provenance metadata
+    -> Save crop image (.jpg) + BINARY foreground mask (.png) + provenance metadata
 
 Dataset Splits:
   Strictly preserves canonical ScienceDB split CSVs (train.csv, val.csv, test.csv)
@@ -19,12 +19,22 @@ Dataset Splits:
 Mask Semantics:
   Ultralytics SAM 2.1 returns binary boolean masks {False, True}.
   Stored as 8-bit PNG: 0 = background, 255 = cow foreground.
-  Documented as binary foreground segmentation (not continuous soft probability).
+  Documented strictly as BINARY foreground mask guidance (never soft probability).
 
 Failure Handling:
   - If zero RT-DETR detections: recorded explicitly as 'no_detection',
     sam_status='upstream_localization_failure'. No detector box is fabricated.
+    Zero fake full-image crops or fake zero-masks are saved to disk.
   - If SAM fails to return mask: recorded explicitly as sam_status='sam_no_mask'.
+    Zero fake zero-masks are saved to disk.
+  - Manifest records 100% of samples and exact provenance.
+  - Downstream training dataset strictly filters for:
+    detection_status == 'detected' AND sam_status == 'segmented'
+
+Resumability:
+  - Skips already completed valid crop + mask pairs on disk.
+  - Preserves existing manifest records and appends/updates incrementally.
+  - Periodically commits manifest and progress.
 
 Usage:
   # Local smoke test (10 samples across 5 classes):
@@ -40,7 +50,8 @@ import time
 import json
 import argparse
 from pathlib import Path, PureWindowsPath
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
+from tqdm import tqdm
 
 import cv2
 import numpy as np
@@ -144,10 +155,11 @@ def process_image(
     conf_thresh: float = 0.25,
     margin_ratio: float = 0.05,
     device: str = "cuda",
-) -> Tuple[np.ndarray, np.ndarray, Dict]:
+) -> Tuple[Optional[np.ndarray], Optional[np.ndarray], Dict]:
     """
     Execute localization -> primary cow crop -> SAM 2.1 segmentation on single image.
     Returns: (crop_bgr, crop_mask_uint8, provenance_metadata)
+    On failure: returns (None, None, meta) or (crop_bgr, None, meta). Zero fabricated boxes or masks.
     """
     img_h, img_w = img_bgr.shape[:2]
 
@@ -166,24 +178,23 @@ def process_image(
         primary_info = None
 
     if primary_info is None:
-        # Failure: No cow detected. Explicit failure recording; DO NOT fabricate box.
-        crop_img = img_bgr
-        crop_mask = np.zeros((img_h, img_w), dtype=np.uint8)
+        # Failure: No cow detected. Explicit failure recording; DO NOT fabricate box or crop/mask.
         meta = {
             "detection_status": "no_detection",
             "sam_status": "upstream_localization_failure",
             "bbox_x1": None, "bbox_y1": None, "bbox_x2": None, "bbox_y2": None,
-            "crop_x1": 0, "crop_y1": 0, "crop_x2": img_w, "crop_y2": img_h,
+            "crop_x1": None, "crop_y1": None, "crop_x2": None, "crop_y2": None,
             "confidence": 0.0,
             "num_cow_detections": 0,
             "mask_area_ratio": 0.0,
-            "crop_w": img_w, "crop_h": img_h,
+            "crop_w": None, "crop_h": None,
         }
-        return crop_img, crop_mask, meta
+        return None, None, meta
 
     # Step 2: SAM 2.1 Segmentation using detector box prompt
     raw_box = primary_info["box_xyxy"]
     crop_x1, crop_y1, crop_x2, crop_y2 = primary_info["crop_xyxy"]
+    crop_img = img_bgr[crop_y1:crop_y2, crop_x1:crop_x2]
 
     sam_res = sam_model(img_bgr, bboxes=[raw_box], device=device, verbose=False)
     if sam_res[0].masks is not None and len(sam_res[0].masks) > 0:
@@ -195,11 +206,10 @@ def process_image(
         sam_status = "segmented"
         mask_area_ratio = float(np.mean(crop_mask_bool))
     else:
-        crop_mask = np.zeros((crop_y2 - crop_y1, crop_x2 - crop_x1), dtype=np.uint8)
+        # SAM failure: Explicit failure recording; DO NOT fabricate zero mask.
+        crop_mask = None
         sam_status = "sam_no_mask"
         mask_area_ratio = 0.0
-
-    crop_img = img_bgr[crop_y1:crop_y2, crop_x1:crop_x2]
 
     meta = {
         "detection_status": "detected",
@@ -226,10 +236,12 @@ def run_cache_generation(
     split_to_run: str = "all",
     smoke: bool = False,
     max_samples: Optional[int] = None,
+    save_interval: int = 50,
+    commit_callback: Optional[Callable[[], None]] = None,
     device: str = "cuda",
 ) -> Dict:
     """
-    Main cache generation loop across splits.
+    Main cache generation loop across splits with resumability, live tqdm, and explicit failure isolation.
     """
     print("\n" + "=" * 75)
     print("  SCIENTEDB PERCEPTION CACHE GENERATION PIPELINE")
@@ -280,14 +292,35 @@ def run_cache_generation(
         split_crop_dir.mkdir(parents=True, exist_ok=True)
         split_mask_dir.mkdir(parents=True, exist_ok=True)
 
-        records = []
+        # Resumability: check existing manifest records
+        manifest_csv = manifest_dir / f"{split}_perception.csv"
+        existing_records = {}
+        if manifest_csv.exists():
+            try:
+                ex_df = pd.read_csv(manifest_csv)
+                for _, ex_row in ex_df.iterrows():
+                    existing_records[str(ex_row["image_path"])] = ex_row.to_dict()
+                print(f"  [*] Found existing manifest with {len(existing_records)} records. Checking for resumability...")
+            except Exception as e:
+                print(f"  [!] Notice: could not parse existing manifest ({e}), starting fresh for {split}.")
+
+        records_map = dict(existing_records)
+        n_skipped = 0
         n_detected = 0
         n_segmented = 0
         n_det_fail = 0
         n_sam_fail = 0
 
         t0 = time.time()
-        for i, (_, row) in enumerate(df_proc.iterrows(), 1):
+        pbar = tqdm(
+            df_proc.iterrows(),
+            total=len(df_proc),
+            desc=f"Cache [{split:5s}]",
+            file=sys.stdout,
+            dynamic_ncols=True,
+        )
+
+        for i, (_, row) in enumerate(pbar, 1):
             raw_path = str(row["image_path"])
             bcs_label = float(row["label"])
             burst_group = str(row["burst_group_id"])
@@ -307,6 +340,31 @@ def run_cache_generation(
             out_crop_abs = cache_dir / out_crop_rel
             out_mask_abs = cache_dir / out_mask_rel
 
+            # Resumption check: if already processed and files exist on disk
+            if raw_path in existing_records:
+                ex = existing_records[raw_path]
+                det_st = ex.get("detection_status")
+                sam_st = ex.get("sam_status")
+                if det_st == "detected" and sam_st == "segmented":
+                    c_p = cache_dir / str(ex.get("crop_rel_path", ""))
+                    m_p = cache_dir / str(ex.get("mask_rel_path", ""))
+                    if c_p.exists() and c_p.stat().st_size > 0 and m_p.exists() and m_p.stat().st_size > 0:
+                        n_skipped += 1
+                        n_detected += 1
+                        n_segmented += 1
+                        pbar.set_postfix(skip=n_skipped, det=n_detected, seg=n_segmented, fail=n_det_fail + n_sam_fail)
+                        continue
+                elif det_st != "detected" or sam_st != "segmented":
+                    # Preserved failure
+                    n_skipped += 1
+                    if det_st != "detected":
+                        n_det_fail += 1
+                    else:
+                        n_detected += 1
+                        n_sam_fail += 1
+                    pbar.set_postfix(skip=n_skipped, det=n_detected, seg=n_segmented, fail=n_det_fail + n_sam_fail)
+                    continue
+
             img_bgr = cv2.imread(str(resolved_p))
             if img_bgr is None:
                 raise IOError(f"Failed to read image at {resolved_p}")
@@ -316,44 +374,61 @@ def run_cache_generation(
                 conf_thresh=conf_thresh, margin_ratio=margin_ratio, device=device,
             )
 
-            # Save JPEG Quality 95 for crop
-            cv2.imwrite(str(out_crop_abs), crop_img, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
-            # Save 8-bit PNG for mask (lossless)
-            cv2.imwrite(str(out_mask_abs), crop_mask)
-
+            # Only save files to disk for successful outputs (never fabricate crops or masks)
             if meta["detection_status"] == "detected":
                 n_detected += 1
+                cv2.imwrite(str(out_crop_abs), crop_img, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
+                saved_crop_rel = out_crop_rel
             else:
                 n_det_fail += 1
+                saved_crop_rel = None
 
             if meta["sam_status"] == "segmented":
                 n_segmented += 1
-            elif meta["sam_status"] == "sam_no_mask":
+                cv2.imwrite(str(out_mask_abs), crop_mask)
+                saved_mask_rel = out_mask_rel
+            else:
                 n_sam_fail += 1
+                saved_mask_rel = None
 
             rec = {
                 "image_path": raw_path,
                 "label": bcs_label,
                 "burst_group_id": burst_group,
-                "crop_rel_path": out_crop_rel,
-                "mask_rel_path": out_mask_rel,
+                "crop_rel_path": saved_crop_rel,
+                "mask_rel_path": saved_mask_rel,
                 **meta,
             }
-            records.append(rec)
+            records_map[raw_path] = rec
+            pbar.set_postfix(skip=n_skipped, det=n_detected, seg=n_segmented, fail=n_det_fail + n_sam_fail)
 
-            if i % 10 == 0 or i == len(df_proc):
-                elapsed = time.time() - t0
-                speed = i / elapsed if elapsed > 0 else 0
-                print(f"  [{i}/{len(df_proc)}] Det: {n_detected} | Seg: {n_segmented} | Misses: {n_det_fail} | {speed:.1f} imgs/s", flush=True)
+            # Periodic manifest save & commit
+            if i % save_interval == 0:
+                ordered_records = [records_map[str(rp)] for rp in df_proc["image_path"] if str(rp) in records_map]
+                pd.DataFrame(ordered_records).to_csv(manifest_csv, index=False)
+                if commit_callback is not None:
+                    try:
+                        commit_callback()
+                    except Exception:
+                        pass
 
-        out_df = pd.DataFrame(records)
-        manifest_csv = manifest_dir / f"{split}_perception.csv"
+        # Split complete: order records exactly matching df_proc
+        ordered_records = [records_map[str(rp)] for rp in df_proc["image_path"] if str(rp) in records_map]
+        out_df = pd.DataFrame(ordered_records)
         out_df.to_csv(manifest_csv, index=False)
-        print(f"  ✓ Saved manifest: {manifest_csv} ({len(out_df)} records)")
+        if commit_callback is not None:
+            try:
+                commit_callback()
+            except Exception:
+                pass
+
+        print(f"\n  ✓ Saved split manifest: {manifest_csv} ({len(out_df)} records, {n_skipped} skipped/reused)")
+        print(f"  ✓ Split Perception Summary: Detected={n_detected} | Segmented={n_segmented} | DetFail={n_det_fail} | SamFail={n_sam_fail}", flush=True)
 
         split_summary = {
             "split": split,
             "total_processed": len(df_proc),
+            "skipped_reused": n_skipped,
             "detected": n_detected,
             "segmented": n_segmented,
             "detection_failures": n_det_fail,
@@ -368,6 +443,11 @@ def run_cache_generation(
     with open(summary_file, "w", encoding="utf-8") as f:
         json.dump(overall_stats, f, indent=2)
     print(f"\n✓ Saved cache summary: {summary_file}")
+    if commit_callback is not None:
+        try:
+            commit_callback()
+        except Exception:
+            pass
     print("=" * 75)
     return overall_stats
 

@@ -181,10 +181,12 @@ def build_cache(
     split: str = "all",
     smoke: bool = False,
     max_samples: int = None,
+    save_interval: int = 100,
 ):
     """
     Executes full perception preprocessing (RT-DETR-L + SAM 2.1) on Modal.
-    Saves crops, binary masks, and provenance manifests to persistent volume 'sciencedb-perception-cache'.
+    Saves crops, BINARY masks, and provenance manifests to persistent volume 'sciencedb-perception-cache'.
+    Periodically commits volume to make execution robustly resumable.
     """
     import sys
     sys.path.insert(0, "/root")
@@ -196,6 +198,13 @@ def build_cache(
     splits_dir = Path("/root/sciencedb_splits")
     cache_dir = Path("/cache")
 
+    def _commit_cache():
+        try:
+            cache_volume.commit()
+            print("  [Volume Commit] Periodically committed 'sciencedb-perception-cache'.", flush=True)
+        except Exception as e:
+            print(f"  [Volume Commit Warning] {e}", flush=True)
+
     stats = run_cache_generation(
         data_dir=data_dir,
         splits_dir=splits_dir,
@@ -203,11 +212,13 @@ def build_cache(
         split_to_run=split,
         smoke=smoke,
         max_samples=max_samples,
+        save_interval=save_interval,
+        commit_callback=_commit_cache,
         device="cuda",
     )
 
     cache_volume.commit()
-    print("\n✓ Committed all crops, masks, and manifests to 'sciencedb-perception-cache'.", flush=True)
+    print("\n✓ Final commit of all crops, masks, and manifests to 'sciencedb-perception-cache'.", flush=True)
     return stats
 
 
@@ -232,9 +243,12 @@ def main(
     weight_decay: float = 1e-4,
     mask_init: str = "mean",
     smoke: bool = False,
+    eval_test: bool = True,
 ):
     """
     Main training entry point for Run 4 BCS Perception-Enhanced Model on Modal L40S.
+    Selects best checkpoint strictly on validation Real MAE (train/val only).
+    Runs one-time held-out test evaluation after training completes.
     """
     import sys
     sys.path.insert(0, "/root")
@@ -255,6 +269,7 @@ def main(
         weight_decay=weight_decay,
         mask_init=mask_init,
         smoke=smoke,
+        eval_test=(eval_test and not smoke),
     )
 
     checkpoint_volume.commit()

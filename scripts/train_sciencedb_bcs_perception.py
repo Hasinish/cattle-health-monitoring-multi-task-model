@@ -7,19 +7,28 @@ Phase 3 Step 4.4 / Run 4: ScienceDB Perception-Enhanced Model (RGB + RT-DETR-L c
 Architecture:
   - ResNet-18 modified for 4-channel input [R, G, B, Mask]
   - Channels 0-2: RGB normalized with ImageNet mean/std
-  - Channel 3: SAM 2.1 foreground binary mask in [0.0, 1.0] (0 = background, 1 = foreground cow)
+  - Channel 3: SAM 2.1 BINARY foreground mask in {0.0, 1.0} (0 = background, 1 = foreground cow)
   - conv1 modified from nn.Conv2d(3, 64, 7) to nn.Conv2d(4, 64, 7)
     * Weights [:, :3, :, :] copied directly from ImageNet pretrained ResNet-18
     * Weights [:, 3:4, :, :] initialized deterministically via channel mean (or zero)
-    * Total parameter delta: +3,136 parameters (11,179,648 vs 11,176,512 baseline; +0.028%)
+    * Baseline Run 1 ordinal ResNet-18: 11,178,564 parameters
+    * Run 4 4-channel ordinal ResNet-18: 11,181,700 parameters
+    * Parameter delta: +3,136 parameters (+0.028%)
   - Head: Ordinal BCE (Frank & Hall, 2001 cumulative head Linear(512, 4))
   - Pose: EXCLUDED from deadline run (unreliable rear anatomy, missing pelvic landmarks)
   - Viewpoint: EXCLUDED from deadline run (cross-domain transfer not yet certified)
 
+Augmentation (Fair Match to Run 1):
+  - Resize 224
+  - RandomHorizontalFlip(p=0.5) [Synchronized across RGB + Mask]
+  - RandomRotation(15 degrees) [Synchronized across RGB + Mask]
+  - ColorJitter(brightness=0.1, contrast=0.1) [Applied to RGB ONLY, never mask]
+
 Evaluation:
   - Primary metric: Real BCS MAE computed on scale 3.25 to 4.25 (step 0.25)
   - Secondary metrics: Acc@1 (+/- 0.25), Acc@0 (exact), Balanced Accuracy, Macro-F1
-  - Integrity: Canonical test split is strictly isolated and NEVER accessed during training.
+  - Model Selection: Best checkpoint selected by validation Real MAE (train/val ONLY).
+  - Test Integrity: Frozen test split is evaluated exactly ONCE post-training. Zero test access during training.
 """
 
 import os
@@ -77,7 +86,14 @@ def set_seed(seed: int = 42):
 class ScienceDBPerceptionDataset(Dataset):
     """
     Dataset loader for ScienceDB perception crops and masks.
-    Spatially synchronizes augmentations across both RGB crop and SAM 2.1 mask.
+    Enforces strict perception failure filtering and synchronized augmentations:
+      - Rows where detection_status != "detected" or sam_status != "segmented" are EXCLUDED.
+      - Fairly matches Run 1 baseline:
+        * Resize(224, 224)
+        * RandomHorizontalFlip(p=0.5) synchronized across RGB + mask
+        * RandomRotation(15 degrees) synchronized across RGB + mask
+        * ColorJitter(brightness=0.1, contrast=0.1) on RGB ONLY (never mask)
+      - Mask values in {0.0, 1.0} representing BINARY foreground mask guidance.
     """
     def __init__(
         self,
@@ -93,6 +109,17 @@ class ScienceDBPerceptionDataset(Dataset):
         self.image_size = image_size
 
         df = pd.read_csv(self.manifest_path)
+        total_raw = len(df)
+
+        # Failure Exclusion Policy:
+        # Strictly require detection_status == "detected" AND sam_status == "segmented"
+        valid_mask = (df["detection_status"] == "detected") & (df["sam_status"] == "segmented")
+        n_excluded = int((~valid_mask).sum())
+        df = df[valid_mask].copy().reset_index(drop=True)
+
+        split_name = self.manifest_path.stem.replace("_perception", "")
+        print(f"  [Filter: {split_name:5s}] Canonical rows: {total_raw} | Excluded perception failures: {n_excluded} | Usable training samples: {len(df)}", flush=True)
+
         if max_samples and max_samples < len(df):
             # Deterministic stratified sampling for smoke testing
             samples_per_class = max(1, max_samples // NUM_CLASSES)
@@ -114,6 +141,7 @@ class ScienceDBPerceptionDataset(Dataset):
             self.samples.append((str(crop_p), str(mask_p), target_idx, raw_label))
 
         self.rgb_norm = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        self.color_jitter = T.ColorJitter(brightness=0.1, contrast=0.1)
 
     def __len__(self) -> int:
         return len(self.samples)
@@ -121,7 +149,7 @@ class ScienceDBPerceptionDataset(Dataset):
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, float]:
         crop_path, mask_path, target_idx, raw_label = self.samples[idx]
 
-        # Load RGB crop and grayscale mask
+        # Load RGB crop and grayscale binary mask
         try:
             crop_img = Image.open(crop_path).convert("RGB")
         except Exception as e:
@@ -132,26 +160,31 @@ class ScienceDBPerceptionDataset(Dataset):
         except Exception as e:
             raise IOError(f"Error opening mask at {mask_path}: {e}")
 
-        # Combine into 4-channel image to ensure 100% synchronized spatial augmentation
-        r, g, b = crop_img.split()
-        rgba = Image.merge("RGBA", (r, g, b, mask_img))
+        # 1. Resize to target dimension
+        crop_img = TF.resize(crop_img, (self.image_size, self.image_size), interpolation=TF.InterpolationMode.BILINEAR)
+        mask_img = TF.resize(mask_img, (self.image_size, self.image_size), interpolation=TF.InterpolationMode.NEAREST)
 
-        # Spatial transforms
-        rgba = TF.resize(rgba, (self.image_size, self.image_size))
+        # 2. Synchronized augmentations matching Run 1 baseline
         if self.is_train:
+            # Synchronized random horizontal flip (p=0.5)
             if np.random.rand() > 0.5:
-                rgba = TF.hflip(rgba)
-            if np.random.rand() > 0.5:
-                angle = float(np.random.uniform(-15, 15))
-                rgba = TF.rotate(rgba, angle)
+                crop_img = TF.hflip(crop_img)
+                mask_img = TF.hflip(mask_img)
 
-        # Convert to float tensor [4, H, W] in [0.0, 1.0]
-        tensor = TF.to_tensor(rgba)
+            # Synchronized random rotation (+/- 15 degrees)
+            angle = float(np.random.uniform(-15.0, 15.0))
+            crop_img = TF.rotate(crop_img, angle, interpolation=TF.InterpolationMode.BILINEAR)
+            mask_img = TF.rotate(mask_img, angle, interpolation=TF.InterpolationMode.NEAREST)
 
-        # Normalize RGB channels (0..2), preserve mask channel (3) in [0.0, 1.0]
-        rgb = self.rgb_norm(tensor[:3, :, :])
-        mask = tensor[3:4, :, :]
-        four_channel = torch.cat([rgb, mask], dim=0)
+            # ColorJitter applied to RGB ONLY, NEVER to mask
+            crop_img = self.color_jitter(crop_img)
+
+        # 3. Convert to float tensors
+        rgb_tensor = TF.to_tensor(crop_img)  # [3, H, W] in [0.0, 1.0]
+        rgb_normed = self.rgb_norm(rgb_tensor)
+
+        mask_tensor = TF.to_tensor(mask_img)  # [1, H, W] in {0.0, 1.0}
+        four_channel = torch.cat([rgb_normed, mask_tensor], dim=0)  # [4, H, W]
 
         return four_channel, torch.tensor(target_idx, dtype=torch.long), raw_label
 
@@ -301,6 +334,80 @@ def evaluate_metrics(y_true_indices: np.ndarray, y_pred_indices: np.ndarray) -> 
     }
 
 
+def evaluate_test_split(
+    model: nn.Module,
+    manifest_dir: Path,
+    cache_dir: Path,
+    output_dir: Path,
+    batch_size: int = 64,
+    device: torch.device = torch.device("cpu"),
+) -> Dict:
+    """
+    Evaluates best trained checkpoint on the frozen held-out test split exactly once.
+    Test metrics are saved separately and do NOT influence model selection.
+    """
+    test_manifest = manifest_dir / "test_perception.csv"
+    if not test_manifest.exists():
+        raise FileNotFoundError(f"Missing test perception manifest: {test_manifest}")
+
+    print("\n" + "=" * 75)
+    print("  RUN 4: HELD-OUT FROZEN TEST EVALUATION (ONE-TIME POST-TRAINING)")
+    print(f"  Test Manifest: {test_manifest}")
+    print("=" * 75)
+
+    num_workers = 0 if sys.platform == "win32" else 4
+    test_dataset = ScienceDBPerceptionDataset(
+        manifest_path=test_manifest,
+        cache_dir=cache_dir,
+        is_train=False,
+    )
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
+    model.eval()
+    criterion = nn.BCEWithLogitsLoss()
+    test_loss = 0.0
+    n_test = 0
+    all_true_indices, all_pred_indices = [], []
+
+    pbar = tqdm(test_loader, desc="[Test] Held-Out Evaluation", file=sys.stdout, leave=True, dynamic_ncols=True)
+    with torch.no_grad():
+        for imgs, target_indices, _ in pbar:
+            imgs = imgs.to(device)
+            target_indices = target_indices.to(device)
+            targets = ordinal_targets_from_class_indices(target_indices, device=device)
+
+            logits = model(imgs)
+            loss = criterion(logits, targets)
+            test_loss += loss.item() * len(target_indices)
+            n_test += len(target_indices)
+
+            pred_indices, _ = logits_to_predictions(logits, head_type="ordinal_bce")
+            all_pred_indices.extend(pred_indices)
+            all_true_indices.extend(target_indices.cpu().numpy())
+            pbar.set_postfix(test_loss=f"{loss.item():.4f}")
+
+    avg_test_loss = test_loss / max(1, n_test)
+    test_metrics = evaluate_metrics(np.array(all_true_indices), np.array(all_pred_indices))
+    test_summary = {
+        "test_loss": round(avg_test_loss, 4),
+        "total_test_samples": len(test_dataset),
+        **test_metrics,
+    }
+
+    test_metrics_file = output_dir / "bcs_perception_test_metrics.json"
+    with open(test_metrics_file, "w", encoding="utf-8") as f:
+        json.dump(test_summary, f, indent=2)
+
+    print(f"\n✓ Held-out Test Real MAE: {test_metrics['real_mae']:.4f} BCS units")
+    print(f"✓ Held-out Test Acc@1:    {test_metrics['acc_1']*100:.2f}%")
+    print(f"✓ Held-out Test Acc@0:    {test_metrics['acc_0']*100:.2f}%")
+    print(f"✓ Held-out Test Bal Acc:  {test_metrics['balanced_accuracy']*100:.2f}%")
+    print(f"✓ Held-out Test Macro-F1: {test_metrics['macro_f1']:.4f}")
+    print(f"✓ Saved test metrics to:  {test_metrics_file}")
+    print("=" * 75)
+    return test_summary
+
+
 def train_pipeline(
     manifest_dir: Path,
     cache_dir: Path,
@@ -312,10 +419,12 @@ def train_pipeline(
     mask_init: str = "mean",
     smoke: bool = False,
     max_samples: Optional[int] = None,
+    eval_test: bool = False,
     device_name: Optional[str] = None,
 ) -> Dict:
     """
     Main training and validation loop for Run 4 Perception-Enhanced Model.
+    Model selection is performed strictly on validation Real MAE using train/val ONLY.
     """
     device = torch.device(device_name if device_name else ("cuda" if torch.cuda.is_available() else "cpu"))
     set_seed(42)
@@ -329,6 +438,7 @@ def train_pipeline(
     print(f"  Mask Init:      {mask_init} (conv1 weights: +3,136 params)")
     print(f"  Mode:           {'SMOKE TEST (10 samples)' if smoke else 'FULL TRAINING'}")
     print(f"  Epochs:         {epochs} | Batch Size: {batch_size} | LR: {lr}")
+    print(f"  Test Eval:      {'YES (post-training one-time)' if (eval_test and not smoke) else 'NO (smoke / train-val only)'}")
     print("=" * 75)
 
     train_manifest = manifest_dir / "train_perception.csv"
@@ -348,16 +458,17 @@ def train_pipeline(
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
 
-    print(f"Loaded {len(train_dataset)} train samples, {len(val_dataset)} val samples.", flush=True)
+    print(f"\nLoaded {len(train_dataset)} train samples, {len(val_dataset)} val samples.", flush=True)
 
     model = ResNet18BCSPerception(pretrained=True, head_type="ordinal_bce", mask_init=mask_init)
     model.to(device)
 
     # Verification: Parameter count comparison
-    baseline_params = 11176512
+    baseline_params = 11178564  # Run 1 ResNet-18 + Ordinal BCE Head (Linear(512, 4))
     model_params = sum(p.numel() for p in model.parameters())
     param_delta = model_params - baseline_params
-    print(f"Model Parameters: {model_params:,} (Baseline: {baseline_params:,}, Delta: +{param_delta:,} params)", flush=True)
+    pct_delta = (param_delta / baseline_params) * 100.0
+    print(f"Model Parameters: {model_params:,} (Baseline: {baseline_params:,}, Delta: +{param_delta:,} params / +{pct_delta:.3f}%)", flush=True)
 
     criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
@@ -376,7 +487,14 @@ def train_pipeline(
         train_loss = 0.0
         n_train = 0
 
-        for imgs, target_indices, _ in train_loader:
+        pbar_train = tqdm(
+            train_loader,
+            desc=f"Epoch [{epoch:02d}/{epochs:02d}] Train",
+            file=sys.stdout,
+            leave=False,
+            dynamic_ncols=True,
+        )
+        for imgs, target_indices, _ in pbar_train:
             imgs = imgs.to(device)
             target_indices = target_indices.to(device)
             targets = ordinal_targets_from_class_indices(target_indices, device=device)
@@ -389,6 +507,7 @@ def train_pipeline(
 
             train_loss += loss.item() * len(target_indices)
             n_train += len(target_indices)
+            pbar_train.set_postfix(loss=f"{loss.item():.4f}")
 
         scheduler.step()
         avg_train_loss = train_loss / max(1, n_train)
@@ -399,8 +518,15 @@ def train_pipeline(
         n_val = 0
         all_true_indices, all_pred_indices = [], []
 
+        pbar_val = tqdm(
+            val_loader,
+            desc=f"Epoch [{epoch:02d}/{epochs:02d}] Val",
+            file=sys.stdout,
+            leave=False,
+            dynamic_ncols=True,
+        )
         with torch.no_grad():
-            for imgs, target_indices, _ in val_loader:
+            for imgs, target_indices, _ in pbar_val:
                 imgs = imgs.to(device)
                 target_indices = target_indices.to(device)
                 targets = ordinal_targets_from_class_indices(target_indices, device=device)
@@ -413,6 +539,7 @@ def train_pipeline(
                 pred_indices, _ = logits_to_predictions(logits, head_type="ordinal_bce")
                 all_pred_indices.extend(pred_indices)
                 all_true_indices.extend(target_indices.cpu().numpy())
+                pbar_val.set_postfix(val_loss=f"{loss.item():.4f}")
 
         avg_val_loss = val_loss / max(1, n_val)
         val_metrics = evaluate_metrics(np.array(all_true_indices), np.array(all_pred_indices))
@@ -454,6 +581,7 @@ def train_pipeline(
     summary = {
         "model_type": "ResNet18BCSPerception_4Ch",
         "parameters": model_params,
+        "baseline_parameters": baseline_params,
         "parameter_delta": param_delta,
         "epochs_trained": epochs,
         "best_epoch": best_metrics.get("best_epoch"),
@@ -470,6 +598,28 @@ def train_pipeline(
     print(f"✓ Training finished. Best Val Real MAE: {best_val_mae:.4f} at Epoch {best_metrics.get('best_epoch')}")
     print(f"✓ Checkpoints saved to: {output_dir}")
     print("=" * 75)
+
+    # Post-training: evaluate held-out test set once with best checkpoint if requested
+    if eval_test and not smoke:
+        test_manifest = manifest_dir / "test_perception.csv"
+        if test_manifest.exists():
+            print(f"\n[*] Loading best checkpoint from {best_ckpt_path} for one-time held-out test evaluation...")
+            best_ckpt = torch.load(best_ckpt_path, map_location=device)
+            model.load_state_dict(best_ckpt["model_state_dict"])
+            test_results = evaluate_test_split(
+                model=model,
+                manifest_dir=manifest_dir,
+                cache_dir=cache_dir,
+                output_dir=output_dir,
+                batch_size=batch_size,
+                device=device,
+            )
+            summary["test_metrics"] = test_results
+            with open(metrics_file, "w", encoding="utf-8") as f:
+                json.dump(summary, f, indent=2)
+        else:
+            print(f"[!] Warning: test manifest not found at {test_manifest}. Skipping test evaluation.")
+
     return summary
 
 
@@ -483,6 +633,7 @@ def main():
     parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
     parser.add_argument("--mask-init", type=str, default="mean", choices=["mean", "zero"], help="Initialization of 4th mask channel in conv1")
     parser.add_argument("--smoke", action="store_true", help="Smoke test on small subset")
+    parser.add_argument("--eval-test", action="store_true", help="Run one-time test evaluation after training completes")
     parser.add_argument("--device", type=str, default=None, help="Device (cuda or cpu)")
     args = parser.parse_args()
 
@@ -495,6 +646,7 @@ def main():
         lr=args.lr,
         mask_init=args.mask_init,
         smoke=args.smoke,
+        eval_test=args.eval_test,
         device_name=args.device,
     )
 
