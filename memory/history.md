@@ -1,4 +1,4 @@
-# Session Summary — 2026-09-23 (Self-Collected Viewpoint Dataset Cleaning & 3-Class Normalization Complete)
+# Session Summary — 2026-09-23 (Self-Collected Viewpoint Dataset Cleaning & Human Review Finalization Complete)
 
 - Convo ID: `27258369-7cbf-4892-a73a-a5cd707dc4d5`
 - Implemented and executed standalone reproducible pipeline `scripts/clean_self_viewpoint.py` to clean and normalize the raw self-collected cattle viewpoint collection (`datasets/viewpoint/self`) into `datasets/viewpoint/self_clean_v1/`.
@@ -10,10 +10,12 @@
   - `rear`: 266 clean images (`rear` + `rear-oblique`)
   - `side`: 222 clean images (`side`)
   - Total: 880 clean images (byte-for-byte exact copies of highest-quality canonical raw files; zero upscaling or recompression).
-- Generated complete forensic metadata in `datasets/viewpoint/self_clean_v1/metadata/`:
-  - `manifest.csv` (1,050 rows, all 18 required columns)
-  - `review_required.csv` (33 flagged candidate rows)
-  - `cleaning_report.md` (comprehensive audit report)
+- Executed `scripts/finalize_human_review.py` to record human review adjudications for all 33 flagged review candidates (Hasin Ishrak):
+  - 1 confirmed included (`rear view-updated/120.jpg`, `rear_0177.jpg` from Pinterest: high quality authentic pasture cow photo)
+  - 32 confirmed excluded (31 commercial watermarked stock photos + 1 duplicate)
+  - Updated `review_required.csv` so 0 items remain pending (all 33 marked resolved)
+  - Updated `manifest.csv` notes with explicit adjudication logs
+  - Updated `cleaning_report.md`
 - Assigned persistent `duplicate_group_id` (`dup_0001` to `dup_0906`) to ensure strict anti-leakage grouping for future train/val/test splits.
 - Zero models trained; zero splits created; raw folder 100% untouched. 100% post-generation integrity checks passed.
 

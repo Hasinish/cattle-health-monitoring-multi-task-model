@@ -85,10 +85,12 @@ No generic `oblique` folders existed in the raw dataset. All subdirectories clea
 1. `datasets/viewpoint/self_clean_v1/metadata/manifest.csv`:
    - 1,050 rows (880 included, 170 excluded).
    - Contains all 18 required columns: `clean_id`, `clean_path`, `normalized_class`, `original_path`, `original_label`, `source_url`, `source_domain`, `width`, `height`, `sha256`, `perceptual_hash`, `duplicate_group_id`, `duplicate_status`, `stock_flag`, `quality_status`, `inclusion_status`, `exclusion_reason`, `notes`.
+   - Updated with explicit human review notes for all 33 reviewed candidates.
 2. `datasets/viewpoint/self_clean_v1/metadata/review_required.csv`:
-   - 33 flagged candidates for human inspection (31 commercial stock exclusions, 1 Pinterest source, borderline Laplacian blur or high aspect ratio crops).
+   - 33 reviewed candidates (18 columns including `review_status`, `pending_status`, `human_decision`, `adjudicated_by`, `review_date`, `adjudication_notes`).
+   - Status: **100% RESOLVED / 0 PENDING ITEMS**.
 3. `datasets/viewpoint/self_clean_v1/metadata/cleaning_report.md`:
-   - Comprehensive audit report detailing counts, rules, and leakage prevention rules.
+   - Comprehensive audit report detailing counts, rules, leakage prevention, and finalized human review adjudications.
 
 ### 4.3 Integrity & Non-Destructive Invariance
 - Raw folder verification: `len(list(raw_root.rglob('*.*'))) == 1057` PASSED. Not a single file modified or deleted.
@@ -96,29 +98,43 @@ No generic `oblique` folders existed in the raw dataset. All subdirectories clea
 
 ---
 
-## 5. Critical Scientific Leakage Protection
+## 5. Human Review Finalization (`review_required.csv`)
+
+All 33 flagged items in `datasets/viewpoint/self_clean_v1/metadata/review_required.csv` were manually inspected and adjudicated by **Hasin Ishrak**:
+- **Total Flagged Candidates:** 33
+- **Total Pending Items Remaining:** **0** (100% resolved)
+- **Adjudications:**
+  - **Confirmed Keep (1 image):** `rear view-updated/120.jpg` (clean ID `rear_0177.jpg`) sourced from Pinterest; visually verified as an authentic, high-resolution natural pasture cow photograph with sharp rear orientation.
+  - **Confirmed Exclude (32 images):**
+    - 31 commercial stock agency photographs (`dreamstime.com`: 10, `alamy.com`: 6, `shutterstock.com`: 5, `istockphoto.com`: 4, `123rf.com`: 3, `vecteezy.com`: 2, `depositphotos.com`: 1) confirmed excluded due to commercial watermark overlays and staged non-pastoral conditions.
+    - 1 exact duplicate (`rear view/120.jpg`) confirmed excluded in favor of canonical copy in `rear view-updated/120.jpg`.
+
+---
+
+## 6. Critical Scientific Leakage Protection
 
 Every raw and clean image has been tagged with `duplicate_group_id` (`dup_0001` through `dup_0906`). When train/val/test splits are constructed in future work, split partitioning MUST be grouped on `duplicate_group_id`. This prevents near-duplicate, cropped, or recompressed versions of the same cow image from leaking across partitions.
 
 ---
 
-## 6. Artifacts & File Registry
+## 7. Artifacts & File Registry
 
 | File | Description |
 | :--- | :--- |
 | `scripts/clean_self_viewpoint.py` | Standalone reproducible Python cleaning and deduplication pipeline script. |
+| `scripts/finalize_human_review.py` | Standalone script recording human review adjudications and certifying metadata synchronization. |
 | `datasets/viewpoint/self_clean_v1/front/` | 392 clean front/front-oblique cattle images (`front_0001.jpg` to `front_0392.jpg`). |
 | `datasets/viewpoint/self_clean_v1/rear/` | 266 clean rear/rear-oblique cattle images (`rear_0001.jpg` to `rear_0266.jpg`). |
 | `datasets/viewpoint/self_clean_v1/side/` | 222 clean side cattle images (`side_0001.jpg` to `side_0222.jpg`). |
-| `datasets/viewpoint/self_clean_v1/metadata/manifest.csv` | Master 1,050-row audit manifest with 18 columns. |
-| `datasets/viewpoint/self_clean_v1/metadata/review_required.csv` | 33-row review manifest for human judgment. |
-| `datasets/viewpoint/self_clean_v1/metadata/cleaning_report.md` | Formal audit and cleaning summary report. |
+| `datasets/viewpoint/self_clean_v1/metadata/manifest.csv` | Master 1,050-row audit manifest with 18 columns, updated with human adjudication notes. |
+| `datasets/viewpoint/self_clean_v1/metadata/review_required.csv` | Finalized 33-row review manifest with 0 pending items. |
+| `datasets/viewpoint/self_clean_v1/metadata/cleaning_report.md` | Formal audit and cleaning summary report documenting finalized human review. |
 
 ---
 
-## 7. Next Steps
+## 8. Next Steps
 
-- As commanded by the user, **STOP after the cleaned dataset + manifests + cleaning report are produced.**
+- As commanded by the user, **STOP after finalizing and recording the human review.**
 - Do NOT create train/val/test splits.
 - Do NOT train any viewpoint models.
 - When viewpoint training is scheduled on the roadmap, use `duplicate_group_id` stratification.

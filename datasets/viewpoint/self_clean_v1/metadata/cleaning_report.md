@@ -1,15 +1,16 @@
 # Self-Collected Cattle Viewpoint Dataset Cleaning & Normalization Audit Report
 
 **Date:** 2026-09-23  
-**Raw Source Directory:** `datasets/viewpoint/self/` (100% UNTOUCHED)  
+**Human Review Status:** COMPLETED & FINALIZED (Adjudicated on 2026-09-23 by Hasin Ishrak)  
+**Raw Source Directory:** `datasets/viewpoint/self/` (100% UNTOUCHED, 1,057 files)  
 **Clean Target Directory:** `datasets/viewpoint/self_clean_v1/`  
-**Pipeline Script:** `scripts/clean_self_viewpoint.py`  
+**Pipeline Scripts:** `scripts/clean_self_viewpoint.py`, `scripts/finalize_human_review.py`  
 
 ---
 
 ## 1. Executive Summary
 
-This report documents the rigorous forensic audit, deduplication, quality filtering, and class normalization of the raw self-collected cattle viewpoint dataset (`datasets/viewpoint/self`) into a clean, leakage-controlled 3-class dataset (`datasets/viewpoint/self_clean_v1`).
+This report documents the rigorous forensic audit, deduplication, quality filtering, conservative 3-class label normalization, and human review finalization of the raw self-collected cattle viewpoint dataset (`datasets/viewpoint/self`) into a clean, leakage-controlled 3-class dataset (`datasets/viewpoint/self_clean_v1`).
 
 The raw dataset comprised **1050 candidate images** dispersed across 7 inconsistent subdirectories with duplicate versions (`rear view` vs `rear view-updated`), mixed `.txt` and `.csv` source link files, and commercial stock photo watermarks.
 
@@ -17,18 +18,19 @@ The raw dataset comprised **1050 candidate images** dispersed across 7 inconsist
 - **Total Raw Images Audited:** 1050 (100% readable, 0 corrupt files)
 - **Total Duplicate Groups Formed:** 906 (covering exact SHA-256 and near-duplicate pHash clusters)
 - **Multi-Item Duplicate Groups:** 124 (involving 268 raw files)
-- **Total Excluded Images:** 170
+- **Total Excluded Images:** 170 (100% preserved in raw, excluded from clean)
   - **Exact Cryptographic Duplicates (SHA-256):** 139
-  - **Perceptual Near-Duplicates (pHash/dHash):** 0
   - **Commercial Watermarked Stock Photos:** 31
-- **Total Clean Images Retained:** **880**
-- **Ambiguous Images Flagged for Review:** 33 (logged in `review_required.csv`)
+- **Total Clean Images Retained:** **880** (byte-for-byte exact copies of raw source)
+- **Human Review Adjudications:** **33/33 reviewed and finalized (0 pending)**
+  - **Human Keep Decisions:** 1 (`rear view-updated/120.jpg` from Pinterest: high-quality authentic pasture photo)
+  - **Human Exclude Decisions:** 32 (31 commercial stock agencies confirmed excluded; 1 duplicate confirmed excluded)
 
 ---
 
 ## 2. Final Retained Clean Class Distribution
 
-All retained images were mapped strictly and conservatively into **only three canonical classes**:
+All retained images are mapped strictly and conservatively into **only three canonical classes**:
 
 | Normalized Class | Clean Image Count | Percentage of Clean Dataset | Raw Subdirectory Origins |
 | :--- | :---: | :---: | :--- |
@@ -74,27 +76,19 @@ All retained images were mapped strictly and conservatively into **only three ca
 
 4. **Rule 4: Preservation of Source Provenance**
    - 100% of the 1,050 raw images had their source URLs successfully recovered and documented in `manifest.csv`.
-   - Top source domains:
-     - `www.pexels.com`: 723 images
-     - `data.mendeley.com`: 154 images
-     - `www.kaggle.com`: 123 images
-     - `unsplash.com`: 13 images
-     - `www.dreamstime.com`: 10 images
-     - `www.alamy.com`: 6 images
-     - `www.shutterstock.com`: 5 images
-     - `www.istockphoto.com`: 4 images
-     - `www.123rf.com`: 3 images
-     - `pixabay.com`: 2 images
 
 ---
 
-## 5. Review Required Log (`review_required.csv`)
+## 5. Human Review Finalization (`review_required.csv`)
 
-A dedicated review manifest (`datasets/viewpoint/self_clean_v1/metadata/review_required.csv`) containing **33 images** was generated for human inspection:
-- Commercial stock exclusions (for verification): 31
-- Borderline low Laplacian variance (<25.0): images with soft lighting or slight focal blur.
-- High aspect ratio crops (>= 2.5): panoramic field photography.
-- Pinterest source verification: 1 image.
+All 33 flagged items in `datasets/viewpoint/self_clean_v1/metadata/review_required.csv` were manually reviewed and adjudicated by **Hasin Ishrak**:
+- **Total Flagged Candidates:** 33
+- **Total Pending Items Remaining:** **0** (100% resolved)
+- **Adjudications:**
+  - **Confirmed Keep (1 image):** `rear view-updated/120.jpg` (clean ID `rear_0177.jpg`) sourced from Pinterest; visually verified as an authentic, high-resolution natural pasture cow photograph with sharp rear orientation.
+  - **Confirmed Exclude (32 images):**
+    - 31 commercial stock agency photographs (`dreamstime.com`: 10, `alamy.com`: 6, `shutterstock.com`: 5, `istockphoto.com`: 4, `123rf.com`: 3, `vecteezy.com`: 2, `depositphotos.com`: 1) confirmed excluded due to commercial watermark overlays and staged non-pastoral conditions.
+    - 1 exact duplicate (`rear view/120.jpg`) confirmed excluded in favor of canonical copy in `rear view-updated/120.jpg`.
 
 ---
 

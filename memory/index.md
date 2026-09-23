@@ -249,6 +249,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `build_opencows_splits.py`: OpenCows2020 legacy Re-ID protocol builder, duplicate harmonizer, manifest generator, and split report author.
 - `verify_opencows_splits.py`: Standalone verification script asserting OpenCows2020 46 cows across all splits, 0 duplicate leakage, official test set integrity, and path resolution.
 - `clean_self_viewpoint.py`: Standalone reproducible Python cleaning, deduplication, and 3-class normalization pipeline for the raw self-collected cattle viewpoint dataset (`datasets/viewpoint/self`), outputting to `datasets/viewpoint/self_clean_v1/`.
+- `finalize_human_review.py`: Standalone script applying human review adjudications to `review_required.csv`, `manifest.csv`, and `cleaning_report.md` with 0 pending items.
 - `build_sideview_reid_protocols.py`: SideViewCows2026 4-protocol generator, session recovery, exact and perceptual near-duplicate auditor with 7-stage Windows progress UI and standalone --verify-only mode.
 - `build_leakage_safe_manifest.py`: Audits CattleLameness clips, applies heuristic & perceptual clustering, generates StratifiedGroupKFold assignments, and exports `cattle_lameness_manifest.csv`.
 - `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.
