@@ -1,0 +1,72 @@
+{
+  "best_epoch": 1,
+  "best_val_macro_f1": 0.2434,
+  "best_metrics": {
+    "loss": 3.0117,
+    "accuracy": 0.3333,
+    "balanced_accuracy": 0.3333,
+    "macro_f1": 0.2434,
+    "per_class_recall": {
+      "front": 0.0,
+      "side": 0.2,
+      "rear": 0.8
+    },
+    "n_samples": 15
+  },
+  "total_epochs": 2,
+  "total_time_seconds": 10.55,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.0984,
+      "val_loss": 3.0117,
+      "val_accuracy": 0.3333,
+      "val_balanced_accuracy": 0.3333,
+      "val_macro_f1": 0.2434,
+      "per_class_recall": {
+        "front": 0.0,
+        "side": 0.2,
+        "rear": 0.8
+      },
+      "lr": 5.05e-05
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.5563,
+      "val_loss": 2.8178,
+      "val_accuracy": 0.3333,
+      "val_balanced_accuracy": 0.3333,
+      "val_macro_f1": 0.2434,
+      "per_class_recall": {
+        "front": 0.0,
+        "side": 0.2,
+        "rear": 0.8
+      },
+      "lr": 1e-06
+    }
+  ],
+  "moo_meta": {
+    "source_checkpoint": "moo_resnet18_viewpoint8_full_l4.pth",
+    "source_best_val_f1": 0.9959363263076189,
+    "source_classes": [
+      "front",
+      "front-left",
+      "left",
+      "back-left",
+      "back",
+      "back-right",
+      "right",
+      "front-right"
+    ],
+    "target_classes": [
+      "front",
+      "side",
+      "rear"
+    ]
+  },
+  "class_names": [
+    "front",
+    "side",
+    "rear"
+  ]
+}

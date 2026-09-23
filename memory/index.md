@@ -201,6 +201,8 @@ Canonical benchmark data and task registries.
       - `cleaning_report.md`: Comprehensive audit and leakage report documenting all rules and counts.
   - `self_clean_v1_rtdetr_crop/`:
     - `front/` (392 crops), `side/` (222 crops), `rear/` (265 crops): Derived RT-DETR-L cattle-cropped real viewpoint dataset (879 crops total, JPEG Quality 95, 1,867.40 MB / 1.824 GB; -46.8% size reduction vs source).
+    - `train.csv` (616 crops, 70.1%), `val.csv` (132 crops, 15.0%), `test.csv` (131 crops, 14.9%): Deterministic Seed-2026 group-stratified splits partitioned strictly by `duplicate_group_id` with 0 cross-split leakage (also mirrored in `splits/`).
+    - `split_report.md`: Detailed split audit report documenting class balance, 100% group isolation, and SHA-256 cryptographic checksums.
     - `metadata/`:
       - `crop_manifest.csv`: Master 879-row manifest with 26 columns containing bounding box coordinates, 5% proportional margin parameters, dimensions, file sizes, and preserved `duplicate_group_id` provenance.
       - `detection_failures.csv`: 1-row quarantine record documenting the single detection failure (`rear_0003`, working oxen with farmer) without fabricating crops.
@@ -222,6 +224,11 @@ Reference materials, prior sample defense posters, and official CSE400 formattin
 - `MODAL_PROFILES.md`: Cheatsheet and multi-account mapping across all 6 Modal profiles (`tigerwood693`, `tigerwood697`, `hasinishrak74001`, `dryousufmozumder`, `hasinishrak2015`, `mohtasimahmedsamii`) with role descriptions, command reference, and grant tracking.
 ### `scripts/`
 Automation utilities for batch experiments, metric aggregation, dataset restoration, and environment setup.
+- `crop_self_viewpoint_rtdetr.py`: Standalone reproducible RT-DETR-L cattle localization and cropping pipeline with 5% margin expansion for `self_clean_v1/`, generating 879 crops in `self_clean_v1_rtdetr_crop/`.
+- `build_viewpoint_crop_splits.py`: Deterministic Seed-2026 group-stratified train/val/test split generator partitioned strictly by `duplicate_group_id` for `self_clean_v1_rtdetr_crop/` with 0 cross-split leakage.
+- `upload_viewpoint_crops_modal.py`: Resumable live-progress Modal volume uploader for `self_clean_v1_rtdetr_crop/` to volume `viewpoint-real-data` on profile `tigerwood693`, with automated zero-GPU verification container.
+- `train_moo_real_viewpoint.py`: Core PyTorch fine-tuning engine transferring MOO ResNet-18 synthetic backbone weights, replacing 8-class head with 3-class linear head (`front`, `side`, `rear`), with label-preserving bilateral flips, CosineAnnealingLR, AdamW, and selection by `val_macro_f1`.
+- `modal_train_moo_real_viewpoint.py`: Modal cloud wrapper mounting `viewpoint-real-data`, `moo-data`, and `viewpoint-checkpoints` on profile `tigerwood693` for Tesla T4 GPU training and zero-GPU readiness verification (`verify_readiness`).
 - `extract_cvb_track_segments.py`: Remote Modal data extraction script (`cvb-data` volume on `tigerwood693`, minimal CPU/RAM) parsing 1,163,408 bounding boxes from 502 CVB `instances_default.json` files into contiguous single-behavior track segments.
 - `probe_beef_clips_ffprobe.py`: Remote Modal ffprobe script (`beef-behavior-data` volume on `tigerwood693`, minimal CPU/RAM) extracting exact fps, n_frames, and duration_sec across all 4,337 Kaggle Beef clips.
 - `build_cvb_beef_behavior_protocol.py`: Deterministic protocol generation and verification suite implementing multi-objective group-stratified search (Seed 2026), building `datasets/behavior/cvb_beef/` manifests, and running rigorous anti-leakage assertions.

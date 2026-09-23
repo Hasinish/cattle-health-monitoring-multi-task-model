@@ -1,9 +1,14 @@
-# Session Summary — 2026-09-23 (Real Viewpoint Dataset RT-DETR-L Cow Crop Generation In Progress)
+# Session Summary — 2026-09-23 (Real Viewpoint Dataset RT-DETR-L Cropping, Modal Staging & MOO Transfer Pipeline Complete)
 
 - Convo ID: `3ec35c2e-9eec-4b84-811f-b48cb01a486b`
-- Executing derived RT-DETR-L cow-cropped version of the finalized 880-image real viewpoint dataset (`datasets/viewpoint/self_clean_v1/`).
-- Verified git HEAD matches `2aeefb2a4a66aea95b409be594a774b5d11dd410` exactly.
-- Preserved `self_clean_v1` 100% untouched.
+- Successfully generated derived 879-image RT-DETR-L cow-cropped real viewpoint dataset (`self_clean_v1_rtdetr_crop/`) from `self_clean_v1/`, saving 1.65 GB (-46.8%).
+- Staged all 890 files (879 crops + metadata + splits; 1.825 GB) on Modal volume `viewpoint-real-data` under profile `tigerwood693` via `scripts/upload_viewpoint_crops_modal.py`.
+- Automated remote verification container on Modal passed 100% across all classes (`front: 392`, `side: 222`, `rear: 265`, 0 zero-byte files, 15/15 PIL decodes passed).
+- Built deterministic Seed-2026 group-stratified splits partitioned strictly by `duplicate_group_id` (`train`: 616, `val`: 132, `test`: 131) with **0 cross-partition group overlap**.
+- Implemented and locally smoke-tested PyTorch fine-tuning engine (`scripts/train_moo_real_viewpoint.py`) with MOO ResNet-18 trunk weight transfer, fresh 3-class linear head (`front`, `side`, `rear`), bilateral flips, and zero test-set access.
+- Executed Modal cloud pre-flight readiness audit (`scripts/modal_train_moo_real_viewpoint.py::verify_readiness`, App `ap-0sGTsRL548WK5QTxiPxCLy`): triple volume mount verified (`viewpoint-real-data`, `moo-data`, `viewpoint-checkpoints`), MOO checkpoint verified (42.73 MB, Best Syn Val F1 0.9959), writable checkpoint volume verified, and test split confirmed strictly frozen.
+- Observed strict constraint: ZERO paid GPU training launched. Manual execution command provided to Hasin.
+
 
 # Session Summary — 2026-09-23 (Self-Collected Viewpoint Dataset Cleaning & Human Review Finalization Complete)
 
