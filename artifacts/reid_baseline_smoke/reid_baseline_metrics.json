@@ -1,0 +1,46 @@
+{
+  "task": "reid_rgb_baseline",
+  "dataset": "sideviewcows2026",
+  "git_sha": "710df990d2fe4f29981f0803e2a6320d62f26c28",
+  "timestamp": "2026-09-23 17:19:43",
+  "best_val_top1_acc": 7.81,
+  "total_training_time_sec": 2.64,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 3.9913,
+      "train_top1_acc": 3.12,
+      "val_loss": 3.7813,
+      "val_top1_acc": 4.69,
+      "val_bal_acc": 5.48,
+      "val_macro_f1": 0.0131,
+      "lr": 5.1e-05,
+      "duration_sec": 13.2
+    },
+    {
+      "epoch": 2,
+      "train_loss": 2.8705,
+      "train_top1_acc": 34.38,
+      "val_loss": 3.6096,
+      "val_top1_acc": 6.25,
+      "val_bal_acc": 7.14,
+      "val_macro_f1": 0.0357,
+      "lr": 1e-06,
+      "duration_sec": 2.2
+    },
+    {
+      "epoch": 3,
+      "train_loss": 1.7945,
+      "train_top1_acc": 78.12,
+      "val_loss": 3.5574,
+      "val_top1_acc": 7.81,
+      "val_bal_acc": 7.62,
+      "val_macro_f1": 0.0402,
+      "lr": 5e-05,
+      "duration_sec": 2.3
+    }
+  ],
+  "protocol_a_retrieval": {
+    "status": "SKIPPED_IN_SMOKE_MODE"
+  }
+}

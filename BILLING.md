@@ -1,7 +1,7 @@
 # 📊 Live Modal Billing & Credit Dashboard
 
 > **Live Auto-Refreshed Monitor**  
-> **Last Synchronized:** `2026-09-23 17:02:56`  
+> **Last Synchronized:** `2026-09-23 17:28:00`  
 > **Active Target Account:** `tigerwood693`
 
 ---
@@ -12,10 +12,10 @@
 | :--- | :--- |
 | 👥 **Discovered Accounts** | **6** (`dryousufmozumder, hasinishrak2015, hasinishrak74001, mohtasimahmedsamii, tigerwood693, tigerwood697`) |
 | 🎁 **Total Credit Grants** | **$122.00** |
-| 💸 **Total Consumed** | **$25.76** |
-| 🟢 **Total Remaining Balance** | **$96.24** |
-| 🚀 **Total Combined L40S Runtime** | **~2959 mins (~49.3 hours)** |
-| ⚡ **Total Combined H100 Runtime** | **~1164 mins (~19.4 hours)** |
+| 💸 **Total Consumed** | **$25.79** |
+| 🟢 **Total Remaining Balance** | **$96.21** |
+| 🚀 **Total Combined L40S Runtime** | **~2958 mins (~49.3 hours)** |
+| ⚡ **Total Combined H100 Runtime** | **~1163 mins (~19.4 hours)** |
 
 ---
 
@@ -28,7 +28,7 @@
 | `hasinishrak74001` | Standby | $1.00 | $0.89 | **$0.11** | ~3m | ~1m | 🟡 Low | [View Ledger](https://modal.com/settings/hasinishrak74001/billing) |
 | `mohtasimahmedsamii` | Standby | $1.00 | $0.95 | **$0.05** | ~1m | ~0m | 🟡 Low | [View Ledger](https://modal.com/settings/mohtasimahmedsamii/billing) |
 | `tigerwood693` | 🔥 **ACTIVE** | $30.00 | $20.76 | **$9.24** | ~284m | ~112m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood693/billing) |
-| `tigerwood697` | Standby | $30.00 | $3.17 | **$26.83** | ~825m | ~325m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood697/billing) |
+| `tigerwood697` | Standby | $30.00 | $3.20 | **$26.80** | ~824m | ~324m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood697/billing) |
 
 ---
 
@@ -82,10 +82,10 @@
 ### 💳 Profile: `tigerwood697` 
 - **Status**: 🟢 Healthy
 - **Grant Ceiling**: `$30.00`
-- **Metered Usage**: `$3.17`
-- **Remaining Balance**: **`$26.83`**
-- **Est. L40S GPU Runtime**: **~825 minutes** (13h 45m)
-- **Est. H100 GPU Runtime**: **~325 minutes** (5h 25m)
+- **Metered Usage**: `$3.20`
+- **Remaining Balance**: **`$26.80`**
+- **Est. L40S GPU Runtime**: **~824 minutes** (13h 44m)
+- **Est. H100 GPU Runtime**: **~324 minutes** (5h 24m)
 - **Out-of-Pocket Billed**: `$0.00`
 - **Direct Modal Link**: `https://modal.com/settings/tigerwood697/billing`
 
