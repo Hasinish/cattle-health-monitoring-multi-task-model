@@ -1,8 +1,9 @@
-# Phase 3 Canonical Roadmap — Vision-Based AI for Cattle Health Monitoring
+# Phase 3 Canonical Roadmap — Multi-Task Deep Learning Framework for Unified Cattle Health and Behavior Monitoring
 
-**Project:** Vision-Based AI for Cattle Health Monitoring  
+**Official Thesis Title:** Multi-Task Deep Learning Framework for Unified Cattle Health and Behavior Monitoring (FIXED / LOCKED BY USER APPROVAL)  
+**Project Shorthand:** Vision-Based AI for Cattle Health Monitoring  
 **Roadmap status:** CANONICAL / LOCKED FOR EXECUTION  
-**Last updated:** 2026-09-23 — Behavior primary stack corrected to CVB + Kaggle Beef after completed temporal/provenance audits and explicit user approval  
+**Last updated:** 2026-09-23 — Formalized fixed official thesis title and locked Step 11 as Mandatory Final MTL Integration & Evaluation  
 **Purpose:** Single source of truth for the coding/research agent.  
 **Important:** Do not restart the project from zero. Do not silently change the scope without recording the decision in the research log.
 
@@ -29,6 +30,24 @@ The tasks require different information:
 - **Re-ID:** preserve coat pattern and individual morphology; reduce dependence on farm/camera/background.
 
 This task-dependent conflict is one of the reasons a single hard-shared representation can produce negative transfer.
+
+## Mandatory Multi-Task Learning Integration (Thesis Constraint)
+
+As defined by the fixed thesis title (**“Multi-Task Deep Learning Framework for Unified Cattle Health and Behavior Monitoring”**), Phase 3 MUST culminate in an evaluated multi-task deep learning framework integrating the three core downstream tasks:
+1. Body Condition Scoring (BCS)
+2. Behavior Recognition
+3. Individual Cow Identification / Re-Identification
+
+**Important Scientific Boundary:**
+Mandatory MTL does NOT mean skipping the current single-task-first methodology. The rigorous experimental sequence remains:
+```text
+single-task baselines
+→ cattle-centered representation ablations per task
+→ determine which information each task should preserve/share
+→ final MTL integration & comparison against single-task reference (E0)
+→ measure and analyze negative transfer
+```
+The final MTL architecture (hard sharing, partial sharing, task-private pathways, adapters/gates, PCGrad, GradNorm) must NOT be predetermined in advance; it will be determined empirically based on ablation results.
 
 ---
 
@@ -271,7 +290,7 @@ STEP 9  Build the final task-conditioned P3 model
    ↓
 STEP 10 Cross-domain / robustness evaluation
    ↓
-STEP 11 Revisit sharing / MTL
+STEP 11 Mandatory Final MTL Integration & Evaluation
    ↓
 STEP 12 Optional cattle-specific pretraining
    ↓
@@ -1220,13 +1239,22 @@ Acceptance criteria:
 
 ---
 
-# 14. STEP 11 — Revisit Sharing / MTL
+# 14. STEP 11 — Mandatory Final MTL Integration & Evaluation
 
-**Status:** LATE PHASE ONLY
+**Status:** LATE PHASE ONLY (BLOCKED UNTIL STEP 10; PREREQUISITES: STRONG SINGLE-TASK SYSTEMS & ABLATIONS)
 
 ## Goal
 
-Only after strong single-task cattle-centered systems exist, test whether sharing helps.
+Phase 3 MUST culminate in an evaluated multi-task deep learning framework integrating the three core tasks (Body Condition Scoring, Behavior Recognition, and Individual Cow Identification / Re-Identification) as required by the locked thesis scope.
+
+Having a mandatory final MTL framework does **NOT** mean premature hard parameter sharing or skipping single-task rigor. The purpose of Step 11 is to determine **HOW** tasks should share information, not *whether* an integrated MTL framework will exist.
+
+Key structural principles:
+1. **Mandatory Final Deliverable**: An integrated multi-task deep learning framework across BCS, Behavior, and Re-ID is a required final deliverable of the thesis scope.
+2. **Empirical Architectural Search (Not Predetermined)**: The final MTL architecture must NOT be chosen before ablation results are available. Hard sharing, partial sharing, task-private pathways, and adapters/gates remain empirical alternatives to be evaluated.
+3. **Task-Specific Asymmetry Allowed**: Do not require every task to consume the exact same representation. BCS (morphology), Behavior (posture/motion/context), and Re-ID (coat pattern/identity) may retain task-specific branches or asymmetric representations while remaining part of one unified MTL framework.
+4. **Negative Transfer Adjudication**: If naive hard sharing induces negative transfer, the final framework is expected to adopt partial sharing, task-private routing, cross-attention gates, or adapter modules.
+5. **Rigorous Control Baseline**: E0 independent single-task models serve as the unconstrained reference/control against which all sharing topologies are benchmarked.
 
 Required comparison:
 
@@ -1606,7 +1634,7 @@ DATA
 → add temporal Behavior
 → build final task-conditioned cattle-centered model
 → cross-domain testing
-→ revisit MTL
+→ mandatory final MTL integration & evaluation
 → optional cattle-specific pretraining
 → final repeated runs
 ```

@@ -1,8 +1,12 @@
 # state.md — Current Workspace State
 
 ## Phase 3 Roadmap Status
-- **Status**: CANONICAL / LOCKED FOR EXECUTION (`phase3_canonical_roadmap.md`)
-- **Core Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning and improve robustness across BCS, Behavior, and Re-ID compared with generic RGB representations?
+- **Official Thesis Title (LOCKED)**: **“Multi-Task Deep Learning Framework for Unified Cattle Health and Behavior Monitoring”**
+- **Roadmap Status**: CANONICAL / LOCKED FOR EXECUTION (`phase3_canonical_roadmap.md`)
+- **Mandatory Final Requirement**: Phase 3 MUST culminate in an evaluated multi-task deep learning framework integrating the three core tasks: 1) Body Condition Scoring (BCS), 2) Behavior Recognition, and 3) Individual Cow Identification / Re-Identification.
+- **Methodological Sequence**: Current single-task work is prerequisite baseline/representation selection, NOT the final endpoint. Sequence: single-task baselines -> representation ablations -> determine what information each task preserves/shares -> final MTL integration & comparison against single-task reference (E0) -> negative transfer analysis.
+- **MTL Architecture Policy**: No final MTL architecture is predetermined. Hard sharing (E1), partial sharing (E2), task-private pathways / adapters / gates (E3), PCGrad (E4), and GradNorm (E5) remain empirical alternatives to compare against single-task controls (E0).
+- **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 ## Active Goals & Todo (STEP 1: COMPLETE | GATE 1: CLEARED | STEP 2.1: COMPLETE | STEP 2.2: COMPLETE | STEP 2.3: COMPLETE | STEP 2.4: REOPENED | STEP 2 DATA QUALITY MILESTONE: COMPLETE | STEP 2 BEHAVIOR LOCALIZATION SANITY: COMPLETE | STEP 2 BEHAVIOR SEGMENTATION SANITY: COMPLETE | STEP 2 BEEF SAM PROMPT RESCUE: COMPLETE | STEP 2 BEEF A4 vs A5 FRESH-40: HUMAN REVIEW COMPLETE (NO WINNER) | STEP 2 BEEF FALLBACK AUDIT: COMPLETE | STEP 4.1 BCS RGB BASELINE: COMPLETE & CERTIFIED (TEST MAE 0.1848, ACC@1 86.74%) | STEP 2: IN PROGRESS | STEP 4: IN PROGRESS)
 - **Immediate next action:** Step 4.1 ScienceDB RGB BCS baseline is 100% complete and certified. Kaggle Beef A4-vs-A5 fresh-40 human visual review complete (A4 and A5 visually indistinguishable; no operational winner selected). Immediate next steps: 1) Human visual reviews for remaining Kaggle Beef perception audits (`beef_sam_prompt_rescue`, `beef_rtdetr_failure_fallback`), 2) Plan Phase 3 Step 4.2 single-frame RGB Behavior baseline on the canonical CVB + Kaggle Beef protocol (`datasets/behavior/cvb_beef/`).
@@ -87,7 +91,7 @@
 - [ ] STEP 8: Temporal Behavior experiments (frame -> avg pool -> TCN -> GRU/LSTM -> pose seq -> fusion)
 - [ ] STEP 9: Build consolidated task-conditioned cattle-centered P3 architecture
 - [ ] STEP 10: Cross-domain / robustness evaluation
-- [ ] STEP 11: Revisit sharing / MTL (Single vs Hard vs Partial vs Adapters vs PCGrad/GradNorm)
+- [ ] STEP 11: Mandatory Final MTL Integration & Evaluation (Single E0 reference vs Hard E1 vs Partial E2 vs Adapters E3 vs PCGrad E4 / GradNorm E5)
 - [ ] STEP 12: Optional cattle-specific pretraining (stretch goal)
 - [ ] STEP 13: Final repeated runs (3 seeds) + thesis tables
 - [ ] Prepare P3 draft submission by September 26
