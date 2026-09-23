@@ -1,18 +1,18 @@
 """
 Modal Cloud Hydration & Verification Pipeline for SideViewCows2026 (Zenodo Record 21605650).
 
-Low-cost, high-reliability cloud data hydration targeting Modal profile tigerwood697.
+Low-cost, high-reliability cloud data hydration targeting persistent volume 'sideview-data'.
 Configured for minimal compute cost: 1.0 CPU, 2048 MB RAM, NO GPU.
 
 Usage:
-  # Main Full Hydration (Interactive, live streaming progress):
-  modal run --profile tigerwood697 scripts/modal_hydrate_sideviewcows.py::main
+  # Pre-Flight Smoke Test (Checks volume mount & Zenodo connectivity without 25GB download):
+  modal run --profile dryousufmozumder scripts/modal_hydrate_sideviewcows.py::smoke_test
+
+  # Main Full Hydration (Interactive, live streaming progress with 16 parallel threads):
+  modal run --profile dryousufmozumder scripts/modal_hydrate_sideviewcows.py::main --threads 16
 
   # Standalone Post-Hydration Verification:
-  modal run --profile tigerwood697 scripts/modal_hydrate_sideviewcows.py::verify
-
-  # Pre-Flight Smoke Test (Checks volume mount & Zenodo connectivity without 25GB download):
-  modal run --profile tigerwood697 scripts/modal_hydrate_sideviewcows.py::smoke_test
+  modal run --profile dryousufmozumder scripts/modal_hydrate_sideviewcows.py::verify
 """
 
 import os
@@ -47,7 +47,7 @@ except ImportError:
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
-# Persistent Storage Volume on tigerwood697
+# Persistent Storage Volume (scoped to active Modal profile)
 sideview_vol = modal.Volume.from_name("sideview-data", create_if_missing=True)
 
 # Minimal Container Image
@@ -361,7 +361,7 @@ def smoke_test_remote() -> dict:
     memory=2048,
     timeout=10800,  # 3 hours for 25GB download + extraction
 )
-def hydrate_full_remote(threads: int = 4, skip_cleanup: bool = False) -> dict:
+def hydrate_full_remote(threads: int = 16, skip_cleanup: bool = False) -> dict:
     """
     Executes full SideViewCows2026 hydration directly into /data/sideviewcows2026:
     1. Downloads metadata files
@@ -540,7 +540,7 @@ def verify_remote() -> dict:
 @app.local_entrypoint()
 def smoke_test():
     """Fast pre-flight smoke test."""
-    print("[LOCAL] Launching Modal pre-flight smoke test on tigerwood697...")
+    print("[LOCAL] Launching Modal pre-flight smoke test...")
     res = smoke_test_remote.remote()
     print("\n[LOCAL] Pre-Flight Smoke Test Result:")
     for k, v in res.items():
@@ -561,7 +561,7 @@ def verify():
 
 
 @app.local_entrypoint()
-def main(threads: int = 4, skip_cleanup: bool = False):
+def main(threads: int = 16, skip_cleanup: bool = False):
     """
     Main entrypoint for full download & hydration.
     Streams live progress to terminal.
