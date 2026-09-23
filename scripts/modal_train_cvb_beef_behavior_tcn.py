@@ -1683,7 +1683,7 @@ def build_production_cache_l40s():
 # FULL 30-EPOCH RUN 5 TRAINING (STRICT MODEL SELECTION BY VAL MACRO-F1 ONLY)
 # ==============================================================================
 @app.function(
-    gpu="L4",
+    gpu="L40S",
     volumes={
         "/mnt/cvb": cvb_vol,
         "/mnt/beef": beef_vol,
@@ -1715,7 +1715,7 @@ def train_full_run5_remote(batch_size: int = 16, epochs: int = 30) -> dict:
     from scripts.train_cvb_beef_behavior_tcn import train_temporal_pipeline
 
     print("\n" + "=" * 70)
-    print(f"  MODAL FULL TRAINING: RUN 5 BEHAVIOR PERCEPTION (30 EPOCHS, NVIDIA L4)")
+    print(f"  MODAL FULL TRAINING: RUN 5 BEHAVIOR PERCEPTION (30 EPOCHS, NVIDIA L40S)")
     print("=" * 70)
 
     cvb_dir = Path("/mnt/cvb/cvb/000058916v001")
@@ -1775,11 +1775,11 @@ def train_full_run5_remote(batch_size: int = 16, epochs: int = 30) -> dict:
 @app.local_entrypoint()
 def train_full_run5(batch_size: int = 16, epochs: int = 30):
     """
-    Executes full 30-epoch Run 5 training on Modal (NVIDIA L4).
+    Executes full 30-epoch Run 5 training on Modal (NVIDIA L40S).
     Usage:
       modal run --profile tigerwood693 scripts/modal_train_cvb_beef_behavior_tcn.py::train_full_run5
     """
-    print(f"Launching Run 5 Full 30-Epoch Training on Modal (tigerwood693, L4, epochs={epochs}, batch_size={batch_size})...")
+    print(f"Launching Run 5 Full 30-Epoch Training on Modal (tigerwood693, L40S, epochs={epochs}, batch_size={batch_size})...")
     res = train_full_run5_remote.remote(batch_size=batch_size, epochs=epochs)
 
     local_dir = REPO_ROOT / "artifacts" / "behavior_run5_training"
@@ -1803,7 +1803,7 @@ def train_full_run5(batch_size: int = 16, epochs: int = 30):
 # STRICT TEST GATE & FAIR RUN 2 MATCHED-SUBSET EVALUATION
 # ==============================================================================
 @app.function(
-    gpu="L4",
+    gpu="L40S",
     volumes={
         "/mnt/cvb": cvb_vol,
         "/mnt/beef": beef_vol,
@@ -1934,7 +1934,7 @@ def evaluate_test_run5(batch_size: int = 16):
     Usage:
       modal run --profile tigerwood693 scripts/modal_train_cvb_beef_behavior_tcn.py::evaluate_test_run5
     """
-    print("Launching Strict Final Test Gate & Matched Run 2 Comparison (tigerwood693)...")
+    print("Launching Strict Final Test Gate & Matched Run 2 Comparison on L40S (tigerwood693)...")
     res = evaluate_test_run5_remote.remote(batch_size=batch_size)
 
     local_art_dir = REPO_ROOT / "artifacts" / "behavior_run5_test"
