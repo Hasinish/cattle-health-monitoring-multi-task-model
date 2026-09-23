@@ -70,47 +70,75 @@ To isolate the empirical effect of cattle-centered localization and foreground m
 
 ---
 
-## 4. Augmentation Matching & Test Isolation
+## 4. Augmentation Matching & Test Isolation Protocol
 
 - **Run 1 Augmentation Fair Match:**
   - Resize 224
   - RandomHorizontalFlip(p=0.5) [Synchronized across RGB + mask]
   - RandomRotation(15 degrees) [Synchronized across RGB + mask]
   - ColorJitter(brightness=0.1, contrast=0.1) [Applied to RGB ONLY, never mask]
-- **Strict Test Set Isolation:**
-  - Training and checkpoint selection strictly evaluate TRAIN and VAL splits only.
-  - Best checkpoint is selected by validation Real MAE.
-  - Frozen test split is evaluated exactly ONCE post-training using the best checkpoint (`bcs_perception_best.pth`).
-  - Test metrics are saved independently to `bcs_perception_test_metrics.json`.
-  - Test data NEVER influences checkpoint selection or training decisions.
+- **Corrected Test Split Integrity Protocol:**
+  - Canonical test labels and data were NOT used for training or checkpoint selection.
+  - A small test-subset plumbing evaluation was performed during pipeline verification to certify end-to-end forward/backward execution and metric calculation.
+  - Final full Run 4 test evaluation remains post-training only.
+  - Test metrics must never affect checkpoint or hyperparameter selection (model selection is strictly on validation Real MAE using train/val only).
 
 ---
 
-## 5. Local Smoke Test Verification
+## 5. Fair Matched-Subset Baseline Comparison Protocol
 
-Executed on local GTX 1050 Ti:
+Because Run 4 excludes perception failures (RT-DETR non-detections and SAM zero-masks), its final evaluated test population is a subset of the canonical 8,040 test images. Therefore, comparing Run 4 directly against the original 8,040-sample Run 1 baseline is scientifically invalid due to population divergence.
+
+To resolve this, the post-training evaluation engine (`evaluate_test_split()`) automatically executes a **deterministic matched-subset comparison**:
+1. **Identical Image Identities:** Filters `test_perception.csv` for `detection_status == 'detected'` and `sam_status == 'segmented'`.
+2. **Run 4 Evaluation:** Evaluates the best Run 4 checkpoint (`bcs_perception_best.pth`) on the 4-channel `[RGB crop, binary mask]` representations.
+3. **Run 1 Baseline Evaluation on Matched Images:** Recovers the corresponding original RGB ScienceDB images for those exact same image identities, applies Run 1 evaluation preprocessing (`Resize(224)`, ImageNet normalization), and evaluates the existing Run 1 baseline checkpoint (`/checkpoints/bcs_baseline/bcs_baseline_best.pth` on volume `sciencedb-checkpoints`) without retraining.
+4. **Identity Assertion:** Programmatically asserts that `baseline_dataset.samples[i][image_path] == perception_dataset.samples[i][image_path]` for 100% of samples.
+5. **Multi-Tier Reporting:**
+   - **Tier 1:** Run 1 Original Full Test (Reference only; N=8,040; Real MAE: 0.1848 BCS units, Acc@1: 86.74%)
+   - **Tier 2:** Run 1 Matched Subset (N = successful-perception test count)
+   - **Tier 3:** Run 4 Matched Subset (N = successful-perception test count)
+   - **Direct Valid Delta:** `Run 4 matched - Run 1 matched`
+6. **Perception Coverage Statistics:** Reports canonical test count (8,040), evaluated test manifest rows, successful-perception test count, excluded detection failures, excluded SAM failures, and perception coverage percentage.
+7. **Automated Integration:** Automatically executed post-training in `scripts/modal_train_sciencedb_bcs_perception.py` upon training completion, outputting `bcs_perception_matched_test_comparison.json` and `bcs_perception_matched_test_comparison.md`.
+
+---
+
+## 6. Local Smoke Test Verification
+
+Executed on local GTX 1050 Ti & CPU:
+- **Failure Counting Consistency Verified:** Hardened `build_sciencedb_perception_cache.py` so upstream localization failures do NOT increment SAM failures. Verified across fresh and resumed runs with 100% bit-identical summary counts (`scratch/verify_failure_counters.py`).
 - **Failure Exclusion Verified:** Smoke validation manifest filtered from 10 raw rows down to 6 usable samples (4 perception failures explicitly excluded).
 - **Live TQDM Verified:** Progress bars streamed for training and validation batches.
 - **Forward & Backward Pass:** Successfully executed forward pass, loss calculation, and backward gradient backpropagation across 2 epochs (Val MAE: 0.4167 BCS).
 - **Checkpoint Determinism:** Bit-identical checkpoint save and reload verified (max absolute output difference = `0.00000000`).
-- **Post-Training Test Evaluation:** Verified one-time post-training test evaluation function on 7 valid test samples (`bcs_perception_test_metrics.json`).
+- **Matched-Subset Baseline Comparison Verified:** Executed `evaluate_test_split` locally on smoke test subset (`scratch/verify_matched_evaluation.py`):
+  - Canonical full test count: 8,040 | Smoke manifest rows: 10
+  - Successful perception: 7 samples (70.0% coverage)
+  - Excluded detection failures: 3 samples | Excluded SAM failures: 0 samples
+  - Run 1 matched MAE: 0.3214 BCS | Run 4 matched MAE: 0.2857 BCS | Delta: -0.0357 BCS units
+  - Image ID alignment: 100% verified across all 7 evaluated samples.
+  - Zero baseline retraining occurred.
 - **Visual Audit:** Generated 4-panel master contact sheet (`docs/audits/assets/bcs_perception/bcs_perception_contact_sheet.jpg`, 1280x1250 px).
 
 ---
 
-## 5. Artifact Registry
+## 7. Artifact Registry
 
 - Preprocessing Engine: `scripts/build_sciencedb_perception_cache.py`
 - Training Engine: `scripts/train_sciencedb_bcs_perception.py`
 - Modal Cloud Wrapper: `scripts/modal_train_sciencedb_bcs_perception.py`
 - Contact Sheet Generator: `scripts/build_bcs_perception_contact_sheet.py`
 - Cache Manifest Schema: `artifacts/bcs_perception_smoke/cache_schema.json`
+- Matched Test Comparison JSON: `artifacts/bcs_perception_smoke/checkpoints/bcs_perception_matched_test_comparison.json`
+- Matched Test Comparison Report: `artifacts/bcs_perception_smoke/checkpoints/bcs_perception_matched_test_comparison.md`
 - Contact Sheet Visual Asset: `docs/audits/assets/bcs_perception/bcs_perception_contact_sheet.jpg`
-- Resume Test: `scratch/verify_checkpoint_resume.py`
+- Counter Unit Test: `scratch/verify_failure_counters.py`
+- Matched Eval Unit Test: `scratch/verify_matched_evaluation.py`
 
 ---
 
-## 6. Manual Cloud Execution Commands
+## 8. Manual Cloud Execution Commands (Unchanged & Verified)
 
 ### A. Full ScienceDB Perception Cache Generation (Modal L4 GPU)
 ```bash

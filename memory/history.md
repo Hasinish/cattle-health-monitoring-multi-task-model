@@ -1,3 +1,21 @@
+# Session Summary — 2026-09-24 (Run 4 BCS Perception Final Hardening: Failure Counter Consistency & Matched Baseline Evaluator)
+
+- Convo ID: `3ec35c2e-9eec-4b84-811f-b48cb01a486b`
+- Fixed failure counting consistency: RT-DETR detection failures do NOT increment SAM failures. Verified that fresh-run and resumed-run summaries produce 100% bit-identical mutually exclusive counters (`scratch/verify_failure_counters.py`):
+  * `detection_failure`: RT-DETR found no valid cow
+  * `sam_failure`: RT-DETR succeeded, but SAM failed
+  * `segmented_success`: RT-DETR + SAM both succeeded
+- Corrected test-set integrity wording across repo: canonical test labels/data were NOT used for training or checkpoint selection; a small test-subset plumbing evaluation was performed during pipeline verification to ensure code executes without runtime error; final full Run 4 test evaluation remains post-training only; test metrics never affect checkpoint or hyperparameter selection (model selection is strictly on validation Real MAE using train/val only). Removed stale claims ("test untouched", "strictly unseen test", "evaluated exactly once").
+- Created and verified fair matched-subset baseline comparison protocol (`evaluate_test_split()`):
+  * Evaluates existing Run 1 baseline checkpoint (`/checkpoints/bcs_baseline/bcs_baseline_best.pth` on `sciencedb-checkpoints`) on the EXACT SAME successful-perception test image identities without retraining.
+  * Recovers corresponding original RGB ScienceDB images with Run 1 evaluation preprocessing (`Resize(224)`, ImageNet normalization).
+  * Programmatically asserts 100% image ID alignment between Run 1 and Run 4 test samples.
+  * Reports canonical test count (8,040), manifest test rows, successful-perception test count, excluded detection failures, excluded SAM failures, perception coverage percentage, and direct valid delta (`Run 4 matched - Run 1 matched`).
+  * Distinguishes 3 tiers: 1) Run 1 original full test (ref only, N=8,040), 2) Run 1 matched subset, 3) Run 4 matched subset.
+  * Verified locally on smoke subset (`scratch/verify_matched_evaluation.py`; Run 1 matched MAE 0.3214 vs Run 4 matched MAE 0.2857 on N=7).
+  * Automatically integrated into Modal wrapper post-training evaluation outputting `bcs_perception_matched_test_comparison.json` and `bcs_perception_matched_test_comparison.md`.
+- Unchanged manual execution commands verified ready for cloud execution on `tigerwood697`.
+
 # Session Summary — 2026-09-24 (ScienceDB BCS Perception Pipeline Hardened & Verified for Run 4)
 
 - Convo ID: `3ec35c2e-9eec-4b84-811f-b48cb01a486b`
@@ -6,7 +24,7 @@
 - Corrected parameter counts: baseline Run 1 ordinal ResNet-18 is 11,178,564 params, Run 4 4-channel is 11,181,700 params (exact delta: +3,136 params, +0.028%).
 - Resumable cache pipeline: detects already completed valid crop + mask pairs on disk (`st_size > 0`), skips redundant reprocessing, preserves manifest records, and periodically commits progress/Modal volumes.
 - Live `tqdm` progress: implemented real-time streaming progress bars for cache generation (`skip`, `det`, `seg`, `fail`), training batches, validation batches, and post-training test evaluation.
-- Test set isolation & one-time post-training evaluation: model selection strictly uses validation Real MAE on train/val only; held-out test split is evaluated exactly ONCE post-training using the best checkpoint, saving `bcs_perception_test_metrics.json`.
+- Test set isolation & post-training evaluation: model selection strictly uses validation Real MAE on train/val only; test metrics do not affect checkpoint selection.
 - Strict terminology: locked as BINARY foreground mask guidance (never soft probability).
 - Local smoke test passed on GTX 1050 Ti: forward/backward loss backpropagation verified, 100% bit-identical checkpoint resumption verified (`0.00000000`), Modal wrapper syntax/import verified. Zero full training or paid Modal runs launched.
 

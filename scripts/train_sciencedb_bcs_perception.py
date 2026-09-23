@@ -27,8 +27,11 @@ Augmentation (Fair Match to Run 1):
 Evaluation:
   - Primary metric: Real BCS MAE computed on scale 3.25 to 4.25 (step 0.25)
   - Secondary metrics: Acc@1 (+/- 0.25), Acc@0 (exact), Balanced Accuracy, Macro-F1
-  - Model Selection: Best checkpoint selected by validation Real MAE (train/val ONLY).
-  - Test Integrity: Frozen test split is evaluated exactly ONCE post-training. Zero test access during training.
+Test Integrity & Wording:
+  - Canonical test labels/data were NOT used for training or checkpoint selection.
+  - A small test-subset plumbing evaluation was performed during pipeline verification.
+  - Final full Run 4 test evaluation remains post-training only.
+  - Test metrics must never affect checkpoint or hyperparameter selection.
 """
 
 import os
@@ -36,7 +39,7 @@ import sys
 import time
 import json
 import argparse
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Dict, Tuple, List, Optional
 from tqdm import tqdm
 
@@ -71,6 +74,38 @@ ORDINAL_THRESHOLDS = NUM_CLASSES - 1  # 4 binary threshold tasks
 
 LABEL_TO_IDX = {3.25: 0, 3.50: 1, 3.75: 2, 4.00: 3, 4.25: 4}
 IDX_TO_LABEL = {0: 3.25, 1: 3.50, 2: 3.75, 3: 4.00, 4: 4.25}
+
+
+def resolve_image_path(raw_path: str, data_root: Optional[Path] = None) -> Path:
+    """Resolve raw image path across Windows laptop and Linux/Modal environments."""
+    p = Path(raw_path)
+    if data_root is None:
+        if p.exists():
+            return p
+        if Path("datasets/bcs/sciencedb_bcs/dataset").exists():
+            data_root = Path("datasets/bcs/sciencedb_bcs/dataset")
+        elif Path("/data/dataset").exists():
+            data_root = Path("/data/dataset")
+        elif Path("/data").exists():
+            data_root = Path("/data")
+
+    if data_root is not None:
+        data_root = Path(data_root)
+        parts = PureWindowsPath(raw_path).parts
+        if len(parts) >= 3 and parts[-3] == "dataset":
+            c1 = data_root / parts[-3] / parts[-2] / parts[-1]
+            if c1.exists():
+                return c1
+            c2 = data_root / parts[-2] / parts[-1]
+            if c2.exists():
+                return c2
+            return c1
+        elif len(parts) >= 2:
+            candidate = data_root / parts[-2] / parts[-1]
+            if candidate.exists():
+                return candidate
+            return candidate
+    return p
 
 
 def set_seed(seed: int = 42):
@@ -138,7 +173,7 @@ class ScienceDBPerceptionDataset(Dataset):
             mask_p = self.cache_dir / str(row["mask_rel_path"])
             raw_label = float(row["label"])
             target_idx = LABEL_TO_IDX[raw_label]
-            self.samples.append((str(crop_p), str(mask_p), target_idx, raw_label))
+            self.samples.append((str(crop_p), str(mask_p), target_idx, raw_label, str(row["image_path"])))
 
         self.rgb_norm = T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
         self.color_jitter = T.ColorJitter(brightness=0.1, contrast=0.1)
@@ -147,7 +182,7 @@ class ScienceDBPerceptionDataset(Dataset):
         return len(self.samples)
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, float]:
-        crop_path, mask_path, target_idx, raw_label = self.samples[idx]
+        crop_path, mask_path, target_idx, raw_label, _ = self.samples[idx]
 
         # Load RGB crop and grayscale binary mask
         try:
@@ -187,6 +222,50 @@ class ScienceDBPerceptionDataset(Dataset):
         four_channel = torch.cat([rgb_normed, mask_tensor], dim=0)  # [4, H, W]
 
         return four_channel, torch.tensor(target_idx, dtype=torch.long), raw_label
+
+
+class MatchedRGBDataset(Dataset):
+    """
+    Dataset loader for original RGB ScienceDB images corresponding to the
+    EXACT SAME successful-perception subset from test_perception.csv.
+    Uses Run 1 baseline evaluation preprocessing:
+      - Resize(224, 224)
+      - ToTensor()
+      - ImageNet Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+    """
+    def __init__(
+        self,
+        matched_df: pd.DataFrame,
+        data_dir: Optional[Path] = None,
+        image_size: int = 224,
+    ):
+        self.df = matched_df.reset_index(drop=True)
+        self.data_dir = Path(data_dir) if data_dir else None
+        self.image_size = image_size
+        self.transform = T.Compose([
+            T.Resize((image_size, image_size)),
+            T.ToTensor(),
+            T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+        self.samples = []
+        for _, row in self.df.iterrows():
+            raw_path = str(row["image_path"])
+            resolved = resolve_image_path(raw_path, data_root=self.data_dir)
+            raw_label = float(row["label"])
+            target_idx = LABEL_TO_IDX[raw_label]
+            self.samples.append((str(resolved), raw_path, target_idx, raw_label))
+
+    def __len__(self) -> int:
+        return len(self.samples)
+
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, float]:
+        resolved_p, raw_p, target_idx, raw_label = self.samples[idx]
+        try:
+            img = Image.open(resolved_p).convert("RGB")
+        except Exception as e:
+            raise IOError(f"Error opening image at {resolved_p} (raw: {raw_p}): {e}")
+        tensor = self.transform(img)
+        return tensor, torch.tensor(target_idx, dtype=torch.long), raw_label
 
 
 class OrdinalBCEHead(nn.Module):
@@ -272,6 +351,35 @@ class ResNet18BCSPerception(nn.Module):
         return logits
 
 
+class ResNet18BCSBaseline(nn.Module):
+    """
+    Phase 3 Canonical ResNet-18 ImageNet Baseline for Body Condition Scoring.
+    Frank & Hall (2001) cumulative BCE with independent weights.
+    Matches artifacts/bcs_baseline/bcs_baseline_best.pth exactly.
+    """
+    def __init__(self, head_type: str = "ordinal_bce", pretrained: bool = False):
+        super().__init__()
+        base = models.resnet18(weights=None)
+        self.backbone = nn.Sequential(
+            base.conv1,
+            base.bn1,
+            base.relu,
+            base.maxpool,
+            base.layer1,
+            base.layer2,
+            base.layer3,
+            base.layer4,
+            base.avgpool,
+        )
+        self.head = OrdinalBCEHead(512, NUM_CLASSES)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        feat = self.backbone(x)
+        feat = torch.flatten(feat, 1)
+        logits = self.head(feat)
+        return logits
+
+
 def ordinal_targets_from_class_indices(
     class_indices: torch.Tensor,
     num_classes: int = NUM_CLASSES,
@@ -339,23 +447,56 @@ def evaluate_test_split(
     manifest_dir: Path,
     cache_dir: Path,
     output_dir: Path,
+    baseline_ckpt_path: Optional[Path] = None,
+    data_dir: Optional[Path] = None,
     batch_size: int = 64,
     device: torch.device = torch.device("cpu"),
 ) -> Dict:
     """
-    Evaluates best trained checkpoint on the frozen held-out test split exactly once.
-    Test metrics are saved separately and do NOT influence model selection.
+    Evaluates best trained Run 4 checkpoint on successful-perception test samples and
+    conducts a fair matched-subset baseline comparison against the existing Run 1 baseline.
+
+    Integrity Protocol:
+      - Canonical test labels/data were NOT used for training or checkpoint selection.
+      - A small test-subset plumbing evaluation was performed during pipeline verification.
+      - Final full Run 4 test evaluation remains post-training only.
+      - Test metrics must never affect checkpoint or hyperparameter selection (val Real MAE only).
+      - The only statistically and scientifically valid direct comparison is between
+        Run 1 matched subset and Run 4 matched subset on the identical image identities.
     """
     test_manifest = manifest_dir / "test_perception.csv"
     if not test_manifest.exists():
         raise FileNotFoundError(f"Missing test perception manifest: {test_manifest}")
 
+    df_test_raw = pd.read_csv(test_manifest)
+    total_manifest_samples = len(df_test_raw)
+    canonical_test_count = 8040  # Canonical full ScienceDB test split size
+
+    # Filter for successful perception samples: detection_status == 'detected' AND sam_status == 'segmented'
+    valid_mask = (df_test_raw["detection_status"] == "detected") & (df_test_raw["sam_status"] == "segmented")
+    matched_df = df_test_raw[valid_mask].copy().reset_index(drop=True)
+    successful_perception_count = len(matched_df)
+    n_det_fail = int((df_test_raw["detection_status"] != "detected").sum())
+    n_sam_fail = int(((df_test_raw["detection_status"] == "detected") & (df_test_raw["sam_status"] != "segmented")).sum())
+    coverage_pct = round((successful_perception_count / total_manifest_samples) * 100, 2) if total_manifest_samples > 0 else 0.0
+
     print("\n" + "=" * 75)
-    print("  RUN 4: HELD-OUT FROZEN TEST EVALUATION (ONE-TIME POST-TRAINING)")
-    print(f"  Test Manifest: {test_manifest}")
+    print("  RUN 4: POST-TRAINING TEST EVALUATION & FAIR MATCHED BASELINE COMPARISON")
+    print(f"  Test Manifest:               {test_manifest}")
+    print(f"  Total Manifest Rows:         {total_manifest_samples}")
+    print(f"  Canonical Test Count:        {canonical_test_count}")
+    print(f"  Successful Perception Count: {successful_perception_count}")
+    print(f"  Excluded Detection Failures: {n_det_fail}")
+    print(f"  Excluded SAM Failures:       {n_sam_fail}")
+    print(f"  Perception Coverage Rate:    {coverage_pct}%")
+    print("  Note: Model selection conducted strictly on validation Real MAE (train/val only).")
     print("=" * 75)
 
     num_workers = 0 if sys.platform == "win32" else 4
+
+    # --------------------------------------------------------------------------
+    # Tier 3: Run 4 Perception-Enhanced Model on Successful Perception Test Samples
+    # --------------------------------------------------------------------------
     test_dataset = ScienceDBPerceptionDataset(
         manifest_path=test_manifest,
         cache_dir=cache_dir,
@@ -369,7 +510,7 @@ def evaluate_test_split(
     n_test = 0
     all_true_indices, all_pred_indices = [], []
 
-    pbar = tqdm(test_loader, desc="[Test] Held-Out Evaluation", file=sys.stdout, leave=True, dynamic_ncols=True)
+    pbar = tqdm(test_loader, desc="[Test] Run 4 Perception (Matched)", file=sys.stdout, leave=True, dynamic_ncols=True)
     with torch.no_grad():
         for imgs, target_indices, _ in pbar:
             imgs = imgs.to(device)
@@ -384,11 +525,11 @@ def evaluate_test_split(
             pred_indices, _ = logits_to_predictions(logits, head_type="ordinal_bce")
             all_pred_indices.extend(pred_indices)
             all_true_indices.extend(target_indices.cpu().numpy())
-            pbar.set_postfix(test_loss=f"{loss.item():.4f}")
+            pbar.set_postfix(run4_loss=f"{loss.item():.4f}")
 
     avg_test_loss = test_loss / max(1, n_test)
     test_metrics = evaluate_metrics(np.array(all_true_indices), np.array(all_pred_indices))
-    test_summary = {
+    run4_test_summary = {
         "test_loss": round(avg_test_loss, 4),
         "total_test_samples": len(test_dataset),
         **test_metrics,
@@ -396,22 +537,211 @@ def evaluate_test_split(
 
     test_metrics_file = output_dir / "bcs_perception_test_metrics.json"
     with open(test_metrics_file, "w", encoding="utf-8") as f:
-        json.dump(test_summary, f, indent=2)
+        json.dump(run4_test_summary, f, indent=2)
 
-    print(f"\n✓ Held-out Test Real MAE: {test_metrics['real_mae']:.4f} BCS units")
-    print(f"✓ Held-out Test Acc@1:    {test_metrics['acc_1']*100:.2f}%")
-    print(f"✓ Held-out Test Acc@0:    {test_metrics['acc_0']*100:.2f}%")
-    print(f"✓ Held-out Test Bal Acc:  {test_metrics['balanced_accuracy']*100:.2f}%")
-    print(f"✓ Held-out Test Macro-F1: {test_metrics['macro_f1']:.4f}")
-    print(f"✓ Saved test metrics to:  {test_metrics_file}")
+    # --------------------------------------------------------------------------
+    # Tier 2: Existing Run 1 RGB Baseline Evaluated on the EXACT SAME Subset
+    # --------------------------------------------------------------------------
+    resolved_baseline_ckpt = None
+    if baseline_ckpt_path is not None:
+        p = Path(baseline_ckpt_path)
+        if p.exists():
+            resolved_baseline_ckpt = p
+    if resolved_baseline_ckpt is None:
+        for candidate in [
+            Path("/checkpoints/bcs_baseline/bcs_baseline_best.pth"),
+            Path("artifacts/bcs_baseline/bcs_baseline_best.pth"),
+        ]:
+            if candidate.exists():
+                resolved_baseline_ckpt = candidate
+                break
+
+    run1_matched_summary = None
+    if resolved_baseline_ckpt is not None:
+        print(f"\n[*] Evaluating EXISTING Run 1 RGB baseline on EXACT SAME matched test subset ({len(test_dataset)} samples)...", flush=True)
+        print(f"    Baseline Checkpoint: {resolved_baseline_ckpt}", flush=True)
+        baseline_model = ResNet18BCSBaseline(head_type="ordinal_bce", pretrained=False)
+        base_ckpt = torch.load(resolved_baseline_ckpt, map_location=device)
+        baseline_model.load_state_dict(base_ckpt["model_state_dict"])
+        baseline_model.to(device)
+        baseline_model.eval()
+
+        baseline_dataset = MatchedRGBDataset(
+            matched_df=test_dataset.df,
+            data_dir=data_dir,
+            image_size=224,
+        )
+        # Strict Verification: Assert exact sample identity alignment
+        assert len(baseline_dataset) == len(test_dataset), (
+            f"Dataset length mismatch: baseline {len(baseline_dataset)} != perception {len(test_dataset)}"
+        )
+        for idx in range(len(test_dataset)):
+            assert baseline_dataset.samples[idx][1] == test_dataset.samples[idx][4], (
+                f"Image ID mismatch at index {idx}: {baseline_dataset.samples[idx][1]} != {test_dataset.samples[idx][4]}"
+            )
+
+        base_loader = DataLoader(baseline_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        base_loss = 0.0
+        n_base = 0
+        base_true_indices, base_pred_indices = [], []
+
+        pbar_base = tqdm(base_loader, desc="[Test] Run 1 Baseline (Matched)", file=sys.stdout, leave=True, dynamic_ncols=True)
+        with torch.no_grad():
+            for imgs, target_indices, _ in pbar_base:
+                imgs = imgs.to(device)
+                target_indices = target_indices.to(device)
+                targets = ordinal_targets_from_class_indices(target_indices, device=device)
+
+                logits = baseline_model(imgs)
+                loss = criterion(logits, targets)
+                base_loss += loss.item() * len(target_indices)
+                n_base += len(target_indices)
+
+                pred_indices, _ = logits_to_predictions(logits, head_type="ordinal_bce")
+                base_pred_indices.extend(pred_indices)
+                base_true_indices.extend(target_indices.cpu().numpy())
+                pbar_base.set_postfix(base_loss=f"{loss.item():.4f}")
+
+        avg_base_loss = base_loss / max(1, n_base)
+        base_metrics = evaluate_metrics(np.array(base_true_indices), np.array(base_pred_indices))
+        run1_matched_summary = {
+            "test_loss": round(avg_base_loss, 4),
+            "total_test_samples": len(baseline_dataset),
+            "checkpoint_path": str(resolved_baseline_ckpt),
+            **base_metrics,
+        }
+    else:
+        print(f"\n[!] Notice: Run 1 baseline checkpoint not found at checked paths. Skipping matched baseline evaluation.")
+
+    # --------------------------------------------------------------------------
+    # Tier 1: Canonical Run 1 Original Full-Test Result (Reference Only)
+    # --------------------------------------------------------------------------
+    run1_original_full_summary = {
+        "description": "Original Run 1 RGB Baseline evaluated on all 8,040 canonical test images (Reference only; not directly comparable to subset)",
+        "checkpoint": "/checkpoints/bcs_baseline/bcs_baseline_best.pth",
+        "total_samples": canonical_test_count,
+        "real_mae": 0.1848,
+        "acc_0": 0.4163,
+        "acc_1": 0.8674,
+        "balanced_accuracy": 0.4041,
+        "macro_f1": 0.4110,
+    }
+
+    # --------------------------------------------------------------------------
+    # Comprehensive Comparison Compilation
+    # --------------------------------------------------------------------------
+    comparison_summary = {
+        "evaluation_protocol": "Fair Matched-Subset Test Comparison",
+        "valid_comparison_statement": (
+            "The VALID direct comparison is between '2_run1_matched_perception_subset' and "
+            "'3_run4_matched_perception_subset' evaluated on the EXACT SAME image identities where "
+            "perception succeeded. The original 8,040-image Run 1 metric is reported for reference only "
+            "and is NOT directly comparable to the smaller filtered perception subset."
+        ),
+        "test_split_integrity_statement": (
+            "Canonical test labels and data were NOT used for training or checkpoint selection. "
+            "A small test-subset plumbing evaluation was performed during pipeline verification. "
+            "Final full Run 4 test evaluation remains post-training only. Test metrics never affect "
+            "checkpoint or hyperparameter selection."
+        ),
+        "coverage_statistics": {
+            "canonical_full_test_count": canonical_test_count,
+            "manifest_test_rows": total_manifest_samples,
+            "successful_perception_test_count": successful_perception_count,
+            "excluded_detection_failures": n_det_fail,
+            "excluded_sam_failures": n_sam_fail,
+            "perception_coverage_percentage": coverage_pct,
+        },
+        "1_run1_original_full_test": run1_original_full_summary,
+        "2_run1_matched_perception_subset": run1_matched_summary,
+        "3_run4_matched_perception_subset": run4_test_summary,
+    }
+
+    delta_mae = None
+    delta_acc1 = None
+    delta_acc0 = None
+    delta_balacc = None
+    delta_f1 = None
+
+    if run1_matched_summary is not None:
+        delta_mae = round(test_metrics["real_mae"] - run1_matched_summary["real_mae"], 4)
+        delta_acc1 = round((test_metrics["acc_1"] - run1_matched_summary["acc_1"]) * 100, 2)
+        delta_acc0 = round((test_metrics["acc_0"] - run1_matched_summary["acc_0"]) * 100, 2)
+        delta_balacc = round((test_metrics["balanced_accuracy"] - run1_matched_summary["balanced_accuracy"]) * 100, 2)
+        delta_f1 = round(test_metrics["macro_f1"] - run1_matched_summary["macro_f1"], 4)
+
+        comparison_summary["matched_delta_run4_minus_run1"] = {
+            "real_mae_delta": delta_mae,
+            "acc_1_delta_pct": delta_acc1,
+            "acc_0_delta_pct": delta_acc0,
+            "balanced_accuracy_delta_pct": delta_balacc,
+            "macro_f1_delta": delta_f1,
+        }
+
+    comparison_json_file = output_dir / "bcs_perception_matched_test_comparison.json"
+    with open(comparison_json_file, "w", encoding="utf-8") as f:
+        json.dump(comparison_summary, f, indent=2)
+
+    # Write Markdown comparison report
+    comparison_md_file = output_dir / "bcs_perception_matched_test_comparison.md"
+    with open(comparison_md_file, "w", encoding="utf-8") as f:
+        f.write("# Phase 3 BCS Fair Matched-Subset Test Comparison\n\n")
+        f.write("> **Scientific Protocol Notice:** The only statistically and scientifically valid direct comparison\n")
+        f.write("> is between **Run 1 matched subset** and **Run 4 matched subset** on the EXACT SAME image identities\n")
+        f.write("> where perception succeeded. The original 8,040-image Run 1 metric is reported for reference only\n")
+        f.write("> and is NOT directly comparable to the smaller filtered perception subset.\n\n")
+        f.write("## 1. Test Population & Perception Coverage\n\n")
+        f.write(f"- **Canonical Full Test Count**: {canonical_test_count:,} images\n")
+        f.write(f"- **Evaluated Test Manifest Rows**: {total_manifest_samples:,} images\n")
+        f.write(f"- **Successful Perception Test Count**: {successful_perception_count:,} images\n")
+        f.write(f"- **Excluded Detection Failures**: {n_det_fail:,} images (RT-DETR found no cow)\n")
+        f.write(f"- **Excluded SAM Failures**: {n_sam_fail:,} images (SAM returned no mask)\n")
+        f.write(f"- **Perception Coverage**: {coverage_pct:.2f}%\n\n")
+        f.write("## 2. Primary Performance Comparison Table\n\n")
+        f.write("| Metric | (1) Run 1 Original Full Test (Ref Only, N=8,040) | (2) Run 1 Matched Subset | (3) Run 4 Matched Subset | Delta (Run 4 - Run 1 Matched) |\n")
+        f.write("| :--- | :---: | :---: | :---: | :---: |\n")
+
+        if run1_matched_summary is not None:
+            f.write(f"| **Real BCS MAE (Primary)** | **0.1848** | **{run1_matched_summary['real_mae']:.4f}** | **{test_metrics['real_mae']:.4f}** | **{delta_mae:+.4f} BCS units** |\n")
+            f.write(f"| **Acc@1 (+/- 0.25 units)** | 86.74% | {run1_matched_summary['acc_1']*100:.2f}% | {test_metrics['acc_1']*100:.2f}% | {delta_acc1:+.2f}% |\n")
+            f.write(f"| **Acc@0 (Exact match)** | 41.63% | {run1_matched_summary['acc_0']*100:.2f}% | {test_metrics['acc_0']*100:.2f}% | {delta_acc0:+.2f}% |\n")
+            f.write(f"| **Balanced Accuracy** | 40.41% | {run1_matched_summary['balanced_accuracy']*100:.2f}% | {test_metrics['balanced_accuracy']*100:.2f}% | {delta_balacc:+.2f}% |\n")
+            f.write(f"| **Macro-F1** | 0.4110 | {run1_matched_summary['macro_f1']:.4f} | {test_metrics['macro_f1']:.4f} | {delta_f1:+.4f} |\n")
+        else:
+            f.write(f"| **Real BCS MAE (Primary)** | **0.1848** | N/A | **{test_metrics['real_mae']:.4f}** | N/A |\n")
+            f.write(f"| **Acc@1 (+/- 0.25 units)** | 86.74% | N/A | {test_metrics['acc_1']*100:.2f}% | N/A |\n")
+            f.write(f"| **Acc@0 (Exact match)** | 41.63% | N/A | {test_metrics['acc_0']*100:.2f}% | N/A |\n")
+            f.write(f"| **Balanced Accuracy** | 40.41% | N/A | {test_metrics['balanced_accuracy']*100:.2f}% | N/A |\n")
+            f.write(f"| **Macro-F1** | 0.4110 | N/A | {test_metrics['macro_f1']:.4f} | N/A |\n")
+
+        f.write("\n## 3. Test Split Integrity Statement\n\n")
+        f.write("- Canonical test labels and data were NOT used for training or checkpoint selection.\n")
+        f.write("- A small test-subset plumbing evaluation was performed during pipeline verification.\n")
+        f.write("- Final full Run 4 test evaluation remains post-training only.\n")
+        f.write("- Test metrics must never affect checkpoint or hyperparameter selection.\n")
+
+    print("\n" + "=" * 75)
+    print("  MATCHED TEST EVALUATION COMPLETED")
+    print(f"  Coverage:                {coverage_pct:.2f}% ({successful_perception_count}/{total_manifest_samples})")
+    print(f"  Run 4 Matched Real MAE:  {test_metrics['real_mae']:.4f} BCS units")
+    print(f"  Run 4 Matched Acc@1:     {test_metrics['acc_1']*100:.2f}%")
+    if run1_matched_summary is not None:
+        print(f"  Run 1 Matched Real MAE:  {run1_matched_summary['real_mae']:.4f} BCS units")
+        print(f"  Run 1 Matched Acc@1:     {run1_matched_summary['acc_1']*100:.2f}%")
+        print(f"  Direct Matched MAE Delta:{delta_mae:+.4f} BCS units")
+    print(f"  Saved comparison JSON:   {comparison_json_file}")
+    print(f"  Saved comparison MD:     {comparison_md_file}")
     print("=" * 75)
-    return test_summary
+
+    return comparison_summary
 
 
 def train_pipeline(
     manifest_dir: Path,
     cache_dir: Path,
     output_dir: Path,
+    baseline_ckpt_path: Optional[Path] = None,
+    data_dir: Optional[Path] = None,
     epochs: int = 30,
     batch_size: int = 64,
     lr: float = 1e-4,
@@ -599,11 +929,11 @@ def train_pipeline(
     print(f"✓ Checkpoints saved to: {output_dir}")
     print("=" * 75)
 
-    # Post-training: evaluate held-out test set once with best checkpoint if requested
+    # Post-training: evaluate held-out test split with best checkpoint if requested
     if eval_test and not smoke:
         test_manifest = manifest_dir / "test_perception.csv"
         if test_manifest.exists():
-            print(f"\n[*] Loading best checkpoint from {best_ckpt_path} for one-time held-out test evaluation...")
+            print(f"\n[*] Loading best checkpoint from {best_ckpt_path} for post-training test evaluation...")
             best_ckpt = torch.load(best_ckpt_path, map_location=device)
             model.load_state_dict(best_ckpt["model_state_dict"])
             test_results = evaluate_test_split(
@@ -611,6 +941,8 @@ def train_pipeline(
                 manifest_dir=manifest_dir,
                 cache_dir=cache_dir,
                 output_dir=output_dir,
+                baseline_ckpt_path=baseline_ckpt_path,
+                data_dir=data_dir,
                 batch_size=batch_size,
                 device=device,
             )
@@ -628,12 +960,14 @@ def main():
     parser.add_argument("--manifest-dir", type=str, default="artifacts/bcs_perception_smoke/cache/manifests", help="Dir with train_perception.csv and val_perception.csv")
     parser.add_argument("--cache-dir", type=str, default="artifacts/bcs_perception_smoke/cache", help="Perception cache root")
     parser.add_argument("--output-dir", type=str, default="artifacts/bcs_perception_smoke/checkpoints", help="Output checkpoints and metrics")
+    parser.add_argument("--baseline-ckpt", type=str, default=None, help="Path to Run 1 baseline checkpoint for fair matched comparison")
+    parser.add_argument("--data-dir", type=str, default=None, help="Directory containing original ScienceDB images (for Run 1 matched eval)")
     parser.add_argument("--epochs", type=int, default=2, help="Number of training epochs")
     parser.add_argument("--batch-size", type=int, default=4, help="Batch size")
     parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
     parser.add_argument("--mask-init", type=str, default="mean", choices=["mean", "zero"], help="Initialization of 4th mask channel in conv1")
     parser.add_argument("--smoke", action="store_true", help="Smoke test on small subset")
-    parser.add_argument("--eval-test", action="store_true", help="Run one-time test evaluation after training completes")
+    parser.add_argument("--eval-test", action="store_true", help="Run test evaluation after training completes")
     parser.add_argument("--device", type=str, default=None, help="Device (cuda or cpu)")
     args = parser.parse_args()
 
@@ -641,6 +975,8 @@ def main():
         manifest_dir=Path(args.manifest_dir),
         cache_dir=Path(args.cache_dir),
         output_dir=Path(args.output_dir),
+        baseline_ckpt_path=Path(args.baseline_ckpt) if args.baseline_ckpt else None,
+        data_dir=Path(args.data_dir) if args.data_dir else None,
         epochs=args.epochs,
         batch_size=args.batch_size,
         lr=args.lr,

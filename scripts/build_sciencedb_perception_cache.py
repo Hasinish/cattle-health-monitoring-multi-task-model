@@ -354,14 +354,17 @@ def run_cache_generation(
                         n_segmented += 1
                         pbar.set_postfix(skip=n_skipped, det=n_detected, seg=n_segmented, fail=n_det_fail + n_sam_fail)
                         continue
-                elif det_st != "detected" or sam_st != "segmented":
-                    # Preserved failure
+                elif det_st == "detected":
+                    # RT-DETR succeeded, but SAM failed
                     n_skipped += 1
-                    if det_st != "detected":
-                        n_det_fail += 1
-                    else:
-                        n_detected += 1
-                        n_sam_fail += 1
+                    n_detected += 1
+                    n_sam_fail += 1
+                    pbar.set_postfix(skip=n_skipped, det=n_detected, seg=n_segmented, fail=n_det_fail + n_sam_fail)
+                    continue
+                else:
+                    # Detection failure: RT-DETR found no valid cow (upstream localization failure)
+                    n_skipped += 1
+                    n_det_fail += 1
                     pbar.set_postfix(skip=n_skipped, det=n_detected, seg=n_segmented, fail=n_det_fail + n_sam_fail)
                     continue
 
@@ -379,16 +382,18 @@ def run_cache_generation(
                 n_detected += 1
                 cv2.imwrite(str(out_crop_abs), crop_img, [int(cv2.IMWRITE_JPEG_QUALITY), 95])
                 saved_crop_rel = out_crop_rel
+                if meta["sam_status"] == "segmented":
+                    n_segmented += 1
+                    cv2.imwrite(str(out_mask_abs), crop_mask)
+                    saved_mask_rel = out_mask_rel
+                else:
+                    # RT-DETR succeeded, but SAM failed
+                    n_sam_fail += 1
+                    saved_mask_rel = None
             else:
+                # RT-DETR found no valid cow (upstream localization failure)
                 n_det_fail += 1
                 saved_crop_rel = None
-
-            if meta["sam_status"] == "segmented":
-                n_segmented += 1
-                cv2.imwrite(str(out_mask_abs), crop_mask)
-                saved_mask_rel = out_mask_rel
-            else:
-                n_sam_fail += 1
                 saved_mask_rel = None
 
             rec = {
@@ -423,17 +428,21 @@ def run_cache_generation(
                 pass
 
         print(f"\n  ✓ Saved split manifest: {manifest_csv} ({len(out_df)} records, {n_skipped} skipped/reused)")
-        print(f"  ✓ Split Perception Summary: Detected={n_detected} | Segmented={n_segmented} | DetFail={n_det_fail} | SamFail={n_sam_fail}", flush=True)
+        print(f"  ✓ Split Perception Summary: Detected={n_detected} | SegmentedSuccess={n_segmented} | DetectionFail={n_det_fail} | SamFail={n_sam_fail}", flush=True)
 
         split_summary = {
             "split": split,
             "total_processed": len(df_proc),
             "skipped_reused": n_skipped,
             "detected": n_detected,
-            "segmented": n_segmented,
+            "detection_failure": n_det_fail,
+            "sam_failure": n_sam_fail,
+            "segmented_success": n_segmented,
             "detection_failures": n_det_fail,
             "sam_failures": n_sam_fail,
+            "segmented": n_segmented,
             "det_rate_pct": round(n_detected / len(df_proc) * 100, 2) if len(df_proc) > 0 else 0,
+            "seg_success_rate_pct": round(n_segmented / len(df_proc) * 100, 2) if len(df_proc) > 0 else 0,
             "seg_rate_pct": round(n_segmented / len(df_proc) * 100, 2) if len(df_proc) > 0 else 0,
             "elapsed_seconds": round(time.time() - t0, 2),
         }

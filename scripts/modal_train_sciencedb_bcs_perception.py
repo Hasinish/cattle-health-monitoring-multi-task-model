@@ -78,6 +78,10 @@ image = (
         str(REPO_ROOT / "scripts" / "train_sciencedb_bcs_perception.py"),
         remote_path="/root/train_sciencedb_bcs_perception.py",
     )
+    .add_local_file(
+        str(REPO_ROOT / "scripts" / "train_sciencedb_bcs_baseline.py"),
+        remote_path="/root/train_sciencedb_bcs_baseline.py",
+    )
     .add_local_dir(
         str(REPO_ROOT / "datasets" / "bcs" / "sciencedb"),
         remote_path="/root/sciencedb_splits",
@@ -110,7 +114,7 @@ def verify_readiness():
     print("=" * 70, flush=True)
 
     # 1. Verify ScienceDB Data Volume
-    print("[1/4] Verifying source ScienceDB dataset on /data...", flush=True)
+    print("[1/5] Verifying source ScienceDB dataset on /data...", flush=True)
     data_dir = Path("/data/dataset")
     if not data_dir.exists():
         data_dir = Path("/data")
@@ -124,7 +128,7 @@ def verify_readiness():
         assert len(files) == expected, f"Count mismatch for {cls_name}: {len(files)} != {expected}"
 
     # 2. Verify Canonical Split Manifests
-    print("\n[2/4] Verifying canonical split CSVs (test set strictly frozen)...", flush=True)
+    print("\n[2/5] Verifying canonical split CSVs (test data strictly held out)...", flush=True)
     splits_dir = Path("/root/sciencedb_splits")
     train_csv = splits_dir / "train.csv"
     val_csv = splits_dir / "val.csv"
@@ -139,10 +143,10 @@ def verify_readiness():
     df_te = pd.read_csv(test_csv)
     print(f"  ✓ Train split: {len(df_tr)} images ({df_tr['burst_group_id'].nunique()} burst groups)", flush=True)
     print(f"  ✓ Val split:   {len(df_va)} images ({df_va['burst_group_id'].nunique()} burst groups)", flush=True)
-    print(f"  ✓ Test split:  {len(df_te)} images ({df_te['burst_group_id'].nunique()} burst groups) [FROZEN]", flush=True)
+    print(f"  ✓ Test split:  {len(df_te)} images ({df_te['burst_group_id'].nunique()} burst groups) [CANONICAL HELD-OUT]", flush=True)
 
     # 3. Verify Cache Volume Writable
-    print("\n[3/4] Verifying persistent cache volume on /cache...", flush=True)
+    print("\n[3/5] Verifying persistent cache volume on /cache...", flush=True)
     test_write = Path("/cache/test_probe.tmp")
     with open(test_write, "w") as f:
         f.write("probe_ok")
@@ -151,7 +155,7 @@ def verify_readiness():
     print("  ✓ Volume 'sciencedb-perception-cache' is writable and committed.", flush=True)
 
     # 4. Verify Checkpoint Volume Writable
-    print("\n[4/4] Verifying checkpoint volume on /checkpoints...", flush=True)
+    print("\n[4/5] Verifying checkpoint volume on /checkpoints...", flush=True)
     out_dir = Path("/checkpoints/bcs_perception_run4")
     out_dir.mkdir(parents=True, exist_ok=True)
     test_ckpt = out_dir / "test_probe.tmp"
@@ -160,6 +164,14 @@ def verify_readiness():
     test_ckpt.unlink()
     checkpoint_volume.commit()
     print("  ✓ Volume 'sciencedb-checkpoints' is writable and committed.", flush=True)
+
+    # 5. Verify Run 1 Baseline Checkpoint for Matched Evaluation
+    print("\n[5/5] Verifying Run 1 baseline checkpoint on /checkpoints for matched evaluation...", flush=True)
+    baseline_ckpt = Path("/checkpoints/bcs_baseline/bcs_baseline_best.pth")
+    if baseline_ckpt.exists():
+        print(f"  ✓ Run 1 baseline checkpoint verified: {baseline_ckpt} ({baseline_ckpt.stat().st_size:,} bytes)", flush=True)
+    else:
+        print(f"  [!] Notice: {baseline_ckpt} not found on volume yet. (Required for post-training matched comparison).", flush=True)
 
     print("\n" + "=" * 70, flush=True)
     print("  ✓ 100% PRE-FLIGHT VERIFICATIONS PASSED — READY FOR RUN 4!", flush=True)
@@ -244,11 +256,13 @@ def main(
     mask_init: str = "mean",
     smoke: bool = False,
     eval_test: bool = True,
+    baseline_ckpt_path: str = "/checkpoints/bcs_baseline/bcs_baseline_best.pth",
 ):
     """
     Main training entry point for Run 4 BCS Perception-Enhanced Model on Modal L40S.
-    Selects best checkpoint strictly on validation Real MAE (train/val only).
-    Runs one-time held-out test evaluation after training completes.
+    Model selection is conducted strictly on validation Real MAE (train/val only).
+    Post-training test evaluation automatically executes the fair matched-subset comparison
+    against the existing Run 1 baseline checkpoint on the identical successful-perception samples.
     """
     import sys
     sys.path.insert(0, "/root")
@@ -258,11 +272,14 @@ def main(
     cache_dir = Path("/cache")
     output_dir = Path("/checkpoints/bcs_perception_run4")
     output_dir.mkdir(parents=True, exist_ok=True)
+    data_dir = Path("/data/dataset") if Path("/data/dataset").exists() else Path("/data")
 
     metrics = train_pipeline(
         manifest_dir=manifest_dir,
         cache_dir=cache_dir,
         output_dir=output_dir,
+        baseline_ckpt_path=Path(baseline_ckpt_path) if baseline_ckpt_path else None,
+        data_dir=data_dir,
         epochs=epochs,
         batch_size=batch_size,
         lr=lr,
