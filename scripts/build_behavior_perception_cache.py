@@ -554,9 +554,11 @@ def build_behavior_perception_cache(
         dataset_name = row["dataset"]
         sample_folder = cache_dir / sample_id
 
-        # Check if already completely cached with non-empty masks
+        # Check if already completely cached with valid perception_metadata.json
+        meta_path = sample_folder / "perception_metadata.json"
         already_valid = (
             sample_folder.exists()
+            and meta_path.exists()
             and all(
                 (sample_folder / f"frame_{t:02d}.jpg").exists()
                 and (sample_folder / f"frame_{t:02d}.jpg").stat().st_size > 0
@@ -567,33 +569,34 @@ def build_behavior_perception_cache(
         )
 
         if already_valid:
-            stats["already_cached"] += 1
-            stats["extracted_success"] += 1
-            successful_indices.append(idx)
-            # Reconstruct frame records from cache for audit
-            for t in range(num_frames):
-                m_img = cv2.imread(str(sample_folder / f"mask_{t:02d}.png"), cv2.IMREAD_GRAYSCALE)
-                pix = int(np.sum(m_img > 127)) if m_img is not None else 0
-                all_frame_records.append({
-                    "sample_id": sample_id,
-                    "dataset": dataset_name,
-                    "t": t,
-                    "frame_index": t,
-                    "tracklet_id": row.get("tracklet_id"),
-                    "bbox": "already_cached",
-                    "prompt_strategy": "cvb_gt_bbox" if dataset_name == "cvb" else "beef_cached",
-                    "fallback_used": False,
-                    "mask_success": True,
-                    "mask_pixels": pix,
-                    "mask_area_ratio": round(pix / (224 * 224), 4),
-                    "failure_reason": None,
-                })
-                if dataset_name == "cvb":
-                    stats["cvb_frames_generated"] += 1
-                else:
-                    stats["beef_a5_frames_generated"] += 1
-                stats["total_real_masks_generated"] += 1
-            continue
+            try:
+                with open(meta_path, "r", encoding="utf-8") as f:
+                    cached_records = json.load(f)
+                assert isinstance(cached_records, list) and len(cached_records) == num_frames, "Invalid record length"
+                # Strict provenance assertions: reject placeholder provenance
+                for rec_meta in cached_records:
+                    assert rec_meta.get("prompt_strategy") not in ("beef_cached", None), "Placeholder prompt_strategy detected"
+                    assert rec_meta.get("bbox") != "already_cached", "Placeholder bbox detected"
+                    assert "frame_index" in rec_meta, "Missing frame_index"
+                    assert rec_meta.get("mask_success") is True, "mask_success is False in cached record"
+
+                stats["already_cached"] += 1
+                stats["extracted_success"] += 1
+                successful_indices.append(idx)
+                all_frame_records.extend(cached_records)
+
+                for rec_meta in cached_records:
+                    strat = rec_meta.get("prompt_strategy")
+                    if strat == "cvb_gt_bbox":
+                        stats["cvb_frames_generated"] += 1
+                    elif strat == "beef_A5_rtdetr_box_center_point":
+                        stats["beef_a5_frames_generated"] += 1
+                    elif strat == "beef_center_point_fallback":
+                        stats["beef_fallback_frames_generated"] += 1
+                    stats["total_real_masks_generated"] += 1
+                continue
+            except Exception as e:
+                print(f"[WARN] Sequence {sample_id} cache metadata invalid ({e}). Regenerating sequence from raw source.")
 
         # Real perception extraction
         rgb_seq = None
@@ -613,7 +616,7 @@ def build_behavior_perception_cache(
         all_frame_records.extend(frame_records)
 
         if rgb_seq is not None and mask_seq is not None and len(rgb_seq) == num_frames and len(mask_seq) == num_frames:
-            # Write to disk
+            # Write frames and masks to disk
             sample_folder.mkdir(parents=True, exist_ok=True)
             for t in range(num_frames):
                 out_rgb = sample_folder / f"frame_{t:02d}.jpg"
@@ -630,6 +633,11 @@ def build_behavior_perception_cache(
                 elif rec_meta["prompt_strategy"] == "beef_center_point_fallback":
                     stats["beef_fallback_frames_generated"] += 1
                 stats["total_real_masks_generated"] += 1
+
+            # Persist authentic per-frame perception metadata
+            meta_path = sample_folder / "perception_metadata.json"
+            with open(meta_path, "w", encoding="utf-8") as f:
+                json.dump(frame_records, f, indent=2)
 
             stats["extracted_success"] += 1
             successful_indices.append(idx)

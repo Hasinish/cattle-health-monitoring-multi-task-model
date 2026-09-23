@@ -90,6 +90,14 @@ Across the 40 candidate sequences (320 frames):
 - **Rule**: `test.csv` (809 sequences) must NOT be parsed, loaded into a DataFrame, sampled, tuned, or evaluated.
 - **Verification**: `test_stat_before.st_mtime == test_stat_after.st_mtime` verified bit-level non-modification; `test_csv_evaluated: false` logged in `behavior_tcn_metrics.json`.
 
+### 4.5 Cache Provenance & Resume Verification Audit
+- Evaluated on Modal profile `tigerwood693` (NVIDIA T4, App `ap-2faPVUrMAp9qS4EPXFns81`).
+- Verified authentic per-frame metadata persistence (`perception_metadata.json` saved in each sequence directory).
+- Re-audited exact frame breakdown across 38 retained sequences: **CVB GT: 192 frames, Beef A5: 93 frames, Beef Fallback: 19 frames (Total: 304 real masks)**.
+- Proven zero placeholder provenance across all 304 retained frames: `beef_cached` count = 0, `bbox="already_cached"` count = 0, all frames retain authentic source `frame_index`.
+- Resume verification executed in 2.0s: verified 100% bit-identical manifest and semantic count equivalence between fresh and resumed runs.
+- Zero TCN training launched; zero test-set access.
+
 ---
 
 ## 5. Artifacts & File Registry

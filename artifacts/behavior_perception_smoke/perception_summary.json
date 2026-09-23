@@ -1,28 +1,28 @@
 {
   "train_stats": {
     "total_requested": 30,
-    "already_cached": 29,
+    "already_cached": 0,
     "extracted_success": 29,
     "failed_sequences": 1,
     "cvb_frames_generated": 144,
-    "beef_a5_frames_generated": 88,
-    "beef_fallback_frames_generated": 0,
+    "beef_a5_frames_generated": 77,
+    "beef_fallback_frames_generated": 11,
     "total_real_masks_generated": 232
   },
   "val_stats": {
     "total_requested": 10,
-    "already_cached": 9,
+    "already_cached": 0,
     "extracted_success": 9,
     "failed_sequences": 1,
     "cvb_frames_generated": 48,
-    "beef_a5_frames_generated": 24,
-    "beef_fallback_frames_generated": 0,
+    "beef_a5_frames_generated": 16,
+    "beef_fallback_frames_generated": 8,
     "total_real_masks_generated": 72
   },
   "total_sequences_requested": 40,
   "total_sequences_retained": 38,
   "total_real_masks_generated": 304,
   "cvb_frames_generated": 192,
-  "beef_a5_frames_generated": 112,
-  "beef_fallback_frames_generated": 0
+  "beef_a5_frames_generated": 93,
+  "beef_fallback_frames_generated": 19
 }

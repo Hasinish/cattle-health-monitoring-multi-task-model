@@ -1,3 +1,23 @@
+# Session Summary — 2026-09-24 (Run 5 Behavior Perception Smoke Cache Provenance Repair & Re-Certification)
+
+- Convo ID: `540530b4-9a5f-4d20-b0aa-fe673856f004`
+- Objective: Repair Run 5 Behavior perception cache resume/provenance logic in `scripts/build_behavior_perception_cache.py`, regenerate tiny 40-sequence smoke cache on Modal `tigerwood693` (NVIDIA T4), and re-certify audit artifacts.
+- Non-goals honored: Zero TCN training launched; zero full Behavior caching launched; `test.csv` was strictly untouched; Run 6 Re-ID work by Codex was preserved.
+- Problem Identified: When sequences were already cached, legacy resume logic synthesized fake placeholder provenance (`frame_index=t`, `bbox="already_cached"`, `beef_cached`, `fallback_used=False`), inappropriately classifying all cached Beef frames as A5 (112 A5, 0 fallback in `perception_summary.json`), conflicting with fresh inference counts (93 A5, 19 fallback).
+- Implementation:
+  * Updated `scripts/build_behavior_perception_cache.py` to persist comprehensive per-frame `perception_metadata.json` (`sample_id`, `dataset`, `t`, source `frame_index`, target `tracklet_id`, `bbox`, `prompt_strategy`, `fallback_used`, `mask_success`, `mask_pixels`, `mask_area_ratio`) alongside every sequence upon initial generation.
+  * In resume path, load exact metadata from `perception_metadata.json` without guessing or placeholder fabrication. Assert no `beef_cached` or `already_cached` records exist.
+  * Added `audit_smoke_cache` workflow in `scripts/modal_train_cvb_beef_behavior_tcn.py`: wipes corrupted cache directory, generates fresh cache, verifies on-disk metadata, executes resume pass, and asserts 100% bit-identical manifest and semantic counts.
+- Cloud Verification (Modal `tigerwood693`, T4, App `ap-2faPVUrMAp9qS4EPXFns81`):
+  * Fresh extraction: 40 sequences processed in 60.4s. Retained 38 sequences (29 train, 9 val); 2 occluded Beef sequences properly failed perception and were excluded (9 failure frames total).
+  * Retained frames: 304 real masks across 38 sequences (192 CVB GT-prompted, 93 Kaggle Beef A5, 19 Kaggle Beef fallback).
+  * Resumed pass: 40 sequences scanned in 2.0s; 0 placeholder provenance entries; 100% bit-identical manifest and summary counters.
+  * `test.csv` remained 100% untouched.
+- Artifacts & Docs Updated:
+  * `artifacts/behavior_perception_smoke/perception_manifest.csv` (313 rows: 304 retained + 9 failure frames)
+  * `artifacts/behavior_perception_smoke/perception_summary.json` (192 CVB, 93 Beef A5, 19 Beef Fallback)
+  * `docs/research_log/2026-09-24_cvb_beef_behavior_perception_integration_smoke_test.md` (Section 4.5 audit report added)
+
 # Session Summary — 2026-09-24 (Run 6 SideViewCows2026 GT-Mask Perception-Enhanced Re-ID Local Smoke)
 
 - Objective: Prepare Phase 3 Run 6 as a controlled GT/oracle segmentation-guided SideViewCows2026 Re-ID representation and execute only a tiny local GTX 1050 Ti smoke test.
