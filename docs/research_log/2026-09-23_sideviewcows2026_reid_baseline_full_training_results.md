@@ -90,13 +90,13 @@ Cosine similarity ($S_{ij} = e_i^\top g_j$) was computed between query embedding
 
 ## 5. Scientific Findings & Defense Strategy
 
-1. **The In-Domain vs Cross-Domain Gap is Confirmed**:
+1. **Generalization Gap Across Identity and Setting Shifts**:
    - In-domain parlor validation on known cows achieved **98.73% Top-1 accuracy**.
    - However, when testing the same 512-D embeddings on unseen cows across setting shifts, retrieval dropped to **58.64% Rank-1 (Barn)** and **38.88% Rank-1 (Snapshots)**.
-   - This empirically confirms that raw RGB features overfit to background/illumination cues specific to the milking parlor, leading to substantial degradation in unconstrained barn environments.
+   - The results demonstrate a substantial generalization gap under unseen-identity and cross-setting evaluation. This is consistent with possible reliance on setting-specific visual cues, including background or illumination, but does not by itself establish shortcut learning. The upcoming perception-enhanced Re-ID comparison is required to test whether suppressing background information improves robustness.
 2. **Defensible Defense Narrative**:
-   - The drop from 98.7% (in-domain) to 58.6% (cross-setting) completely refutes any charge of data leakage or split memorization.
-   - It provides the precise empirical baseline needed for **Run 6 (Perception-Enhanced Re-ID)**: applying SAM 2.1 soft masks to remove background noise will directly target this 40% performance gap.
+   - Leakage protection is supported by the verified protocol design: the 41 representation-learning identities and 69 evaluation identities are disjoint, and held-out Protocol A gallery/query data were not used during training or checkpoint selection.
+   - Run 6 will test whether cattle-centered foreground/background suppression improves cross-setting retrieval relative to this RGB baseline.
 3. **Run 3 Milestone Certified**:
    - All three single-task RGB baselines in Step 4 are now 100% complete and certified:
      - Run 1 (BCS): Real MAE 0.1848, Acc@1 86.74%
