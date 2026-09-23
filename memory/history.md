@@ -13,9 +13,9 @@
   - Test Macro-F1: **0.8573**
   - Per-class recall: `front` 89.83% (53/59), `side` 72.73% (24/33), `rear` 92.31% (36/39)
   - Per-class precision: `front` 82.81%, `side` 85.71%, `rear` 92.31%
-- Gained **+58.89% test accuracy over synthetic MOO zero-shot real diagnostic transfer** (27.37% acc, 0.1564 F1), officially closing the sim-to-real gap and proving synthetic 3D cattle pretraining transfers robustly to real farm livestock.
-- Real viewpoint model is 100% OPERATIONAL & CERTIFIED for the thesis. Checkpoints saved on volume `viewpoint-checkpoints`.
-- All prerequisite single-task & representation baselines are now completely finished. Next milestone: **Run 4 (BCS Perception-Enhanced Model)**.
+- Gained **+58.89% test accuracy over synthetic MOO zero-shot real diagnostic baseline** (27.37% on 95 samples), proving operational viability of the fine-tuned real viewpoint classifier (86.26% on 131 samples), though isolating the specific causal contribution of MOO pretraining over ImageNet initialization requires a same-split controlled ablation.
+- Real viewpoint model is 100% OPERATIONAL & CERTIFIED for its domain, but deferred from automatic injection into downstream runs until cross-domain transfer is validated.
+- All prerequisite single-task RGB baselines are now completely finished. Next milestone: **Run 4 (BCS Perception-Enhanced Model: RGB + crop + SAM 2.1 soft mask, excluding pose)**.
 
 
 # Session Summary — 2026-09-23 (Self-Collected Viewpoint Dataset Cleaning & Human Review Finalization Complete)
