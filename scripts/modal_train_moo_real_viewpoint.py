@@ -154,14 +154,17 @@ def verify_readiness():
         print(f"  ✓ Decoded {sample_img.name}: {img.size} mode={img.mode}", flush=True)
 
     print("\n" + "=" * 70, flush=True)
-    print("  ✓ 100% PRE-FLIGHT CHECKS PASSED — READY FOR T4 TRAINING!", flush=True)
+    print(f"  ✓ 100% PRE-FLIGHT CHECKS PASSED — READY FOR {MODAL_GPU} TRAINING!", flush=True)
     print("=" * 70, flush=True)
     return {
         "status": "READY",
         "dataset_images": 879,
         "moo_checkpoint": str(moo_ckpt),
-        "gpu_target": "NVIDIA Tesla T4",
+        "gpu_target": MODAL_GPU,
     }
+
+
+MODAL_GPU = os.environ.get("MODAL_GPU", "L40S")
 
 
 @app.function(
@@ -170,9 +173,9 @@ def verify_readiness():
         "/moo_data": moo_data_volume,
         "/checkpoints": checkpoint_volume,
     },
-    gpu="T4",
-    cpu=4.0,
-    memory=8192,
+    gpu=MODAL_GPU,
+    cpu=8.0,
+    memory=16384,
     timeout=3600,
 )
 def main(
