@@ -62,7 +62,7 @@ app = modal.App("sciencedb-bcs-baseline", image=train_image)
 # READINESS VERIFICATION FUNCTION (CHECKS ONLY)
 # ==============================================================================
 @app.function(
-    gpu="L4",
+    gpu=os.environ.get("MODAL_GPU", "L4"),
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
     timeout=300,
     cpu=2.0,
@@ -212,7 +212,7 @@ def verify_readiness_remote():
 # FULL 30-EPOCH TRAINING REMOTE FUNCTION
 # ==============================================================================
 @app.function(
-    gpu="L4",
+    gpu=os.environ.get("MODAL_GPU", "L4"),
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
     timeout=3600 * 3,  # 3 hours max runtime
     cpu=4.0,
@@ -220,7 +220,7 @@ def verify_readiness_remote():
 )
 def train_sciencedb_bcs_remote(
     epochs: int = 30,
-    batch_size: int = 32,
+    batch_size: int = 64,
     lr: float = 1e-4,
     weight_decay: float = 1e-4,
     head_type: str = "ordinal_bce",
@@ -296,7 +296,7 @@ def train_sciencedb_bcs_remote(
 @app.local_entrypoint()
 def main(
     epochs: int = 30,
-    batch_size: int = 32,
+    batch_size: int = 64,
     lr: float = 1e-4,
     weight_decay: float = 1e-4,
     head_type: str = "ordinal_bce",
