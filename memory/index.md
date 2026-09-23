@@ -191,6 +191,14 @@ Canonical benchmark data and task registries.
     - `split_report.md`: Detailed audit report with mathematical distribution proofs.
   - `external/sideviewcows2026/`: 80,260 images + 80,260 binary segmentation masks across 110 biological cows in snapshots (607), parlor (54,393), and barn (25,260) subsets (Zenodo record 21605650). Designated Primary Re-ID dataset under approved contingency.
   - `external/beca/`: BECA-D (16,889 images across 5,661 beef cattle; external scale stress benchmark) and BECA-L (12,172 images across 103 beef cattle tracked over 7+ months across 134 dates; primary external longitudinal Re-ID benchmark).
+- `viewpoint/`:
+  - `self/`: Raw, untouched self-collected cattle viewpoint dataset (1,057 files, 1,050 images across 7 subdirectories with .txt/.csv provenance).
+  - `self_clean_v1/`:
+    - `front/` (392 clean images), `rear/` (266 clean images), `side/` (222 clean images): Canonical 3-class normalized viewpoint dataset (880 images total).
+    - `metadata/`:
+      - `manifest.csv`: 1,050-row master audit manifest with 18 columns (`clean_id`, `clean_path`, `normalized_class`, `original_path`, `original_label`, `source_url`, `source_domain`, `width`, `height`, `sha256`, `perceptual_hash`, `duplicate_group_id`, `duplicate_status`, `stock_flag`, `quality_status`, `inclusion_status`, `exclusion_reason`, `notes`).
+      - `review_required.csv`: 33-row review manifest flagging commercial stock exclusions and edge-case candidates.
+      - `cleaning_report.md`: Comprehensive audit and leakage report documenting all rules and counts.
 - `lameness/`:
   - `cattle_lameness_manifest.csv`: 50-clip master manifest defining filename, class, source URLs, proposed group IDs, confidence scores, evidence, and 5-fold cross-validation assignments.
   - `lameness_index.csv`: Extracted frame index mapping 9,950 frames across 50 video clips to labels and splits.
@@ -240,6 +248,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 - `build_dryad_manifest.py`: Dryad BCS discrepancy audit, biological cow parser (54 cows), master manifest generator, and bcs_index.csv updater.
 - `build_opencows_splits.py`: OpenCows2020 legacy Re-ID protocol builder, duplicate harmonizer, manifest generator, and split report author.
 - `verify_opencows_splits.py`: Standalone verification script asserting OpenCows2020 46 cows across all splits, 0 duplicate leakage, official test set integrity, and path resolution.
+- `clean_self_viewpoint.py`: Standalone reproducible Python cleaning, deduplication, and 3-class normalization pipeline for the raw self-collected cattle viewpoint dataset (`datasets/viewpoint/self`), outputting to `datasets/viewpoint/self_clean_v1/`.
 - `build_sideview_reid_protocols.py`: SideViewCows2026 4-protocol generator, session recovery, exact and perceptual near-duplicate auditor with 7-stage Windows progress UI and standalone --verify-only mode.
 - `build_leakage_safe_manifest.py`: Audits CattleLameness clips, applies heuristic & perceptual clustering, generates StratifiedGroupKFold assignments, and exports `cattle_lameness_manifest.csv`.
 - `generate_doc.py`: Generates formatted documentation and reports from raw markdown and text data.

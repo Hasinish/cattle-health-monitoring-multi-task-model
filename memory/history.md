@@ -1,3 +1,22 @@
+# Session Summary — 2026-09-23 (Self-Collected Viewpoint Dataset Cleaning & 3-Class Normalization Complete)
+
+- Convo ID: `27258369-7cbf-4892-a73a-a5cd707dc4d5`
+- Implemented and executed standalone reproducible pipeline `scripts/clean_self_viewpoint.py` to clean and normalize the raw self-collected cattle viewpoint collection (`datasets/viewpoint/self`) into `datasets/viewpoint/self_clean_v1/`.
+- Preserved raw dataset 100% untouched (1,057 files verified: 1,050 images + 7 provenance files).
+- Audited 1,050 candidate images across 7 inconsistent subdirectories; recovered 100% authentic source URLs and domains.
+- Formed 906 duplicate groups; excluded 170 candidate images (139 exact SHA-256 duplicates, 31 commercial watermarked stock photos).
+- Normalized conservatively into 3 canonical classes:
+  - `front`: 392 clean images (`front` + `front-oblique`)
+  - `rear`: 266 clean images (`rear` + `rear-oblique`)
+  - `side`: 222 clean images (`side`)
+  - Total: 880 clean images (byte-for-byte exact copies of highest-quality canonical raw files; zero upscaling or recompression).
+- Generated complete forensic metadata in `datasets/viewpoint/self_clean_v1/metadata/`:
+  - `manifest.csv` (1,050 rows, all 18 required columns)
+  - `review_required.csv` (33 flagged candidate rows)
+  - `cleaning_report.md` (comprehensive audit report)
+- Assigned persistent `duplicate_group_id` (`dup_0001` to `dup_0906`) to ensure strict anti-leakage grouping for future train/val/test splits.
+- Zero models trained; zero splits created; raw folder 100% untouched. 100% post-generation integrity checks passed.
+
 # Session Summary — 2026-09-23 (SideViewCows2026 Re-ID RGB Baseline Full 30-Epoch Training & Protocol A Evaluation Complete)
 
 - Successfully executed full 30-epoch training and held-out Protocol A retrieval evaluation of Phase 3 Step 4.3 SideViewCows2026 RGB Re-ID baseline (Run 3 of 8 in Deadline Execution Plan) on Modal profile `tigerwood697` (App `ap-2v7eXL7tv414v518NkLBPN`, NVIDIA L40S, 8 CPUs, 32GB RAM).
