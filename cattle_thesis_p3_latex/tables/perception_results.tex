@@ -1,0 +1,16 @@
+\begin{table}[htbp]
+\centering\small
+\caption[Selected perception feasibility results]{Feasibility measurements; detection and pose return rates are not accuracy.\evidence{E11}}\label{tab:perception}
+\begin{tabularx}{\textwidth}{lYY}
+\toprule
+Candidate & Sample / measure & Result \\
+\midrule
+YOLOv8s & 300 images; any cow returned & 223/300; median 24.5 ms \\
+Faster R-CNN v2 & Same detection measure & 285/300; median 470.8 ms \\
+RT-DETR-L & Same detection measure & 283/300; median 94.3 ms \\
+RT-DETR + SAM 2.1 & 100 SideView images; mask overlap & Mean IoU 0.9216; Dice 0.9530 \\
+Oracle box + SAM 2.1 & Ground-truth-derived prompt & Mean IoU 0.9468; diagnostic \\
+Pose backbones & 300 images each; output return & 243/300; not pose accuracy \\
+\bottomrule
+\end{tabularx}
+\end{table}

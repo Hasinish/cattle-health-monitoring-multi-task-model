@@ -1,0 +1,76 @@
+\section{Final Specifications and Requirements}
+The intended output is one evaluated framework for BCS, Behavior Recognition and Cow Re-ID. The current work is a research system rather than a deployed farm product. Its requirements therefore include both prediction functions and the evidence needed to judge them. A working classifier is not sufficient if its test data overlap its training recordings or its reported metric cannot be traced to a saved evaluation.\evidence{E01,E03}
+
+The functional requirements are task-specific. BCS must return a score with an explicit scale and supported range. Behavior must return a label from the documented taxonomy. Re-ID must implement the selected identity or retrieval protocol, including the meaning of the query and gallery. The final multi-task model must expose these outputs while documenting which parameters are shared and which are private. These are acceptance requirements; this draft does not claim that the unfinished integrated implementation already satisfies them.
+
+\input{tables/requirements}
+
+The non-functional requirements are reproducibility, understandable failure handling, maintainability and feasible execution. The project stores small, reviewable code and manifests in Git, while datasets and large checkpoints remain on persistent storage. This separation is necessary because a manifest does not prove that its referenced files exist on a particular machine. Each execution environment needs its own readiness check.\evidence{E01,E02}
+
+Three constraints affect the scientific design. Identity metadata differ between datasets. Task labels and input modalities are not universally compatible. Available time and compute limit the number of controlled comparisons. The deadline overlay reduces the immediate experiment set without turning deferred experiments into completed evidence. It leaves the final interpretation conditional on the results actually obtained.\evidence{E03,E07}
+
+\section{Societal Impact}
+A possible benefit is more organized visual monitoring. A farmer or researcher could review body condition, behavior and identity information in a common workflow rather than interpret disconnected outputs. This is an intended use, not a measured adoption or productivity result. The present experiments do not quantify labor savings, treatment outcomes or changes in animal welfare.
+
+Welfare has health, experiential and behavioral dimensions~\cite{weary2009understanding}. Accordingly, these three outputs should not be presented as a complete welfare diagnosis. A missed behavior, incorrect identity or inaccurate BCS estimate could lead a user to inspect the wrong animal or overlook an observation that needs attention. A responsible application would preserve the image and observation time and permit human review before action.
+
+Accessibility and local practice also matter. Camera placement, maintenance, housing style and connectivity may differ from the research setting. A successful benchmark cannot establish usability on every farm. Consultation with intended users and testing in the intended setting remain separate activities. No stakeholder interview, Bangladesh farm trial or cultural-acceptance study is claimed here.
+
+Legal and privacy considerations remain deployment requirements rather than assumed compliance. Images may include people, farm infrastructure or commercially sensitive information. Relevant permissions must be checked before redistribution or deployment. This thesis does not provide legal certification or assume that public download access permits every form of reuse.
+
+\section{Environmental Impact}
+Environmental assessment must include the cost of producing the model, not only potential benefits of using it. Training, repeated preprocessing, storage and data transfer consume resources. A small task network may still rely on an expensive perception pipeline. Downstream model size alone is therefore not a complete measure of system efficiency.
+
+The execution strategy uses small smoke tests before heavier work and seeks to reuse accepted perception outputs across comparisons. These are resource-management choices, not measured carbon reductions. Offline perception latency is also distinct from the eventual speed of a deployed system.\evidence{E01,E11}
+
+No complete power trace, facility-overhead measurement or location-specific emissions record accompanies the inspected baseline artifacts. This draft reports recorded runtime where available but does not infer energy or carbon emissions from runtime alone. A future energy comparison should specify hardware, workload, measurement boundary and whether preprocessing is included.
+
+Potential livestock-management benefits require additional evidence. More accurate monitoring might support better decisions, but the present benchmarks cannot quantify reductions in feed waste, methane emissions or disease burden. Such outcomes are not inferred from classification accuracy. The environmental assessment remains limited to documented execution choices and available measurements.
+
+\section{Ethical Issues}
+Academic responsibility requires an honest account of both successes and failures. In this project, that includes rejecting a biological-ID interpretation when metadata do not establish it, retaining blocked-dataset records and reporting failed perception strategies. A negative experiment can be useful evidence when its conditions and limitations are clear.\evidence{E01,E04,E11}
+
+Reuse must be assessed independently for each dataset. The registry records licenses for several sources, but the Kaggle Beef entry remains unresolved. That uncertainty is retained. Permission to redistribute images, create commercial products or publish identifiable farm imagery is not inferred from accessibility.\evidence{E07}
+
+Evaluation must protect the distinction between model development and final testing. Validation can guide checkpoint choice, while held-out results assess the frozen choice. Repeatedly selecting designs because of test performance weakens the final comparison. External mappings and exclusions likewise must not be chosen simply because they produce a favorable score.
+
+AI-assisted writing and coding do not remove author responsibility. This working draft was prepared with assistant support, and the authors must review its claims. The final acknowledgment should describe actual assistance and follow applicable institutional requirements. No ethics approval, exemption, funding acknowledgment or signature has been fabricated.\evidence{E16}
+
+% TODO-P3-ADMIN: Confirm permissions and institutional requirements.
+\drafttodo{ETHICS-02}{Resolve the Kaggle Beef reuse license and confirm ethics and AI-assistance requirements. Retain this uncertainty until supported documentation is available.}
+
+\section{Standards -- if applicable}
+The project uses explicit technical conventions, but it does not claim certification against an unverified engineering standard. A split protocol, hash or reporting practice is a project control, not necessarily an accredited standard.
+
+For BCS, the literature provides anatomical scoring conventions~\cite{edmonson1989bcs}, while experiments must use the labels released by each dataset. The ScienceDB output support is 3.25 to 4.25 in steps of 0.25. Dryad uses a different label scheme and depth-derived representation. Reusing integer class indices cannot make those sources equivalent.\evidence{E07,E10}
+
+The report follows the supplied university structure and IEEE bibliography configuration. Dataset/model permissions, deployment requirements and final degree/approval wording require separate verification. A bibliography style is not evidence that an IEEE journal article has been submitted or published.\evidence{E16,E17}
+
+\section{Project Management Plan}
+The project has evolved through problem formulation, earlier multi-task experiments and the current evidence-focused phase. Earlier thesis documents provide historical context, but their results and dataset statements are not automatically Phase 3 evidence. The current schedule is governed by the roadmap and deadline overlay.\evidence{E01,E03}
+
+\input{tables/project_timeline}
+
+Resource allocation separates debugging from expensive execution. The local GTX 1050 Ti is used for small path, tensor, loss, metric and checkpoint checks where practical. Heavier processing and training are assigned to research or cloud resources. The completed BCS and Behavior summaries report cloud execution; this does not imply that every planned research-PC experiment has taken place.\evidence{E01,E14,E15}
+
+Code, configurations, splits and decisions are recorded in Git. Large data and checkpoints remain on persistent storage. SideView hydration is now recorded as complete, including count/path checks and sampled decoding. Its Re-ID pipeline is also smoke-tested locally and in the cloud. These are readiness milestones, not completed full retrieval evaluation.\evidence{E02,E19,E21}
+
+The author roster is carried forward from the P2 title page as a draft administrative record. Individual Phase 3 contributions should be confirmed using actual work records and peer review. This draft does not invent work allocations or infer a member's contribution solely from a commit author field.\evidence{E18}
+
+\section{Risk Management}
+A data or implementation failure can change a result's interpretation even when training finishes normally. Table~\ref{tab:risks} identifies major risks and distinguishes controls from unresolved issues.
+
+\input{tables/risks}
+
+A source-code concern affects the Behavior RGB cache. The inspected loader can use the full scene when a CVB target box is unavailable and generate a synthetic image when extraction fails. These paths are not restricted to smoke mode. The inspected full-run summary does not record their occurrence counts. Their existence does not prove that they were used, but the missing counts prevent a blanket claim that every full-run input was an authentic target-cow crop.\evidence{E12,E15}
+
+The recorded metrics are preserved with that qualification. Thesis writing does not modify training code or replace experiment artifacts. A separate cache audit is needed before the result is presented as fully input-verified.
+
+\section{Economic Analysis}
+Available records support a partial research-cost account rather than a deployment business case. The BCS run records 2,023.22 seconds and its research log reports approximately USD 1.15. The Behavior result records 821.47 seconds. Total project cost would also include failed attempts, preprocessing, storage, transfer and other work.\evidence{E08,E09,E14}
+
+\input{tables/costs}
+
+Cloud charges and elapsed time are not interchangeable. The BCS figure is retained as the log's approximate cost, not an independently reconciled invoice. A Behavior dollar cost is not derived using the BCS rate because billing conditions and measurement boundaries may differ.
+
+A deployment estimate would require camera count, processing frequency, hardware, retention period, maintenance and human-review workload. Those inputs are not established here. The draft therefore does not provide a payback period, return-on-investment percentage or claim that MTL reduces total cost. Any such advantage must be measured for the actual final system, including perception.

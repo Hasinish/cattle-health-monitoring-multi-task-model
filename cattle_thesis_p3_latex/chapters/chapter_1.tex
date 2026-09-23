@@ -1,0 +1,99 @@
+% Completely rewritten for author review. No commit authorized.
+% Project facts checked against main 79998e76780ea21d5f19f08f130768231837ca5a.
+% The Phase 2 discussion is supported by P2 chapters 5/6 and the Phase 3 roadmap.
+\section{Background}
+
+Cattle management depends on understanding both the condition of an animal and the way that condition changes over time. A farmer may observe that a cow is spending less time feeding, resting differently, or gradually losing body condition. Interpreting these observations requires more than recognizing a single event. It also requires knowing which animal is being observed and relating its present appearance and behavior to previous observations. Animal welfare research therefore places importance on measures that reflect the animal itself, alongside information about its housing and management~\cite{weary2009understanding}.
+
+Body Condition Scoring (BCS), behavior recognition, and individual identification provide three complementary parts of this monitoring process. BCS is a structured assessment of body reserves based on the appearance and coverage of anatomical regions. Established scoring systems examine features around the pelvis, loin, spine, and tailhead rather than treating body size alone as a measure of condition~\cite{edmonson1989bcs,ferguson1994bcs}. Behavior recognition describes activities such as feeding, drinking, standing, lying, and walking. Individual identification provides the link through which repeated measurements can be associated with the same cow. Together, these tasks can support a more informative record of an animal than any one of them considered in isolation.
+
+Obtaining such information consistently through manual observation is difficult. A brief inspection can miss short activities, and repeated assessment demands time and experience. Precision livestock farming addresses this problem by using sensing and analytical technologies to make animal monitoring more continuous and systematic. Reviews by Sani et al.~\cite{sani2026ab25} and Lee et al.~\cite{lee2026ab26} describe an important transition from collecting measurements to turning them into information that can support farm decisions. This transition requires reliable observations, meaningful interpretation, and continuity at the individual-animal level.
+
+Computer vision offers a useful approach because a camera can capture appearance, posture, movement, and surrounding conditions without attaching a sensor to every animal. The same visual input can contain evidence relevant to several monitoring tasks. Recent reviews document applications of vision across dairy management and wider livestock production, while also identifying practical difficulties associated with changing environments and dependable use outside controlled settings~\cite{antognoli2025ani1,zin2026ab26}. For cattle monitoring, the attraction of vision is therefore not simply automation. It is the possibility of obtaining several related observations through a common sensing approach.
+
+Deep learning has expanded this possibility by allowing visual features to be learned from data. Convolutional models such as ResNet and EfficientNet provide reusable image encoders, reducing the need to develop a separate feature-extraction procedure for every application~\cite{he2016resnet,efficientnet2019}. Cattle studies have used learned representations for condition assessment, activity recognition, and biometric matching. However, success in each individual task leaves an additional question: can these capabilities be brought together without weakening the information that each task needs?
+
+Multi-task learning (MTL) approaches this question by training related prediction functions with shared model components. Shared features can provide a common starting point, while separate outputs represent the different tasks. The extent of sharing is important. Tasks can benefit from common information, but they can also compete for model capacity or favor incompatible features. Research on task grouping and selective sharing shows that the relationship between tasks must be investigated rather than assumed~\cite{standley2020tasks,misra2016crossstitch}. This thesis examines that relationship in a unified framework for cattle body condition, behavior, and identity.
+
+\section{Rationale of the Study and Motivation}
+
+\subsection{From Task Integration to Task-Appropriate Representations}
+
+A common way to combine visual tasks is to place several prediction heads after a generic image encoder. This design is appealing because it is straightforward and reuses a substantial part of the model. Yet shared input does not necessarily imply shared informational requirements. Two tasks may examine the same cow while depending on different aspects of its appearance. The central motivation of this study is to make that distinction an explicit part of model design.
+
+For BCS, the useful information concerns body form and the visibility of anatomical features. For behavior, posture must often be interpreted together with movement and the immediate setting. For Re-ID, stable differences between individuals, including coat markings and aspects of morphology, are valuable. Consequently, a visual feature that should remain prominent for one task may be distracting for another. A coat pattern can distinguish two cows, but it should not become a substitute for assessing body condition. Similarly, a feeding area may help explain an activity, whereas identifying a cow by the background of its usual enclosure would make recognition vulnerable when the animal moves.
+
+The broader problem is known as shortcut learning. A model can solve a training task through correlations that are easier to exploit than the intended underlying relationship. Geirhos et al.~\cite{geirhos2020shortcut} show why this is a general concern in deep learning, while Xiao et al.~\cite{xiao2021background} demonstrate how image backgrounds can influence object recognition. In a farm image, cattle appearance and environmental details are observed together. Learning to separate their roles is therefore relevant both to prediction accuracy and to performance under a change of farm, camera, or recording conditions.
+
+This motivates cattle-centered visual representation learning. In this thesis, \emph{cattle-centered} means organizing the visual information around the target animal and the evidence required for a particular task. Localization identifies the animal to be analyzed. Segmentation can distinguish its visible body from the surroundings. Anatomical or pose information can describe body structure, while video can provide changes in posture and position. These forms of information are complementary, but their value depends on the task. The objective is not to remove all context or to supply every available feature to every output. It is to identify an appropriate balance between shared cattle information and task-specific detail.
+
+\subsection{Lessons from Phase 2}
+
+Phase 2 of this research explored a generic pretrained visual backbone with multiple task heads. It established an initial route toward integrating cattle-monitoring functions, but it also revealed limitations in extensive feature sharing. Body condition and behavior performance deteriorated under the earlier multi-task configuration relative to their single-task references. This experience changed the focus of the research from whether several outputs could be attached to one network to how their different learning requirements should be represented.
+
+The subsequent review of the data and evaluation procedures provided a second lesson. Visual datasets contain relationships that are not captured by counting images alone. Several images can describe the same passage through a camera, adjacent moments in a recording, or synchronized observations of one event. Moreover, a passage label or a temporary tracking identifier is not necessarily a permanent animal identity. These relationships affect what a train--test comparison actually measures. Phase 3 therefore gives priority to grouping observations according to their available identity and recording information before comparing model designs.
+
+A third lesson concerned the meaning of progress. Increasing model complexity or adding another input does not automatically resolve the weaknesses of a shared representation. A component may improve localization while contributing little to a downstream task, or it may preserve posture while losing appearance needed for identity matching. The revised study consequently treats single-task models as reference points for understanding useful visual information. Multi-task integration remains the final objective, but it follows an investigation of those task-specific requirements.
+
+\subsection{Why the Three Tasks Should Be Studied Together}
+
+The three selected tasks form a useful test of representation sharing because their objectives are related without being interchangeable. Condition assessment emphasizes morphology, behavior recognition emphasizes activity, and Re-ID emphasizes individuality. Their practical relationship motivates integration, while their visual differences make the design of that integration a meaningful research problem.
+
+This distinction also separates the study from work in which multiple outputs describe closely related aspects of the same visual phenomenon. For example, disease category and severity may share many local cues. The combination of body condition, behavior, and identity raises a broader conflict: some features must remain stable across activities, while others must respond to the activity itself. Studying these tasks together creates an opportunity to examine where shared learning is beneficial and where specialization is necessary.
+
+The availability of pretrained perception models makes this investigation practical without requiring every upstream component to be trained from the beginning. Promptable segmentation and transferable animal pose estimation offer ways to obtain foreground and structural information from existing images~\cite{kirillov2023sam,ye2024superanimal}. Their role here is to make alternative representations testable. The research contribution lies in the evaluation and integration of task-appropriate information, rather than in treating the presence of these tools as a contribution by itself.
+
+\section{Problem Statement}
+
+The problem addressed by this thesis is how to learn and share visual representations for cattle body condition scoring, behavior recognition, and re-identification while preserving the information needed by each task. Generic RGB features provide a strong starting point, but they leave the model free to combine animal appearance with environmental correlations. Extensive parameter sharing adds another difficulty because the same representation must support objectives that may favor different features.
+
+For BCS, an important challenge is distinguishing body-condition information from characteristics that merely identify an animal or its recording environment. For behavior, the challenge is combining posture with relevant temporal information without allowing location alone to determine the predicted activity. For Re-ID, the challenge is retaining individual appearance across changes in camera geometry, background, and time. A unified system must address these requirements together rather than treating one favorable task result as evidence that its representation is appropriate for all tasks.
+
+Existing research provides important elements of a solution. Anatomy-focused BCS methods, video-based behavior models, metric-learning approaches to identification, and selective MTL architectures each address part of the problem. What requires further investigation in this study is their relationship: how cattle-centered information changes task performance, how that information should be shared, and how the resulting system behaves beyond familiar recording conditions.
+
+The thesis therefore asks the following central question:
+\begin{quote}
+\textit{Can cattle-centered visual representations improve the robustness of body condition scoring, behavior recognition, and cow re-identification, and support a multi-task framework that reduces negative transfer compared with generic shared RGB representations?}
+\end{quote}
+The question concerns both representation and evaluation. A useful answer must relate task performance to the visual information supplied, the sharing strategy employed, and the conditions under which the model is tested.
+
+\section{Objectives}
+
+The main objective is to develop and evaluate a multi-task deep learning framework for BCS, behavior recognition, and cow Re-ID using task-appropriate cattle-centered visual representations.
+
+The first objective is to establish evaluation protocols that respect the relationships within the available data. These protocols use animal identities where reliable biological identifiers exist and recording, passage, or session groups where they do not. This provides a foundation for interpreting comparisons between models.
+
+The second objective is to establish single-task RGB reference models for the three tasks. These models provide a common basis for measuring the effect of representation changes and for identifying positive or negative transfer after integration.
+
+The third objective is to investigate cattle-centered visual information, including localization, foreground masks, anatomical or pose cues, and relevant viewpoint information. For behavior recognition, the investigation also considers temporal information. The aim is to determine which combinations provide useful task-level information while remaining computationally practical.
+
+The fourth objective is to compare extensive sharing with a task-conditioned approach that allows selected features or processing pathways to remain private. The comparison examines whether specialization can retain useful common information without sacrificing the requirements of individual tasks.
+
+The fifth objective is to examine robustness under changes in acquisition conditions and across compatible datasets. This connects the model comparisons to the wider goal of monitoring animals outside the exact environments represented during training.
+
+These objectives are expressed through three research questions:
+\begin{enumerate}
+    \item How do cattle-centered representations affect BCS, behavior recognition, and Re-ID relative to their RGB single-task references?
+    \item How can temporal information and task-specific visual cues be incorporated while preserving the different requirements of condition assessment, activity recognition, and identity matching?
+    \item How does task-conditioned sharing compare with hard sharing in task performance, negative transfer, and robustness under domain change?
+\end{enumerate}
+
+\section{Methodology in Brief}
+
+The study follows a comparative experimental approach. Data preparation first establishes the meaning of labels and the grouping units used for evaluation. ScienceDB provides the primary BCS setting. CVB and Kaggle Beef provide the primary behavior-training sources, and SideViewCows2026 provides the primary Re-ID setting. The use of separate collections reflects the different kinds of observations required by the three tasks. Their data preparation and evaluation protocols are developed accordingly.
+
+Single-task RGB models establish reference performance. Cattle-centered alternatives then examine representations that emphasize the target animal through localization, masking, and appropriate structural information. Behavior recognition extends this investigation to sequences so that posture can be considered alongside temporal change. Upstream perception quality is examined before its outputs are incorporated into a downstream representation.
+
+The multi-task stage compares a hard-shared model with a design that permits task-specific processing. These alternatives are assessed against the single-task references using the metric appropriate to each task. Condition scoring is evaluated through the magnitude and ordering of prediction error, behavior through class-sensitive recognition measures, and Re-ID through retrieval performance. Where compatible external data are available, evaluation also examines a change of environment or acquisition setting.
+
+The comparison is intended to produce a coherent account of the complete framework: which visual information is retained, how it is used by each task, and what changes when learning is shared. Detailed models, training procedures, data partitions, and experimental controls are presented in Chapter 4. Their outcomes and interpretation are presented in Chapter 5.
+
+\section{Scopes and Challenges}
+
+The scope is restricted to three visual tasks: BCS, behavior recognition, and individual cow identification or re-identification. Lameness detection is excluded from the Phase 3 system. RGB imagery is the common visual basis; depth-derived and other external data are relevant only where their role and label compatibility can be specified. The framework is intended as a research contribution to animal monitoring rather than a replacement for veterinary assessment.
+
+The principal challenge is that the tasks and datasets do not provide identical kinds of supervision. Body condition labels differ in their ranges and conventions. Behavior categories can depend on both posture and activity, and some categories occur only in particular sources. Re-ID requires reliable identity information as well as suitable separation of observations. In ScienceDB, the available grouping supports burst-group-disjoint, sequence-safe evaluation rather than a biological cow-disjoint claim. Such distinctions determine the scope of the conclusions drawn from each experiment.
+
+A further challenge is maintaining informative visual detail under changes of viewpoint, occlusion, scale, and lighting. Foreground processing can reduce irrelevant background information while also removing useful context. Pose estimation can provide a compact structural description but may not recover every anatomical feature needed for condition scoring. These trade-offs make component selection an empirical part of the study.
+
+Finally, a common framework must be practical to develop and evaluate within the available computational resources. This motivates the use of pretrained models, reusable preprocessing, and focused comparisons rather than unnecessary architectural expansion. The thesis is organized around this progression. Chapter 2 establishes the relevant research and the gap motivating the study. Chapter 3 presents requirements, impacts, and constraints. Chapters 4 and 5 describe the methodology and analyze the experiments, and Chapter 6 draws together the conclusions.

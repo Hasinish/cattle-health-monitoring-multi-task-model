@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering\small
+\caption[Dataset roles and interpretation boundaries]{Current dataset roles and interpretation boundaries. Counts are project records, not raw-data verification in this writing environment.\evidence{E04,E05,E06,E07}}\label{tab:datasets}
+\begin{tabularx}{\textwidth}{lYY}
+\toprule
+Source & Role / scale & Boundary \\
+\midrule
+ScienceDB & Primary BCS; 53,566 RGB images & 5,653 burst groups; no verified biological IDs. \\
+CVB + Beef & Primary Behavior; 5,274 rows & Source/session groups; five mapped classes. \\
+SideView & Primary Re-ID; 80,260 image/mask pairs; 110 cows & Named recording/identity protocols. \\
+Ruchay / Dryad & External BCS & Score support, scale and modality differ. \\
+MmCows / CBVD-5 & External Behavior & Label and temporal compatibility must be checked. \\
+BECA-L / BECA-D & External Re-ID stress tests & No retrieval results claimed. \\
+MultiCam / OpenCows & Blocked / legacy & Neither is the active primary. \\
+\bottomrule
+\end{tabularx}
+\end{table}

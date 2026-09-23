@@ -1,0 +1,94 @@
+{
+  "source_revision": "9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2",
+  "note": "Exact recorded matrix excerpts; no new evaluation run.",
+  "bcs_source": "artifacts/bcs_baseline/bcs_baseline_metrics.json",
+  "bcs_labels": [
+    3.25,
+    3.5,
+    3.75,
+    4,
+    4.25
+  ],
+  "bcs_matrix": [
+    [
+      456,
+      475,
+      192,
+      75,
+      11
+    ],
+    [
+      268,
+      949,
+      509,
+      250,
+      23
+    ],
+    [
+      89,
+      522,
+      742,
+      786,
+      93
+    ],
+    [
+      20,
+      145,
+      443,
+      951,
+      191
+    ],
+    [
+      3,
+      37,
+      128,
+      433,
+      249
+    ]
+  ],
+  "behavior_source": "artifacts/behavior_baseline/behavior_baseline_metrics.json",
+  "behavior_labels": [
+    "Standing",
+    "Lying",
+    "Feeding",
+    "Drinking",
+    "Walking"
+  ],
+  "behavior_matrix": [
+    [
+      73,
+      9,
+      14,
+      7,
+      10
+    ],
+    [
+      1,
+      245,
+      10,
+      0,
+      2
+    ],
+    [
+      1,
+      0,
+      345,
+      0,
+      3
+    ],
+    [
+      1,
+      0,
+      11,
+      51,
+      0
+    ],
+    [
+      1,
+      1,
+      19,
+      0,
+      5
+    ]
+  ]
+}

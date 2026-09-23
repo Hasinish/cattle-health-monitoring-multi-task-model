@@ -1,0 +1,20 @@
+\section{Reproducibility Boundary}
+The manuscript includes exact excerpts of two recorded confusion matrices and an arithmetic check. These support checking printed aggregate values without pretending to rerun the models. Raw data, complete predictions, checkpoints and historical cloud environments are not included.
+
+BCS retains split hashes and seed 42, but its execution revision is unknown. Behavior lacks equivalent configuration/seed information in its result JSON. Missing provenance must be recovered from legitimate records or retained as a limitation. It must not be reconstructed by calling a split seed a training seed.\evidence{E08,E09}
+
+\section{Scientific Issues Requiring Resolution}
+\textbf{Behavior input authenticity.} The loader permits full-frame and synthetic fallbacks. The inspected result does not establish whether they occurred. Audit actual cached inputs before claiming full input verification.\evidence{E12,E15}
+
+\textbf{Metric comparability.} Behavior source-specific Macro-F1 uses an implicit label set. Beef has no true Walking. Values are retained as recorded, not silently replaced with differently defined metrics.\evidence{E05,E09,E12}
+
+\textbf{BCS pose.} The deadline combination includes pose, but the limited rear-view review found unreliable outputs and missing relevant landmarks. Resolve this with an evidence-based decision rather than forcing the component into the method.\evidence{E03,E11}
+
+\textbf{External mapping.} The CBVD-5 publication describes Standing, Lying, Foraging, Rumination and Drinking~\cite{li2024cbvd5}, whereas the registry names Walking and Other. Reconcile imported annotations before evaluation. Wider external BCS score support and Dryad's different scale/modality also require an explicit protocol.\evidence{E07,E10}
+
+\textbf{Re-ID readiness.} Hydration, implementation and smoke testing are complete. The saved smoke artifact explicitly skips full Protocol A retrieval. Log/JSON differences are not used to invent a unified full-run result.\evidence{E19,E20,E21}
+
+\section{Open Deliverables}
+Full Re-ID, enhanced configurations, temporal Behavior, final MTL, external evaluation and repeated-run uncertainty remain open where no completed artifacts exist. Final Abstract and Conclusion must follow those results.
+
+Administrative review must confirm author order, submission semester, committee details, ethics requirements, licenses, assistance acknowledgments and any separate IEEE-format deliverable. No previous signatures or approval statements are reused as current acceptance.

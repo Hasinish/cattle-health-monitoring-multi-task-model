@@ -1,0 +1,106 @@
+\section{Performance Evaluation}
+This chapter separates completed artifacts from pending experiments. Numerical model evidence consists of a ScienceDB BCS baseline and a single-frame CVB plus Beef Behavior baseline. Perception findings are feasibility audits, not downstream improvements. Re-ID smoke testing establishes execution readiness but does not supply a full retrieval result.\evidence{E02,E08,E09,E11,E21}
+
+\subsection{Metric Definitions}
+The primary BCS measure is mean absolute error in physical score units:
+\begin{equation}
+ \mathrm{MAE}_{\mathrm{BCS}}=\frac{1}{N}\sum_i|s_i-\hat s_i|.
+\end{equation}
+Adjacent ScienceDB classes differ by 0.25, so physical MAE equals 0.25 times index MAE for this mapping. Exact accuracy and accuracy within $\pm0.25$ answer different questions and are labeled separately.\evidence{E10}
+
+For Behavior, balanced accuracy averages recall across true classes, while Macro-F1 averages class-wise F1. Class support is reported because example counts differ substantially. Source-specific metrics also require an explicit class set. The code does not fix the label list for source-specific Macro-F1; absent Walking can therefore affect the Beef aggregation.\evidence{E12}
+
+Re-ID metrics depend on the protocol. Known-class accuracy is not retrieval performance on unseen identities. The current implementation has a separate Protocol A retrieval path, but its saved smoke artifact records that path as skipped. No full rank-1 or mean-average-precision result is presented.\evidence{E20,E21}
+
+\subsection{ScienceDB BCS RGB Baseline}
+The best validation checkpoint occurs at epoch 8 with MAE 0.1719 BCS units. The test set contains 8,040 images from 845 burst groups. Its recorded MAE is 0.1848, exact accuracy 41.63\%, and accuracy within $\pm0.25$ 86.74\%. These are single-run point estimates, not repeated-run averages.\evidence{E08}
+
+\input{tables/bcs_results}
+\input{tables/bcs_confusion}
+
+Many errors are in neighboring classes, but large errors are not absent. Fourteen images occupy the two extreme off-diagonal corners: eleven true 3.25 images predicted as 4.25, and three true 4.25 images predicted as 3.25. These are images, not fourteen verified distinct cows. The matrix does not support a statement of zero severe errors.\evidence{E08}
+
+Tolerance accuracy must be read together with exact accuracy and the narrow score support. A prediction can be within one class without being correct. The recorded MAE does not establish clinical adequacy, wider score coverage or generalization to unseen biological cows.
+
+The JSON records an unknown execution Git revision because Git was unavailable in the run environment. The thesis review revision does not replace that historical field. Some epoch-history values differ between the JSON and narrative log. Final test tables follow the machine-readable record; learning curves remain deferred until the histories are reconciled.\evidence{E08,E14}
+
+\subsection{CVB plus Beef Behavior RGB Baseline}
+The recorded selected checkpoint is epoch 25. Its test result is 88.88\% accuracy, 71.72\% balanced accuracy and Macro-F1 0.7413 on 809 rows. These pooled values agree with the confusion matrix to displayed precision. They are preserved with the cache-integrity qualification below.\evidence{E09,E15}
+
+\input{tables/behavior_results}
+\input{images/behavior_recall}
+\input{tables/behavior_confusion}
+
+Walking is the weakest reported class: five of 26 observations are correct, giving recall 0.1923 and F1 0.2174. Nineteen Walking observations are predicted as Feeding. Lying and Feeding have higher recall and much larger support. Pooled accuracy therefore conceals a significant descriptive weakness in the minority class. This motivates analysis but does not prove that temporal modeling or pose will fix it.\evidence{E09}
+
+\input{tables/behavior_sources}
+
+The CVB and Beef scores are not external transfer results because both sources occur in training. Beef has four supported true classes, whereas CVB has five. The source-specific Macro-F1 values use an implicit class list, so they should not be interpreted as a fully standardized five-class comparison.\evidence{E05,E09,E12}
+
+% TODO-P3-EVIDENCE: Preserve results but verify actual cached inputs.
+\drafttodo{BEH-RESULT-01}{The result JSON does not document full-run fallback counts. The loader permits synthetic images and CVB full-scene fallbacks. Audit actual cache contents and recover execution provenance before calling this baseline fully input-verified. No fallback occurrence is asserted without evidence.}
+
+\subsection{Perception Feasibility Audits}
+\input{tables/perception_results}
+
+The detector comparison supports candidate selection under the audited conditions. RT-DETR-L returns at least one cow in 283/300 images, Faster R-CNN v2 in 285/300, and YOLOv8s in 223/300. Reported median latency is lower for RT-DETR-L than Faster R-CNN v2 on the audit machine. These numbers do not prove that the selected box always represents the labeled animal.\evidence{E11}
+
+On 100 SideView examples with mask ground truth, RT-DETR-L plus SAM 2.1 has mean IoU 0.9216 and Dice 0.9530. The oracle-box diagnostic has mean IoU 0.9468. Results apply to that sample, not automatically to every task, all scenes or the complete dataset. A mask-return rate elsewhere is not overlap accuracy.\evidence{E11}
+
+Both pose backbones returned outputs on 243/300 images. The remaining cases include seventeen upstream localization failures and forty internal detector failures. The 81.0\% return rate is not anatomical accuracy. Reviewed ScienceDB BCS 3.25 and MmCows Lying outputs were unreliable; reviewed SideView parlor outputs were more plausible. The restricted visual sample prevents extrapolation to unreviewed classes/settings.\evidence{E11}
+
+The state also records 99.44\% synthetic test accuracy for a viewpoint model but 27.37\% accuracy on 95 non-ambiguous real diagnostic examples. The real set was reused in development and has no true front examples. These findings describe a diagnostic domain gap, not independent final real-world test performance. No operational viewpoint generator is accepted.\evidence{E02}
+
+\subsection{Re-ID Implementation Readiness}
+Re-ID is no longer merely awaiting cloud data. The current code, log and smoke artifact establish an implemented 512-dimensional baseline and execution checks. However, the smoke artifact explicitly records \texttt{SKIPPED\_IN\_SMOKE\_MODE} for Protocol A retrieval. Its small-subset validation values are not reported as the thesis Re-ID benchmark.\evidence{E19,E20,E21}
+
+The research log and saved smoke history have different detailed values and scopes. This draft does not merge them into one purported full run. Final retrieval results, exact full-run settings and their provenance must come from the completed full-run artifact.
+
+\subsection{Pending Downstream Comparisons}
+% TODO-P3-RESULT: Full Runs 3--8 are not available at this checkpoint.
+\drafttodo{RESULT-REID}{Insert full Re-ID retrieval results, with the protocol, query/gallery rules, selected checkpoint and executed configuration. Hydration and smoke testing are complete; full performance is pending.}
+\drafttodo{RESULT-ENHANCED}{Insert the three cattle-centered comparisons only after their artifacts exist. Attribute any effect to the tested combination unless isolated controls were performed.}
+\drafttodo{RESULT-MTL}{Insert task-wise E0/E1/E3 comparisons, negative-transfer analysis and resource measurements. No MTL superiority is asserted.}
+
+\section{Analysis of Design Solutions}
+The completed evidence supports some choices while leaving others open. Detection comparisons concern output return and latency. Segmentation adds overlap measurement where ground truth exists. Pose shows why confidence alone is insufficient: a technically successful output can still be anatomically unsuitable.\evidence{E11}
+
+\input{tables/design_decisions}
+
+Maintainability is also relevant. Frozen preprocessing and cached outputs can support reproducible comparisons; additional modules introduce dependencies and failure cases. These tradeoffs should be evaluated with accuracy. The size of a downstream ResNet-18 alone cannot establish that the entire system is lightweight or real-time.
+
+The current baselines answer task-specific in-domain questions under their stated protocols. They do not yet establish whether background suppression improves robustness, pose is useful, or shared parameters improve all tasks. Those are pending comparisons, not consequences of a feasibility audit.
+
+\section{Final Design Adjustments}
+Completed adjustments include repaired ScienceDB grouping, an approved Behavior-primary correction and SideView's adoption after the MultiCam access failure. They respond to evidence about executable, interpretable evaluation. They are not retroactive changes made to improve a test score.\evidence{E01,E04,E06,E13}
+
+RT-DETR-L remains a provisional candidate after detector comparison. Viewpoint remains outside operational fusion because tested real-data behavior was insufficient. The restricted pose review also prevents an unqualified acceptance of pose for BCS.\evidence{E02,E11}
+
+The integrated MTL design is not finalized. Later additions must connect each actual adjustment to development evidence and record the fixed configuration before held-out comparison. Test performance must not become a tuning signal.
+
+% TODO-P3-RESULT: Final integrated design remains incomplete.
+\drafttodo{DESIGN-FINAL}{Document final implemented adjustments, their development evidence and the frozen configuration. Retain rejected components and negative findings.}
+
+\section{Statistical Analysis}
+Available headline model results are single-run point estimates. BCS records seed 42. Behavior's partition uses seed 2026, but its result JSON does not establish a training seed. No repeated-run standard deviation, confidence interval or significance test is invented.\evidence{E05,E08,E09}
+
+Training-seed variability and evaluation-sample uncertainty answer different questions. Repeating training changes optimization randomness; resampling test units examines uncertainty conditional on a fitted model and population. Correlated images must not be treated as independent cows. Any future interval must name its resampling unit and preserve the recorded grouping.
+
+Pooled confusion matrices do not retain the group-level predictions needed for a clustered comparison. This draft therefore reports counts, supports and descriptive metrics. Numerical differences between unfinished models cannot be described as statistically significant.
+
+% TODO-P3-RESULT: Add only computed uncertainty and repeated-run findings.
+\drafttodo{STATS-01}{Insert final repeated-run summaries and defensible group-aware uncertainty only when corresponding prediction/grouping artifacts exist. State seeds, run count, unit and method.}
+
+\section{Comparisons and Relationships}
+Each enhanced model should be compared with its corresponding task reference, and each MTL configuration with matched independent models. Metric direction must remain explicit. Larger BCS MAE is worse; smaller F1 or retrieval accuracy is worse. Averaging incompatible raw metrics would obscure these differences.
+
+For a descriptive negative-transfer table, a future change can be defined as $\Delta_{\mathrm{BCS}}=\mathrm{MAE}_{\mathrm{MTL}}-\mathrm{MAE}_{\mathrm{STL}}$ and $\Delta_t=M_{\mathrm{STL},t}-M_{\mathrm{MTL},t}$ for higher-is-better task metrics. Positive values then mean deterioration, in each task's own units. These are reporting definitions, not current measured differences.
+
+Published results from different splits, inputs or taxonomies provide context, not controlled competitor scores. The same applies to historical Phase 2 metrics. Changing the protocol does not itself prove an improvement or decline in model capability.
+
+\section{Discussions}
+The meaning of a result depends on provenance and input verification. Burst-disjoint evaluation is not biological cow-disjoint evaluation. Dense video is not a temporal-model result. Mask overlap is not downstream benefit. Hydration and smoke testing are not successful full retrieval.
+
+BCS supplies a physical-unit reference over a narrow range. Behavior shows a gap between pooled accuracy and minority-class performance, while its cache needs further verification. Perception audits support task-dependent caution: localization and segmentation are candidates, while pose and viewpoint require restricted interpretation.\evidence{E08,E09,E11,E12}
+
+The central multi-task question remains unanswered at this checkpoint. Positive or negative final results will be useful only when comparisons are fair and interpretation respects the executed design. Abstract and Conclusion remain intentionally unfinished.
