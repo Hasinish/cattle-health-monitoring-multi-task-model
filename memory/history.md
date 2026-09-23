@@ -1,3 +1,11 @@
+# Session Summary — 2026-09-23 (Full 30-Epoch ScienceDB BCS Baseline Launched on NVIDIA L4)
+
+- Configured and dispatched the full 30-epoch ScienceDB RGB single-task BCS baseline (`scripts/modal_train_sciencedb_bcs.py`) in detached cloud mode on Modal profile `tigerwood697` (App `ap-FHBAIXp72qdVFazPPVfNUu`).
+- Target Hardware: NVIDIA L4 (22.03 GB VRAM), 4 CPUs, 16 GB RAM.
+- Execution Parameters: Batch size 64 (579 batches/epoch, 17,370 total optimization steps across 30 epochs), AdamW lr=1e-4, CosineAnnealingLR, `ordinal_bce` head.
+- Expected runtime: ~20-22 minutes; expected cost: ~$0.27; hard orchestrator timeout cap: 3 hours.
+- Automatic shutdown upon Epoch 30 completion and final canonical test set evaluation.
+
 # Session Summary — 2026-09-23 (ScienceDB Modal Volume 1,753-File Repair & Exhaustive 53,566-Image Verification)
 
 - Diagnosed Epoch 1 ScienceDB BCS training crash (`PIL.UnidentifiedImageError` on `/data/dataset/4.25/GS_72_3.jpg`) on Modal (`tigerwood697`).
