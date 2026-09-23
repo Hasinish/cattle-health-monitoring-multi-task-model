@@ -5,7 +5,7 @@ Modal Cloud Wrapper for Phase 3 ScienceDB RGB Single-Task BCS Baseline Training
 Profile Target   : tigerwood697
 Dataset Volume   : sciencedb-data (mounted at /data)
 Checkpoint Volume: sciencedb-checkpoints (mounted at /checkpoints)
-GPU Target       : NVIDIA L4 (24GB VRAM, Ada Lovelace tier)
+GPU Target       : NVIDIA L40S (48GB VRAM, Ada Lovelace tier)
 Primary Script   : scripts/train_sciencedb_bcs_baseline.py
 
 Usage:
@@ -13,7 +13,7 @@ Usage:
      modal run --profile tigerwood697 scripts/modal_train_sciencedb_bcs.py::verify_readiness
 
   2. Full 30-Epoch Baseline Training (Manual execution by user):
-     modal run --profile tigerwood697 scripts/modal_train_sciencedb_bcs.py::main --epochs 30 --head-type ordinal_bce --batch-size 32
+     modal run --profile tigerwood697 scripts/modal_train_sciencedb_bcs.py::main --epochs 30 --head-type ordinal_bce --batch-size 64
 """
 
 import sys
@@ -62,7 +62,7 @@ app = modal.App("sciencedb-bcs-baseline", image=train_image)
 # READINESS VERIFICATION FUNCTION (CHECKS ONLY)
 # ==============================================================================
 @app.function(
-    gpu=os.environ.get("MODAL_GPU", "L4"),
+    gpu=os.environ.get("MODAL_GPU", "L40S"),
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
     timeout=300,
     cpu=2.0,
@@ -91,7 +91,7 @@ def verify_readiness_remote():
     vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3) if cuda_avail else 0.0
     print(f"[*] CUDA Available: {cuda_avail} | GPU: {gpu_name} ({vram_gb:.2f} GB VRAM)")
     report["checks"]["cuda"] = {
-        "passed": cuda_avail and "L4" in gpu_name,
+        "passed": cuda_avail and ("L4" in gpu_name or "L40" in gpu_name),
         "gpu_name": gpu_name,
         "vram_gb": round(vram_gb, 2),
     }
@@ -212,11 +212,11 @@ def verify_readiness_remote():
 # FULL 30-EPOCH TRAINING REMOTE FUNCTION
 # ==============================================================================
 @app.function(
-    gpu=os.environ.get("MODAL_GPU", "L4"),
+    gpu=os.environ.get("MODAL_GPU", "L40S"),
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
     timeout=3600 * 3,  # 3 hours max runtime
-    cpu=4.0,
-    memory=16384,     # 16 GB RAM
+    cpu=8.0,
+    memory=32768,     # 32 GB RAM
 )
 def train_sciencedb_bcs_remote(
     epochs: int = 30,
@@ -230,7 +230,7 @@ def train_sciencedb_bcs_remote(
     max_samples: int = 250,
     max_batches: int = 10,
     test_save_resume: bool = True,
-    num_workers: int = 4,
+    num_workers: int = 8,
 ):
     """
     Executes Phase 3 ScienceDB RGB single-task BCS baseline training on Modal.
@@ -303,7 +303,7 @@ def main(
     seed: int = 42,
     smoke: bool = False,
     resume: Optional[str] = None,
-    num_workers: int = 4,
+    num_workers: int = 8,
 ):
     """Default entrypoint to trigger training with CLI parameters."""
     train_sciencedb_bcs_remote.remote(
