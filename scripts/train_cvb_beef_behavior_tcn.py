@@ -49,6 +49,11 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any, Callable
 
 import cv2
+cv2.setNumThreads(0)
+try:
+    cv2.ocl.setUseOpenCL(False)
+except Exception:
+    pass
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -905,11 +910,17 @@ def compute_behavior_metrics(
                 "macro_f1": round(float(f1_score(yt, yp, average="macro", zero_division=0)), 4),
             }
 
+    macro_prec = float(precision_score(y_true, y_pred, average="macro", zero_division=0))
+    macro_rec = float(recall_score(y_true, y_pred, average="macro", zero_division=0))
+
     return {
         "overall_accuracy": round(overall_acc, 4),
         "balanced_accuracy": round(bal_acc, 4),
         "macro_f1": round(macro_f1, 4),
+        "macro_precision": round(macro_prec, 4),
+        "macro_recall": round(macro_rec, 4),
         "per_class": per_class,
+        "per_class_f1": {c: round(float(f1_per[i]), 4) for i, c in enumerate(CANONICAL_CLASSES)},
         "confusion_matrix": conf_mat,
         "cvb_metrics": cvb_metrics,
         "beef_metrics": beef_metrics,
@@ -1567,12 +1578,12 @@ def train_temporal_pipeline(
             "epoch": epoch,
             "train_loss": round(float(train_loss), 6),
             "val_loss": round(float(val_loss), 6),
-            "val_overall_accuracy": round(float(val_metrics["overall_accuracy"]), 6),
-            "val_balanced_accuracy": round(float(val_metrics["balanced_accuracy"]), 6),
-            "val_macro_f1": round(float(val_metrics["macro_f1"]), 6),
-            "val_macro_precision": round(float(val_metrics["macro_precision"]), 6),
-            "val_macro_recall": round(float(val_metrics["macro_recall"]), 6),
-            "val_per_class_f1": {k: round(float(v), 6) for k, v in val_metrics["per_class_f1"].items()},
+            "val_overall_accuracy": round(float(val_metrics.get("overall_accuracy", 0.0)), 6),
+            "val_balanced_accuracy": round(float(val_metrics.get("balanced_accuracy", 0.0)), 6),
+            "val_macro_f1": round(float(val_metrics.get("macro_f1", 0.0)), 6),
+            "val_macro_precision": round(float(val_metrics.get("macro_precision", 0.0)), 6),
+            "val_macro_recall": round(float(val_metrics.get("macro_recall", 0.0)), 6),
+            "val_per_class_f1": {k: round(float(v), 6) for k, v in val_metrics.get("per_class_f1", {}).items()},
             "duration_sec": round(epoch_dur, 2),
         }
         epoch_history.append(epoch_record)
