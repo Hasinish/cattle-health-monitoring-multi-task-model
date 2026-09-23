@@ -181,7 +181,16 @@ def download_chunk_with_retry(
     pbar: CleanProgressBar = None,
     max_retries: int = 5
 ) -> int:
+    expected_chunk_bytes = end_byte - start_byte + 1
     existing_size = part_path.stat().st_size if part_path.exists() else 0
+    if existing_size > expected_chunk_bytes:
+        # Stale part from a different chunking scheme
+        try:
+            part_path.unlink()
+        except OSError:
+            pass
+        existing_size = 0
+
     actual_start = start_byte + existing_size
 
     if actual_start > end_byte:
@@ -218,8 +227,20 @@ def download_file_multithreaded(url: str, dest_path: Path, expected_size: int, n
     dest_path.parent.mkdir(parents=True, exist_ok=True)
 
     if dest_path.exists() and dest_path.stat().st_size == expected_size:
-        print(f"[SKIP] {dest_path.name} already fully downloaded ({expected_size / (1024**2):.2f} MB).")
-        return
+        # Check zip integrity if it's a zip file
+        if dest_path.name.endswith(".zip"):
+            try:
+                with zipfile.ZipFile(dest_path) as zf:
+                    if zf.testzip() is not None:
+                        raise zipfile.BadZipFile("testzip detected corrupted entry")
+                print(f"[SKIP] {dest_path.name} already fully downloaded & verified valid ({expected_size / (1024**2):.2f} MB).")
+                return
+            except Exception as e:
+                print(f"[CORRUPT] Existing {dest_path.name} is corrupted ({e}). Removing to re-download...")
+                dest_path.unlink()
+        else:
+            print(f"[SKIP] {dest_path.name} already fully downloaded ({expected_size / (1024**2):.2f} MB).")
+            return
 
     # Small files (< 20MB) or single thread
     if expected_size < 20 * 1024 * 1024 or num_threads <= 1:
@@ -242,13 +263,26 @@ def download_file_multithreaded(url: str, dest_path: Path, expected_size: int, n
     chunk_size = expected_size // num_threads
     ranges = []
     initial_bytes = 0
+    expected_part_paths = []
+
     for i in range(num_threads):
         start = i * chunk_size
         end = (start + chunk_size - 1) if i < num_threads - 1 else (expected_size - 1)
-        ranges.append((start, end, i))
-        part = dest_path.with_name(f"{dest_path.name}.part{i}")
+        # Use exact range in filename to avoid cross-thread-count chunk collisions
+        part = dest_path.with_name(f"{dest_path.name}.part_{start}_{end}")
+        ranges.append((start, end, part))
+        expected_part_paths.append(part)
         if part.exists():
             initial_bytes += part.stat().st_size
+
+    # Prune any stale .part files from previous runs with different thread counts
+    for p in dest_path.parent.glob(f"{dest_path.name}.part*"):
+        if p not in expected_part_paths:
+            print(f"[CLEANUP] Removing stale/mismatched chunk file: {p.name}")
+            try:
+                p.unlink()
+            except OSError:
+                pass
 
     print(f"[FAST-DOWNLOAD] {dest_path.name} ({expected_size / (1024**3):.2f} GB) using {num_threads} parallel threads...")
     pbar = CleanProgressBar(
@@ -262,12 +296,12 @@ def download_file_multithreaded(url: str, dest_path: Path, expected_size: int, n
             executor.submit(
                 download_chunk_with_retry,
                 url,
-                dest_path.with_name(f"{dest_path.name}.part{idx}"),
+                part_path,
                 start,
                 end,
                 pbar
-            ): idx
-            for start, end, idx in ranges
+            ): (start, end)
+            for start, end, part_path in ranges
         }
         for future in as_completed(futures):
             future.result()
@@ -277,8 +311,7 @@ def download_file_multithreaded(url: str, dest_path: Path, expected_size: int, n
     # Assemble parts
     print(f"[ASSEMBLING] Combining {num_threads} parts into {dest_path.name}...")
     with open(dest_path, "wb") as outfile:
-        for i in range(num_threads):
-            part_path = dest_path.with_name(f"{dest_path.name}.part{i}")
+        for _, _, part_path in ranges:
             if part_path.exists():
                 with open(part_path, "rb") as infile:
                     while chunk := infile.read(1024 * 1024 * 4):  # 4MB buffer
@@ -288,6 +321,18 @@ def download_file_multithreaded(url: str, dest_path: Path, expected_size: int, n
     actual_sz = dest_path.stat().st_size
     if actual_sz != expected_size:
         raise RuntimeError(f"Size mismatch for {dest_path.name}: expected {expected_size}, got {actual_sz}")
+
+    # Validate assembled zip archive
+    if dest_path.name.endswith(".zip"):
+        print(f"[VERIFYING] Testing integrity of assembled {dest_path.name}...")
+        try:
+            with zipfile.ZipFile(dest_path) as zf:
+                bad_entry = zf.testzip()
+                if bad_entry is not None:
+                    raise zipfile.BadZipFile(f"Corrupt zip entry: {bad_entry}")
+        except Exception as e:
+            dest_path.unlink()
+            raise RuntimeError(f"Assembled {dest_path.name} failed integrity check: {e}")
 
     print(f"[COMPLETE] {dest_path.name} ({actual_sz / (1024**3):.2f} GB)\n")
 

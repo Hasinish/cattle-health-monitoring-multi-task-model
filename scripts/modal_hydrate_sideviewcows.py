@@ -437,6 +437,14 @@ def hydrate_full_remote(threads: int = 4, skip_cleanup: bool = False) -> dict:
                 if zip_path.exists() and not skip_cleanup:
                     zip_path.unlink()
                 continue
+            else:
+                print(f"\n[CLEANUP] Partial extraction detected for '{subset}' ({curr_imgs}/{exp_imgs} imgs, {curr_masks}/{exp_masks} masks). Purging partial directories...")
+                sys.stdout.flush()
+                import shutil
+                if img_dir.exists():
+                    shutil.rmtree(img_dir)
+                if mask_dir.exists():
+                    shutil.rmtree(mask_dir)
 
         # Download archive
         print(f"\n📥 Downloading {zip_name} ({zip_info['size'] / (1024**3):.2f} GB)...")
@@ -450,7 +458,19 @@ def hydrate_full_remote(threads: int = 4, skip_cleanup: bool = False) -> dict:
         sys.stdout.flush()
 
         # Extract archive
-        extract_zip_monitored(zip_path, dataset_root, CleanProgressBar)
+        try:
+            extract_zip_monitored(zip_path, dataset_root, CleanProgressBar)
+        except Exception as e:
+            print(f"\n[ERROR] Extraction failed for {zip_name}: {e}. Removing corrupt zip...")
+            if zip_path.exists():
+                zip_path.unlink()
+            import shutil
+            if img_dir.exists():
+                shutil.rmtree(img_dir)
+            if mask_dir.exists():
+                shutil.rmtree(mask_dir)
+            sideview_vol.commit()
+            raise
 
         # Commit volume after each subset
         sideview_vol.commit()
