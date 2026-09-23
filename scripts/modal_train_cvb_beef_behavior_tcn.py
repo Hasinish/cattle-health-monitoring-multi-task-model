@@ -1691,8 +1691,8 @@ def build_production_cache_l40s():
         "/checkpoints": checkpoint_vol,
     },
     timeout=86400,
-    cpu=4.0,
-    memory=16384,
+    cpu=8.0,
+    memory=32768,
 )
 def train_full_run5_remote(batch_size: int = 16, epochs: int = 30) -> dict:
     """
@@ -1700,6 +1700,7 @@ def train_full_run5_remote(batch_size: int = 16, epochs: int = 30) -> dict:
       - Architecture: [B, 8, 4, 224, 224] -> 4-channel ResNet-18 -> 1D TCN -> [B, 5]
       - Exactly 11,903,621 trainable parameters
       - Loads pre-built retained production sequences from /cache/production
+      - In-Memory RAM Preloading: 32 GB RAM container, zero disk I/O per epoch
       - Strict Model Selection: Validation Macro-F1 ONLY
       - Saves behavior_tcn_best.pth and behavior_tcn_latest.pth
       - Commits checkpoint volume after each epoch
@@ -1715,7 +1716,7 @@ def train_full_run5_remote(batch_size: int = 16, epochs: int = 30) -> dict:
     from scripts.train_cvb_beef_behavior_tcn import train_temporal_pipeline
 
     print("\n" + "=" * 70)
-    print(f"  MODAL FULL TRAINING: RUN 5 BEHAVIOR PERCEPTION (30 EPOCHS, NVIDIA L40S)")
+    print(f"  MODAL FULL TRAINING: RUN 5 BEHAVIOR PERCEPTION (30 EPOCHS, NVIDIA L40S, IN-MEMORY RAM)")
     print("=" * 70)
 
     cvb_dir = Path("/mnt/cvb/cvb/000058916v001")
@@ -1753,11 +1754,12 @@ def train_full_run5_remote(batch_size: int = 16, epochs: int = 30) -> dict:
         batch_size=batch_size,
         lr=1e-4,
         weight_decay=1e-2,
-        num_workers=4,
+        num_workers=0,
         num_frames=8,
         smoke=False,
         input_mode="rgb_mask",
         seed=2026,
+        preload_ram=True,
         epoch_commit_callback=lambda ep, is_best: checkpoint_vol.commit(),
     )
 
@@ -1811,8 +1813,8 @@ def train_full_run5(batch_size: int = 16, epochs: int = 30):
         "/checkpoints": checkpoint_vol,
     },
     timeout=7200,
-    cpu=4.0,
-    memory=16384,
+    cpu=8.0,
+    memory=32768,
 )
 def evaluate_test_run5_remote(batch_size: int = 16) -> dict:
     """
