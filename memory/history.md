@@ -1,3 +1,16 @@
+# Session Summary — 2026-09-24 (Phase 3 Run 5 Behavior Perception Suite Preparation & Certification)
+
+- Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004
+- Objective: Prepare and certify the complete Phase 3 Run 5 Behavior Perception-Enhanced Temporal execution suite ([B, 8, 4, 224, 224] -> ResNet-18 + 1D TCN -> [B, 5]) on Modal profile tigerwood693.
+- Core Deliverables Prepared:
+  1. Controlled L4 vs L40S Benchmarks: Implemented benchmark_cache_l4 and benchmark_cache_l40s in scripts/modal_train_cvb_beef_behavior_tcn.py (~300s, deterministic interleaved CVB/Beef round-robin candidates from train.csv, separate cache dirs /cache/benchmark_l4 and /cache/benchmark_l40s, zero test.csv access, zero TCN training, 12 standardized reported metrics including projected full Train+Val time).
+  2. Resumable Production Persistent Cache: Implemented build_production_cache_l4 and build_production_cache_l40s on dedicated Modal volume behavior-perception-cache (/cache/production) with periodic volume commits (60s), progressive manifest saves, on-disk sequence validation, corrupt folder removal/re-extraction, and zero placeholder fabrication.
+  3. Full 30-Epoch Run 5 Training: Implemented train_full_run5 (11,903,621 trainable parameters, AdamW lr=1e-4, weight_decay=1e-2, T=8, batch_size=16, model selection strictly by Validation Macro-F1 only, checkpoints committed per epoch).
+  4. Strict Separate Test Gate: Implemented evaluate_test_run5 (loads 809 test candidates, caches in /cache/production_test, freezes retained test IDs, evaluates frozen best checkpoint exactly once).
+  5. Fair Matched-Subset Comparison Against Run 2 RGB Baseline: Integrated evaluate_matched_run2_vs_run5 and MatchedBehaviorRGBDataset, evaluating Run 2 baseline checkpoint (/checkpoints/behavior_baseline/behavior_baseline_best.pth) on the exact same retained test sample IDs; outputs 3-way comparison table (Run 2 canonical historical vs Run 2 matched vs Run 5 matched) and markdown report.
+  6. Zero-GPU Inspection Pass: Executed inspect_cache_status on Modal profile tigerwood693; verified volume mounts, app deployment, and presence of Run 2 baseline checkpoint without consuming GPU credits.
+- Non-goals strictly honored: Zero full caching, zero 30-epoch training, zero canonical test evaluation launched.
+
 # Session Summary — 2026-09-24 (Run 5 Behavior Perception Smoke Cache Provenance Repair & Re-Certification)
 
 - Convo ID: `540530b4-9a5f-4d20-b0aa-fe673856f004`

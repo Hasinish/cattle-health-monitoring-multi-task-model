@@ -31,11 +31,12 @@ Date: 2026-09-24
 import argparse
 import json
 import os
+import shutil
 import sys
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import cv2
 import numpy as np
@@ -60,6 +61,84 @@ def compute_sampled_frame_indices(start_frame: int, end_frame: int, num_frames: 
     indices = [int(round(p)) for p in raw_points]
     clamped = [max(start_frame, min(end_frame, idx)) for idx in indices]
     return clamped
+
+
+def get_benchmark_sequence_subset(train_df: pd.DataFrame, max_candidates: int = 300) -> pd.DataFrame:
+    """
+    Selects a deterministic, representative, balanced interleaved subset of CVB and
+    Kaggle Beef sequences from train.csv for speed benchmarking on L4 vs L40S.
+    Guarantees:
+      - Strictly deterministic (seed 2026)
+      - Alternating mixture of CVB and Beef sequences
+      - Balanced representation across all 5 canonical behaviors
+      - CVB-only Walking behavior is properly represented
+      - Exactly identical sequence order for both L4 and L40S benchmarks
+    """
+    cvb_df = train_df[train_df["dataset"] == "cvb"].copy().sample(frac=1.0, random_state=2026).reset_index(drop=True)
+    beef_df = train_df[train_df["dataset"] == "beef_cattle_behavior"].copy().sample(frac=1.0, random_state=2026).reset_index(drop=True)
+
+    classes = ["Standing", "Lying", "Feeding", "Drinking", "Walking"]
+    cvb_by_class = {c: cvb_df[cvb_df["behavior_canonical"] == c].to_dict("records") for c in classes}
+    beef_by_class = {c: beef_df[beef_df["behavior_canonical"] == c].to_dict("records") for c in classes}
+
+    interleaved = []
+    max_len = max(
+        max((len(v) for v in cvb_by_class.values()), default=0),
+        max((len(v) for v in beef_by_class.values()), default=0),
+    )
+    for i in range(max_len):
+        for c in classes:
+            if i < len(cvb_by_class[c]):
+                interleaved.append(cvb_by_class[c][i])
+                if len(interleaved) >= max_candidates:
+                    break
+            if c != "Walking" and i < len(beef_by_class[c]):
+                interleaved.append(beef_by_class[c][i])
+                if len(interleaved) >= max_candidates:
+                    break
+        if len(interleaved) >= max_candidates:
+            break
+
+    bench_df = pd.DataFrame(interleaved[:max_candidates]).reset_index(drop=True)
+    return bench_df
+
+
+def save_cache_manifest_and_summary(
+    cache_dir: Path,
+    frame_records: List[Dict[str, Any]],
+    stats: Dict[str, Any],
+    retained_df: pd.DataFrame,
+    failed_df: Optional[pd.DataFrame] = None,
+    split_name: Optional[str] = None,
+):
+    """
+    Persists progressive or final perception manifest and summary to cache_dir.
+    Ensures interrupted caching sessions leave a consistent on-disk audit trail.
+    """
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    if frame_records:
+        manifest_df = pd.DataFrame(frame_records)
+        manifest_df.to_csv(cache_dir / "perception_manifest.csv", index=False)
+
+    summary_data = {
+        "stats": {k: v for k, v in stats.items() if k not in ("failed_records", "failed_df")},
+        "total_sequences_requested": stats.get("total_requested", len(retained_df)),
+        "total_sequences_retained": len(retained_df),
+        "total_sequences_excluded": len(failed_df) if failed_df is not None else stats.get("failed_sequences", 0),
+        "total_real_masks_generated": stats.get("total_real_masks_generated", 0),
+        "cvb_frames_generated": stats.get("cvb_frames_generated", 0),
+        "beef_a5_frames_generated": stats.get("beef_a5_frames_generated", 0),
+        "beef_fallback_frames_generated": stats.get("beef_fallback_frames_generated", 0),
+        "already_cached_count": stats.get("already_cached", 0),
+        "last_updated": time.strftime("%Y-%m-%d %H:%M:%S"),
+    }
+    with open(cache_dir / "perception_summary.json", "w", encoding="utf-8") as f:
+        json.dump(summary_data, f, indent=2)
+
+    if split_name:
+        retained_df.to_csv(cache_dir / f"retained_{split_name}.csv", index=False)
+        if failed_df is not None and len(failed_df) > 0:
+            failed_df.to_csv(cache_dir / f"failed_{split_name}.csv", index=False)
 
 
 # ==============================================================================
@@ -510,14 +589,23 @@ def build_behavior_perception_cache(
     num_frames: int = 8,
     device: str = "cuda",
     desc: str = "Caching Perception Sequences",
+    commit_callback: Optional[Any] = None,
+    commit_interval_sec: float = 60.0,
+    time_limit_sec: Optional[float] = None,
+    clean_corrupt_folders: bool = True,
+    save_progressive_manifest: bool = True,
+    split_name: Optional[str] = None,
 ) -> Tuple[pd.DataFrame, Dict[str, Any], List[Dict[str, Any]]]:
     """
-    Builds the authentic perception cache for df (30 train or 10 val sequences).
+    Builds the authentic perception cache for df (train, val, or benchmark sequences).
     Saves:
       cache_dir / sample_id / frame_00.jpg ... frame_07.jpg
       cache_dir / sample_id / mask_00.png ... mask_07.png
+      cache_dir / sample_id / perception_metadata.json
     Binary masks saved as {0, 255} uint8 PNGs.
     Strict failure policy: any failed sequence is excluded; zero dummy black or fake masks.
+    Interruption-safe: validates on-disk sequences, purges corrupted partial folders,
+    periodically commits persistent volume, and progressively saves manifests.
     Returns:
       retained_df, summary_dict, all_frame_records
     """
@@ -545,7 +633,11 @@ def build_behavior_perception_cache(
     }
 
     all_frame_records = []
+    failed_records = []
     successful_indices = []
+
+    last_commit_time = time.time()
+    loop_start_time = time.perf_counter()
 
     print(f"[*] {desc}: Processing {len(df)} candidate sequences...")
 
@@ -556,47 +648,63 @@ def build_behavior_perception_cache(
 
         # Check if already completely cached with valid perception_metadata.json
         meta_path = sample_folder / "perception_metadata.json"
-        already_valid = (
-            sample_folder.exists()
-            and meta_path.exists()
-            and all(
+        already_valid = False
+        if sample_folder.exists() and meta_path.exists():
+            frames_ok = all(
                 (sample_folder / f"frame_{t:02d}.jpg").exists()
                 and (sample_folder / f"frame_{t:02d}.jpg").stat().st_size > 0
                 and (sample_folder / f"mask_{t:02d}.png").exists()
                 and (sample_folder / f"mask_{t:02d}.png").stat().st_size > 0
                 for t in range(num_frames)
             )
-        )
+            if frames_ok:
+                try:
+                    with open(meta_path, "r", encoding="utf-8") as f:
+                        cached_records = json.load(f)
+                    assert isinstance(cached_records, list) and len(cached_records) == num_frames, "Invalid record length"
+                    # Strict provenance assertions: reject placeholder provenance
+                    for rec_meta in cached_records:
+                        assert rec_meta.get("prompt_strategy") not in ("beef_cached", None), "Placeholder prompt_strategy detected"
+                        assert rec_meta.get("bbox") != "already_cached", "Placeholder bbox detected"
+                        assert "frame_index" in rec_meta, "Missing frame_index"
+                        assert rec_meta.get("mask_success") is True, "mask_success is False in cached record"
+
+                    stats["already_cached"] += 1
+                    stats["extracted_success"] += 1
+                    successful_indices.append(idx)
+                    all_frame_records.extend(cached_records)
+
+                    for rec_meta in cached_records:
+                        strat = rec_meta.get("prompt_strategy")
+                        if strat == "cvb_gt_bbox":
+                            stats["cvb_frames_generated"] += 1
+                        elif strat == "beef_A5_rtdetr_box_center_point":
+                            stats["beef_a5_frames_generated"] += 1
+                        elif strat == "beef_center_point_fallback":
+                            stats["beef_fallback_frames_generated"] += 1
+                        stats["total_real_masks_generated"] += 1
+                    already_valid = True
+                except Exception as e:
+                    print(f"[WARN] Sequence {sample_id} cache metadata invalid ({e}). Cleansing folder for fresh extraction.")
+                    already_valid = False
 
         if already_valid:
-            try:
-                with open(meta_path, "r", encoding="utf-8") as f:
-                    cached_records = json.load(f)
-                assert isinstance(cached_records, list) and len(cached_records) == num_frames, "Invalid record length"
-                # Strict provenance assertions: reject placeholder provenance
-                for rec_meta in cached_records:
-                    assert rec_meta.get("prompt_strategy") not in ("beef_cached", None), "Placeholder prompt_strategy detected"
-                    assert rec_meta.get("bbox") != "already_cached", "Placeholder bbox detected"
-                    assert "frame_index" in rec_meta, "Missing frame_index"
-                    assert rec_meta.get("mask_success") is True, "mask_success is False in cached record"
+            # Check periodic volume commit
+            if commit_callback is not None and (time.time() - last_commit_time >= commit_interval_sec):
+                current_retained = df.iloc[successful_indices].reset_index(drop=True)
+                current_failed = pd.DataFrame(failed_records)
+                if save_progressive_manifest:
+                    save_cache_manifest_and_summary(cache_dir, all_frame_records, stats, current_retained, current_failed, split_name=split_name)
+                try:
+                    commit_callback(stats["extracted_success"], stats["already_cached"])
+                except Exception as ce:
+                    print(f"[WARN] Commit callback warning: {ce}")
+                last_commit_time = time.time()
+            continue
 
-                stats["already_cached"] += 1
-                stats["extracted_success"] += 1
-                successful_indices.append(idx)
-                all_frame_records.extend(cached_records)
-
-                for rec_meta in cached_records:
-                    strat = rec_meta.get("prompt_strategy")
-                    if strat == "cvb_gt_bbox":
-                        stats["cvb_frames_generated"] += 1
-                    elif strat == "beef_A5_rtdetr_box_center_point":
-                        stats["beef_a5_frames_generated"] += 1
-                    elif strat == "beef_center_point_fallback":
-                        stats["beef_fallback_frames_generated"] += 1
-                    stats["total_real_masks_generated"] += 1
-                continue
-            except Exception as e:
-                print(f"[WARN] Sequence {sample_id} cache metadata invalid ({e}). Regenerating sequence from raw source.")
+        # If sample_folder exists but was partial/corrupted, purge it cleanly
+        if sample_folder.exists() and clean_corrupt_folders:
+            shutil.rmtree(sample_folder, ignore_errors=True)
 
         # Real perception extraction
         rgb_seq = None
@@ -643,7 +751,46 @@ def build_behavior_perception_cache(
             successful_indices.append(idx)
         else:
             stats["failed_sequences"] += 1
-            print(f"[EXCLUDE] Sequence {sample_id} ({dataset_name}) failed perception. Excluding from dataset.")
+            last_reason = frame_records[-1].get("failure_reason") if frame_records else "extraction_failed"
+            failed_records.append({
+                "sample_id": sample_id,
+                "dataset": dataset_name,
+                "behavior_canonical": row.get("behavior_canonical"),
+                "failure_reason": last_reason,
+            })
+            print(f"[EXCLUDE] Sequence {sample_id} ({dataset_name}) failed perception ({last_reason}). Excluding from dataset.")
+
+        # Periodic commit callback & progressive manifest update
+        if commit_callback is not None and (time.time() - last_commit_time >= commit_interval_sec):
+            current_retained = df.iloc[successful_indices].reset_index(drop=True)
+            current_failed = pd.DataFrame(failed_records)
+            if save_progressive_manifest:
+                save_cache_manifest_and_summary(cache_dir, all_frame_records, stats, current_retained, current_failed, split_name=split_name)
+            try:
+                commit_callback(stats["extracted_success"], stats["already_cached"])
+            except Exception as ce:
+                print(f"[WARN] Commit callback warning: {ce}")
+            last_commit_time = time.time()
+
+        # Benchmark time limit check: break cleanly between sequences
+        if time_limit_sec is not None:
+            elapsed_bench = time.perf_counter() - loop_start_time
+            if elapsed_bench >= time_limit_sec:
+                print(f"[*] Benchmark time limit reached ({elapsed_bench:.1f}s >= {time_limit_sec:.1f}s). Stopping cleanly between sequences.")
+                break
 
     retained_df = df.iloc[successful_indices].reset_index(drop=True)
+    failed_df = pd.DataFrame(failed_records)
+    stats["failed_records"] = failed_records
+    stats["failed_df"] = failed_df
+
+    if save_progressive_manifest:
+        save_cache_manifest_and_summary(cache_dir, all_frame_records, stats, retained_df, failed_df, split_name=split_name)
+
+    if commit_callback is not None:
+        try:
+            commit_callback(stats["extracted_success"], stats["already_cached"])
+        except Exception as ce:
+            print(f"[WARN] Final commit callback warning: {ce}")
+
     return retained_df, stats, all_frame_records

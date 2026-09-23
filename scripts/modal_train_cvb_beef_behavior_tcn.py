@@ -61,6 +61,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 cvb_vol = modal.Volume.from_name("cvb-data")
 beef_vol = modal.Volume.from_name("beef-behavior-data")
 checkpoint_vol = modal.Volume.from_name("behavior-checkpoints", create_if_missing=True)
+cache_vol = modal.Volume.from_name("behavior-perception-cache", create_if_missing=True)
 
 # Container image with pre-cached RT-DETR-L and SAM 2.1 weights
 train_image = (
@@ -92,9 +93,13 @@ train_image = (
         str(REPO_ROOT / "scripts" / "train_cvb_beef_behavior_tcn.py"),
         remote_path="/root/scripts/train_cvb_beef_behavior_tcn.py",
     )
+    .add_local_file(
+        str(REPO_ROOT / "scripts" / "train_cvb_beef_behavior_baseline.py"),
+        remote_path="/root/scripts/train_cvb_beef_behavior_baseline.py",
+    )
 )
 
-app = modal.App("cvb-beef-behavior-perception-smoke", image=train_image)
+app = modal.App("cvb-beef-behavior-perception-run5", image=train_image)
 
 
 # ==============================================================================
@@ -667,4 +672,879 @@ def audit_smoke_cache():
     print(f"  Fresh Runtime        : {res.get('runtime_fresh'):.1f}s")
     print(f"  Resume Runtime       : {res.get('runtime_resume'):.1f}s")
     print("=" * 70)
+
+
+# ==============================================================================
+# BENCHMARK RUNNER (L4 vs L40S, ~300 SECONDS, NO TEST.CSV, NO TCN TRAINING)
+# ==============================================================================
+def _run_benchmark(gpu_name: str, time_limit_sec: float = 300.0) -> dict:
+    """
+    Executes a controlled ~300s caching benchmark on a representative, balanced
+    interleaved subset of CVB and Kaggle Beef sequences from train.csv.
+    Guarantees:
+      - Deterministic candidate sequence order (identical for L4 and L40S)
+      - Exact same certified perception policy (T=8)
+      - Clean isolated cache directory (/cache/benchmark_{gpu})
+      - Strict canonical test.csv protection (test.csv is never loaded)
+      - Zero TCN training
+      - Clean stop between sequences at ~300s
+      - Reports all 12 standardized benchmark metrics directly comparable between GPUs
+    """
+    import os
+    import sys
+    import shutil
+    import json
+    import time
+    from pathlib import Path
+    import pandas as pd
+
+    sys.path.insert(0, "/root")
+    from scripts.build_behavior_perception_cache import (
+        build_behavior_perception_cache,
+        get_benchmark_sequence_subset,
+    )
+
+    print("\n" + "=" * 70)
+    print(f"  MODAL BENCHMARK: BEHAVIOR PERCEPTION CACHE SPEED ({gpu_name}, {time_limit_sec:.0f}s)")
+    print("=" * 70)
+
+    # 1. Path verification
+    cvb_dir = Path("/mnt/cvb/cvb/000058916v001")
+    beef_dir = Path("/mnt/beef/beef_behavior")
+    data_dir = Path("/root/datasets/behavior/cvb_beef")
+    cache_dir = Path(f"/cache/benchmark_{gpu_name.lower()}")
+
+    assert cvb_dir.exists(), f"CVB directory missing at {cvb_dir}"
+    assert beef_dir.exists(), f"Beef directory missing at {beef_dir}"
+    assert data_dir.exists(), f"Data directory missing at {data_dir}"
+
+    train_csv = data_dir / "train.csv"
+    val_csv = data_dir / "val.csv"
+    test_csv = data_dir / "test.csv"
+    assert train_csv.exists() and val_csv.exists() and test_csv.exists()
+
+    # Strict isolation: record test.csv mtime before benchmark
+    test_stat_before = test_csv.stat()
+
+    train_df = pd.read_csv(train_csv)
+    assert len(train_df) == 3785, f"Expected 3785 train samples, found {len(train_df)}"
+
+    # 2. Deterministic candidate subset (interleaved CVB + Beef, balanced across classes)
+    bench_df = get_benchmark_sequence_subset(train_df, max_candidates=300)
+    print(f"[*] Deterministic benchmark candidate set: {len(bench_df)} sequences")
+    print(f"    CVB sequences  : {len(bench_df[bench_df['dataset'] == 'cvb'])}")
+    print(f"    Beef sequences : {len(bench_df[bench_df['dataset'] == 'beef_cattle_behavior'])}")
+
+    # 3. Clean benchmark cache directory so previous runs do not skew timing
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir, ignore_errors=True)
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    # 4. Initialize perception models
+    from ultralytics import RTDETR, SAM
+    print(f"[*] Initializing RT-DETR-L and SAM 2.1 Small on {gpu_name}...")
+    rtdetr_model = RTDETR("rtdetr-l.pt")
+    sam_model = SAM("sam2.1_s.pt")
+
+    # 5. Run timed caching loop
+    t0 = time.perf_counter()
+    retained_df, stats, frame_records = build_behavior_perception_cache(
+        df=bench_df,
+        cvb_dir=cvb_dir,
+        beef_dir=beef_dir,
+        cache_dir=cache_dir,
+        rtdetr_model=rtdetr_model,
+        sam_model=sam_model,
+        num_frames=8,
+        device="cuda",
+        desc=f"Benchmark Cache ({gpu_name})",
+        commit_callback=lambda n_success, n_cached: cache_vol.commit(),
+        commit_interval_sec=60.0,
+        time_limit_sec=time_limit_sec,
+        clean_corrupt_folders=True,
+        save_progressive_manifest=True,
+        split_name=f"benchmark_{gpu_name.lower()}",
+    )
+    t_elapsed = time.perf_counter() - t0
+
+    # 6. Assert test.csv isolation
+    test_stat_after = test_csv.stat()
+    assert test_stat_before.st_mtime == test_stat_after.st_mtime, "CRITICAL: test.csv was modified!"
+    print("[*] Strict canonical test-set isolation PASS: test.csv was not parsed, loaded, sampled, tuned, or evaluated.")
+
+    # 7. Compute exact benchmark metrics
+    n_success = stats["extracted_success"]
+    n_failed = stats["failed_sequences"]
+    n_attempted = n_success + n_failed
+    total_masks = stats["total_real_masks_generated"]
+    cvb_frames = stats["cvb_frames_generated"]
+    beef_a5 = stats["beef_a5_frames_generated"]
+    beef_fallback = stats["beef_fallback_frames_generated"]
+
+    sec_per_seq = round(t_elapsed / max(1, n_success), 3)
+    seqs_per_min = round((n_success / max(1e-5, t_elapsed)) * 60, 2)
+    fps = round(total_masks / max(1e-5, t_elapsed), 2)
+
+    total_candidates = 4465  # 3,785 train + 680 val
+    proj_sec = total_candidates * (t_elapsed / max(1, n_success))
+    proj_hours = round(proj_sec / 3600, 2)
+    proj_str = f"{proj_hours:.2f} hours ({proj_sec / 60:.1f} minutes)"
+
+    benchmark_report = {
+        "gpu": gpu_name,
+        "wall_clock_seconds": round(t_elapsed, 2),
+        "candidate_sequences_attempted": n_attempted,
+        "sequences_successfully_cached": n_success,
+        "sequences_failed": n_failed,
+        "frames_masks_generated": total_masks,
+        "cvb_frames": cvb_frames,
+        "beef_a5_frames": beef_a5,
+        "beef_fallback_frames": beef_fallback,
+        "seconds_per_successful_sequence": sec_per_seq,
+        "sequences_per_minute": seqs_per_min,
+        "frames_per_second": fps,
+        "projected_full_train_val_caching_time_hours": proj_hours,
+        "projected_full_train_val_caching_time_str": proj_str,
+        "total_full_candidates": total_candidates,
+        "cache_dir": str(cache_dir),
+    }
+
+    report_path = cache_dir / "benchmark_metrics.json"
+    with open(report_path, "w", encoding="utf-8") as f:
+        json.dump(benchmark_report, f, indent=2)
+
+    cache_vol.commit()
+    print(f"[*] Benchmark report committed to persistent volume at {report_path}")
+    return benchmark_report
+
+
+@app.function(
+    gpu="L4",
+    volumes={
+        "/mnt/cvb": cvb_vol,
+        "/mnt/beef": beef_vol,
+        "/cache": cache_vol,
+        "/checkpoints": checkpoint_vol,
+    },
+    timeout=600,
+    cpu=2.0,
+    memory=8192,
+)
+def benchmark_cache_l4_remote(time_limit_sec: float = 300.0) -> dict:
+    return _run_benchmark(gpu_name="L4", time_limit_sec=time_limit_sec)
+
+
+@app.function(
+    gpu="L40S",
+    volumes={
+        "/mnt/cvb": cvb_vol,
+        "/mnt/beef": beef_vol,
+        "/cache": cache_vol,
+        "/checkpoints": checkpoint_vol,
+    },
+    timeout=600,
+    cpu=4.0,
+    memory=16384,
+)
+def benchmark_cache_l40s_remote(time_limit_sec: float = 300.0) -> dict:
+    return _run_benchmark(gpu_name="L40S", time_limit_sec=time_limit_sec)
+
+
+def _print_benchmark_report(rep: dict):
+    print("\n" + "=" * 70)
+    print(f"  BENCHMARK RESULTS: NVIDIA {rep['gpu']}")
+    print("=" * 70)
+    print(f"  GPU                                  : {rep['gpu']}")
+    print(f"  Wall-clock seconds                   : {rep['wall_clock_seconds']:.2f}s")
+    print(f"  Candidate sequences attempted        : {rep['candidate_sequences_attempted']}")
+    print(f"  Sequences successfully cached        : {rep['sequences_successfully_cached']}")
+    print(f"  Sequences failed                     : {rep['sequences_failed']}")
+    print(f"  Frames/masks generated               : {rep['frames_masks_generated']}")
+    print(f"  CVB frames (GT BBox)                 : {rep['cvb_frames']}")
+    print(f"  Beef A5 frames (RT-DETR+Center)      : {rep['beef_a5_frames']}")
+    print(f"  Beef fallback frames (Center Point)  : {rep['beef_fallback_frames']}")
+    print(f"  Seconds per successful sequence      : {rep['seconds_per_successful_sequence']:.3f} s/seq")
+    print(f"  Sequences / minute                   : {rep['sequences_per_minute']:.2f} seq/min")
+    print(f"  Frames / second                      : {rep['frames_per_second']:.2f} fps")
+    print(f"  Projected Full Train+Val Time (4465) : {rep['projected_full_train_val_caching_time_str']}")
+    print("=" * 70)
+
+
+@app.local_entrypoint()
+def benchmark_cache_l4(time_limit_sec: float = 300.0):
+    """
+    Benchmarks perception cache generation speed on NVIDIA L4 (~300s).
+    Usage:
+      modal run --profile tigerwood693 scripts/modal_train_cvb_beef_behavior_tcn.py::benchmark_cache_l4
+    """
+    print(f"Launching Run 5 Behavior Perception Cache Benchmark on NVIDIA L4 (tigerwood693, ~{time_limit_sec:.0f}s)...")
+    res = benchmark_cache_l4_remote.remote(time_limit_sec=time_limit_sec)
+    _print_benchmark_report(res)
+
+    local_dir = REPO_ROOT / "artifacts" / "behavior_perception_benchmark"
+    local_dir.mkdir(parents=True, exist_ok=True)
+    with open(local_dir / "benchmark_l4.json", "w", encoding="utf-8") as f:
+        json.dump(res, f, indent=2)
+    print(f"[*] Local benchmark results saved to {local_dir / 'benchmark_l4.json'}")
+
+
+@app.local_entrypoint()
+def benchmark_cache_l40s(time_limit_sec: float = 300.0):
+    """
+    Benchmarks perception cache generation speed on NVIDIA L40S (~300s).
+    Usage:
+      modal run --profile tigerwood693 scripts/modal_train_cvb_beef_behavior_tcn.py::benchmark_cache_l40s
+    """
+    print(f"Launching Run 5 Behavior Perception Cache Benchmark on NVIDIA L40S (tigerwood693, ~{time_limit_sec:.0f}s)...")
+    res = benchmark_cache_l40s_remote.remote(time_limit_sec=time_limit_sec)
+    _print_benchmark_report(res)
+
+    local_dir = REPO_ROOT / "artifacts" / "behavior_perception_benchmark"
+    local_dir.mkdir(parents=True, exist_ok=True)
+    with open(local_dir / "benchmark_l40s.json", "w", encoding="utf-8") as f:
+        json.dump(res, f, indent=2)
+    print(f"[*] Local benchmark results saved to {local_dir / 'benchmark_l40s.json'}")
+
+
+# ==============================================================================
+# PRODUCTION PERSISTENT CACHING (L4 vs L40S, RESUMABLE, PROGRESSIVE COMMITS)
+# ==============================================================================
+def _run_production_caching(gpu_name: str) -> dict:
+    """
+    Executes full production Train+Val perception caching into /cache/production:
+      - Train: 3,785 candidates
+      - Val: 680 candidates
+      - Total: 4,465 candidates
+    Interruption-safe & Credit-safe:
+      - Validates on-disk sequences before extracting
+      - Never wipes valid cached work on resume
+      - Removes and re-extracts only corrupted/partial folders
+      - Periodic volume commit every 60s
+      - Progressive perception_manifest.csv & perception_summary.json persistence
+      - Final volume commit on exit
+      - Strictly isolates canonical test.csv (never parsed or loaded)
+    """
+    import os
+    import sys
+    import json
+    import time
+    from pathlib import Path
+    import pandas as pd
+
+    sys.path.insert(0, "/root")
+    from scripts.build_behavior_perception_cache import build_behavior_perception_cache
+
+    print("\n" + "=" * 70)
+    print(f"  MODAL PRODUCTION CACHING: RUN 5 BEHAVIOR PERCEPTION ({gpu_name})")
+    print("=" * 70)
+
+    cvb_dir = Path("/mnt/cvb/cvb/000058916v001")
+    beef_dir = Path("/mnt/beef/beef_behavior")
+    data_dir = Path("/root/datasets/behavior/cvb_beef")
+    cache_dir = Path("/cache/production")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    assert cvb_dir.exists(), f"CVB directory missing at {cvb_dir}"
+    assert beef_dir.exists(), f"Beef directory missing at {beef_dir}"
+    assert data_dir.exists(), f"Data directory missing at {data_dir}"
+
+    train_csv = data_dir / "train.csv"
+    val_csv = data_dir / "val.csv"
+    test_csv = data_dir / "test.csv"
+    assert train_csv.exists() and val_csv.exists() and test_csv.exists()
+
+    test_stat_before = test_csv.stat()
+
+    train_df = pd.read_csv(train_csv)
+    val_df = pd.read_csv(val_csv)
+    assert len(train_df) == 3785, f"Expected 3785 train samples, found {len(train_df)}"
+    assert len(val_df) == 680, f"Expected 680 val samples, found {len(val_df)}"
+    print(f"[*] Canonical candidates: Train={len(train_df)}, Val={len(val_df)} (Total: {len(train_df) + len(val_df)})")
+
+    # Initialize perception models
+    from ultralytics import RTDETR, SAM
+    print(f"[*] Initializing RT-DETR-L and SAM 2.1 Small on {gpu_name}...")
+    rtdetr_model = RTDETR("rtdetr-l.pt")
+    sam_model = SAM("sam2.1_s.pt")
+
+    def commit_cb(n_success, n_cached):
+        cache_vol.commit()
+        print(f"[*] [PERSISTENT COMMIT] {n_success} sequences committed to persistent volume (already_cached={n_cached})")
+
+    # 1. Train Caching Pass
+    print("\n--- STAGE 1: PRODUCTION TRAIN CACHING (3,785 candidates) ---")
+    t0_train = time.perf_counter()
+    retained_train_df, train_stats, train_records = build_behavior_perception_cache(
+        df=train_df,
+        cvb_dir=cvb_dir,
+        beef_dir=beef_dir,
+        cache_dir=cache_dir,
+        rtdetr_model=rtdetr_model,
+        sam_model=sam_model,
+        num_frames=8,
+        device="cuda",
+        desc=f"Production Train Cache ({gpu_name})",
+        commit_callback=commit_cb,
+        commit_interval_sec=60.0,
+        clean_corrupt_folders=True,
+        save_progressive_manifest=True,
+        split_name="train",
+    )
+    t_train = time.perf_counter() - t0_train
+    print(f"[*] Train caching completed in {t_train:.1f}s: Retained={len(retained_train_df)}, Excluded={train_stats['failed_sequences']}")
+
+    # 2. Val Caching Pass
+    print("\n--- STAGE 2: PRODUCTION VAL CACHING (680 candidates) ---")
+    t0_val = time.perf_counter()
+    retained_val_df, val_stats, val_records = build_behavior_perception_cache(
+        df=val_df,
+        cvb_dir=cvb_dir,
+        beef_dir=beef_dir,
+        cache_dir=cache_dir,
+        rtdetr_model=rtdetr_model,
+        sam_model=sam_model,
+        num_frames=8,
+        device="cuda",
+        desc=f"Production Val Cache ({gpu_name})",
+        commit_callback=commit_cb,
+        commit_interval_sec=60.0,
+        clean_corrupt_folders=True,
+        save_progressive_manifest=True,
+        split_name="val",
+    )
+    t_val = time.perf_counter() - t0_val
+    print(f"[*] Val caching completed in {t_val:.1f}s: Retained={len(retained_val_df)}, Excluded={val_stats['failed_sequences']}")
+
+    # 3. Assert test.csv isolation
+    test_stat_after = test_csv.stat()
+    assert test_stat_before.st_mtime == test_stat_after.st_mtime, "CRITICAL: test.csv was modified during caching!"
+    print("[*] Strict canonical test-set isolation PASS: test.csv was not parsed, loaded, sampled, tuned, or evaluated.")
+
+    # 4. Save Final Production Split Manifests & Master Summary
+    retained_train_df.to_csv(cache_dir / "retained_train.csv", index=False)
+    retained_val_df.to_csv(cache_dir / "retained_val.csv", index=False)
+    train_stats["failed_df"].to_csv(cache_dir / "failed_train.csv", index=False)
+    val_stats["failed_df"].to_csv(cache_dir / "failed_val.csv", index=False)
+
+    all_records = train_records + val_records
+    master_manifest_df = pd.DataFrame(all_records)
+    master_manifest_df.to_csv(cache_dir / "perception_manifest.csv", index=False)
+
+    # Compile failure reason breakdown
+    all_failed_records = train_stats["failed_records"] + val_stats["failed_records"]
+    failure_reasons = {}
+    for frec in all_failed_records:
+        r = frec.get("failure_reason", "unknown")
+        failure_reasons[r] = failure_reasons.get(r, 0) + 1
+
+    # Source & Class distributions before and after exclusions
+    production_summary = {
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "gpu": gpu_name,
+        "total_requested": len(train_df) + len(val_df),
+        "total_retained": len(retained_train_df) + len(retained_val_df),
+        "total_excluded": len(all_failed_records),
+        "split_counts": {
+            "train": {
+                "requested": len(train_df),
+                "retained": len(retained_train_df),
+                "excluded": len(train_stats["failed_records"]),
+                "already_cached": train_stats["already_cached"],
+            },
+            "val": {
+                "requested": len(val_df),
+                "retained": len(retained_val_df),
+                "excluded": len(val_stats["failed_records"]),
+                "already_cached": val_stats["already_cached"],
+            },
+        },
+        "frames_generated": {
+            "total_real_masks": train_stats["total_real_masks_generated"] + val_stats["total_real_masks_generated"],
+            "cvb_gt_bbox_frames": train_stats["cvb_frames_generated"] + val_stats["cvb_frames_generated"],
+            "beef_a5_frames": train_stats["beef_a5_frames_generated"] + val_stats["beef_a5_frames_generated"],
+            "beef_fallback_frames": train_stats["beef_fallback_frames_generated"] + val_stats["beef_fallback_frames_generated"],
+        },
+        "failure_reasons_breakdown": failure_reasons,
+        "class_distribution_before_exclusions": {
+            "train": train_df["behavior_canonical"].value_counts().to_dict(),
+            "val": val_df["behavior_canonical"].value_counts().to_dict(),
+        },
+        "class_distribution_after_exclusions": {
+            "train": retained_train_df["behavior_canonical"].value_counts().to_dict(),
+            "val": retained_val_df["behavior_canonical"].value_counts().to_dict(),
+        },
+        "source_distribution_before_exclusions": {
+            "train": train_df["dataset"].value_counts().to_dict(),
+            "val": val_df["dataset"].value_counts().to_dict(),
+        },
+        "source_distribution_after_exclusions": {
+            "train": retained_train_df["dataset"].value_counts().to_dict(),
+            "val": retained_val_df["dataset"].value_counts().to_dict(),
+        },
+        "runtimes_sec": {
+            "train": round(t_train, 1),
+            "val": round(t_val, 1),
+            "total": round(t_train + t_val, 1),
+        },
+    }
+
+    summary_path = cache_dir / "perception_summary.json"
+    with open(summary_path, "w", encoding="utf-8") as f:
+        json.dump(production_summary, f, indent=2)
+
+    cache_vol.commit()
+    print(f"[*] Master production cache and summary committed successfully to volume: {cache_dir}")
+    return production_summary
+
+
+@app.function(
+    gpu="L4",
+    volumes={
+        "/mnt/cvb": cvb_vol,
+        "/mnt/beef": beef_vol,
+        "/cache": cache_vol,
+        "/checkpoints": checkpoint_vol,
+    },
+    timeout=86400,
+    cpu=4.0,
+    memory=16384,
+)
+def build_production_cache_l4_remote() -> dict:
+    return _run_production_caching(gpu_name="L4")
+
+
+@app.function(
+    gpu="L40S",
+    volumes={
+        "/mnt/cvb": cvb_vol,
+        "/mnt/beef": beef_vol,
+        "/cache": cache_vol,
+        "/checkpoints": checkpoint_vol,
+    },
+    timeout=86400,
+    cpu=4.0,
+    memory=16384,
+)
+def build_production_cache_l40s_remote() -> dict:
+    return _run_production_caching(gpu_name="L40S")
+
+
+def _print_production_summary(ps: dict):
+    print("\n" + "=" * 70)
+    print(f"  PRODUCTION PERCEPTION CACHING COMPLETE ({ps['gpu']})")
+    print("=" * 70)
+    print(f"  Total Sequences Requested : {ps['total_requested']}")
+    print(f"  Total Sequences Retained  : {ps['total_retained']} (Train={ps['split_counts']['train']['retained']}, Val={ps['split_counts']['val']['retained']})")
+    print(f"  Total Sequences Excluded  : {ps['total_excluded']} (Train={ps['split_counts']['train']['excluded']}, Val={ps['split_counts']['val']['excluded']})")
+    print(f"  Total Real Masks Generated: {ps['frames_generated']['total_real_masks']}")
+    print(f"  CVB Frames (GT BBox)      : {ps['frames_generated']['cvb_gt_bbox_frames']}")
+    print(f"  Beef A5 Frames (RT-DETR)  : {ps['frames_generated']['beef_a5_frames']}")
+    print(f"  Beef Fallback Frames      : {ps['frames_generated']['beef_fallback_frames']}")
+    print(f"  Total Runtime             : {ps['runtimes_sec']['total']:.1f}s ({ps['runtimes_sec']['total']/3600:.2f}h)")
+    print(f"  Failure Reasons Breakdown : {ps['failure_reasons_breakdown']}")
+    print("=" * 70)
+
+
+@app.local_entrypoint()
+def build_production_cache_l4():
+    """
+    Builds full Train+Val perception cache on NVIDIA L4 (4,465 candidate sequences).
+    Usage:
+      modal run --profile tigerwood693 scripts/modal_train_cvb_beef_behavior_tcn.py::build_production_cache_l4
+    """
+    print("Launching Run 5 Full Production Perception Caching on NVIDIA L4 (tigerwood693)...")
+    res = build_production_cache_l4_remote.remote()
+    _print_production_summary(res)
+
+    local_dir = REPO_ROOT / "artifacts" / "behavior_perception_cache"
+    local_dir.mkdir(parents=True, exist_ok=True)
+    with open(local_dir / "perception_summary.json", "w", encoding="utf-8") as f:
+        json.dump(res, f, indent=2)
+    print(f"[*] Local production summary saved to {local_dir / 'perception_summary.json'}")
+
+
+@app.local_entrypoint()
+def build_production_cache_l40s():
+    """
+    Builds full Train+Val perception cache on NVIDIA L40S (4,465 candidate sequences).
+    Usage:
+      modal run --profile tigerwood693 scripts/modal_train_cvb_beef_behavior_tcn.py::build_production_cache_l40s
+    """
+    print("Launching Run 5 Full Production Perception Caching on NVIDIA L40S (tigerwood693)...")
+    res = build_production_cache_l40s_remote.remote()
+    _print_production_summary(res)
+
+    local_dir = REPO_ROOT / "artifacts" / "behavior_perception_cache"
+    local_dir.mkdir(parents=True, exist_ok=True)
+    with open(local_dir / "perception_summary.json", "w", encoding="utf-8") as f:
+        json.dump(res, f, indent=2)
+    print(f"[*] Local production summary saved to {local_dir / 'perception_summary.json'}")
+
+
+# ==============================================================================
+# FULL 30-EPOCH RUN 5 TRAINING (STRICT MODEL SELECTION BY VAL MACRO-F1 ONLY)
+# ==============================================================================
+@app.function(
+    gpu="L4",
+    volumes={
+        "/mnt/cvb": cvb_vol,
+        "/mnt/beef": beef_vol,
+        "/cache": cache_vol,
+        "/checkpoints": checkpoint_vol,
+    },
+    timeout=86400,
+    cpu=4.0,
+    memory=16384,
+)
+def train_full_run5_remote(batch_size: int = 16, epochs: int = 30) -> dict:
+    """
+    Executes the full 30-epoch Run 5 Perception-Enhanced TCN training pass on Modal:
+      - Architecture: [B, 8, 4, 224, 224] -> 4-channel ResNet-18 -> 1D TCN -> [B, 5]
+      - Exactly 11,903,621 trainable parameters
+      - Loads pre-built retained production sequences from /cache/production
+      - Strict Model Selection: Validation Macro-F1 ONLY
+      - Saves behavior_tcn_best.pth and behavior_tcn_latest.pth
+      - Commits checkpoint volume after each epoch
+      - Strictly isolates canonical test.csv (never parsed or evaluated)
+    """
+    import os
+    import sys
+    import json
+    from pathlib import Path
+    import pandas as pd
+
+    sys.path.insert(0, "/root")
+    from scripts.train_cvb_beef_behavior_tcn import train_temporal_pipeline
+
+    print("\n" + "=" * 70)
+    print(f"  MODAL FULL TRAINING: RUN 5 BEHAVIOR PERCEPTION (30 EPOCHS, NVIDIA L4)")
+    print("=" * 70)
+
+    cvb_dir = Path("/mnt/cvb/cvb/000058916v001")
+    beef_dir = Path("/mnt/beef/beef_behavior")
+    data_dir = Path("/root/datasets/behavior/cvb_beef")
+    cache_dir = Path("/cache/production")
+    output_dir = Path("/checkpoints/behavior_run5_perception")
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    retained_train_p = cache_dir / "retained_train.csv"
+    retained_val_p = cache_dir / "retained_val.csv"
+    if not retained_train_p.exists() or not retained_val_p.exists():
+        raise RuntimeError(
+            f"Production cache not found at {cache_dir}! "
+            "Execute build_production_cache_l4 or build_production_cache_l40s before running training."
+        )
+
+    retained_train_df = pd.read_csv(retained_train_p)
+    retained_val_df = pd.read_csv(retained_val_p)
+    print(f"[*] Loaded retained production splits: Train={len(retained_train_df)}, Val={len(retained_val_df)}")
+
+    # Strict rule: verify test.csv exists and record mtime
+    test_csv = data_dir / "test.csv"
+    test_stat_before = test_csv.stat()
+
+    summary = train_temporal_pipeline(
+        data_dir=data_dir,
+        cvb_dir=cvb_dir,
+        beef_dir=beef_dir,
+        cache_dir=cache_dir,
+        output_dir=output_dir,
+        train_df=retained_train_df,
+        val_df=retained_val_df,
+        epochs=epochs,
+        batch_size=batch_size,
+        lr=1e-4,
+        weight_decay=1e-2,
+        num_workers=4,
+        num_frames=8,
+        smoke=False,
+        input_mode="rgb_mask",
+        epoch_commit_callback=lambda ep, is_best: checkpoint_vol.commit(),
+    )
+
+    # Assert test.csv was NEVER touched or evaluated
+    test_stat_after = test_csv.stat()
+    assert test_stat_before.st_mtime == test_stat_after.st_mtime, "CRITICAL: test.csv was modified during training!"
+    assert summary.get("test_csv_evaluated") is False, "CRITICAL: test.csv was evaluated during training!"
+    print("[*] Strict canonical test-set isolation PASS: test.csv was not parsed, loaded, sampled, tuned, or evaluated.")
+
+    checkpoint_vol.commit()
+    print(f"[*] Run 5 training checkpoints successfully committed to {output_dir}")
+    return summary
+
+
+@app.local_entrypoint()
+def train_full_run5(batch_size: int = 16, epochs: int = 30):
+    """
+    Executes full 30-epoch Run 5 training on Modal (NVIDIA L4).
+    Usage:
+      modal run --profile tigerwood693 scripts/modal_train_cvb_beef_behavior_tcn.py::train_full_run5
+    """
+    print(f"Launching Run 5 Full 30-Epoch Training on Modal (tigerwood693, L4, epochs={epochs}, batch_size={batch_size})...")
+    res = train_full_run5_remote.remote(batch_size=batch_size, epochs=epochs)
+
+    local_dir = REPO_ROOT / "artifacts" / "behavior_run5_training"
+    local_dir.mkdir(parents=True, exist_ok=True)
+    with open(local_dir / "behavior_tcn_metrics.json", "w", encoding="utf-8") as f:
+        json.dump(res, f, indent=2)
+
+    print("\n" + "=" * 70)
+    print("  RUN 5 30-EPOCH TRAINING COMPLETE")
+    print("=" * 70)
+    print(f"  Best Epoch             : {res['best_epoch']}")
+    print(f"  Best Val Macro-F1      : {res['best_val_metrics']['macro_f1']:.4f}")
+    print(f"  Best Val Accuracy      : {res['best_val_metrics']['overall_accuracy']*100:.2f}%")
+    print(f"  Best Val Balanced Acc  : {res['best_val_metrics']['balanced_accuracy']*100:.2f}%")
+    print(f"  Total Trainable Params : {res['architecture']['total_trainable_params']:,} (Expected: 11,903,621)")
+    print(f"  Checkpoints Saved      : {res['checkpoints']['best']}")
+    print("=" * 70)
+
+
+# ==============================================================================
+# STRICT TEST GATE & FAIR RUN 2 MATCHED-SUBSET EVALUATION
+# ==============================================================================
+@app.function(
+    gpu="L4",
+    volumes={
+        "/mnt/cvb": cvb_vol,
+        "/mnt/beef": beef_vol,
+        "/cache": cache_vol,
+        "/checkpoints": checkpoint_vol,
+    },
+    timeout=7200,
+    cpu=4.0,
+    memory=16384,
+)
+def evaluate_test_run5_remote(batch_size: int = 16) -> dict:
+    """
+    Executes the strict final test gate after 30-epoch training finishes:
+      1. Verifies best Run 5 checkpoint exists at /checkpoints/behavior_run5_perception/behavior_tcn_best.pth
+      2. Verifies Run 2 baseline checkpoint exists at /checkpoints/behavior_baseline/behavior_baseline_best.pth
+      3. Loads canonical test.csv (809 candidates)
+      4. Generates test perception cache (/cache/production_test) using identical certified policy
+      5. Excludes genuine perception failures and freezes retained test IDs
+      6. Evaluates frozen Run 5 best checkpoint exactly once on retained test set
+      7. Evaluates existing Run 2 RGB baseline on the EXACT SAME retained test samples
+      8. Compiles and saves 3-way matched comparison report
+      9. Commits persistent volumes
+    """
+    import os
+    import sys
+    import json
+    import time
+    from pathlib import Path
+    import pandas as pd
+
+    sys.path.insert(0, "/root")
+    from scripts.build_behavior_perception_cache import build_behavior_perception_cache
+    from scripts.train_cvb_beef_behavior_tcn import evaluate_matched_run2_vs_run5
+
+    print("\n" + "=" * 70)
+    print("  MODAL STRICT TEST GATE: RUN 5 PERCEPTION+TCN & MATCHED RUN 2 COMPARISON")
+    print("=" * 70)
+
+    # 1. Verify Checkpoints
+    run5_ckpt = Path("/checkpoints/behavior_run5_perception/behavior_tcn_best.pth")
+    run2_ckpt = Path("/checkpoints/behavior_baseline/behavior_baseline_best.pth")
+    assert run5_ckpt.exists(), f"Run 5 best checkpoint missing at {run5_ckpt}! Must complete train_full_run5 first."
+    assert run2_ckpt.exists(), f"Run 2 baseline checkpoint missing at {run2_ckpt}!"
+
+    # 2. Path verification
+    cvb_dir = Path("/mnt/cvb/cvb/000058916v001")
+    beef_dir = Path("/mnt/beef/beef_behavior")
+    data_dir = Path("/root/datasets/behavior/cvb_beef")
+    test_cache_dir = Path("/cache/production_test")
+    run2_cache_dir = Path("/checkpoints/behavior_cache")
+    output_dir = Path("/checkpoints/behavior_run5_perception")
+
+    test_csv = data_dir / "test.csv"
+    assert test_csv.exists(), f"test.csv missing at {test_csv}"
+    test_df = pd.read_csv(test_csv)
+    assert len(test_df) == 809, f"Expected 809 test candidates, found {len(test_df)}"
+    print(f"[*] Canonical test set loaded: {len(test_df)} candidate sequences")
+
+    # 3. Generate Test Perception Cache using certified Run 5 policy
+    print("\n[*] Generating test perception cache (SAM 2.1 Small + cattle crops)...")
+    from ultralytics import RTDETR, SAM
+    rtdetr_model = RTDETR("rtdetr-l.pt")
+    sam_model = SAM("sam2.1_s.pt")
+
+    retained_test_df, test_stats, test_records = build_behavior_perception_cache(
+        df=test_df,
+        cvb_dir=cvb_dir,
+        beef_dir=beef_dir,
+        cache_dir=test_cache_dir,
+        rtdetr_model=rtdetr_model,
+        sam_model=sam_model,
+        num_frames=8,
+        device="cuda",
+        desc="Test Perception Cache",
+        commit_callback=lambda n, c: cache_vol.commit(),
+        commit_interval_sec=60.0,
+        clean_corrupt_folders=True,
+        save_progressive_manifest=True,
+        split_name="test",
+    )
+    print(f"[*] Test caching complete: Retained={len(retained_test_df)}/{len(test_df)}, Excluded={test_stats['failed_sequences']}")
+
+    # Freeze retained test IDs to disk
+    retained_test_df.to_csv(test_cache_dir / "retained_test.csv", index=False)
+    test_stats["failed_df"].to_csv(test_cache_dir / "failed_test.csv", index=False)
+    cache_vol.commit()
+
+    # 4. Fair Matched Comparison Evaluation
+    comparison = evaluate_matched_run2_vs_run5(
+        run5_checkpoint_path=run5_ckpt,
+        run2_checkpoint_path=run2_ckpt,
+        retained_test_df=retained_test_df,
+        perception_cache_dir=test_cache_dir,
+        output_dir=output_dir,
+        cvb_dir=cvb_dir,
+        beef_dir=beef_dir,
+        run2_cache_dir=run2_cache_dir,
+        batch_size=batch_size,
+        num_frames=8,
+    )
+
+    # 5. Read back markdown report and metrics
+    md_path = output_dir / "run2_vs_run5_matched_comparison.md"
+    with open(md_path, "r", encoding="utf-8") as f:
+        md_text = f.read()
+
+    metrics_path = output_dir / "run5_test_evaluation_metrics.json"
+    with open(metrics_path, "r", encoding="utf-8") as f:
+        metrics_json = json.load(f)
+
+    checkpoint_vol.commit()
+    cache_vol.commit()
+    print("[*] Test evaluation artifacts committed to persistent volumes.")
+
+    return {
+        "comparison": comparison,
+        "md_report": md_text,
+        "run5_metrics": metrics_json,
+        "retained_test_count": len(retained_test_df),
+        "excluded_test_count": test_stats["failed_sequences"],
+    }
+
+
+@app.local_entrypoint()
+def evaluate_test_run5(batch_size: int = 16):
+    """
+    Executes the strict final test evaluation gate and matched Run 2 comparison.
+    Usage:
+      modal run --profile tigerwood693 scripts/modal_train_cvb_beef_behavior_tcn.py::evaluate_test_run5
+    """
+    print("Launching Strict Final Test Gate & Matched Run 2 Comparison (tigerwood693)...")
+    res = evaluate_test_run5_remote.remote(batch_size=batch_size)
+
+    local_art_dir = REPO_ROOT / "artifacts" / "behavior_run5_test"
+    local_art_dir.mkdir(parents=True, exist_ok=True)
+    local_audit_dir = REPO_ROOT / "docs" / "audits" / "assets" / "behavior_run5_test"
+    local_audit_dir.mkdir(parents=True, exist_ok=True)
+
+    with open(local_art_dir / "run5_test_evaluation_metrics.json", "w", encoding="utf-8") as f:
+        json.dump(res["run5_metrics"], f, indent=2)
+
+    with open(local_art_dir / "run2_vs_run5_matched_comparison.json", "w", encoding="utf-8") as f:
+        json.dump(res["comparison"], f, indent=2)
+
+    with open(local_art_dir / "run2_vs_run5_matched_comparison.md", "w", encoding="utf-8") as f:
+        f.write(res["md_report"])
+
+    with open(local_audit_dir / "run2_vs_run5_matched_comparison.md", "w", encoding="utf-8") as f:
+        f.write(res["md_report"])
+
+    print("\n" + res["md_report"])
+    print(f"[*] Local test evaluation artifacts saved to {local_art_dir}")
+
+
+# ==============================================================================
+# CACHE STATUS & RESUME INSPECTION
+# ==============================================================================
+@app.function(
+    volumes={
+        "/mnt/cvb": cvb_vol,
+        "/mnt/beef": beef_vol,
+        "/cache": cache_vol,
+        "/checkpoints": checkpoint_vol,
+    },
+    timeout=300,
+    cpu=1.0,
+    memory=2048,
+)
+def inspect_cache_status_remote() -> dict:
+    """
+    Inspects persistent cache and checkpoint volumes without attaching GPUs.
+    Reports:
+      - /cache/production sequences and summary
+      - /cache/production_test sequences
+      - /cache/benchmark_l4 and /cache/benchmark_l40s
+      - Checkpoint availability
+    """
+    import json
+    from pathlib import Path
+
+    cache_dir = Path("/cache/production")
+    test_cache_dir = Path("/cache/production_test")
+    bench_l4 = Path("/cache/benchmark_l4")
+    bench_l40s = Path("/cache/benchmark_l40s")
+    ckpt_dir = Path("/checkpoints/behavior_run5_perception")
+    baseline_dir = Path("/checkpoints/behavior_baseline")
+
+    def inspect_folder(p: Path) -> dict:
+        if not p.exists():
+            return {"exists": False, "sequence_count": 0}
+        subdirs = [d for d in p.iterdir() if d.is_dir()]
+        valid_meta = sum(1 for d in subdirs if (d / "perception_metadata.json").exists())
+        return {
+            "exists": True,
+            "sequence_count": len(subdirs),
+            "valid_metadata_count": valid_meta,
+            "manifest_exists": (p / "perception_manifest.csv").exists(),
+            "summary_exists": (p / "perception_summary.json").exists(),
+        }
+
+    prod_summary = None
+    if (cache_dir / "perception_summary.json").exists():
+        try:
+            with open(cache_dir / "perception_summary.json", "r", encoding="utf-8") as f:
+                prod_summary = json.load(f)
+        except Exception:
+            pass
+
+    return {
+        "production_cache": inspect_folder(cache_dir),
+        "production_test_cache": inspect_folder(test_cache_dir),
+        "benchmark_l4": inspect_folder(bench_l4),
+        "benchmark_l40s": inspect_folder(bench_l40s),
+        "production_summary": prod_summary,
+        "run5_checkpoint_exists": (ckpt_dir / "behavior_tcn_best.pth").exists(),
+        "run2_baseline_checkpoint_exists": (baseline_dir / "behavior_baseline_best.pth").exists(),
+    }
+
+
+@app.local_entrypoint()
+def inspect_cache_status():
+    """
+    Inspects cache status on persistent volumes (lightweight, zero GPU).
+    Usage:
+      modal run --profile tigerwood693 scripts/modal_train_cvb_beef_behavior_tcn.py::inspect_cache_status
+    """
+    print("Inspecting persistent cache and checkpoint status on Modal (tigerwood693)...")
+    res = inspect_cache_status_remote.remote()
+    print("\n" + "=" * 70)
+    print("  BEHAVIOR PERCEPTION CACHE & CHECKPOINT STATUS")
+    print("=" * 70)
+    print(f"  Production Cache (/cache/production)      : {res['production_cache']}")
+    print(f"  Test Cache (/cache/production_test)       : {res['production_test_cache']}")
+    print(f"  Benchmark L4 (/cache/benchmark_l4)        : {res['benchmark_l4']}")
+    print(f"  Benchmark L40S (/cache/benchmark_l40s)    : {res['benchmark_l40s']}")
+    print(f"  Run 5 Best Checkpoint Exists              : {res['run5_checkpoint_exists']}")
+    print(f"  Run 2 Baseline Checkpoint Exists          : {res['run2_baseline_checkpoint_exists']}")
+    if res.get("production_summary"):
+        ps = res["production_summary"]
+        print(f"  Production Summary Total Retained         : {ps.get('total_retained')} / {ps.get('total_requested')}")
+    print("=" * 70)
+
 

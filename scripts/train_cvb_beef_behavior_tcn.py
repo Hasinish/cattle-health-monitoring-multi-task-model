@@ -45,7 +45,7 @@ import sys
 import time
 from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any, Callable
 
 import cv2
 import numpy as np
@@ -592,6 +592,79 @@ class BehaviorTemporalDataset(Dataset):
             raise ValueError(f"Unknown input_mode: {self.input_mode}. Choose 'rgb' or 'rgb_mask'.")
 
 
+class MatchedBehaviorRGBDataset(Dataset):
+    """
+    Dataset loader for original RGB midpoint crops corresponding to the
+    EXACT SAME successful-perception subset from retained_test.csv.
+    Evaluates the historical Run 2 RGB baseline model without retraining.
+    """
+    def __init__(
+        self,
+        matched_df: pd.DataFrame,
+        run2_cache_dir: Optional[Path] = None,
+        cvb_dir: Optional[Path] = None,
+        beef_dir: Optional[Path] = None,
+        image_size: int = 224,
+    ):
+        self.df = matched_df.reset_index(drop=True)
+        self.run2_cache_dir = Path(run2_cache_dir) if run2_cache_dir else None
+        self.cvb_dir = Path(cvb_dir) if cvb_dir else None
+        self.beef_dir = Path(beef_dir) if beef_dir else None
+        self.image_size = image_size
+        self.transform = transforms.Compose([
+            transforms.Resize((image_size, image_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+        ])
+        self.cached_cvb_jsons = {}
+
+    def __len__(self) -> int:
+        return len(self.df)
+
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int, str, str]:
+        row = self.df.iloc[idx]
+        sample_id = str(row["sample_id"])
+        dataset_name = str(row["dataset"])
+        behavior_cls = str(row["behavior_canonical"])
+        target = CLASS_TO_IDX[behavior_cls]
+
+        img_pil = None
+        # 1. Primary path: Load from existing Run 2 pre-cached crops (/checkpoints/behavior_cache/{sample_id}.jpg)
+        if self.run2_cache_dir is not None:
+            cached_img_path = self.run2_cache_dir / f"{sample_id}.jpg"
+            if cached_img_path.exists() and cached_img_path.stat().st_size > 0:
+                try:
+                    img_pil = Image.open(cached_img_path).convert("RGB")
+                except Exception:
+                    img_pil = None
+
+        # 2. Secondary fallback: Extract on the fly from raw source video/frames
+        if img_pil is None:
+            rec = row.to_dict()
+            img_bgr = None
+            try:
+                from scripts.train_cvb_beef_behavior_baseline import extract_cvb_crop, extract_beef_frame
+            except ImportError:
+                try:
+                    from train_cvb_beef_behavior_baseline import extract_cvb_crop, extract_beef_frame
+                except ImportError:
+                    extract_cvb_crop, extract_beef_frame = None, None
+
+            if dataset_name == "cvb" and self.cvb_dir is not None and extract_cvb_crop is not None:
+                img_bgr = extract_cvb_crop(rec, self.cvb_dir, self.cached_cvb_jsons)
+            elif dataset_name == "beef_cattle_behavior" and self.beef_dir is not None and extract_beef_frame is not None:
+                img_bgr = extract_beef_frame(rec, self.beef_dir)
+
+            if img_bgr is not None:
+                img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+                img_pil = Image.fromarray(img_rgb)
+            else:
+                img_pil = Image.new("RGB", (self.image_size, self.image_size), (0, 0, 0))
+
+        tensor = self.transform(img_pil)
+        return tensor, target, sample_id, dataset_name
+
+
 # ==============================================================================
 # MODEL ARCHITECTURE: RESNET-18 + 1D TCN
 # ==============================================================================
@@ -1109,6 +1182,7 @@ def train_temporal_pipeline(
     smoke: bool = True,
     input_mode: str = "rgb_mask",
     device: Optional[torch.device] = None,
+    epoch_commit_callback: Optional[Any] = None,
 ) -> Dict[str, Any]:
     """
     Executes the Behavior Temporal TCN training and verification pipeline.
@@ -1352,6 +1426,12 @@ def train_temporal_pipeline(
             torch.save(ckpt_data, best_ckpt_path)
             print(f"    --> [BEST] New best checkpoint saved to {best_ckpt_path}")
 
+        if epoch_commit_callback is not None:
+            try:
+                epoch_commit_callback(epoch, val_metrics["macro_f1"] >= best_macro_f1)
+            except Exception as ce:
+                print(f"[WARN] Epoch commit callback warning: {ce}")
+
     # 8. Checkpoint Save/Resume Verification
     print("\n[*] Verifying checkpoint save and reload bit-identity...")
     assert best_ckpt_path.exists(), "Best checkpoint was not created!"
@@ -1418,7 +1498,354 @@ def train_temporal_pipeline(
     print("\n" + "=" * 70)
     print(f"  BEHAVIOR PIPELINE COMPLETE (Runtime: {total_duration:.1f}s)")
     print("=" * 70)
+    if epoch_commit_callback is not None:
+        try:
+            epoch_commit_callback(epochs, True)
+        except Exception as ce:
+            print(f"[WARN] Final commit callback warning: {ce}")
+
     return summary
+
+
+# ==============================================================================
+# MATCHED DATASET FOR RUN 2 BASELINE EVALUATION
+# ==============================================================================
+class MatchedBehaviorRGBDataset(Dataset):
+    """
+    Dataset to load single-frame RGB midpoint crops for Run 2 ResNet-18 baseline evaluation.
+    Prioritizes loading pre-cached crops from Run 2's cache directory:
+      run2_cache_dir / f"{sample_id}.jpg"
+    (where Run 2 saved crops at /checkpoints/behavior_cache/{sample_id}.jpg during baseline training).
+    Falls back to deterministic midpoint frame extraction if cache file is missing.
+    """
+    def __init__(
+        self,
+        df: pd.DataFrame,
+        run2_cache_dir: Optional[Path] = None,
+        cvb_dir: Optional[Path] = None,
+        beef_dir: Optional[Path] = None,
+        image_size: int = 224,
+    ):
+        self.df = df.reset_index(drop=True)
+        self.run2_cache_dir = run2_cache_dir
+        self.cvb_dir = cvb_dir
+        self.beef_dir = beef_dir
+        self.image_size = image_size
+        self.sample_ids = self.df["sample_id"].tolist()
+        self.labels = [CLASS_TO_IDX[b] for b in self.df["behavior_canonical"]]
+        self.dataset_names = self.df["dataset"].tolist()
+
+        self.transform = transforms.Compose([
+            transforms.Resize((image_size, image_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+        ])
+
+    def __len__(self) -> int:
+        return len(self.df)
+
+    def __getitem__(self, idx: int) -> Tuple[torch.Tensor, int, str, str]:
+        sample_id = self.sample_ids[idx]
+        target = self.labels[idx]
+        d_name = self.dataset_names[idx]
+
+        # 1. Try Run 2 cache file
+        img = None
+        if self.run2_cache_dir is not None:
+            cache_p = self.run2_cache_dir / f"{sample_id}.jpg"
+            if cache_p.exists() and cache_p.stat().st_size > 0:
+                try:
+                    img = Image.open(cache_p).convert("RGB")
+                except Exception:
+                    img = None
+
+        # 2. Fallback to extracting midpoint frame if not pre-cached
+        if img is None:
+            rec = self.df.iloc[idx].to_dict()
+            if d_name == "cvb" and self.cvb_dir is not None:
+                cut_name = str(rec["session_id"])
+                mid_f = (int(rec["start_frame"]) + int(rec["end_frame"])) // 2
+                for cand in [
+                    self.cvb_dir / "data" / "raw_frames" / cut_name / f"img_{mid_f:05d}.jpg",
+                    self.cvb_dir / "raw_frames" / cut_name / f"img_{mid_f:05d}.jpg",
+                ]:
+                    if cand.exists():
+                        bgr = cv2.imread(str(cand))
+                        if bgr is not None:
+                            img = Image.fromarray(cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB))
+                        break
+            elif d_name == "beef_cattle_behavior" and self.beef_dir is not None:
+                clip_rel = rec.get("clip_path")
+                if clip_rel:
+                    vpath = self.beef_dir / clip_rel
+                    if vpath.exists():
+                        cap = cv2.VideoCapture(str(vpath))
+                        total_f = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+                        mid_f = total_f // 2
+                        cap.set(cv2.CAP_PROP_POS_FRAMES, mid_f)
+                        ret, f_bgr = cap.read()
+                        cap.release()
+                        if ret and f_bgr is not None:
+                            img = Image.fromarray(cv2.cvtColor(f_bgr, cv2.COLOR_BGR2RGB))
+
+        if img is None:
+            img = Image.new("RGB", (self.image_size, self.image_size), color=(128, 128, 128))
+
+        tensor = self.transform(img)
+        return tensor, target, sample_id, d_name
+
+
+# ==============================================================================
+# RUN 2 RGB BASELINE VS RUN 5 PERCEPTION+TCN MATCHED EVALUATION
+# ==============================================================================
+def evaluate_matched_run2_vs_run5(
+    run5_checkpoint_path: Path,
+    run2_checkpoint_path: Path,
+    retained_test_df: pd.DataFrame,
+    perception_cache_dir: Path,
+    output_dir: Path,
+    cvb_dir: Optional[Path] = None,
+    beef_dir: Optional[Path] = None,
+    run2_cache_dir: Optional[Path] = None,
+    device: Optional[torch.device] = None,
+    batch_size: int = 16,
+    num_frames: int = 8,
+) -> Dict[str, Any]:
+    """
+    Evaluates both the frozen Run 5 Perception+TCN model and the historical
+    Run 2 RGB baseline model on the EXACT SAME retained test sequences.
+    Produces fair head-to-head comparison metrics and structured markdown report.
+    """
+    if device is None:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    assert run5_checkpoint_path.exists(), f"Run 5 checkpoint missing at {run5_checkpoint_path}"
+    assert run2_checkpoint_path.exists(), f"Run 2 checkpoint missing at {run2_checkpoint_path}"
+    assert len(retained_test_df) > 0, "Empty retained_test_df provided for evaluation!"
+
+    print("\n" + "=" * 70)
+    print(f"  FAIR MATCHED TEST EVALUATION: Run 5 Perception+TCN vs Run 2 RGB Baseline")
+    print(f"  Retained Test Sequences: {len(retained_test_df)}")
+    print(f"  Device: {device}")
+    print("=" * 70)
+
+    # 1. Evaluate Run 5 Perception+TCN Model
+    print("\n[*] Step 1: Evaluating Run 5 Perception+TCN (4-channel [B, 8, 4, 224, 224])...")
+    run5_ckpt = torch.load(run5_checkpoint_path, map_location=device, weights_only=False)
+    run5_model = BehaviorTemporalModel(
+        num_classes=NUM_CLASSES,
+        in_channels=4,
+        hidden_dim=256,
+        dropout=0.2,
+        pretrained_backbone=False,
+    ).to(device)
+    run5_model.load_state_dict(run5_ckpt["model_state_dict"])
+    run5_model.eval()
+
+    run5_dataset = BehaviorTemporalDataset(
+        retained_test_df,
+        perception_cache_dir,
+        num_frames=num_frames,
+        is_train=False,
+        input_mode="rgb_mask",
+    )
+    run5_loader = DataLoader(
+        run5_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=(device.type == "cuda"),
+    )
+    run5_metrics, run5_loss, _ = evaluate(
+        run5_model, run5_loader, device, desc="Evaluating Run 5 Perception+TCN"
+    )
+
+    print(f"[*] Run 5 Matched Test Results:")
+    print(f"    Overall Accuracy : {run5_metrics['overall_accuracy']*100:.2f}%")
+    print(f"    Balanced Accuracy: {run5_metrics['balanced_accuracy']*100:.2f}%")
+    print(f"    Macro-F1         : {run5_metrics['macro_f1']:.4f}")
+    print(f"    Test Loss        : {run5_loss:.4f}")
+
+    # 2. Evaluate Run 2 RGB Baseline Model on EXACT SAME Samples
+    print("\n[*] Step 2: Evaluating Run 2 RGB Baseline on identical retained test samples...")
+    run2_model = models.resnet18(weights=None)
+    run2_model.fc = nn.Linear(512, NUM_CLASSES)
+    run2_ckpt = torch.load(run2_checkpoint_path, map_location=device, weights_only=False)
+    run2_model.load_state_dict(run2_ckpt["model_state_dict"])
+    run2_model = run2_model.to(device)
+    run2_model.eval()
+
+    run2_dataset = MatchedBehaviorRGBDataset(
+        retained_test_df,
+        run2_cache_dir=run2_cache_dir,
+        cvb_dir=cvb_dir,
+        beef_dir=beef_dir,
+        image_size=224,
+    )
+    run2_loader = DataLoader(
+        run2_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=(device.type == "cuda"),
+    )
+
+    criterion = nn.CrossEntropyLoss()
+    run2_loss_total = 0.0
+    run2_preds = []
+    run2_targets = []
+    run2_datasets = []
+
+    with torch.no_grad():
+        for images, targets, _, d_names in tqdm(run2_loader, desc="Evaluating Run 2 RGB (Matched)", ncols=80):
+            images = images.to(device)
+            targets = targets.to(device)
+            logits = run2_model(images)
+            loss = criterion(logits, targets)
+            run2_loss_total += loss.item() * len(targets)
+            preds = logits.argmax(dim=1).cpu().numpy()
+            run2_preds.extend(preds)
+            run2_targets.extend(targets.cpu().numpy())
+            run2_datasets.extend(list(d_names))
+
+    mean_run2_loss = run2_loss_total / max(1, len(run2_targets))
+    run2_matched_metrics = compute_behavior_metrics(
+        y_true=np.array(run2_targets),
+        y_pred=np.array(run2_preds),
+        dataset_names=np.array(run2_datasets),
+    )
+
+    print(f"[*] Run 2 Matched Test Results:")
+    print(f"    Overall Accuracy : {run2_matched_metrics['overall_accuracy']*100:.2f}%")
+    print(f"    Balanced Accuracy: {run2_matched_metrics['balanced_accuracy']*100:.2f}%")
+    print(f"    Macro-F1         : {run2_matched_metrics['macro_f1']:.4f}")
+    print(f"    Test Loss        : {mean_run2_loss:.4f}")
+
+    # 3. Canonical Historical Run 2 Reference (from Run 2 certificate)
+    run2_canonical_historical = {
+        "candidate_count": 809,
+        "overall_accuracy": 0.8888,
+        "balanced_accuracy": 0.7172,
+        "macro_f1": 0.7413,
+        "test_loss": 0.5312,
+        "per_class": {
+            "Lying": {"precision": 0.9634, "recall": 0.9472, "f1": 0.9552, "support": 284},
+            "Feeding": {"precision": 0.8931, "recall": 0.9538, "f1": 0.9225, "support": 281},
+            "Drinking": {"precision": 0.8254, "recall": 0.8615, "f1": 0.8430, "support": 58},
+            "Standing": {"precision": 0.7785, "recall": 0.7585, "f1": 0.7684, "support": 160},
+            "Walking": {"precision": 0.2500, "recall": 0.1923, "f1": 0.2174, "support": 26, "note": "CVB-only"},
+        },
+        "dataset_breakdown": {
+            "cvb": {"overall_accuracy": 0.8412, "balanced_accuracy": 0.6402, "macro_f1": 0.6541, "support": 381},
+            "beef_cattle_behavior": {"overall_accuracy": 0.9406, "balanced_accuracy": 0.8988, "macro_f1": 0.9113, "support": 428},
+        },
+    }
+
+    # 4. Deltas & Structured Report
+    comparison = {
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "matched_sample_count": len(retained_test_df),
+        "run2_canonical_historical": run2_canonical_historical,
+        "run2_matched_subset": {
+            "overall_accuracy": run2_matched_metrics["overall_accuracy"],
+            "balanced_accuracy": run2_matched_metrics["balanced_accuracy"],
+            "macro_f1": run2_matched_metrics["macro_f1"],
+            "test_loss": round(mean_run2_loss, 4),
+            "per_class": run2_matched_metrics["per_class"],
+            "cvb_metrics": run2_matched_metrics["cvb_metrics"],
+            "beef_metrics": run2_matched_metrics["beef_metrics"],
+            "confusion_matrix": run2_matched_metrics["confusion_matrix"],
+        },
+        "run5_perception_tcn_matched_subset": {
+            "overall_accuracy": run5_metrics["overall_accuracy"],
+            "balanced_accuracy": run5_metrics["balanced_accuracy"],
+            "macro_f1": run5_metrics["macro_f1"],
+            "test_loss": round(run5_loss, 4),
+            "per_class": run5_metrics["per_class"],
+            "cvb_metrics": run5_metrics["cvb_metrics"],
+            "beef_metrics": run5_metrics["beef_metrics"],
+            "confusion_matrix": run5_metrics["confusion_matrix"],
+        },
+        "matched_delta_run5_minus_run2": {
+            "overall_accuracy": round(run5_metrics["overall_accuracy"] - run2_matched_metrics["overall_accuracy"], 4),
+            "balanced_accuracy": round(run5_metrics["balanced_accuracy"] - run2_matched_metrics["balanced_accuracy"], 4),
+            "macro_f1": round(run5_metrics["macro_f1"] - run2_matched_metrics["macro_f1"], 4),
+            "test_loss": round(run5_loss - mean_run2_loss, 4),
+            "per_class_f1_delta": {
+                c: round(run5_metrics["per_class"][c]["f1"] - run2_matched_metrics["per_class"][c]["f1"], 4)
+                for c in CANONICAL_CLASSES
+            },
+        },
+    }
+
+    # Save JSON metrics
+    metrics_path = output_dir / "run5_test_evaluation_metrics.json"
+    with open(metrics_path, "w", encoding="utf-8") as f:
+        json.dump(run5_metrics, f, indent=2)
+
+    comp_path = output_dir / "run2_vs_run5_matched_comparison.json"
+    with open(comp_path, "w", encoding="utf-8") as f:
+        json.dump(comparison, f, indent=2)
+
+    # Generate Markdown Table Report
+    md_path = output_dir / "run2_vs_run5_matched_comparison.md"
+    d_acc = comparison["matched_delta_run5_minus_run2"]["overall_accuracy"] * 100
+    d_bal = comparison["matched_delta_run5_minus_run2"]["balanced_accuracy"] * 100
+    d_f1 = comparison["matched_delta_run5_minus_run2"]["macro_f1"]
+
+    md_content = f"""# Phase 3 Run 5 vs Run 2 Matched Behavior Test Comparison
+
+**Evaluation Date:** {comparison['timestamp']}  
+**Matched Test Sample Count:** {len(retained_test_df)} (from 809 canonical candidates)
+
+---
+
+## 1. High-Level Performance Comparison
+
+| Metric | Run 2 RGB Full (Historical) | Run 2 RGB Matched (N={len(retained_test_df)}) | Run 5 Perception+TCN (N={len(retained_test_df)}) | Delta (Run 5 - Run 2 Matched) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Overall Accuracy** | {run2_canonical_historical['overall_accuracy']*100:.2f}% | {run2_matched_metrics['overall_accuracy']*100:.2f}% | **{run5_metrics['overall_accuracy']*100:.2f}%** | **{d_acc:+.2f}%** |
+| **Balanced Accuracy** | {run2_canonical_historical['balanced_accuracy']*100:.2f}% | {run2_matched_metrics['balanced_accuracy']*100:.2f}% | **{run5_metrics['balanced_accuracy']*100:.2f}%** | **{d_bal:+.2f}%** |
+| **Macro-F1** | {run2_canonical_historical['macro_f1']:.4f} | {run2_matched_metrics['macro_f1']:.4f} | **{run5_metrics['macro_f1']:.4f}** | **{d_f1:+.4f}** |
+| **Test Loss** | {run2_canonical_historical['test_loss']:.4f} | {mean_run2_loss:.4f} | **{run5_loss:.4f}** | **{comparison['matched_delta_run5_minus_run2']['test_loss']:+.4f}** |
+
+---
+
+## 2. Per-Class F1 Score Comparison (Matched Subset)
+
+| Behavior Class | Run 2 RGB Matched F1 | Run 5 Perception+TCN F1 | Delta (Run 5 - Run 2) | Support |
+| :--- | :--- | :--- | :--- | :--- |
+"""
+    for c in CANONICAL_CLASSES:
+        f1_r2 = run2_matched_metrics["per_class"][c]["f1"]
+        f1_r5 = run5_metrics["per_class"][c]["f1"]
+        delta_f = f1_r5 - f1_r2
+        sup = run5_metrics["per_class"][c]["support"]
+        flag = " *(CVB-only)*" if c == "Walking" else ""
+        md_content += f"| **{c}**{flag} | {f1_r2:.4f} | **{f1_r5:.4f}** | **{delta_f:+.4f}** | {sup} |\n"
+
+    md_content += f"""
+---
+
+## 3. Dataset Source Breakdown (Matched Subset)
+
+| Dataset | Metric | Run 2 RGB Matched | Run 5 Perception+TCN |
+| :--- | :--- | :--- | :--- |
+| **CVB (Barn CCTV, Multi-Cow)** | Accuracy | {run2_matched_metrics['cvb_metrics']['overall_accuracy']*100:.2f}% | **{run5_metrics['cvb_metrics']['overall_accuracy']*100:.2f}%** |
+| | Macro-F1 | {run2_matched_metrics['cvb_metrics']['macro_f1']:.4f} | **{run5_metrics['cvb_metrics']['macro_f1']:.4f}** |
+| **Kaggle Beef (Single-Cow Clips)** | Accuracy | {run2_matched_metrics['beef_metrics']['overall_accuracy']*100:.2f}% | **{run5_metrics['beef_metrics']['overall_accuracy']*100:.2f}%** |
+| | Macro-F1 | {run2_matched_metrics['beef_metrics']['macro_f1']:.4f} | **{run5_metrics['beef_metrics']['macro_f1']:.4f}** |
+
+---
+*Generated automatically by Phase 3 Run 5 Test Evaluation Suite.*
+"""
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write(md_content)
+
+    print(f"[*] Comparison report saved to {md_path}")
+    print(f"[*] Comparison JSON saved to {comp_path}")
+    return comparison
 
 
 # ==============================================================================
