@@ -1,3 +1,15 @@
+# Session Summary — 2026-09-24 (Run 6 SideViewCows2026 GT-Mask Perception-Enhanced Re-ID Local Smoke)
+
+- Objective: Prepare Phase 3 Run 6 as a controlled GT/oracle segmentation-guided SideViewCows2026 Re-ID representation and execute only a tiny local GTX 1050 Ti smoke test.
+- Coordination: Preserved Gemini's complete Run 5 Behavior perception commit and appended Run 6 bookkeeping without replacing any shared-file updates.
+- Implementation: Added `scripts/train_sideview_reid_perception.py`, reusing Run 3 path/retrieval utilities. Each SideView GT target mask yields a 5%-margin crop applied identically to RGB and mask; bilinear RGB and nearest-neighbor mask resize produce `[R,G,B,binary_mask]` at 224x224. RGB receives ImageNet normalization; mask remains float `{0,1}`; RGB is not multiplied by mask.
+- Controlled architecture: Run 3 ResNet-18 -> 512-D unit-L2 embedding -> `Linear(512,41)` retained. Only conv1 expands 3->4 channels; fourth-channel weights use the pretrained RGB-kernel mean. Trainable params: 11,200,681 vs 11,197,545 (+3,136).
+- Local smoke command: `python scripts/train_sideview_reid_perception.py --smoke --smoke-samples 64 --epochs 2 --batch-size 8 --workers 0 --output-dir artifacts/reid_perception_smoke`.
+- Verification: 64 train + 64 val images; 128/128 RGB-mask pairs valid; 0 invalid; crop alignment/in-bounds checks passed; mask remained binary; input `[8,4,224,224]`; raw features and embeddings `[8,512]`; logits `[8,41]`; embedding norms 0.99999994-1.0; finite forward/backward/loss; checkpoint reload bit-identical with max logit difference 0.
+- Isolation: All accessed identities belonged to the 41 representation-learning cows. Protocol A held-out gallery, barn query, and snapshot query images loaded/evaluated: 0.
+- Artifacts: `artifacts/reid_perception_smoke/reid_perception_smoke_metrics.json`, `docs/audits/assets/reid_perception_smoke/gt_mask_crop_contact_sheet.jpg`, and `docs/research_log/2026-09-24_sideviewcows2026_gt_mask_reid_perception_smoke.md`.
+- Boundary: Run 6 is smoke-certified only. No Modal job, full 30-epoch training, held-out Protocol A retrieval evaluation, or MTL run was launched.
+
 # Session Summary — 2026-09-24 (Run 5 Real Behavior Perception Integration: T=8 RGB + SAM 2.1 Mask -> 4-Channel ResNet18 + TCN Smoke Test)
 
 - Convo ID: `540530b4-9a5f-4d20-b0aa-fe673856f004`

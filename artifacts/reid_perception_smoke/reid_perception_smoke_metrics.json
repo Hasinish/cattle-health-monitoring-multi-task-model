@@ -1,0 +1,482 @@
+{
+  "task": "run6_sideview_gt_mask_perception_reid",
+  "status": "smoke_certified_full_training_pending",
+  "representation": {
+    "condition": "GT/oracle segmentation-guided Re-ID representation",
+    "automatic_deployment_pipeline": false,
+    "mask_source": "SideViewCows2026 target-cow ground truth",
+    "crop_source": "bounding box derived from the same GT target-cow mask",
+    "crop_margin_fraction": 0.05,
+    "rgb_mask_crop_coordinates_identical": true,
+    "rgb_normalization": "ImageNet",
+    "mask_normalization": "none; binary float {0,1}",
+    "rgb_multiplied_by_mask": false
+  },
+  "hardware": {
+    "device": "cuda",
+    "gpu_name": "NVIDIA GeForce GTX 1050 Ti"
+  },
+  "protocol": {
+    "canonical_train_images": 12753,
+    "canonical_val_images": 2683,
+    "representation_learning_cows": 41,
+    "held_out_evaluation_cows": 69,
+    "smoke_train_images": 64,
+    "smoke_val_images": 64,
+    "smoke_unique_cows_accessed": 39,
+    "accessed_cows_subset_of_41_training_cows": true,
+    "held_out_images_loaded": 0
+  },
+  "integrity": {
+    "pairs_verified": 128,
+    "invalid_pairs": 0,
+    "all_rgb_paths_exist": true,
+    "all_mask_paths_exist": true,
+    "all_masks_nonempty": true,
+    "all_crops_in_bounds": true,
+    "all_rgb_mask_crop_coordinates_identical": true,
+    "all_resized_masks_binary": true,
+    "example_records": [
+      {
+        "cow_id": "565",
+        "recording_id": "parlor_cow_0565_sess_004",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\565\\565_0083.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\565\\565_0083.png",
+        "original_size_wh": [
+          708,
+          564
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          9,
+          708,
+          462
+        ],
+        "crop_size_wh_before_resize": [
+          708,
+          453
+        ],
+        "foreground_pixels": 163740,
+        "foreground_fraction": 0.41005529510758504,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "507",
+        "recording_id": "parlor_cow_0507_sess_006",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\507\\507_0069.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\507\\507_0069.png",
+        "original_size_wh": [
+          705,
+          560
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          705,
+          548
+        ],
+        "crop_size_wh_before_resize": [
+          705,
+          548
+        ],
+        "foreground_pixels": 209871,
+        "foreground_fraction": 0.5315881458966565,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "545",
+        "recording_id": "parlor_cow_0545_sess_010",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\545\\545_0198.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\545\\545_0198.png",
+        "original_size_wh": [
+          1006,
+          546
+        ],
+        "crop_box_xyxy_exclusive": [
+          23,
+          0,
+          881,
+          537
+        ],
+        "crop_size_wh_before_resize": [
+          858,
+          537
+        ],
+        "foreground_pixels": 229090,
+        "foreground_fraction": 0.41707629679796676,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "565",
+        "recording_id": "parlor_cow_0565_sess_004",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\565\\565_0073.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\565\\565_0073.png",
+        "original_size_wh": [
+          847,
+          555
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          847,
+          555
+        ],
+        "crop_size_wh_before_resize": [
+          847,
+          555
+        ],
+        "foreground_pixels": 240772,
+        "foreground_fraction": 0.5121882212791303,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "442",
+        "recording_id": "parlor_cow_0442_sess_017",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\442\\442_0219.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\442\\442_0219.png",
+        "original_size_wh": [
+          793,
+          577
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          793,
+          577
+        ],
+        "crop_size_wh_before_resize": [
+          793,
+          577
+        ],
+        "foreground_pixels": 221545,
+        "foreground_fraction": 0.484186807879168,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "209",
+        "recording_id": "parlor_cow_0209_sess_004",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\209\\209_0086.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\209\\209_0086.png",
+        "original_size_wh": [
+          609,
+          539
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          609,
+          539
+        ],
+        "crop_size_wh_before_resize": [
+          609,
+          539
+        ],
+        "foreground_pixels": 125642,
+        "foreground_fraction": 0.3827619717837874,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_011",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\144\\144_0267.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\144\\144_0267.png",
+        "original_size_wh": [
+          934,
+          521
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          934,
+          521
+        ],
+        "crop_size_wh_before_resize": [
+          934,
+          521
+        ],
+        "foreground_pixels": 263293,
+        "foreground_fraction": 0.5410715680190048,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "405",
+        "recording_id": "parlor_cow_0405_sess_003",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\405\\405_0028.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\405\\405_0028.png",
+        "original_size_wh": [
+          869,
+          507
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          869,
+          507
+        ],
+        "crop_size_wh_before_resize": [
+          869,
+          507
+        ],
+        "foreground_pixels": 268724,
+        "foreground_fraction": 0.609928208759757,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      }
+    ],
+    "crop_width_range_before_resize": [
+      508,
+      2431
+    ],
+    "crop_height_range_before_resize": [
+      362,
+      1092
+    ]
+  },
+  "contact_sheet": {
+    "path": "artifacts\\reid_perception_smoke\\gt_mask_crop_contact_sheet.jpg",
+    "examples": 6,
+    "rows": [
+      {
+        "cow_id": "244",
+        "recording_id": "parlor_cow_0244_sess_043",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\244\\244_0774.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\244\\244_0774.png",
+        "original_size_wh": [
+          728,
+          515
+        ],
+        "crop_box_xyxy_exclusive": [
+          37,
+          0,
+          728,
+          487
+        ],
+        "crop_size_wh_before_resize": [
+          691,
+          487
+        ],
+        "foreground_pixels": 152193,
+        "foreground_fraction": 0.4059345993812013
+      },
+      {
+        "cow_id": "934",
+        "recording_id": "parlor_cow_0934_sess_017",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\934\\934_0252.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\934\\934_0252.png",
+        "original_size_wh": [
+          914,
+          506
+        ],
+        "crop_box_xyxy_exclusive": [
+          4,
+          0,
+          914,
+          506
+        ],
+        "crop_size_wh_before_resize": [
+          910,
+          506
+        ],
+        "foreground_pixels": 212893,
+        "foreground_fraction": 0.460325113949888
+      },
+      {
+        "cow_id": "887",
+        "recording_id": "parlor_cow_0887_sess_057",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\887\\887_0970.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\887\\887_0970.png",
+        "original_size_wh": [
+          789,
+          481
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          789,
+          481
+        ],
+        "crop_size_wh_before_resize": [
+          789,
+          481
+        ],
+        "foreground_pixels": 211892,
+        "foreground_fraction": 0.5583319499669309
+      },
+      {
+        "cow_id": "796",
+        "recording_id": "parlor_cow_0796_sess_015",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\796\\796_0317.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\796\\796_0317.png",
+        "original_size_wh": [
+          794,
+          524
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          794,
+          524
+        ],
+        "crop_size_wh_before_resize": [
+          794,
+          524
+        ],
+        "foreground_pixels": 239134,
+        "foreground_fraction": 0.5747639740804122
+      },
+      {
+        "cow_id": "887",
+        "recording_id": "parlor_cow_0887_sess_050",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\887\\887_0846.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\887\\887_0846.png",
+        "original_size_wh": [
+          815,
+          377
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          815,
+          377
+        ],
+        "crop_size_wh_before_resize": [
+          815,
+          377
+        ],
+        "foreground_pixels": 215256,
+        "foreground_fraction": 0.7005776960505118
+      },
+      {
+        "cow_id": "887",
+        "recording_id": "parlor_cow_0887_sess_048",
+        "subset": "parlor",
+        "image_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\images\\887\\887_0807.jpg",
+        "mask_path": "datasets\\id\\external\\sideviewcows2026\\parlor\\masks\\887\\887_0807.png",
+        "original_size_wh": [
+          945,
+          444
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          14,
+          945,
+          444
+        ],
+        "crop_size_wh_before_resize": [
+          945,
+          430
+        ],
+        "foreground_pixels": 298899,
+        "foreground_fraction": 0.7123766623766624
+      }
+    ]
+  },
+  "shape_checks": {
+    "input_shape": [
+      8,
+      4,
+      224,
+      224
+    ],
+    "raw_feature_shape": [
+      8,
+      512
+    ],
+    "embedding_shape": [
+      8,
+      512
+    ],
+    "logits_shape": [
+      8,
+      41
+    ],
+    "embedding_norm_min": 0.9999999403953552,
+    "embedding_norm_max": 1.0
+  },
+  "parameter_counts": {
+    "run3_rgb_trainable_parameters": 11197545,
+    "run6_rgb_mask_trainable_parameters": 11200681,
+    "fourth_channel_parameter_difference": 3136
+  },
+  "training": {
+    "epochs": 2,
+    "batch_size": 8,
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 3.9235,
+        "train_top1_acc": 3.12,
+        "val_loss": 3.6387,
+        "val_top1_acc": 3.12,
+        "val_bal_acc": 0.95,
+        "val_macro_f1": 0.0129,
+        "lr": 5.05e-05,
+        "duration_sec": 6.8
+      },
+      {
+        "epoch": 2,
+        "train_loss": 2.8123,
+        "train_top1_acc": 29.69,
+        "val_loss": 3.4641,
+        "val_top1_acc": 10.94,
+        "val_bal_acc": 7.73,
+        "val_macro_f1": 0.0547,
+        "lr": 1e-06,
+        "duration_sec": 4.25
+      }
+    ],
+    "total_training_time_sec": 11.98,
+    "loss_finite": true,
+    "backward_pass_verified": true
+  },
+  "total_pipeline_runtime_sec": 16.96,
+  "checkpoint_reload": {
+    "checkpoint_saved": true,
+    "bit_identical_logits": true,
+    "max_logit_difference": 0.0
+  },
+  "protocol_a_retrieval": {
+    "status": "NOT_LOADED_OR_EVALUATED_IN_SMOKE_MODE",
+    "gallery_loaded": false,
+    "query_barn_loaded": false,
+    "query_snapshots_loaded": false
+  },
+  "git_sha_at_execution": "0899983cfae400db3a89bc291adac1a19e77b7c2",
+  "timestamp": "2026-09-24 01:38:04"
+}
