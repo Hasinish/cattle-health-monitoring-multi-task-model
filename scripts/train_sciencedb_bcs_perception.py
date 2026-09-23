@@ -43,6 +43,11 @@ import concurrent.futures
 from pathlib import Path, PureWindowsPath
 from typing import Dict, Tuple, List, Optional
 import cv2
+cv2.setNumThreads(0)
+try:
+    cv2.ocl.setUseOpenCL(False)
+except Exception:
+    pass
 from tqdm import tqdm
 
 import numpy as np
@@ -221,13 +226,25 @@ class ScienceDBPerceptionDataset(Dataset):
         self.cached_targets: Optional[torch.Tensor] = None
         self.cached_raw_labels: Optional[torch.Tensor] = None
 
-        if self.preload_ram and len(self.samples) > 0:
+        split_name = self.manifest_path.stem.replace("_perception", "")
+        packed_path = self.cache_dir / "packed" / f"{split_name}_bcs_224.pt"
+
+        if packed_path.exists() and (max_samples is None or max_samples >= len(self.samples)):
+            t0 = time.time()
+            print(f"[*] Found pre-packed dataset at {packed_path}. Loading directly into RAM...", flush=True)
+            payload = torch.load(packed_path, map_location="cpu", weights_only=False)
+            self.cached_tensors = payload["tensors"]
+            self.cached_targets = payload["targets"]
+            self.cached_raw_labels = payload["raw_labels"]
+            elapsed = time.time() - t0
+            mb = (self.cached_tensors.element_size() * self.cached_tensors.nelement()) / (1024 * 1024)
+            print(f"[*] Pre-packed {split_name} loaded: {len(self.cached_tensors)} samples ({mb:.1f} MB) in {elapsed:.1f}s ({mb/max(0.1, elapsed):.1f} MB/s)!", flush=True)
+        elif self.preload_ram and len(self.samples) > 0:
             self._preload_into_ram(num_workers=num_preload_workers)
 
-    def _preload_into_ram(self, num_workers: int = 64):
+    def _preload_into_ram(self, num_workers: int = 16):
         t0 = time.time()
         split_name = self.manifest_path.stem.replace("_perception", "")
-        desc = f"Preloading {split_name} into RAM"
         N = len(self.samples)
         cached_data = np.empty((N, 4, self.image_size, self.image_size), dtype=np.uint8)
 
@@ -254,9 +271,18 @@ class ScienceDBPerceptionDataset(Dataset):
             cached_data[idx, :3] = rgb_224.transpose(2, 0, 1)
             cached_data[idx, 3] = mask_bin
 
-        workers = max(1, min(num_workers, 64))
+        workers = max(1, min(num_workers, 16))
+        print(f"[*] Preloading {split_name} ({N} samples) with {workers} workers...", flush=True)
+
+        log_interval = max(500, N // 20)
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
-            list(tqdm(ex.map(_load_single, range(N)), total=N, desc=desc, ncols=80, file=sys.stdout))
+            futures = [ex.submit(_load_single, i) for i in range(N)]
+            for i, fut in enumerate(concurrent.futures.as_completed(futures), 1):
+                fut.result()
+                if i % log_interval == 0 or i == N:
+                    elapsed = time.time() - t0
+                    rate = i / max(0.1, elapsed)
+                    print(f"  [RAM Preload] {split_name}: {i:,} / {N:,} ({i/N*100:.1f}%) | {elapsed:.1f}s | {rate:.1f} img/s", flush=True)
 
         self.cached_tensors = torch.from_numpy(cached_data)
         self.cached_targets = torch.tensor([s[2] for s in self.samples], dtype=torch.long)
@@ -875,6 +901,129 @@ def evaluate_test_split(
     print("=" * 75)
 
     return comparison_summary
+
+
+def pack_perception_cache(
+    manifest_dir: Path,
+    cache_dir: Path,
+    splits: List[str] = ["train", "val", "test"],
+    image_size: int = 224,
+    num_workers: int = 16,
+) -> Dict:
+    """
+    Pack raw perception crops and masks into compact, monolithic .pt files:
+      {cache_dir}/packed/{split}_bcs_224.pt
+    This bypasses all FUSE network roundtrips during training and enables instant 10s RAM loading.
+    """
+    import gc
+    manifest_dir = Path(manifest_dir)
+    cache_dir = Path(cache_dir)
+    packed_dir = cache_dir / "packed"
+    packed_dir.mkdir(parents=True, exist_ok=True)
+
+    results = {}
+    print("\n" + "=" * 75)
+    print("  SCIENTEDB PERCEPTION DATASET PACKING ENGINE")
+    print(f"  Manifest Dir: {manifest_dir}")
+    print(f"  Cache Dir:    {cache_dir}")
+    print(f"  Packed Dir:   {packed_dir}")
+    print(f"  Splits:       {splits}")
+    print(f"  Workers:      {num_workers}")
+    print("=" * 75)
+
+    for split in splits:
+        manifest_p = manifest_dir / f"{split}_perception.csv"
+        if not manifest_p.exists():
+            print(f"[!] Manifest not found for split '{split}' at {manifest_p}. Skipping.", flush=True)
+            continue
+
+        out_path = packed_dir / f"{split}_bcs_224.pt"
+        if out_path.exists():
+            print(f"[*] Packed file for '{split}' already exists at {out_path}. Skipping.", flush=True)
+            try:
+                payload = torch.load(out_path, map_location="cpu", weights_only=False)
+                results[split] = {"status": "already_exists", "samples": len(payload["tensors"]), "path": str(out_path)}
+            except Exception:
+                pass
+            continue
+
+        df = pd.read_csv(manifest_p)
+        valid_mask = (df["detection_status"] == "detected") & (df["sam_status"] == "segmented")
+        df_valid = df[valid_mask].copy().reset_index(drop=True)
+        N = len(df_valid)
+        print(f"\n[*] Processing split '{split}': {N} valid samples (from {len(df)} canonical rows)...", flush=True)
+
+        samples = []
+        for idx, row in df_valid.iterrows():
+            crop_p = cache_dir / str(row["crop_rel_path"])
+            mask_p = cache_dir / str(row["mask_rel_path"])
+            raw_label = float(row["label"])
+            target_idx = LABEL_TO_IDX[raw_label]
+            samples.append((str(crop_p), str(mask_p), target_idx, raw_label, str(row["image_path"])))
+
+        cached_data = np.empty((N, 4, image_size, image_size), dtype=np.uint8)
+
+        def _load_one(idx: int):
+            crop_path, mask_path, _, _, _ = samples[idx]
+            crop_bgr = cv2.imread(crop_path, cv2.IMREAD_COLOR)
+            if crop_bgr is None:
+                raise IOError(f"Failed to read crop at {crop_path}")
+            if crop_bgr.shape[0] != image_size or crop_bgr.shape[1] != image_size:
+                crop_224 = cv2.resize(crop_bgr, (image_size, image_size), interpolation=cv2.INTER_LINEAR)
+            else:
+                crop_224 = crop_bgr
+            rgb_224 = cv2.cvtColor(crop_224, cv2.COLOR_BGR2RGB)
+
+            mask_gray = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
+            if mask_gray is None:
+                raise IOError(f"Failed to read mask at {mask_path}")
+            if mask_gray.shape[0] != image_size or mask_gray.shape[1] != image_size:
+                mask_224 = cv2.resize(mask_gray, (image_size, image_size), interpolation=cv2.INTER_NEAREST)
+            else:
+                mask_224 = mask_gray
+            mask_bin = (mask_224 > 127).astype(np.uint8)
+
+            cached_data[idx, :3] = rgb_224.transpose(2, 0, 1)
+            cached_data[idx, 3] = mask_bin
+
+        t0 = time.time()
+        workers = max(1, min(num_workers, 16))
+        log_interval = max(500, N // 20)
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as ex:
+            futures = [ex.submit(_load_one, i) for i in range(N)]
+            for i, fut in enumerate(concurrent.futures.as_completed(futures), 1):
+                fut.result()
+                if i % log_interval == 0 or i == N:
+                    elapsed = time.time() - t0
+                    rate = i / max(0.1, elapsed)
+                    print(f"  [Packing {split}] {i:,} / {N:,} ({i/N*100:.1f}%) | {elapsed:.1f}s | {rate:.1f} img/s", flush=True)
+
+        tensors = torch.from_numpy(cached_data)
+        targets = torch.tensor([s[2] for s in samples], dtype=torch.long)
+        raw_labels = torch.tensor([s[3] for s in samples], dtype=torch.float32)
+
+        payload = {
+            "tensors": tensors,
+            "targets": targets,
+            "raw_labels": raw_labels,
+            "split": split,
+            "num_samples": N,
+        }
+        print(f"[*] Saving packed {split} tensor to {out_path}...", flush=True)
+        torch.save(payload, out_path)
+        elapsed_total = time.time() - t0
+        mb = out_path.stat().st_size / (1024 * 1024)
+        print(f"✓ Packed {split}: {N} samples ({mb:.1f} MB) in {elapsed_total:.1f}s -> {out_path}", flush=True)
+
+        results[split] = {"status": "packed", "samples": N, "size_mb": round(mb, 1), "elapsed_s": round(elapsed_total, 1), "path": str(out_path)}
+        del cached_data, tensors, targets, raw_labels, payload
+        gc.collect()
+
+    print("\n" + "=" * 75)
+    print("  PACKING COMPLETE FOR ALL REQUESTED SPLITS")
+    print("=" * 75)
+    return results
 
 
 def train_pipeline(

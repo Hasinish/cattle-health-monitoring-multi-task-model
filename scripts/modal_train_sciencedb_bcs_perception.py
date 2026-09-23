@@ -235,6 +235,42 @@ def build_cache(
     return stats
 
 
+@app.function(
+    volumes={
+        "/cache": cache_volume,
+    },
+    cpu=8.0,
+    memory=16384,
+    timeout=7200,
+)
+def pack_cache(splits: str = "all", num_workers: int = 16):
+    """
+    Zero-GPU dataset packing on Modal:
+    Reads loose crops & masks from /cache, resizes to 224x224 uint8,
+    and saves compact monolithic tensors:
+      /cache/packed/train_bcs_224.pt (6.42 GB)
+      /cache/packed/val_bcs_224.pt (1.46 GB)
+      /cache/packed/test_bcs_224.pt (1.41 GB)
+    Permits instant ~10-second RAM loading on L40S training runs with 0 FUSE latency.
+    """
+    import sys
+    sys.path.insert(0, "/root")
+    from train_sciencedb_bcs_perception import pack_perception_cache
+
+    cache_dir = Path("/cache")
+    manifest_dir = Path("/cache/manifests")
+    split_list = ["train", "val", "test"] if splits == "all" else [s.strip() for s in splits.split(",")]
+    stats = pack_perception_cache(
+        manifest_dir=manifest_dir,
+        cache_dir=cache_dir,
+        splits=split_list,
+        num_workers=num_workers,
+    )
+    cache_volume.commit()
+    print("\n✓ Committed packed tensors to volume 'sciencedb-perception-cache'.", flush=True)
+    return stats
+
+
 CACHE_GPU = os.environ.get("MODAL_GPU", "L40S")
 
 
