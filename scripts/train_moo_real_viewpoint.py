@@ -34,7 +34,6 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8")
 
-import cv2
 import numpy as np
 import pandas as pd
 from PIL import Image

@@ -22,10 +22,20 @@ import os
 import sys
 from pathlib import Path
 
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8")
-if hasattr(sys.stderr, "reconfigure"):
-    sys.stderr.reconfigure(encoding="utf-8")
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+    _orig_commonpath = os.path.commonpath
+
+    def _safe_commonpath(paths):
+        try:
+            return _orig_commonpath(paths)
+        except ValueError:
+            return ""
+
+    os.path.commonpath = _safe_commonpath
 
 try:
     import modal
