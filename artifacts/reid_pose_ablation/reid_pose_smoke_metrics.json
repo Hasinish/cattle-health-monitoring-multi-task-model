@@ -4,10 +4,10 @@
   "epochs": 2,
   "best_epoch": 2,
   "best_val_metrics": {
-    "val_loss": 3.481,
-    "val_top1_acc": 26.56,
-    "val_bal_acc": 15.75,
-    "val_macro_f1": 0.0904
+    "val_loss": 3.5274,
+    "val_top1_acc": 21.88,
+    "val_bal_acc": 13.05,
+    "val_macro_f1": 0.0825
   },
   "trainable_parameters": {
     "visual_backbone_trainable_parameters": 11179648,
@@ -18,28 +18,35 @@
   "checkpoint_reload_max_logit_diff": 0.0,
   "checkpoint_reload_max_emb_diff": 0.0,
   "test_protocol_a_evaluated": false,
+  "held_out_images_loaded": 0,
+  "retrieval_evaluation": {
+    "status": "NOT_LOADED_OR_EVALUATED_IN_SMOKE_MODE",
+    "gallery_loaded": false,
+    "query_barn_loaded": false,
+    "query_snapshots_loaded": false
+  },
   "history": [
     {
       "epoch": 1,
-      "train_loss": 3.8432,
-      "train_top1_acc": 1.56,
-      "val_loss": 3.5774,
-      "val_top1_acc": 23.44,
-      "val_bal_acc": 12.08,
-      "val_macro_f1": 0.0678,
-      "duration_s": 3.9
+      "train_loss": 3.8871,
+      "train_top1_acc": 3.12,
+      "val_loss": 3.634,
+      "val_top1_acc": 18.75,
+      "val_bal_acc": 9.52,
+      "val_macro_f1": 0.0381,
+      "duration_s": 3.6
     },
     {
       "epoch": 2,
-      "train_loss": 2.3362,
-      "train_top1_acc": 73.44,
-      "val_loss": 3.481,
-      "val_top1_acc": 26.56,
-      "val_bal_acc": 15.75,
-      "val_macro_f1": 0.0904,
-      "duration_s": 3.22
+      "train_loss": 2.9132,
+      "train_top1_acc": 43.75,
+      "val_loss": 3.5274,
+      "val_top1_acc": 21.88,
+      "val_bal_acc": 13.05,
+      "val_macro_f1": 0.0825,
+      "duration_s": 3.33
     }
   ],
   "best_checkpoint_path": "/checkpoints/sideview_reid_pose_smoke/reid_pose_smoke_best.pth",
-  "duration_total_s": 59.64
+  "duration_total_s": 48.3
 }

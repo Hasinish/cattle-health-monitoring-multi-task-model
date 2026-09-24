@@ -86,8 +86,15 @@ To ensure modularity and prevent disrupting the established Run 6 visual represe
    - Concatenation: $f_{\text{fused}} = [f_{\text{vis}}, f_{\text{pose}}] \in \mathbb{R}^{576}$.
    - Retrieval Embedding: $e_{\text{norm}} = f_{\text{fused}} / \|f_{\text{fused}}\|_2 \in \mathbb{R}^{576}$.
    - Classification Head: `Linear(576, 41)` for the 41 training identities (23,657 parameters).
-5. **Data Augmentation Guardrail**:
-   - Horizontal random flipping is **disabled** for the pose ablation dataset loader to preserve bilateral limb asymmetry and left/right limb identity.
+5. **Pose-Aware Horizontal Flip Augmentation (Matched to Run 6)**:
+   - When training augmentation is selected, random horizontal flip (`p=0.5`) is synchronized across RGB, GT-mask, and the 156-D pose vector.
+   - For valid keypoints (`is_valid > 0`), coordinate inversion is applied: $x_{\text{norm}} \leftarrow 1.0 - x_{\text{norm}}$.
+   - Anatomically corresponding left/right keypoint entries are swapped according to the official 39-keypoint SuperAnimal-Quadruped ontology:
+     - 13 paired keypoint pairs (26 landmarks): mouth, eyes, ear bases, ear ends, antler bases, antler ends, front paws/knees/thighs, back paws/knees/thighs, body sides.
+     - 13 midline landmarks: nose, upper/lower jaw, neck, throat, back, tail, belly (inverted in $x$, no index swap).
+   - Validity flags and confidences remain strictly attached to the swapped anatomical landmark.
+   - Invalid keypoints (`is_valid == 0.0`) maintain zero coordinates without inversion.
+   - Exact mathematical involution: double-flip test passes with error $< 3 \times 10^{-8}$ (exact identity up to float32 precision).
 
 ---
 
@@ -101,8 +108,8 @@ To ensure modularity and prevent disrupting the established Run 6 visual represe
 
 ---
 
-## 7. Cloud Smoke Certification Results (`tigerwood697`)
-The cloud readiness verification and 2-epoch smoke test were executed on Modal (`tigerwood697`, Tesla T4 GPU, App `ap-B5uJTFPiFJmYqxPAHJqXgS`):
+## 7. Cloud Smoke Re-Certification Results (`tigerwood697`)
+The corrected cloud readiness verification and 2-epoch smoke test were executed on Modal (`tigerwood697`, Tesla T4 GPU, Apps `ap-L0keucsaa7m0jGvi81qpUF` and `ap-I2IRCiELlWDKXfZG3YFWOX`):
 
 1. **Readiness Verification (`verify_readiness`)**:
    - Dataset root `/data/sideviewcows2026`: 80,260 images + 80,260 masks confirmed.
@@ -110,15 +117,18 @@ The cloud readiness verification and 2-epoch smoke test were executed on Modal (
    - Held-out Protocol A: 69 cows, 0 overlap with training cows.
    - Checkpoint volume `/checkpoints`: Writable probe passed.
    - Forward pass shapes: Logits `[2, 41]`, Embeddings `[2, 576]`, Unit L2 Norm = 1.000000 confirmed.
+   - Pose flip involution: Double-flip difference = `2.98023224e-08`, within `[0, 1]` bounds = True confirmed.
 2. **Smoke Execution (`smoke_test`)**:
-   - Pose precomputation on active subset (64 train + 64 val = 128 samples): completed in 35.65s.
-   - Epoch 1: Train Loss 3.8432 (Acc 1.56%) -> Val Loss 3.5774 (Acc 23.44%, Macro-F1 0.0678).
-   - Epoch 2: Train Loss 2.3362 (Acc 73.44%) -> Val Loss 3.4810 (Acc 26.56%, Macro-F1 0.0904).
-   - Checkpoint Reload Bit-Identity Check:
+   - Pose precomputation on active subset (64 train + 64 val = 128 samples): completed in 26.30s, persisted to `/checkpoints/sideview_reid_pose_smoke/pose_cache_smoke.pt` and committed to volume.
+   - Synchronized pose-aware horizontal flipping active during training.
+   - Epoch 1: Train Loss 3.8871 (Acc 3.12%) -> Val Loss 3.6340 (Acc 18.75%, Macro-F1 0.0381).
+   - Epoch 2: Train Loss 2.9132 (Acc 43.75%) -> Val Loss 3.5274 (Acc 21.88%, Macro-F1 0.0825).
+   - Checkpoint Reload Bit-Identity Check (Best -> Fresh Model):
      - `max_logit_diff = 0.00000000`
      - `max_emb_diff = 0.00000000`
-   - Test Protocol A Evaluation: `false` (Protocol A strictly untouched).
-   - Container Total Duration: 59.64s.
+   - Test Protocol A Evaluation: `false` (Protocol A strictly untouched, 0 held-out images loaded).
+   - Full Protocol A retrieval evaluation gate implemented and verified via unit tests (`evaluate_retrieval_chunked` for Barn and Snapshots against Parlor Gallery).
+   - Full training remote function upgraded to NVIDIA L40S (`gpu="L40S"`, `timeout=14400`, `cpu=8.0`, `memory=32768`) with persistent caching on `/checkpoints/sideview_pose_cache/pose_features_v1.pt`.
 
 ---
 
@@ -127,7 +137,7 @@ Before launching the full 30-epoch training run, the following domain-specific s
 1. **16% Upstream Pose Failure Rate**: The provisional SuperAnimal-Quadruped detector missed 16% of cow crops. The pipeline handles this robustly via the `is_valid=0.0` indicator and zero-vector fallback, but the model must learn to rely on the visual stream whenever pose is missing.
 2. **Quadruped Foundation Prior Mismatch**: Several keypoints in the 39-point ontology (e.g., `right_antler_end`, `left_antler_end`) stem from deer/cervid training sets. On domestic Holstein/Jersey cattle, these keypoints produce arbitrary or low-confidence predictions (~0.24).
 3. **No Direct Ground Truth**: There are no human-labeled keypoint annotations in SideViewCows2026. Therefore, pose cannot be fine-tuned or evaluated independently for keypoint error (PCK/mAP); it can only be assessed downstream via identity classification and Protocol A cross-camera retrieval.
-4. **Precomputation Trade-Off**: For the full dataset (15,436 train+val crops), on-the-fly pose extraction inside the DataLoader is computationally prohibitive and prone to CUDA worker forks. A precomputation pass takes ~1.1 hours on an L40S/T4 GPU before the 30-epoch training loop begins, or can be run once and saved to persistent volume storage.
+4. **Persistent Caching Advantage**: Full-dataset pose extraction (15,436 train+val crops + 62,678 Protocol A crops) takes ~35 minutes on NVIDIA L40S. Persistent volume caching to `/checkpoints/sideview_pose_cache/pose_features_v1.pt` with periodic commits ensures extraction is never lost across container restarts.
 
 ---
 
@@ -135,6 +145,7 @@ Before launching the full 30-epoch training run, the following domain-specific s
 - **Training Script**: `scripts/train_sideview_reid_pose.py`
 - **Modal Cloud Wrapper**: `scripts/modal_train_sideview_reid_pose.py`
 - **Pose Feasibility Audit Script**: `scripts/audit_sideview_pose_feasibility.py`
+- **Unit Test Suite**: `tests/test_reid_pose_ablation.py` (9/9 unit tests passing)
 - **Pose Feasibility Metrics JSON**: `artifacts/reid_pose_ablation/pose_feasibility_metrics.json`
 - **Pose Keypoints Summary CSV**: `artifacts/reid_pose_ablation/pose_keypoints_summary.csv`
 - **Pose Visual Contact Sheet**: `artifacts/reid_pose_ablation/sideview_pose_contact_sheet.jpg`

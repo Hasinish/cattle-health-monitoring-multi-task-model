@@ -1,3 +1,15 @@
+# Session Summary — 2026-09-25 (SideViewCows2026 Re-ID + Pose Ablation 4 Fixes, Unit Testing & Cloud Re-Smoke Certified on tigerwood697)
+
+- Convo ID: 1ae0178f-f005-4d37-b48a-79da87176a1f
+- Objective: Fix 3 review issues + cloud configuration on the existing SideViewCows2026 Re-ID + SuperAnimal Pose ablation on Modal profile `tigerwood697` and re-smoke-certify without launching full training.
+- Accomplishments & Verification:
+  1. Fix 1 — Full-Mode Protocol A Retrieval Evaluation Implemented: Implemented post-training Protocol A retrieval gate evaluating Parlor Gallery (36,811 imgs), Barn Queries (25,260 imgs), and Snapshot Queries (607 imgs) across 69 unseen cows. Extracts fused 576-D embeddings via `extract_dataset_embeddings_pose` and computes Rank-1, Rank-5, Rank-10, and mAP via `evaluate_retrieval_chunked`. Smoke mode strictly preserves zero-evaluation protocol (`test_protocol_a_evaluated: false`, 0 held-out images accessed).
+  2. Fix 2 — Checkpoint Reload Determinism Corrected: Re-architected checkpoint verification to load the saved best validation checkpoint into the reference model before fresh model instantiation, guaranteeing exact state comparison regardless of best epoch vs final epoch (`max_logit_diff == 0.00000000`, `max_emb_diff == 0.00000000`).
+  3. Fix 3 — Synchronized Pose-Aware Horizontal Flipping: Mapped all 13 left/right keypoint pairs (26 landmarks) and 13 midline landmarks from the official 39-keypoint SuperAnimal schema. Valid coordinates inverted ($x \to 1.0 - x$), confidences/validity attached to swapped keypoints, invalid points preserved at 0.0. Proven via unit tests as an exact mathematical involution (double-flip error $< 3 \times 10^{-8}$). Synchronized with RGB and mask flip (`p=0.5`).
+  4. Fix 4 — Modal L40S & Persistent Pose Caching: Upgraded full training function to `gpu="L40S"`, `timeout=14400`, `cpu=8.0, memory=32768`. Persistent pose caching configured on `/checkpoints/sideview_pose_cache/pose_features_v1.pt` with volume commit callbacks.
+  5. Unit Test Suite Built: Created `tests/test_reid_pose_ablation.py` with 9 exhaustive unit tests; all 9 passed in 1.02s.
+  6. Remote Cloud Readiness & Re-Smoke Certification: Dispatched `verify_readiness_remote` (`ap-L0keucsaa7m0jGvi81qpUF`) and `smoke_test_remote` (`ap-I2IRCiELlWDKXfZG3YFWOX`) on Modal profile `tigerwood697` (Tesla T4). Parameters verified at 11,232,041 (+0.28% vs Run 6), pose flip involution verified, bit-identical reload verified (`max_logit_diff == 0.00000000`), 0 held-out images accessed. Full 30-epoch training was NOT launched in strict adherence to user stop condition. Manual launch command provided.
+
 # Session Summary — 2026-09-25 (SideViewCows2026 Re-ID + Viewpoint Ablation Preparation, Sanity Audit & Smoke Certification Complete)
 
 - Convo ID: d8e9e1e7-a18c-4189-93ca-3407e10bc833

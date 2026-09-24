@@ -30,7 +30,7 @@ import random
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -86,6 +86,44 @@ NUM_SUPERANIMAL_KEYPOINTS = 39
 POSE_FEATURE_DIM = NUM_SUPERANIMAL_KEYPOINTS * 4  # 156 (x, y, conf, is_valid)
 POSE_EMBEDDING_DIM = 64
 FUSED_EMBEDDING_DIM = 512 + POSE_EMBEDDING_DIM  # 576
+
+# Exact paired SuperAnimal-Quadruped keypoints derived from official 39-keypoint ontology
+# (artifacts/perception_audit/superanimal_quadruped_schema.json):
+# 13 pairs = 26 paired landmarks. Remaining 13 are midline landmarks (x -> 1.0 - x, no swap).
+SUPERANIMAL_FLIP_PAIRS: List[Tuple[int, int]] = [
+    (3, 4),    # mouth_end_right <-> mouth_end_left
+    (5, 10),   # right_eye <-> left_eye
+    (6, 11),   # right_earbase <-> left_earbase
+    (7, 12),   # right_earend <-> left_earend
+    (8, 13),   # right_antler_base <-> left_antler_base
+    (9, 14),   # right_antler_end <-> left_antler_end
+    (24, 27),  # front_left_thai <-> front_right_thai
+    (25, 28),  # front_left_knee <-> front_right_knee
+    (26, 29),  # front_left_paw <-> front_right_paw
+    (30, 35),  # back_left_paw <-> back_right_paw
+    (31, 32),  # back_left_thai <-> back_right_thai
+    (33, 34),  # back_left_knee <-> back_right_knee
+    (37, 38),  # body_middle_right <-> body_middle_left
+]
+
+
+def flip_pose_vector(pose_vec: np.ndarray) -> np.ndarray:
+    """Pose-aware horizontal flip transform for 156-D SuperAnimal feature vector.
+
+    1. Transforms every valid x coordinate: x_norm = 1.0 - x_norm (clamped to [0.0, 1.0]).
+    2. Swaps anatomically corresponding left/right keypoint quadruplets:
+       [x_norm, y_norm, confidence, is_valid].
+    3. Non-paired midline landmarks retain their keypoint index and only transform x_norm.
+    4. Invalid landmarks (is_valid == 0.0) retain x_norm == 0.0 and are not inverted to 1.0.
+
+    Double-flip is an exact mathematical involution: flip(flip(v)) == v.
+    """
+    kpts = pose_vec.reshape(NUM_SUPERANIMAL_KEYPOINTS, 4).copy()
+    valid_mask = kpts[:, 3] > 0.0
+    kpts[valid_mask, 0] = np.clip(1.0 - kpts[valid_mask, 0], 0.0, 1.0)
+    for idx_a, idx_b in SUPERANIMAL_FLIP_PAIRS:
+        kpts[[idx_a, idx_b]] = kpts[[idx_b, idx_a]]
+    return kpts.reshape(POSE_FEATURE_DIM)
 
 
 # ==============================================================================
@@ -253,11 +291,23 @@ class SideViewReIDPoseDataset(Dataset):
         }
         return img_crop, mask_crop, metadata
 
-    def _to_tensor(self, img_crop: Image.Image, mask_crop: Image.Image, apply_aug: bool) -> torch.Tensor:
+    def _to_tensor(
+        self,
+        img_crop: Image.Image,
+        mask_crop: Image.Image,
+        pose_vec: np.ndarray,
+        apply_aug: bool,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         img_resized = img_crop.resize((self.image_size, self.image_size), resample=RESAMPLE_BILINEAR)
         mask_resized = mask_crop.resize((self.image_size, self.image_size), resample=RESAMPLE_NEAREST)
 
-        # Do NOT apply horizontal flip to pose-guided Re-ID to preserve left/right limb asymmetry
+        pose_vec_out = pose_vec.copy()
+        # Synchronized pose-aware horizontal flip matching Run 6
+        if apply_aug and random.random() < 0.5:
+            img_resized = TF.hflip(img_resized)
+            mask_resized = TF.hflip(mask_resized)
+            pose_vec_out = flip_pose_vector(pose_vec_out)
+
         if apply_aug:
             img_resized = self.color_jitter(img_resized)
 
@@ -267,12 +317,13 @@ class SideViewReIDPoseDataset(Dataset):
         mask_np = (np.asarray(mask_resized) > 0).astype(np.float32)
         mask_tensor = torch.from_numpy(mask_np).unsqueeze(0)
 
-        return torch.cat([rgb_tensor, mask_tensor], dim=0)
+        image_tensor = torch.cat([rgb_tensor, mask_tensor], dim=0)
+        pose_tensor = torch.from_numpy(pose_vec_out).to(torch.float32)
+        return image_tensor, pose_tensor
 
     def __getitem__(self, idx: int) -> Tuple[torch.Tensor, torch.Tensor, int, str]:
         rec = self.records[idx]
         img_crop, mask_crop, meta = self._load_source(idx)
-        img_tensor = self._to_tensor(img_crop, mask_crop, apply_aug=self.augment)
 
         # Retrieve pose feature vector
         raw_path = rec["raw_image_path"]
@@ -284,7 +335,9 @@ class SideViewReIDPoseDataset(Dataset):
         else:
             pose_vec = np.zeros(POSE_FEATURE_DIM, dtype=np.float32)
 
-        pose_tensor = torch.from_numpy(pose_vec.copy()).to(torch.float32)
+        img_tensor, pose_tensor = self._to_tensor(
+            img_crop, mask_crop, pose_vec, apply_aug=self.augment
+        )
         return img_tensor, pose_tensor, rec["label"], rec["cow_id"]
 
 
@@ -418,21 +471,71 @@ def evaluate_validation_pose(
     }
 
 
-def precompute_pose_features_subset(
+@torch.no_grad()
+def extract_dataset_embeddings_pose(
+    model: ResNet18ReIDPoseAblation,
+    loader: DataLoader,
+    device: torch.device,
+    desc: str = "Extracting Embeddings",
+) -> Tuple[torch.Tensor, List[str]]:
+    """Extracts 576-D L2-normalized fused embeddings and cow IDs for a DataLoader."""
+    model.eval()
+    all_embeddings: List[torch.Tensor] = []
+    all_ids: List[str] = []
+
+    pbar = tqdm(loader, desc=desc, leave=False, file=sys.stdout, mininterval=1.0)
+    for vis_x, pose_x, _, cow_ids in pbar:
+        vis_x = vis_x.to(device)
+        pose_x = pose_x.to(device)
+        _, norm_embs = model(vis_x, pose_x)
+        all_embeddings.append(norm_embs.cpu())
+        all_ids.extend(cow_ids)
+
+    cat_embs = torch.cat(all_embeddings, dim=0)
+    return cat_embs, all_ids
+
+
+def precompute_pose_features(
     df: pd.DataFrame,
     data_root: Path,
     device_str: str = "cuda",
+    cache_path: Optional[Path] = None,
+    save_interval: int = 500,
+    on_cache_update: Optional[Callable[[], None]] = None,
 ) -> Dict[str, np.ndarray]:
-    """Pre-extracts 156-D pose vectors for a subset of samples to avoid GPU contention."""
-    extractor = SuperAnimalPoseFeatureExtractor(device=device_str)
-    pose_dict: Dict[str, np.ndarray] = {}
+    """Pre-extracts or loads 156-D pose vectors for all samples in df.
 
-    print(f"[*] Pre-computing SuperAnimal pose features for {len(df)} samples...")
+    Supports persistent resumable caching:
+    - If cache_path exists, loads precomputed features.
+    - Only extracts missing rows (samples not in cache).
+    - Periodically saves incremental progress to cache_path and calls on_cache_update.
+    """
+    pose_dict: Dict[str, np.ndarray] = {}
+    if cache_path is not None and cache_path.exists():
+        try:
+            print(f"[*] Loading precomputed pose cache from: {cache_path}")
+            pose_dict = torch.load(cache_path, map_location="cpu", weights_only=False)
+            print(f"[OK] Loaded {len(pose_dict)} cached pose features.")
+        except Exception as e:
+            print(f"[WARNING] Failed to load cache from {cache_path}: {e}. Starting fresh.")
+            pose_dict = {}
+
+    missing_df = df[~df["image_path"].isin(pose_dict.keys())].copy()
+    if len(missing_df) == 0:
+        print(f"[OK] All {len(df)} requested samples already exist in pose cache!")
+        return pose_dict
+
+    print(
+        f"[*] Pre-computing SuperAnimal pose features for {len(missing_df)} missing samples "
+        f"(out of {len(df)} total requested)..."
+    )
+    extractor = SuperAnimalPoseFeatureExtractor(device=device_str)
     t0 = time.time()
-    for _, row in tqdm(df.iterrows(), total=len(df), desc="Precomputing Pose"):
+    extracted_count = 0
+
+    for idx, (_, row) in enumerate(tqdm(missing_df.iterrows(), total=len(missing_df), desc="Precomputing Pose")):
         raw_img = str(row["image_path"])
         raw_mask = str(row["mask_path"])
-        cow_id = str(row["individual_id"])
 
         img_p = resolve_sideview_image_path(raw_img, data_root)
         mask_p = resolve_sideview_image_path(raw_mask, data_root)
@@ -440,20 +543,38 @@ def precompute_pose_features_subset(
             pose_dict[raw_img] = np.zeros(POSE_FEATURE_DIM, dtype=np.float32)
             continue
 
-        with Image.open(img_p) as im:
-            rgb_im = im.convert("RGB")
-        with Image.open(mask_p) as mk:
-            mask_gray = mk.convert("L")
+        try:
+            with Image.open(img_p) as im:
+                rgb_im = im.convert("RGB")
+            with Image.open(mask_p) as mk:
+                mask_gray = mk.convert("L")
 
-        mask_np = np.asarray(mask_gray) > 0
-        crop_box = _mask_bbox_with_margin(mask_np, margin_fraction=0.05)
-        crop_rgb_np = np.asarray(rgb_im.crop(crop_box))
+            mask_np = np.asarray(mask_gray) > 0
+            crop_box = _mask_bbox_with_margin(mask_np, margin_fraction=0.05)
+            crop_rgb_np = np.asarray(rgb_im.crop(crop_box))
 
-        vec = extractor.extract_crop_pose_feature(crop_rgb_np)
-        pose_dict[raw_img] = vec
+            vec = extractor.extract_crop_pose_feature(crop_rgb_np)
+            pose_dict[raw_img] = vec
+            extracted_count += 1
+        except Exception:
+            pose_dict[raw_img] = np.zeros(POSE_FEATURE_DIM, dtype=np.float32)
 
-    print(f"[OK] Precomputed {len(pose_dict)} pose features in {time.time() - t0:.2f}s")
-    # Clean up extractor memory
+        # Periodic checkpointing
+        if cache_path is not None and (extracted_count % save_interval == 0):
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(pose_dict, cache_path)
+            if on_cache_update is not None:
+                on_cache_update()
+
+    # Final save
+    if cache_path is not None and extracted_count > 0:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save(pose_dict, cache_path)
+        if on_cache_update is not None:
+            on_cache_update()
+        print(f"[OK] Persisted {len(pose_dict)} pose features to {cache_path}")
+
+    print(f"[OK] Completed extraction in {time.time() - t0:.2f}s")
     del extractor
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -474,6 +595,7 @@ def train_sideview_reid_pose(
     smoke: bool = False,
     smoke_samples: int = 64,
     pose_cache_path: Optional[Path] = None,
+    on_cache_update: Optional[Callable[[], None]] = None,
 ) -> Dict[str, Any]:
     t_start = time.perf_counter()
     random.seed(seed)
@@ -489,7 +611,7 @@ def train_sideview_reid_pose(
 
     print("\n" + "=" * 76)
     print("SIDEVIEWCOWS2026 RE-ID + SUPERANIMAL POSE ABLATION TRAINING")
-    print(f"Mode: {'SMOKE TEST (TRAIN/VAL ONLY)' if smoke else 'FULL ABLATION TRAINING'}")
+    print(f"Mode: {'SMOKE TEST (TRAIN/VAL ONLY)' if smoke else 'FULL ABLATION TRAINING + PROTOCOL A EVALUATION'}")
     print(f"Device: {device} ({torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'})")
     print(f"Epochs: {epochs} | Batch Size: {batch_size} | Seed: {seed}")
     print("Architecture: 4-Channel ResNet-18 (512-D) + Pose MLP (156->64) -> Fused (576-D)")
@@ -523,18 +645,16 @@ def train_sideview_reid_pose(
     print(f"[OK] Training cows: {len(train_cows)} | Train samples: {len(df_train)} | Val samples: {len(df_val)}")
     cow_to_label = {c: i for i, c in enumerate(train_cows)}
 
-    # 2. Pose Feature Preparation
-    pose_dict: Dict[str, np.ndarray] = {}
-    if pose_cache_path is not None and pose_cache_path.exists():
-        print(f"[*] Loading precomputed pose cache from: {pose_cache_path}")
-        pose_dict = torch.load(pose_cache_path, map_location="cpu", weights_only=False)
-        print(f"[OK] Loaded {len(pose_dict)} cached pose features.")
-    else:
-        # Precompute pose features for the active train + val subset
-        combined_df = pd.concat([df_train, df_val], ignore_index=True)
-        pose_dict = precompute_pose_features_subset(
-            combined_df, data_root=data_root, device_str=str(device)
-        )
+    # 2. Pose Feature Preparation (Train + Val)
+    combined_train_val = pd.concat([df_train, df_val], ignore_index=True)
+    pose_dict = precompute_pose_features(
+        df=combined_train_val,
+        data_root=data_root,
+        device_str=str(device),
+        cache_path=pose_cache_path,
+        save_interval=500,
+        on_cache_update=on_cache_update,
+    )
 
     # 3. Datasets and Loaders
     train_dataset = SideViewReIDPoseDataset(
@@ -644,13 +764,17 @@ def train_sideview_reid_pose(
                 best_checkpoint_path,
             )
 
-    # 6. Checkpoint Determinism & Reload Verification
-    print("\n[*] Verifying Checkpoint Reload Determinism...")
+    # 6. Checkpoint Determinism & Reload Verification (FIX 2: Best -> Fresh Model)
+    print("\n[*] Verifying Checkpoint Reload Determinism (Best Checkpoint -> Fresh Model)...")
     ckpt = torch.load(best_checkpoint_path, map_location=device, weights_only=False)
+    # Load exact saved best checkpoint into active model
+    model.load_state_dict(ckpt["model_state_dict"])
+    model.eval()
+
+    # Instantiate fresh model and load exact same checkpoint
     fresh_model = ResNet18ReIDPoseAblation(num_classes=41, pretrained=False).to(device)
     fresh_model.load_state_dict(ckpt["model_state_dict"])
     fresh_model.eval()
-    model.eval()
 
     sample_vis, sample_pose, _, _ = next(iter(val_loader))
     sample_vis = sample_vis.to(device)
@@ -659,16 +783,116 @@ def train_sideview_reid_pose(
     with torch.no_grad():
         out_orig, emb_orig = model(sample_vis, sample_pose)
         out_fresh, emb_fresh = fresh_model(sample_vis, sample_pose)
-        diff_logits = (out_orig - out_fresh).abs().max().item()
-        diff_embs = (emb_orig - emb_fresh).abs().max().item()
+        diff_logits = float((out_orig - out_fresh).abs().max().item())
+        diff_embs = float((emb_orig - emb_fresh).abs().max().item())
 
     print(f"[OK] Bit-Identical Reload Verification: Max Logit Diff = {diff_logits:.8f}, Max Emb Diff = {diff_embs:.8f}")
-    if diff_logits > 1e-6:
-        raise AssertionError(f"Checkpoint reload produced divergent outputs: {diff_logits}")
+    if diff_logits != 0.0 or diff_embs != 0.0:
+        raise AssertionError(
+            f"Checkpoint reload produced divergent outputs: diff_logits={diff_logits}, diff_embs={diff_embs}"
+        )
 
     # Verify unit-L2 norm
     l2_norms = torch.norm(emb_orig, p=2, dim=1).cpu().numpy()
     print(f"[OK] Embedding L2 Norm Min: {l2_norms.min():.6f}, Max: {l2_norms.max():.6f} (Expected: 1.000000)")
+
+    # 7. Protocol A Retrieval Evaluation Gate (FIX 1)
+    retrieval_results: Dict[str, Any]
+    held_out_images_loaded = 0
+    if smoke:
+        test_protocol_a_evaluated = False
+        print("\n[*] Smoke Mode: Protocol A Held-Out Cows Strictly Untouched (0 images loaded/evaluated).")
+        retrieval_results = {
+            "status": "NOT_LOADED_OR_EVALUATED_IN_SMOKE_MODE",
+            "gallery_loaded": False,
+            "query_barn_loaded": False,
+            "query_snapshots_loaded": False,
+        }
+    else:
+        test_protocol_a_evaluated = True
+        print(f"\n[*] Full Mode: Loading Best Checkpoint from Epoch {ckpt['epoch']} for Protocol A Evaluation...")
+        model.load_state_dict(ckpt["model_state_dict"])
+        model.eval()
+
+        gallery_df = df_a[df_a["setting_role"] == "gallery"].reset_index(drop=True)
+        barn_df = df_a[df_a["setting_role"] == "query_barn"].reset_index(drop=True)
+        snapshots_df = df_a[df_a["setting_role"] == "query_snapshots"].reset_index(drop=True)
+        held_out_images_loaded = len(gallery_df) + len(barn_df) + len(snapshots_df)
+
+        print(f"[*] Constructing Protocol A Sets ({held_out_images_loaded:,} images across {len(eval_cows)} unseen cows):")
+        print(f"    - Parlor Gallery:   {len(gallery_df):,} images")
+        print(f"    - Barn Queries:     {len(barn_df):,} images")
+        print(f"    - Snapshot Queries: {len(snapshots_df):,} images")
+
+        proto_a_df = pd.concat([gallery_df, barn_df, snapshots_df], ignore_index=True)
+        pose_dict = precompute_pose_features(
+            df=proto_a_df,
+            data_root=data_root,
+            device_str=str(device),
+            cache_path=pose_cache_path,
+            save_interval=500,
+            on_cache_update=on_cache_update,
+        )
+
+        dummy_label_map = {c: 0 for c in eval_cows}
+        gallery_dataset = SideViewReIDPoseDataset(
+            df=gallery_df,
+            data_root=data_root,
+            cow_to_label=dummy_label_map,
+            augment=False,
+            pose_dict=pose_dict,
+        )
+        barn_dataset = SideViewReIDPoseDataset(
+            df=barn_df,
+            data_root=data_root,
+            cow_to_label=dummy_label_map,
+            augment=False,
+            pose_dict=pose_dict,
+        )
+        snapshots_dataset = SideViewReIDPoseDataset(
+            df=snapshots_df,
+            data_root=data_root,
+            cow_to_label=dummy_label_map,
+            augment=False,
+            pose_dict=pose_dict,
+        )
+
+        gallery_loader = DataLoader(gallery_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        barn_loader = DataLoader(barn_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        snapshots_loader = DataLoader(snapshots_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+
+        gallery_features, gallery_ids = extract_dataset_embeddings_pose(
+            model, gallery_loader, device, desc="Gallery Parlor Embeddings"
+        )
+        barn_features, barn_ids = extract_dataset_embeddings_pose(
+            model, barn_loader, device, desc="Query Barn Embeddings"
+        )
+        snapshot_features, snapshot_ids = extract_dataset_embeddings_pose(
+            model, snapshots_loader, device, desc="Query Snapshots Embeddings"
+        )
+
+        print("[*] Evaluating Protocol A Retrieval (Barn -> Parlor)...")
+        barn_eval = evaluate_retrieval_chunked(
+            query_features=barn_features,
+            query_ids=barn_ids,
+            gallery_features=gallery_features,
+            gallery_ids=gallery_ids,
+        )
+        print("[*] Evaluating Protocol A Retrieval (Snapshots -> Parlor)...")
+        snapshots_eval = evaluate_retrieval_chunked(
+            query_features=snapshot_features,
+            query_ids=snapshot_ids,
+            gallery_features=gallery_features,
+            gallery_ids=gallery_ids,
+            chunk_size=607,
+        )
+
+        retrieval_results = {
+            "query_barn": barn_eval,
+            "query_snapshots": snapshots_eval,
+        }
+        print(f"[OK] Protocol A Barn -> Parlor: Rank-1 = {barn_eval['rank_1']:.2f}%, mAP = {barn_eval['mAP']:.2f}%")
+        print(f"[OK] Protocol A Snapshots -> Parlor: Rank-1 = {snapshots_eval['rank_1']:.2f}%, mAP = {snapshots_eval['mAP']:.2f}%")
 
     metrics_out = {
         "status": "SMOKE_CERTIFIED" if smoke else "TRAINING_COMPLETE",
@@ -679,7 +903,9 @@ def train_sideview_reid_pose(
         "trainable_parameters": param_counts,
         "checkpoint_reload_max_logit_diff": diff_logits,
         "checkpoint_reload_max_emb_diff": diff_embs,
-        "test_protocol_a_evaluated": False,  # Held-out cows strictly untouched
+        "test_protocol_a_evaluated": test_protocol_a_evaluated,
+        "held_out_images_loaded": held_out_images_loaded,
+        "retrieval_evaluation": retrieval_results,
         "history": history,
         "best_checkpoint_path": str(best_checkpoint_path),
         "duration_total_s": round(time.perf_counter() - t_start, 2),

@@ -183,7 +183,13 @@ def verify_readiness_remote() -> Dict[str, Any]:
     import sys
     sys.path.insert(0, "/root")
     sys.path.insert(0, "/root/scripts")
-    from scripts.train_sideview_reid_pose import ResNet18ReIDPoseAblation, get_parameter_counts
+    from scripts.train_sideview_reid_pose import (
+        ResNet18ReIDPoseAblation,
+        get_parameter_counts,
+        flip_pose_vector,
+        SUPERANIMAL_FLIP_PAIRS,
+        NUM_SUPERANIMAL_KEYPOINTS,
+    )
 
     dev_str = "cuda" if cuda_avail else "cpu"
     model = ResNet18ReIDPoseAblation(num_classes=41, pretrained=False).to(dev_str)
@@ -198,12 +204,29 @@ def verify_readiness_remote() -> Dict[str, Any]:
     print(f"[*] Model Shapes Check: Logits={logits.shape}, Embs={embs.shape} | L2 Norm: {norms} | Pass: {shapes_ok and norm_ok}")
     print(f"[*] Exact Parameters: Total = {params['total_trainable_parameters']:,} (Visual: {params['visual_backbone_trainable_parameters']:,}, Pose: {params['pose_mlp_trainable_parameters']:,}, Cls: {params['classifier_trainable_parameters']:,})")
 
+    # 6. Pose Flip Involution Check
+    rng = np.random.RandomState(42)
+    test_vec = rng.uniform(0.0, 1.0, size=(156,)).astype(np.float32)
+    flipped = flip_pose_vector(test_vec)
+    double_flipped = flip_pose_vector(flipped)
+    involution_diff = float(np.max(np.abs(test_vec - double_flipped)))
+    involution_ok = (involution_diff < 1e-6)
+    in_bounds = bool((flipped >= 0.0).all() and (flipped <= 1.0).all())
+    print(f"[*] Pose Flip Involution Check: Double-Flip Diff={involution_diff:.8e}, In Bounds={in_bounds} | Pass: {involution_ok and in_bounds}")
+
     report["checks"]["model_tensor_shapes"] = {
         "passed": shapes_ok and norm_ok,
         "logits_shape": list(logits.shape),
         "embedding_shape": list(embs.shape),
         "unit_l2_norm_verified": bool(norm_ok),
         "trainable_parameters": params,
+    }
+    report["checks"]["pose_flip_involution"] = {
+        "passed": involution_ok and in_bounds,
+        "double_flip_max_diff": involution_diff,
+        "in_bounds": in_bounds,
+        "num_paired_keypoints": len(SUPERANIMAL_FLIP_PAIRS) * 2,
+        "total_keypoints": NUM_SUPERANIMAL_KEYPOINTS,
     }
 
     all_passed = all(c["passed"] for c in report["checks"].values())
@@ -218,7 +241,7 @@ def verify_readiness_remote() -> Dict[str, Any]:
 @app.function(
     gpu="T4",
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
-    timeout=600,
+    timeout=900,
     cpu=4.0,
     memory=16384,
 )
@@ -231,6 +254,7 @@ def smoke_test_remote() -> Dict[str, Any]:
 
     out_dir = Path("/checkpoints/sideview_reid_pose_smoke")
     out_dir.mkdir(parents=True, exist_ok=True)
+    smoke_cache = out_dir / "pose_cache_smoke.pt"
 
     metrics = train_sideview_reid_pose(
         data_root=Path("/data/sideviewcows2026"),
@@ -242,6 +266,8 @@ def smoke_test_remote() -> Dict[str, Any]:
         weight_decay=1e-4,
         smoke=True,
         smoke_samples=64,
+        pose_cache_path=smoke_cache,
+        on_cache_update=checkpoint_vol.commit,
     )
 
     checkpoint_vol.commit()
@@ -252,11 +278,11 @@ def smoke_test_remote() -> Dict[str, Any]:
 # 3. FULL 30-EPOCH TRAINING ENTRYPOINT (DEFERRED FOR MANUAL LAUNCH)
 # ==============================================================================
 @app.function(
-    gpu="T4",  # Configurable
+    gpu="L40S",  # Upgraded to L40S per FIX 4
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
-    timeout=7200,
-    cpu=4.0,
-    memory=16384,
+    timeout=14400,
+    cpu=8.0,
+    memory=32768,
 )
 def train_full_remote(epochs: int = 30, batch_size: int = 64) -> Dict[str, Any]:
     import sys
@@ -267,6 +293,8 @@ def train_full_remote(epochs: int = 30, batch_size: int = 64) -> Dict[str, Any]:
 
     out_dir = Path("/checkpoints/sideview_reid_pose_ablation")
     out_dir.mkdir(parents=True, exist_ok=True)
+    persistent_cache = Path("/checkpoints/sideview_pose_cache/pose_features_v1.pt")
+    persistent_cache.parent.mkdir(parents=True, exist_ok=True)
 
     metrics = train_sideview_reid_pose(
         data_root=Path("/data/sideviewcows2026"),
@@ -277,6 +305,8 @@ def train_full_remote(epochs: int = 30, batch_size: int = 64) -> Dict[str, Any]:
         lr=1e-4,
         weight_decay=1e-4,
         smoke=False,
+        pose_cache_path=persistent_cache,
+        on_cache_update=checkpoint_vol.commit,
     )
 
     checkpoint_vol.commit()
