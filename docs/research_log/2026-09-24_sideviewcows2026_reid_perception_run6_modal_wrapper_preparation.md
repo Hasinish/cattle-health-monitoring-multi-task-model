@@ -124,14 +124,32 @@ reid_perception_image = (
 
 ---
 
-## 6. Execution Commands for User
+## 6. Cloud Smoke Certification on Modal (dryousufmozumder)
 
-All cloud executions are deferred to the user:
+The cloud smoke test was successfully executed by Hasin Ishrak on Modal profile `dryousufmozumder`:
+- **Modal App**: `https://modal.com/apps/dryousufmozumder/main/ap-v5tXW7gFoCZM916zlHMDVQ`
+- **GPU**: NVIDIA Tesla T4
+- **Exit Code**: 0 (Clean exit)
+- **Status**: `ALL CLOUD SMOKE CRITERIA CERTIFIED ✅`
+- **Duration**: ~2.67s per epoch
+- **Logit Reload Verification**: `max_logit_difference == 0.00000000` (Bit-identical checkpoint reload certified)
+- **Protocol A Isolation**: `Protocol A gallery/query images loaded: 0` (Held-out evaluation cows strictly untouched)
+- **Checkpoints**: Successfully committed to `/checkpoints/sideview_reid_perception_smoke/` on persistent volume `reid-checkpoints`
 
+---
+
+## 7. Execution Commands for User
+
+### Smoke & Readiness Commands (Verified):
 ```powershell
 # 1. Readiness Verification (No-training dataset and protocol audit)
 modal run --profile dryousufmozumder scripts/modal_train_sideview_reid_perception.py::verify_readiness
 
-# 2. Cheap T4 Cloud Smoke Test (2 epochs, train/val only, held-out untouched)
+# 2. Cheap T4 Cloud Smoke Test (2 epochs, train/val only, held-out untouched) — CERTIFIED PASS ✅
 modal run --profile dryousufmozumder scripts/modal_train_sideview_reid_perception.py::smoke_test
+```
+
+### Full 30-Epoch Training Command (When Ready):
+```powershell
+modal run --detach --profile dryousufmozumder scripts/modal_train_sideview_reid_perception.py::main --epochs 30 --batch-size 64
 ```
