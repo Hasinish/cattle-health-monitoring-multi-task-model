@@ -1,0 +1,73 @@
+{
+  "workspace_profile": "hasinishrak2015",
+  "staging_git_sha": "73537f341a74d05b1733d37a47d90dd9fa196754",
+  "volumes": {
+    "data_volume": "mtl-data",
+    "checkpoints_volume": "mtl-checkpoints"
+  },
+  "audit_timestamp": "2026-09-24T16:54:39Z",
+  "sources": {
+    "bcs": {
+      "source_profile": "tigerwood697",
+      "source_volume": "sciencedb-perception-cache",
+      "source_files": [
+        "train_bcs_224.pt",
+        "val_bcs_224.pt",
+        "train_perception.csv",
+        "val_perception.csv"
+      ]
+    },
+    "behavior": {
+      "source_profile": "tigerwood693",
+      "source_volume": "behavior-perception-cache",
+      "source_archive": "behavior_retained.tar"
+    },
+    "reid": {
+      "source_dataset": "SideViewCows2026",
+      "zenodo_record": "21605650",
+      "source_archive": "parlor.zip"
+    }
+  },
+  "tasks": {
+    "bcs": {
+      "train_samples": 34369,
+      "val_samples": 7817,
+      "tensor_shape": [
+        4,
+        224,
+        224
+      ],
+      "train_pt_bytes": 6898410531,
+      "val_pt_bytes": 1568999173,
+      "train_pt_sha256": "b45b3b14e871381b88de59ba542a72ad67287bb92278b16de7ce4ac69ed2818a",
+      "val_pt_sha256": "3be6daace45b051f9bf51a594f7fd02290fe16c9221cfdda7abb704a6a522da0",
+      "total_bytes": 8479338436
+    },
+    "behavior": {
+      "train_sequences": 3641,
+      "val_sequences": 630,
+      "total_sequences": 4271,
+      "total_frames": 34168,
+      "total_masks": 34168,
+      "total_bytes": 625585369,
+      "archive_sha256": "c50bc36c853c8dc722dbc118c2bf08646eb28a1bad1c8ec37719a11d6a20ecc3",
+      "train_val_disjoint": true
+    },
+    "reid": {
+      "train_pairs": 12753,
+      "val_pairs": 2683,
+      "total_pairs": 15436,
+      "total_files": 30872,
+      "unique_cows": 41,
+      "held_out_cow_overlap": 0,
+      "total_bytes": 2713968698
+    }
+  },
+  "leakage_checks": {
+    "bcs_test_absent": true,
+    "behavior_test_absent": true,
+    "reid_evaluation_subsets_absent": true,
+    "reid_held_out_cow_overlap": 0
+  },
+  "status": "CERTIFIED_READY_FOR_MTL"
+}
