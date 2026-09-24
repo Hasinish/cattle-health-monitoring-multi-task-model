@@ -1,6 +1,6 @@
 \begin{table}[htbp]
 \centering\small
-\caption[Evidence-linked design decisions]{Evidence-linked decisions and pending final choices.\evidence{E01,E02,E04,E06,E11,E13}}\label{tab:decisions}
+\caption[Evidence-led design decisions]{Design decisions established before the final MTL experiments.\evidence{E01,E04,E06,E11,E13,E24,E27,E29,E31}}\label{tab:decisions}
 \begin{tabularx}{\textwidth}{lYY}
 \toprule
 Question & Evidence & Disposition \\
@@ -8,10 +8,12 @@ Question & Evidence & Disposition \\
 ScienceDB grouping & Identity semantics and overlap audit & Repaired burst groups. \\
 Behavior source & Dense-video/provenance audit & CVB + Beef; MmCows external. \\
 Re-ID source & MultiCam access blocker & Approved SideView contingency. \\
-Localization & Return/latency comparison & RT-DETR-L provisional. \\
-BCS pose & Unreliable reviewed rear views & Acceptance unresolved. \\
-Viewpoint & Poor real diagnostic transfer & No accepted generator. \\
-MTL sharing & Full E1/E3 evidence absent & Pending empirical choice. \\
+BCS representation & Matched Run 1/4 comparison & RT-DETR crop + binary SAM mask channel retained. \\
+Behavior representation & Matched Run 2/5 comparison & Eight-frame RGB+mask + lightweight Conv1D retained. \\
+Re-ID representation & Protocol A Run 3/6 comparison & Oracle GT crop+mask used as upper-bound condition. \\
+Pose & Unreliable reviewed rear views & Excluded from Runs 4--6. \\
+Viewpoint & Separate held-out result; transfer unverified & Not fused into Runs 4--6. \\
+MTL sharing & Runs 7/8 not executed & Hard sharing vs modular design remains pending. \\
 \bottomrule
 \end{tabularx}
 \end{table}

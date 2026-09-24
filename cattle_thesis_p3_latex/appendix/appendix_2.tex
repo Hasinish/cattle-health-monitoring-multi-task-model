@@ -1,20 +1,23 @@
 \section{Reproducibility Boundary}
-The manuscript includes exact excerpts of two recorded confusion matrices and an arithmetic check. These support checking printed aggregate values without pretending to rerun the models. Raw data, complete predictions, checkpoints and historical cloud environments are not included.
 
-BCS retains split hashes and seed 42, but its execution revision is unknown. Behavior lacks equivalent configuration/seed information in its result JSON. Missing provenance must be recovered from legitimate records or retained as a limitation. It must not be reconstructed by calling a split seed a training seed.\evidence{E08,E09}
+The thesis records deterministic split files, executed implementations, machine-readable metrics, and task-specific coverage. Raw datasets, full checkpoints, and cloud volumes are not embedded in the manuscript. Reproducing the results therefore requires the repository revision, the referenced manifests, access to the corresponding data, and the saved model artifacts.
 
-\section{Scientific Issues Requiring Resolution}
-\textbf{Behavior input authenticity.} The loader permits full-frame and synthetic fallbacks. The inspected result does not establish whether they occurred. Audit actual cached inputs before claiming full input verification.\evidence{E12,E15}
+Run 1 records seed 42 and split hashes. Run 5 records seed 2026, retained-sample hashes, and a bit-identical checkpoint reload. Run 6 also records a bit-identical reload and integrity checks for synchronized RGB/mask crops. Some historical artifacts record an unknown Git revision because Git metadata was unavailable in their execution container; the thesis review SHA is not substituted for those missing execution fields.\evidence{E08,E27,E29}
 
-\textbf{Metric comparability.} Behavior source-specific Macro-F1 uses an implicit label set. Beef has no true Walking. Values are retained as recorded, not silently replaced with differently defined metrics.\evidence{E05,E09,E12}
+\section{Scientific Interpretation Boundaries}
 
-\textbf{BCS pose.} The deadline combination includes pose, but the limited rear-view review found unreliable outputs and missing relevant landmarks. Resolve this with an evidence-based decision rather than forcing the component into the method.\evidence{E03,E11}
+\textbf{Independence units.} ScienceDB protects connected bursts rather than biological identities. CVB and Beef protect source videos or sessions rather than verified cows. Only SideView Protocol A supports the stated identity-disjoint learning/evaluation comparison.\evidence{E04,E05,E06}
 
-\textbf{External mapping.} The CBVD-5 publication describes Standing, Lying, Foraging, Rumination and Drinking~\cite{li2024cbvd5}, whereas the registry names Walking and Other. Reconcile imported annotations before evaluation. Wider external BCS score support and Dryad's different scale/modality also require an explicit protocol.\evidence{E07,E10}
+\textbf{Matched coverage.} Run 4 applies to 7,549 of 8,040 test images, and Run 5 applies to 780 of 809 test sequences. Their corresponding RGB checkpoints were evaluated on exactly those retained samples. Coverage failures remain part of the system limitation.\evidence{E24,E27}
 
-\textbf{Re-ID readiness.} Hydration, implementation and smoke testing are complete. The saved smoke artifact explicitly skips full Protocol A retrieval. Log/JSON differences are not used to invent a unified full-run result.\evidence{E19,E20,E21}
+\textbf{Combined configurations.} Run 4 changes localization, crop, and mask guidance; Run 5 changes representation and temporal aggregation; Run 6 changes crop geometry and adds a GT mask channel. None of these experiments isolates one component's causal effect.
+
+\textbf{Oracle Re-ID condition.} Run 6 uses SideView ground-truth target masks. It does not demonstrate automatic SAM segmentation, and it does not prove that shortcut learning has been eliminated.\evidence{E29,E30}
+
+\textbf{Statistical scope.} Runs 1--6 are single-run point estimates. No confidence interval, repeated-seed standard deviation, p-value, or statistical-significance claim is supplied.
 
 \section{Open Deliverables}
-Full Re-ID, enhanced configurations, temporal Behavior, final MTL, external evaluation and repeated-run uncertainty remain open where no completed artifacts exist. Final Abstract and Conclusion must follow those results.
 
-Administrative review must confirm author order, submission semester, committee details, ethics requirements, licenses, assistance acknowledgments and any separate IEEE-format deliverable. No previous signatures or approval statements are reused as current acceptance.
+The E1 hard-shared and E3 modular MTL experiments remain open. Their completion is required for task-wise negative-transfer analysis, the final integrated architecture verdict, the final Abstract, the final research-question synthesis, and the final Conclusion. External stress tests and repeated-run uncertainty remain future work unless new verified artifacts are produced.
+
+Administrative review must confirm author order, semester, committee details, ethics and AI-assistance requirements, dataset permissions, acknowledgments, and any separate IEEE-format deliverable. No signature, approval, user study, or institutional exemption is invented.

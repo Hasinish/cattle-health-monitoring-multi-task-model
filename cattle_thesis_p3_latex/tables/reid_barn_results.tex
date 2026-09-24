@@ -1,0 +1,14 @@
+\begin{table}[htbp]
+\centering\small
+\caption[Barn-to-Parlor Re-ID results]{Protocol A Barn-to-Parlor retrieval on 25,260 queries, 36,811 gallery images, and 69 held-out cows.\evidence{E22,E29}}
+\label{tab:reidbarn}
+\begin{tabular}{lrrrr}
+\toprule
+Configuration & Rank-1 & Rank-5 & Rank-10 & mAP \\
+\midrule
+Run 3 RGB & 58.64\% & \textbf{78.19\%} & \textbf{83.72\%} & 38.32\% \\
+Run 6 oracle GT-guided & \textbf{63.90\%} & 77.10\% & 82.58\% & \textbf{40.68\%} \\
+Change & $+5.26$ pp & $-1.09$ pp & $-1.14$ pp & $+2.36$ pp \\
+\bottomrule
+\end{tabular}
+\end{table}

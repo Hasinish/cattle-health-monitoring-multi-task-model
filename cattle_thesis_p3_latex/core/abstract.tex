@@ -1,7 +1,10 @@
 \section*{Abstract}
-% TODO-P3-RESULT: Final abstract requires verified final comparisons.
-\drafttodo{ABSTRACT-01}{The Abstract is intentionally not finalized. After final comparisons are verified, summarize the problem, evaluated framework, protocols, task-wise results, negative-transfer findings and main limitation. Do not describe an unevaluated MTL design as a completed contribution.}
-\textbf{Working topic:} Cattle-centered representations for body condition scoring, behavior recognition and re-identification, followed by an evaluated multi-task comparison.
-\par\medskip
-\textbf{Keywords:} cattle monitoring; multi-task learning; body condition scoring; behavior recognition; re-identification; evaluation provenance.
+% TODO-P3-RESULT: Replace this interim pre-MTL abstract after Runs 7 and 8.
+\drafttodo{ABSTRACT-01}{This is an interim abstract covering the stable single-task evidence. Add the executed E1/E3 comparison, negative-transfer findings, final contribution statement, and integrated conclusion only after Runs 7 and 8 are complete.}
+
+Continuous visual monitoring of cattle requires information about body condition, behavior, and individual identity, yet these tasks depend on different aspects of an animal's appearance. This thesis investigates cattle-centered visual representations as a foundation for a unified multi-task framework. Leakage-aware protocols were established for ScienceDB BCS, the combined CVB and Kaggle Beef Behavior dataset, and SideViewCows2026 Re-ID. Three ImageNet-pretrained ResNet-18 RGB references were compared with task-specific cattle-centered configurations using localization and binary-mask guidance, lightweight temporal aggregation for Behavior, and oracle ground-truth-mask guidance for Re-ID.
+
+On a matched 7,549-image ScienceDB subset, the cattle-centered BCS model reduced mean absolute error from 0.1929 to 0.1709 BCS units and increased accuracy within $\pm0.25$ from 84.95\% to 89.40\%, with 93.89\% perception coverage. On 780 matched Behavior sequences, the perception-temporal model increased balanced accuracy from 71.30\% to 74.43\% and reduced loss from 0.5505 to 0.4430, although overall accuracy decreased and CVB performance was weaker. Under identity-disjoint SideView retrieval, oracle guidance increased Snapshot-to-Parlor Rank-1 from 38.88\% to 62.93\% and mAP from 27.05\% to 40.42\%; Barn-to-Parlor gains were smaller and mixed across ranks. These results show that cattle-centered representations can improve important task outcomes, but the benefits are task- and metric-dependent. The final hard-shared and modular multi-task experiments remain pending, so this version does not claim that negative transfer has been mitigated or that a final integrated architecture is superior.
+
+\textbf{Keywords:} cattle monitoring; body condition scoring; behavior recognition; cattle re-identification; cattle-centered representation; multi-task learning.
 \clearpage

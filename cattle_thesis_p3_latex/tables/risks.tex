@@ -1,6 +1,6 @@
 \begin{table}[htbp]
 \centering\small
-\caption[Research risks and mitigations]{Scientific and operational risks; implemented controls do not eliminate all residual risks.\evidence{E04,E05,E06,E07,E11,E12}}\label{tab:risks}
+\caption[Research risks and mitigations]{Scientific and operational risks; implemented controls do not eliminate all residual risks.\evidence{E04,E05,E06,E07,E11,E24,E26,E29}}\label{tab:risks}
 \begin{tabularx}{\textwidth}{lYY}
 \toprule
 Risk & Consequence & Control / open issue \\
@@ -9,11 +9,12 @@ Correlated data & Optimistic evaluation & Burst/source/session grouping; identit
 Temporary IDs & False cross-cow claim & Use biological IDs only where verified. \\
 Unavailable data & Blocked experiments & Approved SideView contingency; MultiCam still blocked. \\
 Source/class link & Shortcut prediction & Source/class metrics; Walking is CVB-only. \\
-Perception error & Wrong target/anatomy & Separate return from correctness; retain failures. \\
-Cache fallbacks & Synthetic or full-scene input & Audit actual full-run cache; counts unknown. \\
-Missing provenance & Limited reproducibility & Recover execution revision, settings and seed. \\
+Perception error & Missing/wrong target input & Record coverage and exclude invalid masks without fabrication. \\
+Combined changes & Unsupported causal claim & Attribute results to the full executed configuration. \\
+Oracle masks & Overstated deployment readiness & Label Run 6 as GT-guided, not automatic segmentation. \\
+Single-run results & Unknown training variability & Report point estimates; do not invent significance. \\
 External mismatch & Misleading transfer & Freeze defensible mappings before testing. \\
-Limited resources & Incomplete comparisons & Deadline overlay and explicit pending status. \\
+Limited resources & Incomplete comparisons & Local smoke-only policy; focused cloud runs; explicit pending status. \\
 Unclear license & Uncertain reuse rights & Confirm permission; do not infer from access. \\
 \bottomrule
 \end{tabularx}

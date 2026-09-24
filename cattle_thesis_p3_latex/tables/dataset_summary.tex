@@ -1,17 +1,17 @@
 \begin{table}[htbp]
 \centering\small
-\caption[Dataset roles and interpretation boundaries]{Current dataset roles and interpretation boundaries. Counts are project records, not raw-data verification in this writing environment.\evidence{E04,E05,E06,E07}}\label{tab:datasets}
+\caption[Dataset roles and interpretation boundaries]{Primary and external dataset roles. An assigned external role does not imply that evaluation has been executed.\evidence{E04,E05,E06,E07}}\label{tab:datasets}
 \begin{tabularx}{\textwidth}{lYY}
 \toprule
 Source & Role / scale & Boundary \\
 \midrule
-ScienceDB & Primary BCS; 53,566 RGB images & 5,653 burst groups; no verified biological IDs. \\
-CVB + Beef & Primary Behavior; 5,274 rows & Source/session groups; five mapped classes. \\
-SideView & Primary Re-ID; 80,260 image/mask pairs; 110 cows & Named recording/identity protocols. \\
-Ruchay / Dryad & External BCS & Score support, scale and modality differ. \\
-MmCows / CBVD-5 & External Behavior & Label and temporal compatibility must be checked. \\
-BECA-L / BECA-D & External Re-ID stress tests & No retrieval results claimed. \\
-MultiCam / OpenCows & Blocked / legacy & Neither is the active primary. \\
+ScienceDB & Primary BCS; 53,566 RGB images & 5,653 burst groups; no verified biological cow IDs. \\
+CVB + Beef & Primary Behavior; 5,274 sequences/clips & Source-video/session grouped; Walking is CVB-only. \\
+SideViewCows2026 & Primary Re-ID; 80,260 image/mask pairs; 110 cows & Protocol A learning/evaluation identities are disjoint. \\
+Ruchay 2026 / Dryad & External BCS & Planned validation; score support and modality differ. \\
+MmCows / CBVD-5 & External Behavior & Planned stress tests; label/temporal compatibility required. \\
+BECA-L / BECA-D & External Re-ID & Planned longitudinal and population-scale stress tests. \\
+MultiCamCows2024 / OpenCows2020 & Blocked / legacy & Neither is the active primary benchmark. \\
 \bottomrule
 \end{tabularx}
 \end{table}

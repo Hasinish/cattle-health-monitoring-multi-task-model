@@ -1,106 +1,105 @@
 \section{Performance Evaluation}
-This chapter separates completed artifacts from pending experiments. Numerical model evidence consists of a ScienceDB BCS baseline and a single-frame CVB plus Beef Behavior baseline. Perception findings are feasibility audits, not downstream improvements. Re-ID smoke testing establishes execution readiness but does not supply a full retrieval result.\evidence{E02,E08,E09,E11,E21}
 
-\subsection{Metric Definitions}
-The primary BCS measure is mean absolute error in physical score units:
-\begin{equation}
- \mathrm{MAE}_{\mathrm{BCS}}=\frac{1}{N}\sum_i|s_i-\hat s_i|.
-\end{equation}
-Adjacent ScienceDB classes differ by 0.25, so physical MAE equals 0.25 times index MAE for this mapping. Exact accuracy and accuracy within $\pm0.25$ answer different questions and are labeled separately.\evidence{E10}
+This chapter reports the six completed single-task experiments. The comparisons are organized by task so that each cattle-centered configuration is evaluated against its corresponding RGB reference. Runs 7 and 8 are not included because the multi-task experiments have not yet been executed. Consequently, the chapter supports task-specific conclusions but not a final claim about the integrated framework.
 
-For Behavior, balanced accuracy averages recall across true classes, while Macro-F1 averages class-wise F1. Class support is reported because example counts differ substantially. Source-specific metrics also require an explicit class set. The code does not fix the label list for source-specific Macro-F1; absent Walking can therefore affect the Beef aggregation.\evidence{E12}
+\subsection{Body Condition Scoring Results}
 
-Re-ID metrics depend on the protocol. Known-class accuracy is not retrieval performance on unseen identities. The current implementation has a separate Protocol A retrieval path, but its saved smoke artifact records that path as skipped. No full rank-1 or mean-average-precision result is presented.\evidence{E20,E21}
+Run 1 provides the full-test RGB reference on all 8,040 ScienceDB test images. It achieved a physical MAE of 0.1848 BCS units and Acc@1 of 86.74\%. Exact accuracy was 41.63\%, while balanced accuracy and Macro-F1 were 40.41\% and 0.4110. These values show that many errors remained close to the correct ordered class, but exact class separation was considerably harder than prediction within $\pm0.25$ BCS units. The result is a single run over a narrow five-score range and is not a biological cow-disjoint estimate.\evidence{E08}
 
-\subsection{ScienceDB BCS RGB Baseline}
-The best validation checkpoint occurs at epoch 8 with MAE 0.1719 BCS units. The test set contains 8,040 images from 845 burst groups. Its recorded MAE is 0.1848, exact accuracy 41.63\%, and accuracy within $\pm0.25$ 86.74\%. These are single-run point estimates, not repeated-run averages.\evidence{E08}
+Run 4 could be evaluated only where the automatic perception pipeline produced both a detection and a non-empty segmentation. Of 8,040 test images, RT-DETR-L succeeded on 7,551 and the complete detector--SAM pipeline succeeded on 7,549. The resulting coverage was 93.89\%, with 489 detector failures and two additional SAM failures. To avoid attributing differences to the filtered sample composition, the Run 1 checkpoint was re-evaluated on exactly the same 7,549 images.\evidence{E24}
 
-\input{tables/bcs_results}
-\input{tables/bcs_confusion}
+\input{tables/bcs_comparison}
 
-Many errors are in neighboring classes, but large errors are not absent. Fourteen images occupy the two extreme off-diagonal corners: eleven true 3.25 images predicted as 4.25, and three true 4.25 images predicted as 3.25. These are images, not fourteen verified distinct cows. The matrix does not support a statement of zero severe errors.\evidence{E08}
+On this matched subset, Run 4 reduced MAE from 0.1929 to 0.1709 and increased Acc@1 from 84.95\% to 89.40\%. Exact accuracy also increased from 40.84\% to 43.57\%, while test loss fell from 0.8224 to 0.4403. These are practically important improvements for the principal ordinal measures. However, balanced accuracy decreased from 40.23\% to 39.70\%, and Macro-F1 decreased from 0.4074 to 0.4039. The cattle-centered model therefore improved average score proximity and tolerance accuracy without improving every class-balanced measure.
 
-Tolerance accuracy must be read together with exact accuracy and the narrow score support. A prediction can be within one class without being correct. The recorded MAE does not establish clinical adequacy, wider score coverage or generalization to unseen biological cows.
+The matched comparison supports the conclusion that the combined localized RGB crop and binary-mask representation was more effective for the main BCS error criteria on perception-successful images. It does not show that segmentation alone caused the change, because localization, cropping, and the mask channel were introduced together. It also does not describe the 6.11\% of test images for which a complete perception input was unavailable.
 
-The JSON records an unknown execution Git revision because Git was unavailable in the run environment. The thesis review revision does not replace that historical field. Some epoch-history values differ between the JSON and narrative log. Final test tables follow the machine-readable record; learning curves remain deferred until the histories are reconciled.\evidence{E08,E14}
+\subsection{Behavior Recognition Results}
 
-\subsection{CVB plus Beef Behavior RGB Baseline}
-The recorded selected checkpoint is epoch 25. Its test result is 88.88\% accuracy, 71.72\% balanced accuracy and Macro-F1 0.7413 on 809 rows. These pooled values agree with the confusion matrix to displayed precision. They are preserved with the cache-integrity qualification below.\evidence{E09,E15}
+The full Run 2 single-frame RGB baseline achieved 88.88\% accuracy, 71.72\% balanced accuracy, and 0.7413 Macro-F1 over the 809 canonical test samples. The difference between overall and balanced accuracy reflects unequal class performance. Walking was the clearest weakness: only five of 26 observations were classified correctly, and its F1-score was 0.2174. By comparison, Lying and Feeding obtained F1-scores of 0.9552 and 0.9225.\evidence{E09}
 
-\input{tables/behavior_results}
+Figure~\ref{fig:behaviorrecall} makes the class imbalance in the RGB baseline visible: Feeding and Lying recall were high, while Walking recall was below 0.20.
+
 \input{images/behavior_recall}
-\input{tables/behavior_confusion}
 
-Walking is the weakest reported class: five of 26 observations are correct, giving recall 0.1923 and F1 0.2174. Nineteen Walking observations are predicted as Feeding. Lying and Feeding have higher recall and much larger support. Pooled accuracy therefore conceals a significant descriptive weakness in the minority class. This motivates analysis but does not prove that temporal modeling or pose will fix it.\evidence{E09}
+The Run 5 perception pipeline retained 780 of the 809 test sequences, giving approximately 96.4\% coverage. The matched comparison therefore re-evaluates Run 2 on those same 780 samples. Table~\ref{tab:behaviorcomparison} distinguishes the historical full baseline from this matched control.
 
-\input{tables/behavior_sources}
+\input{tables/behavior_comparison}
 
-The CVB and Beef scores are not external transfer results because both sources occur in training. Beef has four supported true classes, whereas CVB has five. The source-specific Macro-F1 values use an implicit class list, so they should not be interpreted as a fully standardized five-class comparison.\evidence{E05,E09,E12}
+Relative to the matched Run 2 control, Run 5 increased balanced accuracy from 71.30\% to 74.43\% and reduced loss from 0.5505 to 0.4430. Macro-F1 increased slightly from 0.7378 to 0.7397. Overall accuracy, however, decreased from 88.46\% to 87.44\%. The combined cattle-centered temporal configuration therefore redistributed performance rather than producing a uniform gain across all measures.\evidence{E27}
 
-% TODO-P3-EVIDENCE: Preserve results but verify actual cached inputs.
-\drafttodo{BEH-RESULT-01}{The result JSON does not document full-run fallback counts. The loader permits synthetic images and CVB full-scene fallbacks. Audit actual cache contents and recover execution provenance before calling this baseline fully input-verified. No fallback occurrence is asserted without evidence.}
+\input{tables/behavior_class_comparison}
 
-\subsection{Perception Feasibility Audits}
-\input{tables/perception_results}
+The class-wise results clarify this trade-off. Feeding, Drinking, and Walking F1 improved by 0.0247, 0.0252, and 0.0282 respectively. Walking recall rose from 0.1923 to 0.2692, although its final F1 of 0.2456 remained low. Standing and Lying F1 declined by 0.0341 and 0.0343. Thus, temporal foreground-guided processing helped selected activities and the minority Walking class, but it did not preserve the strongest baseline performance for every posture-dominated class.
 
-The detector comparison supports candidate selection under the audited conditions. RT-DETR-L returns at least one cow in 283/300 images, Faster R-CNN v2 in 285/300, and YOLOv8s in 223/300. Reported median latency is lower for RT-DETR-L than Faster R-CNN v2 on the audit machine. These numbers do not prove that the selected box always represents the labeled animal.\evidence{E11}
+\input{tables/behavior_source_comparison}
 
-On 100 SideView examples with mask ground truth, RT-DETR-L plus SAM 2.1 has mean IoU 0.9216 and Dice 0.9530. The oracle-box diagnostic has mean IoU 0.9468. Results apply to that sample, not automatically to every task, all scenes or the complete dataset. A mask-return rate elsewhere is not overlap accuracy.\evidence{E11}
+Source-specific results show an equally important difference. Beef accuracy increased from 93.58\% to 96.09\%, with Macro-F1 rising from 0.9079 to 0.9414. CVB accuracy decreased from 84.12\% to 80.09\%, and Macro-F1 fell from 0.6541 to 0.6188. The pooled balanced-accuracy gain is therefore consistent with improved performance on selected classes and on Beef, but not with uniform cross-source improvement. Because Run 5 changes both representation and temporal aggregation, these outcomes cannot be attributed independently to SAM guidance or to the Conv1D module.
 
-Both pose backbones returned outputs on 243/300 images. The remaining cases include seventeen upstream localization failures and forty internal detector failures. The 81.0\% return rate is not anatomical accuracy. Reviewed ScienceDB BCS 3.25 and MmCows Lying outputs were unreliable; reviewed SideView parlor outputs were more plausible. The restricted visual sample prevents extrapolation to unreviewed classes/settings.\evidence{E11}
+\subsection{Cattle Re-Identification Results}
 
-The state also records 99.44\% synthetic test accuracy for a viewpoint model but 27.37\% accuracy on 95 non-ambiguous real diagnostic examples. The real set was reused in development and has no true front examples. These findings describe a diagnostic domain gap, not independent final real-world test performance. No operational viewpoint generator is accepted.\evidence{E02}
+Runs 3 and 6 were evaluated under SideView Protocol A. The 41 cows used for representation learning are disjoint from the 69 evaluation cows. The gallery is always the fixed-camera parlor set; Barn and Snapshot queries are reported separately because their acquisition conditions differ. This protocol evaluates retrieval of unseen identities rather than classification among the 41 training cows.\evidence{E22,E29}
 
-\subsection{Re-ID Implementation Readiness}
-Re-ID is no longer merely awaiting cloud data. The current code, log and smoke artifact establish an implemented 512-dimensional baseline and execution checks. However, the smoke artifact explicitly records \texttt{SKIPPED\_IN\_SMOKE\_MODE} for Protocol A retrieval. Its small-subset validation values are not reported as the thesis Re-ID benchmark.\evidence{E19,E20,E21}
+\input{tables/reid_barn_results}
 
-The research log and saved smoke history have different detailed values and scopes. This draft does not merge them into one purported full run. Final retrieval results, exact full-run settings and their provenance must come from the completed full-run artifact.
+For Barn-to-Parlor retrieval, Run 6 increased Rank-1 from 58.64\% to 63.90\% and mAP from 38.32\% to 40.68\%. Rank-5 and Rank-10 changed from 78.19\% to 77.10\% and from 83.72\% to 82.58\%, respectively. The oracle cattle-centered representation therefore improved the first-match and ranking-quality measures but did not improve every cutoff in the Barn condition.
 
-\subsection{Pending Downstream Comparisons}
-% TODO-P3-RESULT: Full Runs 3--8 are not available at this checkpoint.
-\drafttodo{RESULT-REID}{Insert full Re-ID retrieval results, with the protocol, query/gallery rules, selected checkpoint and executed configuration. Hydration and smoke testing are complete; full performance is pending.}
-\drafttodo{RESULT-ENHANCED}{Insert the three cattle-centered comparisons only after their artifacts exist. Attribute any effect to the tested combination unless isolated controls were performed.}
-\drafttodo{RESULT-MTL}{Insert task-wise E0/E1/E3 comparisons, negative-transfer analysis and resource measurements. No MTL superiority is asserted.}
+\input{tables/reid_snapshot_results}
+
+The Snapshot-to-Parlor result was substantially stronger. Rank-1 increased from 38.88\% to 62.93\%, Rank-5 from 57.17\% to 75.29\%, Rank-10 from 64.58\% to 81.05\%, and mAP from 27.05\% to 40.42\%. The 24.05 percentage-point Rank-1 gain was the largest completed improvement in Runs 1--6. It suggests that reliable target-centered geometry and mask guidance were particularly useful under the larger posture, viewpoint, and environment changes represented by snapshot queries.
+
+These results do not establish that automatic segmentation would reproduce the same benefit. Run 6 uses released ground-truth masks to determine the crop and provide the fourth channel. It also changes crop geometry and mask guidance together. The correct conclusion is therefore that the oracle GT segmentation-guided configuration improved cross-setting retrieval, especially for snapshots; shortcut learning was not proven to be eliminated, and the crop and mask effects were not separately identified.
+
+\subsection{Perception Coverage and Supporting Viewpoint Evidence}
+
+Perception coverage is part of the result because an enhanced model cannot make the same input-level claim for excluded cases. Table~\ref{tab:coverage} reports the retained samples for the completed comparisons.
+
+\input{tables/perception_coverage}
+
+The BCS result applies directly to 93.89\% of the canonical test set. The Behavior test comparison covers 96.42\% of its canonical samples, with 29 sequences excluded by the perception/occlusion policy. SideView supplies a paired GT mask for every one of its 80,260 images, allowing Runs 3 and 6 to use the full defined Protocol A gallery and query sets; this is dataset-provided oracle coverage, not evidence of automatic mask availability in deployment.
+
+The separate real-cattle viewpoint classifier achieved 86.26\% accuracy, 84.96\% balanced accuracy, and 0.8573 Macro-F1 on 131 held-out images. This establishes that the three-class front/side/rear task was feasible on its own dataset. It was not inserted into Runs 4--6 because cross-domain transfer to ScienceDB, CVB/Beef, and SideView was not validated. The result also cannot be attributed to MOO synthetic pretraining without a same-split ImageNet-initialized control.\evidence{E31}
 
 \section{Analysis of Design Solutions}
-The completed evidence supports some choices while leaving others open. Detection comparisons concern output return and latency. Segmentation adds overlap measurement where ground truth exists. Pose shows why confidence alone is insufficient: a technically successful output can still be anatomically unsuitable.\evidence{E11}
+
+The six runs support three different conclusions about cattle-centered representation design. For BCS, the automatic pipeline improved the main ordinal measures on matched perception-successful images, but class-balanced measures were essentially unchanged or slightly worse. For Behavior, the combined four-channel temporal model improved balanced accuracy, loss, Walking, Feeding, Drinking, and Beef performance, while reducing overall accuracy and several CVB/posture measures. For Re-ID, the oracle representation produced a large improvement under the more severe Snapshot-to-Parlor shift and a smaller, mixed change for Barn-to-Parlor retrieval.
 
 \input{tables/design_decisions}
 
-Maintainability is also relevant. Frozen preprocessing and cached outputs can support reproducible comparisons; additional modules introduce dependencies and failure cases. These tradeoffs should be evaluated with accuracy. The size of a downstream ResNet-18 alone cannot establish that the entire system is lightweight or real-time.
+These outcomes argue against treating all three tasks as if they require the same visual representation. BCS benefited mainly in ordered error and tolerance accuracy. Behavior required temporal aggregation but remained sensitive to source and class composition. Re-ID benefited most when the query differed strongly from the controlled gallery. A final shared system should therefore preserve common low-level cattle information while allowing task-specific processing where the evidence requirements diverge. This is a design implication for Runs 7 and 8, not a completed MTL result.
 
-The current baselines answer task-specific in-domain questions under their stated protocols. They do not yet establish whether background suppression improves robustness, pose is useful, or shared parameters improve all tasks. Those are pending comparisons, not consequences of a feasibility audit.
+The comparisons also illustrate why perception quality and downstream utility must be separated. High mask overlap in the feasibility audit supported the use of SAM-derived foregrounds, but only the task experiments measured prediction consequences. Conversely, the Run 4 and Run 5 coverage gaps show that useful downstream performance does not remove the operational cost of perception failures.
 
 \section{Final Design Adjustments}
-Completed adjustments include repaired ScienceDB grouping, an approved Behavior-primary correction and SideView's adoption after the MultiCam access failure. They respond to evidence about executable, interpretable evaluation. They are not retroactive changes made to improve a test score.\evidence{E01,E04,E06,E13}
 
-RT-DETR-L remains a provisional candidate after detector comparison. Viewpoint remains outside operational fusion because tested real-data behavior was insufficient. The restricted pose review also prevents an unqualified acceptance of pose for BCS.\evidence{E02,E11}
+Several design decisions were fixed before the final MTL stage. ScienceDB uses repaired burst groups rather than unsupported biological identities. CVB plus Beef is the primary Behavior stack, with source/session isolation and explicit recognition that Walking is CVB-only. SideView replaces the inaccessible MultiCamCows2024 as the primary Re-ID benchmark and provides an identity-disjoint cross-setting protocol.
 
-The integrated MTL design is not finalized. Later additions must connect each actual adjustment to development evidence and record the fixed configuration before held-out comparison. Test performance must not become a tuning signal.
+Pose was removed from the deadline downstream configurations because the available rear-view outputs and landmark schema were not sufficiently reliable for the intended BCS role. Viewpoint remains a separately validated capability rather than an untested conditioning signal. For the three enhanced task models, the accepted inputs are binary masks rather than continuous soft masks. These adjustments align the thesis with the executed methods rather than older roadmap wording.
 
-% TODO-P3-RESULT: Final integrated design remains incomplete.
-\drafttodo{DESIGN-FINAL}{Document final implemented adjustments, their development evidence and the frozen configuration. Retain rejected components and negative findings.}
+The remaining design comparison is explicit. Run 7 will measure an E1 hard-shared control, and Run 8 will measure an E3 modular/task-private alternative. Until both are executed, the final sharing strategy, negative-transfer result, and integrated-system verdict remain open.
 
 \section{Statistical Analysis}
-Available headline model results are single-run point estimates. BCS records seed 42. Behavior's partition uses seed 2026, but its result JSON does not establish a training seed. No repeated-run standard deviation, confidence interval or significance test is invented.\evidence{E05,E08,E09}
 
-Training-seed variability and evaluation-sample uncertainty answer different questions. Repeating training changes optimization randomness; resampling test units examines uncertainty conditional on a fitted model and population. Correlated images must not be treated as independent cows. Any future interval must name its resampling unit and preserve the recorded grouping.
+Runs 1--6 are reported primarily as single-run comparisons. Repeated-seed distributions, confidence intervals, p-values, and a preregistered significance test are not available for these final task comparisons. The reported differences are therefore descriptive point estimates and are not called statistically significant.
 
-Pooled confusion matrices do not retain the group-level predictions needed for a clustered comparison. This draft therefore reports counts, supports and descriptive metrics. Numerical differences between unfinished models cannot be described as statistically significant.
+The matched designs reduce one important source of confounding. Run 4 and its Run 1 control use exactly the same 7,549 images, while Run 5 and its Run 2 control use exactly the same 780 sequences. This makes the within-task metric differences directly comparable on the retained samples. It does not quantify training-seed variability or population uncertainty, and correlated images must not be treated as independent biological cows.
 
-% TODO-P3-RESULT: Add only computed uncertainty and repeated-run findings.
-\drafttodo{STATS-01}{Insert final repeated-run summaries and defensible group-aware uncertainty only when corresponding prediction/grouping artifacts exist. State seeds, run count, unit and method.}
+For Re-ID, both models use the same identity-disjoint Protocol A gallery and query sets. The large Snapshot-to-Parlor differences are therefore observed under a common retrieval protocol, but they still arise from one trained model per configuration. Repeated training and group-aware uncertainty estimation remain desirable future additions after the final MTL experiments.
 
 \section{Comparisons and Relationships}
-Each enhanced model should be compared with its corresponding task reference, and each MTL configuration with matched independent models. Metric direction must remain explicit. Larger BCS MAE is worse; smaller F1 or retrieval accuracy is worse. Averaging incompatible raw metrics would obscure these differences.
 
-For a descriptive negative-transfer table, a future change can be defined as $\Delta_{\mathrm{BCS}}=\mathrm{MAE}_{\mathrm{MTL}}-\mathrm{MAE}_{\mathrm{STL}}$ and $\Delta_t=M_{\mathrm{STL},t}-M_{\mathrm{MTL},t}$ for higher-is-better task metrics. Positive values then mean deterioration, in each task's own units. These are reporting definitions, not current measured differences.
+The three tasks use metrics with different meanings and directions. Lower BCS MAE is better, whereas higher Behavior balanced accuracy and Re-ID retrieval scores are better. A single average across these raw metrics would be uninterpretable. The final negative-transfer analysis must compare each MTL task output with its matched single-task reference in that task's own units.
 
-Published results from different splits, inputs or taxonomies provide context, not controlled competitor scores. The same applies to historical Phase 2 metrics. Changing the protocol does not itself prove an improvement or decline in model capability.
+The data protocols also bound the generalization claims. ScienceDB evaluates new burst groups, not verified new cows. CVB plus Beef evaluates protected videos and sessions, not unseen biological identities. SideView Protocol A does evaluate identities excluded from representation learning. These distinctions explain why the Re-ID conclusions can refer to unseen cows while the BCS and primary Behavior conclusions cannot.
+
+External datasets remain planned stress tests rather than completed results. Ruchay and Dryad may extend BCS to different score supports or modalities; MmCows and CBVD-5 may test Behavior transfer; and BECA-L/BECA-D may test longitudinal or population-scale Re-ID. Their presence in the dataset plan is not treated as evidence that the final models generalize to those sources.
 
 \section{Discussions}
-The meaning of a result depends on provenance and input verification. Burst-disjoint evaluation is not biological cow-disjoint evaluation. Dense video is not a temporal-model result. Mask overlap is not downstream benefit. Hydration and smoke testing are not successful full retrieval.
 
-BCS supplies a physical-unit reference over a narrow range. Behavior shows a gap between pooled accuracy and minority-class performance, while its cache needs further verification. Perception audits support task-dependent caution: localization and segmentation are candidates, while pose and viewpoint require restricted interpretation.\evidence{E08,E09,E11,E12}
+The completed BCS comparison is consistent with the cattle-centered hypothesis, but only within a defined boundary. The localized RGB-plus-mask model reduced matched MAE by 0.0220 BCS units and improved Acc@1 by 4.45 percentage points. At the same time, balanced accuracy and Macro-F1 did not improve, and 491 test images lacked a complete perception input. The representation therefore improved proximity to the ordered target more clearly than it improved equal treatment of all five classes.
 
-The central multi-task question remains unanswered at this checkpoint. Positive or negative final results will be useful only when comparisons are fair and interpretation respects the executed design. Abstract and Conclusion remain intentionally unfinished.
+The Behavior comparison provides a useful negative as well as positive result. Balanced accuracy and loss improved, and Walking, Feeding, Drinking, and Beef metrics moved in a favorable direction. Overall accuracy, CVB Macro-F1, Standing F1, and Lying F1 declined. One plausible interpretation is that the temporal foreground-guided representation reallocates capacity toward changing activities and the more controlled Beef clips, but the experiment does not isolate that mechanism. The result supports further task-specific refinement rather than a claim of universal superiority.
+
+The Re-ID comparison provides the strongest evidence that target-centered visual information can improve robustness under acquisition shift. The gain was much larger for unconstrained snapshots than for barn video, suggesting that the oracle crop-and-mask representation was most helpful when posture, framing, and environment changed together. Because the masks are ground truth, however, Run 6 is best understood as an upper-bound representation study. Deployment would still require an automatic method whose failures and domain transfer are evaluated separately.
+
+Taken together, Runs 1--6 show that cattle-centered representations can improve important outcomes, but the pattern of benefits differs by task and metric. This task dependence is precisely why the final multi-task comparison is necessary. The evidence does not yet establish whether hard sharing causes negative transfer in Phase 3, whether the modular E3 design mitigates it, or whether either MTL model is preferable to the single-task references. Those questions remain the sole major scientific gap before the final integrated discussion and conclusion.

@@ -1,0 +1,14 @@
+\begin{table}[htbp]
+\centering\small
+\caption[Behavior RGB and cattle-centered temporal comparison]{Behavior results. Direct comparison uses the same 780 retained test sequences; the 809-sample Run 2 row is the canonical full-test reference.\evidence{E09,E27}}
+\label{tab:behaviorcomparison}
+\begin{tabular}{lrrrrr}
+\toprule
+Configuration & $N$ & Accuracy & Bal. acc. & Macro-F1 & Loss \\
+\midrule
+Run 2 RGB, full test & 809 & 88.88\% & 71.72\% & 0.7413 & 0.5312 \\
+Run 2 RGB, matched & 780 & \textbf{88.46\%} & 71.30\% & 0.7378 & 0.5505 \\
+Run 5 perception + Conv1D & 780 & 87.44\% & \textbf{74.43\%} & \textbf{0.7397} & \textbf{0.4430} \\
+\bottomrule
+\end{tabular}
+\end{table}

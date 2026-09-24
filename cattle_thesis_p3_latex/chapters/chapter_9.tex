@@ -1,7 +1,24 @@
-% TODO-P3-RESULT: Do not finalize the Conclusion before final experiments exist.
-\section{Research Question Answers -- Pending}
-\drafttodo{CONCLUSION-01}{Answer the research questions only after verified Re-ID, enhanced, temporal and MTL comparisons are available. Distinguish an unanswered question from a negative finding.}
+% TODO-P3-RESULT: This chapter remains intentionally provisional until Runs 7 and 8.
+\section{Interim Synthesis of Runs 1--6}
+
+The completed single-task experiments show that cattle-centered inputs are useful, but not in an identical manner across the three tasks. For BCS, the matched automatic-perception configuration improved MAE and tolerance accuracy while leaving class-balanced measures slightly lower. For Behavior, foreground-guided temporal aggregation improved balanced accuracy, loss, and selected class/source metrics, but reduced overall accuracy and CVB Macro-F1. For Re-ID, oracle GT-mask guidance produced its largest improvement under the unconstrained Snapshot-to-Parlor condition and a smaller, mixed change under Barn-to-Parlor retrieval.
+
+These findings support the scientific premise that the tasks require different information. They do not yet determine how much of that information should be shared in a unified model. The task-specific results therefore form the reference evidence for, rather than the conclusion of, the final MTL comparison.
+
+\section{Research Question Answers -- Pending Final MTL Evidence}
+
+The first research question has a partial task-specific answer: the executed cattle-centered configurations improved important outcomes for BCS, Behavior, and Re-ID, but improvements were not uniform across metrics, classes, or sources. The second question is partly addressed by the successful use of lightweight temporal Conv1D aggregation for Behavior and task-specific mask-guided inputs. A final answer still depends on how those pathways are implemented in the integrated model.
+
+The third question---whether modular/task-private sharing improves on hard sharing and reduces negative transfer---cannot be answered before Runs 7 and 8. Consequently, the thesis does not yet provide a final research-question synthesis or integrated architecture verdict.
+
 \section{Supported Contributions -- Pending Final Synthesis}
-\drafttodo{CONCLUSION-02}{Summarize completed contributions from the final evidence map. Do not describe the integrated framework as evaluated until its results exist.}
+
+The stable pre-MTL contributions are the leakage-aware dataset protocols, the three completed RGB references, the three matched cattle-centered comparisons, explicit perception coverage, and a task-specific analysis that preserves mixed and negative findings. The final contribution list must add only those MTL findings that are supported by the executed E1 and E3 artifacts.
+
+\drafttodo{CONCLUSION-01}{After Runs 7 and 8, add the task-wise E0/E1/E3 results, quantify negative transfer in each task's native metric, and state the final integrated design without implying that missing labels were negatives.}
+
 \section{Limitations and Future Work -- Pending Final Synthesis}
-\drafttodo{CONCLUSION-03}{Retain unresolved provenance, input-integrity, label compatibility, perception and uncertainty limitations. Describe deferred experiments as future work.}
+
+Current limitations include unavailable biological cow IDs in ScienceDB, the absence of cow-disjoint evaluation in the primary Behavior stack, source-confounding of Walking, perception exclusions, combined-component attribution in Runs 4--6, oracle masks in Run 6, and single-run point estimates. External BCS, Behavior, and Re-ID stress tests are planned but are not reported as completed. Pose and viewpoint require task-dataset transfer validation before downstream fusion.
+
+\drafttodo{CONCLUSION-02}{Finalize limitations and future work after the MTL comparison. Retain the dataset, coverage, attribution, oracle-mask, external-validation, and uncertainty boundaries, and add any limitations revealed by Runs 7 and 8.}

@@ -1,0 +1,14 @@
+\begin{table}[htbp]
+\centering\small
+\caption[BCS RGB and cattle-centered comparison]{ScienceDB BCS results. The valid direct comparison is between the two 7,549-image matched rows; the full Run 1 result is included as the canonical reference.\evidence{E08,E24}}
+\label{tab:bcscomparison}
+\begin{tabular}{lrrrrrr}
+\toprule
+Configuration & $N$ & MAE & Acc@1 & Acc@0 & Bal. acc. & Macro-F1 \\
+\midrule
+Run 1 RGB, full test & 8,040 & 0.1848 & 86.74\% & 41.63\% & 40.41\% & 0.4110 \\
+Run 1 RGB, matched & 7,549 & 0.1929 & 84.95\% & 40.84\% & 40.23\% & 0.4074 \\
+Run 4 cattle-centered & 7,549 & \textbf{0.1709} & \textbf{89.40\%} & \textbf{43.57\%} & 39.70\% & 0.4039 \\
+\bottomrule
+\end{tabular}
+\end{table}

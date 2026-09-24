@@ -1,6 +1,6 @@
 \begin{table}[htbp]
 \centering\small
-\caption[Canonical baseline split sizes]{Canonical BCS and Behavior split units.\evidence{E04,E05}}\label{tab:splits}
+\caption[Canonical split and retrieval protocol sizes]{Canonical BCS, Behavior, and Re-ID experimental units.\evidence{E04,E05,E06}}\label{tab:splits}
 \begin{tabular}{llrl}
 \toprule
 Source & Partition & Examples & Groups \\
@@ -11,6 +11,11 @@ ScienceDB & Test & 8,040 & 845 bursts \\
 CVB + Beef & Train & 3,785 & 184 source/session \\
 CVB + Beef & Validation & 680 & 39 source/session \\
 CVB + Beef & Test & 809 & 44 source/session \\
+SideView learning & Train & 12,753 & 41 cows \\
+SideView learning & Validation & 2,683 & 41 cows \\
+SideView Protocol A & Gallery (parlor) & 36,811 & 69 cows \\
+SideView Protocol A & Query (barn) & 25,260 & 69 cows \\
+SideView Protocol A & Query (snapshots) & 607 & 63 cows \\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -1,0 +1,15 @@
+\begin{table}[htbp]
+\centering\small
+\caption[Perception coverage in completed enhanced evaluations]{Coverage of the cattle-centered inputs used in Runs 4--6. SideView coverage uses released ground-truth masks and is not an automatic-perception result.\evidence{E24,E26,E27,E29}}
+\label{tab:coverage}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{3.2cm}>{\raggedright\arraybackslash}p{2.8cm}>{\raggedright\arraybackslash}p{1.8cm}Y@{}}
+\toprule
+Evaluation & Retained / candidate & Coverage & Exclusions or boundary \\
+\midrule
+Run 4 BCS test & 7,549 / 8,040 & 93.89\% & 489 detector and 2 SAM failures. \\
+Run 5 Behavior Train+Val & 4,271 / 4,465 & 95.65\% & 194 invalid-mask exclusions. \\
+Run 5 Behavior test & 780 / 809 & 96.42\% & 29 perception exclusions. \\
+Run 6 SideView Protocol A & All gallery/query images & 100\% & Paired masks supplied by the dataset. \\
+\bottomrule
+\end{tabularx}
+\end{table}

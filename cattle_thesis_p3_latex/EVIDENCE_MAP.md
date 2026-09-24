@@ -1,85 +1,88 @@
 # Evidence map
 
-Read-only source: `main` at `9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2`. Writing branch: `thesis-writing`.
-This review revision is not a substitute for each experiment's historical execution revision.
+Reviewed repository snapshot: `a695a92e7c3b52b165053e182f6d3e3331b0866f` (2026-09-24).
 
-Published sources use the bibliography. E-identifiers link project claims to pinned records below. This is a writing ledger, not a replacement roadmap.
+This file keeps repository provenance out of the main academic narrative. Published claims use the bibliography; E-identifiers connect project-specific claims to versioned records. Runs 1–6 are complete. Runs 7–8 and their integrated conclusions remain pending.
 
 | ID | Source path at the reviewed snapshot | Supported content |
 |---|---|---|
-| E01 | `phase3_canonical_roadmap.md` | Scope, roles and scientific constraints |
-| E02 | `memory/state.md` | Current status, completed hydration and diagnostic limits |
-| E03 | `phase3_deadline_execution_2026-09-26.md` | Deadline comparison plan; stale status text not substituted for results |
-| E04 | `datasets/bcs/sciencedb/split_report.md` | Repaired bursts, counts and limitations |
-| E05 | `datasets/behavior/cvb_beef/split_report.md` | Labels, groups, partitions and split seed |
-| E06 | `datasets/id/sideviewcows2026/split_report.md` | Approved primary role and prepared protocols |
-| E07 | `datasets/dataset_registry.csv` | Metadata, availability and licenses; contradictions retained |
-| E08 | `artifacts/bcs_baseline/bcs_baseline_metrics.json` | BCS results, configuration, hashes and missing execution revision |
-| E09 | `artifacts/behavior_baseline/behavior_baseline_metrics.json` | Recorded Behavior results and selected epoch |
-| E10 | `scripts/train_sciencedb_bcs_baseline.py` | Ordinal implementation, input procedure and metrics |
-| E11 | `docs/audits/phase3_perception_feasibility.md` | Detection, segmentation and pose audit; restricted manual review |
-| E12 | `scripts/train_cvb_beef_behavior_baseline.py` | Input extraction, fallbacks, code defaults and aggregation |
-| E13 | `docs/research_log/2026-09-23_behavior_primary_stack_correction.md` | Approved Behavior role correction |
-| E14 | `docs/research_log/2026-09-23_sciencedb_bcs_baseline_full_training_results.md` | Runtime/cost narrative; history discrepancies retained |
-| E15 | `artifacts/behavior_baseline/behavior_baseline_30epoch_summary.md` | Full-run summary, not a cache audit |
-| E16 | `thesis_marking_rubrics.md` | All fourteen marking criteria and allocations |
-| E17 | `thesis template/main.tex` | Official format and chapter mapping |
-| E18 | `cattle_thesis_p2_latex/core/titlepage.tex` | Existing author roster; final details pending |
-| E19 | `docs/research_log/2026-09-23_sideviewcows2026_reid_baseline_smoke_test.md` | New Re-ID implementation and smoke log |
-| E20 | `scripts/train_sideview_reid_baseline.py` | Raw-feature classifier and normalized retrieval implementation |
-| E21 | `artifacts/reid_baseline_smoke/reid_baseline_metrics.json` | Smoke artifact explicitly skips Protocol A retrieval |
+| E01 | `phase3_canonical_roadmap.md` | Phase 3 scope, dataset roles, cattle-centered direction, and MTL boundary |
+| E02 | `memory/state.md` | Latest project status and completed experiment milestones |
+| E03 | `phase3_deadline_execution_2026-09-26.md` | Focused eight-run sequence and planned E1/E3 roles |
+| E04 | `datasets/bcs/sciencedb/split_report.md` | ScienceDB counts, repaired burst groups, split protection, and identity limitation |
+| E05 | `datasets/behavior/cvb_beef/split_report.md` | Behavior mappings, counts, source/session grouping, split seed, and Walking limitation |
+| E06 | `datasets/id/sideviewcows2026/split_report.md` | SideView scale and verified protocols, including identity-disjoint evaluation |
+| E07 | `datasets/dataset_registry.csv` | Primary/external dataset roles, availability, modalities, and license fields |
+| E08 | `artifacts/bcs_baseline/bcs_baseline_metrics.json` | Run 1 configuration, full-test metrics, confusion matrix, and split hashes |
+| E09 | `artifacts/behavior_baseline/behavior_baseline_metrics.json` | Run 2 full-test, class-specific, and source-specific metrics |
+| E10 | `scripts/train_sciencedb_bcs_baseline.py` | Run 1 ordinal-BCE implementation and physical-score mapping |
+| E11 | `docs/audits/phase3_perception_feasibility.md` | Detector, segmentation, pose, and restricted manual-review findings |
+| E12 | `scripts/train_cvb_beef_behavior_baseline.py` | Run 2 single-frame extraction and classifier implementation |
+| E13 | `docs/research_log/2026-09-23_behavior_primary_stack_correction.md` | Approved CVB+Beef primary Behavior role |
+| E14 | `docs/research_log/2026-09-23_sciencedb_bcs_baseline_full_training_results.md` | Run 1 training/runtime narrative and result interpretation |
+| E15 | `artifacts/behavior_baseline/behavior_baseline_30epoch_summary.md` | Run 2 selected checkpoint and full-run summary |
+| E16 | `thesis_marking_rubrics.md` | BRACU report criteria and chapter mapping |
+| E17 | `thesis template/main.tex` | Supplied report structure and front-matter conventions |
+| E18 | `cattle_thesis_p2_latex/core/titlepage.tex` | Existing author roster, subject to final administrative confirmation |
+| E19 | `docs/research_log/2026-09-23_sideviewcows2026_reid_baseline_smoke_test.md` | Run 3 pre-training execution validation |
+| E20 | `scripts/train_sideview_reid_baseline.py` | Run 3 raw-feature classifier and normalized retrieval implementation |
+| E21 | `artifacts/reid_baseline_smoke/reid_baseline_metrics.json` | Run 3 smoke-test scope; not used as final retrieval evidence |
+| E22 | `artifacts/reid_baseline/reid_baseline_metrics.json` | Run 3 full Protocol A Barn/Snapshot retrieval results |
+| E23 | `docs/research_log/2026-09-23_sideviewcows2026_reid_baseline_full_training_results.md` | Run 3 training and evaluation record |
+| E24 | `artifacts/bcs_perception_run4/bcs_perception_matched_test_comparison.json` | Run 4 coverage, matched Run 1 control, Run 4 metrics, and deltas |
+| E25 | `scripts/train_sciencedb_bcs_perception.py` | Run 4 four-channel ordinal model and binary-mask handling |
+| E26 | `artifacts/behavior_perception_cache/perception_summary.json` | Run 5 Train/Validation cache coverage, mask counts, exclusions, and class retention |
+| E27 | `artifacts/behavior_run5_test/run2_vs_run5_matched_comparison.json` | Run 5 matched test, class/source metrics, and Run 2 control |
+| E28 | `scripts/train_cvb_beef_behavior_tcn.py` | Run 5 sampling, four-channel frame encoder, and residual Conv1D implementation |
+| E29 | `artifacts/reid_perception_run6/reid_perception_metrics.json` | Run 6 oracle representation, integrity checks, training, and Protocol A results |
+| E30 | `scripts/train_sideview_reid_perception.py` | Run 6 GT-mask crop, fourth channel, and matched retrieval implementation |
+| E31 | `artifacts/viewpoint_real_finetune/test_evaluation_metrics.json` | Final held-out real-cattle viewpoint metrics |
+| E32 | `docs/research_log/2026-09-24_sciencedb_bcs_perception_full_training_results.md` | Run 4 full-training and matched-test narrative |
+| E33 | `docs/research_log/2026-09-24_run5_behavior_perception_test_evaluation_results.md` | Run 5 strict test gate and matched comparison narrative |
+| E34 | `docs/research_log/2026-09-24_sideviewcows2026_reid_perception_run6_full_training_results.md` | Run 6 full-training and Protocol A narrative |
 
 ## Claim coverage
 
-| Location | Evidence | Boundary |
+| Manuscript area | Evidence | Interpretation boundary |
 |---|---|---|
-| Introduction | E01--E06 | Objectives are not completed findings. |
-| Literature Review | Verified bibliography plus E01/E11 | Focused starting set, not a systematic review. |
-| Requirements, impacts and management | E01--E07, E14--E18 | No invented interviews, approvals, emissions or ROI. |
-| BCS methods/results | E04, E08, E10 | Burst-safe, not cow-disjoint; historical Git SHA missing. |
-| Behavior methods/results | E05, E09, E12, E15 | Full-run fallback use and execution provenance unresolved. |
-| Re-ID method/readiness | E19--E21 | Implemented and smoke-tested, not full retrieval evaluated. |
-| Perception findings | E02, E11 | Limited audit/diagnostic samples, not downstream benefits. |
-| Enhanced/temporal/MTL/external results | E01--E03 | Explicitly pending. |
+| Introduction and scope | E01–E07 | Final MTL contribution is not claimed. |
+| Literature review | Verified bibliography | Sample theses are style references only, never scientific evidence. |
+| Requirements, impacts, constraints | E01–E07, E16–E18 | No invented interviews, approval, ROI, emissions, or deployment trial. |
+| Run 1 BCS | E04, E08, E10, E14 | Burst-group-disjoint, not biological cow-disjoint; single run. |
+| Run 4 BCS | E24, E25, E32 | Matched perception-successful subset; combined crop+mask configuration. |
+| Run 2 Behavior | E05, E09, E12, E15 | Source/session-grouped; Walking is CVB-only; single frame. |
+| Run 5 Behavior | E26–E28, E33 | Combined representation+temporal change; matched 780-sequence test. |
+| Run 3 Re-ID | E06, E20, E22, E23 | Protocol A identity-disjoint; Barn and Snapshot reported separately. |
+| Run 6 Re-ID | E29, E30, E34 | Oracle GT segmentation-guided; not automatic SAM deployment evidence. |
+| Viewpoint | E31 | Own held-out test only; downstream transfer and synthetic-pretraining causality unproven. |
+| Runs 7–8 / final MTL | E01–E03 | Planned scientific roles only; no results or superiority claim. |
 
 ## Selected source blob identifiers
 
-BCS result: `862bb2377d3abad86a2f971319cedf26bb948457`.
-Behavior result: `6cb42799bcff29ebf9f5205fe819e5449427e4ac`.
-Behavior code: `587d32cb9b7b60aac8758529f31639bd63bde4b9`.
-Re-ID code: `b1fea82f598d3acd11efdef21b28b4199326872d`.
-Re-ID smoke result: `4231fdd2bc254fbac9d8c53dfcc60c925ff107e8`.
-Re-ID smoke log: `d2e5dfe1aaf8609957a6bb682704f6b46804485a`.
-Rubric: `b1f13eb4e3e238697fbd5270cf27cbdd66f12368`.
-Template main: `7e7be9d92e643738768d63270f59b5b06695becc`.
+| Artifact or implementation | Git blob |
+|---|---|
+| Run 3 metrics | `be599b3e67be459d703051b7fbdd9c4462befcad` |
+| Run 4 matched comparison | `4829cbca3ca7495e97536b61d1b5fc62ee8304b0` |
+| Run 4 implementation | `8eca87c261ad0dc6db22a2a588613f480d4711d9` |
+| Run 5 cache summary | `ae2b6e0f46b0711cea7c66bb62a1dfe9d78ea4b5` |
+| Run 5 matched comparison | `cf987e39ad49794e214cf05ccd106ad5e2f2cf12` |
+| Run 5 implementation | `79afbf4696a980e944b692baff80beee011a7d1a` |
+| Run 6 metrics | `57a64460371146021c44d69a0aa8738f847f7617` |
+| Run 6 implementation | `5a9ee0b54c82b698e8ad63777e3ed143bb211e4d` |
+| Viewpoint test metrics | `2f619233c8213e460231cb205aaf36ceb143a7ed` |
 
-## Recorded split SHA-256 values
+## Unresolved evidence boundaries
 
-ScienceDB train: `9f6b0bc716e01a2ab22208daff1c49e49fd450a4d7cf0a57b2979275ed33497a`
+1. Runs 1–6 are primarily single-run comparisons; no standard deviation, confidence interval, p-value, or significance test is available.
+2. The later Run 2-versus-Run 5 comparison artifact embeds a historical Run 2 class/source support breakdown that disagrees with the original Run 2 baseline artifact. The thesis treats the original artifact (E09) as authoritative for the canonical 809-sample result and uses E27 only for the explicitly matched 780-sample comparison; the inconsistent embedded historical breakdown is not reproduced.
+3. ScienceDB has no verified released biological cow IDs. Its results cannot be called unseen-cow evaluation.
+4. The primary Behavior protocol is source/session-grouped, not cow-disjoint; Walking is present only in CVB.
+5. Run 4 combines detector localization, cropping, SAM segmentation, and a binary mask channel. Their individual causal effects are not isolated.
+6. Run 5 combines cattle-centered inputs and temporal Conv1D aggregation. Their individual causal effects are not isolated.
+7. Run 6 uses released ground-truth masks. It does not validate automatic SAM-based Re-ID, and crop-versus-mask effects are not separated.
+8. The viewpoint classifier has a valid held-out result, but its transfer to the three downstream datasets was not tested. No same-split ImageNet-only control isolates the effect of MOO pretraining.
+9. External BCS, Behavior, and Re-ID datasets have planned roles but no completed evaluation artifacts in the reviewed snapshot.
+10. Runs 7 and 8 remain pending. Negative transfer, E1-versus-E3 performance, final model superiority, final Abstract, and final Conclusion cannot yet be completed.
+11. Final administrative details, permissions, ethics/AI-assistance disclosure, and team contribution records require author and institutional confirmation.
 
-ScienceDB validation: `e223e3c4c081ca5c9f993f7156dc791df97b6ea6d011b8b4b6f068590b3d975d`
-
-ScienceDB test: `eae459e031d06c4b1150ce2cbcdcb8259724b070b831341222b15c99e3626e5f`
-
-Behavior train: `117d3191b175f4a6f43dc3cfb92f1ecbe42230f7f46a01c2d67cb81d84177e30`
-
-Behavior validation: `897105d6266eba01b2b7bd45e2a7eb63bca7e9107faa202b07ba82e6d866b925`
-
-Behavior test: `0a67faf182a5ce8d3c02188656553310a6720a54d23f114b80d8b6093e00b30e`
-
-These values come from the result/split records. The raw datasets and complete split files were not independently re-audited in the writing environment.
-
-## Unresolved issues
-
-1. Behavior code allows synthetic failed-extraction inputs and CVB full-frame fallbacks. Existence is verified; use/count in the full run is not established.
-2. Behavior JSON lacks executed config, training seed, revision and split hashes. Split seed 2026 is not automatically the training seed.
-3. Source-specific Behavior Macro-F1 uses an implicit class list; Beef lacks true Walking.
-4. BCS run revision is UNKNOWN. Some narrative epoch-history values disagree with JSON; training curves are withheld.
-5. Deadline BCS pose configuration conflicts with the restricted negative manual pose review. Record an explicit design decision.
-6. CBVD-5 registry taxonomy conflicts with the verified publication. Reconcile imported labels before external mapping.
-7. SideView's stale external-role registry wording is superseded by its approved primary protocol report. Hydration and Re-ID smoke testing are complete; full retrieval is not.
-8. Ruchay registry availability and later visual sample availability do not establish complete raw hydration in every environment. Wider BCS support and Dryad's different scale/modality need a frozen protocol.
-9. Kaggle Beef reuse rights and final administrative/ethics details remain unresolved.
-10. Re-ID log diagram simplifies normalization placement; the draft follows actual code: classifier on raw features, retrieval on normalized features. Smoke log/JSON scopes differ and are not merged into a full result.
-
-No dataset, experiment script, result artifact, roadmap, memory file, previous thesis, sample paper or original template is changed by this writing task.
+No experimental source, dataset, roadmap, memory file, sample report, or prior thesis is modified by this thesis-writing task.

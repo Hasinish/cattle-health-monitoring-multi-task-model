@@ -1,95 +1,63 @@
 \section{Versioned Evidence Register}
-The records below support the working draft. Source revision:
-\par\medskip
-\sourcepath{9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2}
-\par\medskip
-This is the writing review snapshot, not every experiment's execution revision. No model was rerun during writing. The internal evidence map supplies recorded hashes and claim-level qualifications.
 
-\subsection*{E01 -- Scope, roles and scientific constraints}
-\sourcepath{phase3_canonical_roadmap.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/phase3_canonical_roadmap.md}{Pinned source record.}
+The manuscript was reviewed against repository commit
+\sourcepath{a695a92e7c3b52b165053e182f6d3e3331b0866f}.
+This is the latest Git commit inspected for writing; individual experiment artifacts may record an earlier or unknown execution revision. No model was rerun for the thesis rewrite.
 
-\subsection*{E02 -- Current status, completed hydration and diagnostic limits}
-\sourcepath{memory/state.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/memory/state.md}{Pinned source record.}
+\footnotesize
+\begin{longtable}{@{}p{0.8cm}p{6.0cm}p{7.1cm}@{}}
+\toprule
+\textbf{ID} & \textbf{Source} & \textbf{Use in the manuscript}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{ID} & \textbf{Source} & \textbf{Use in the manuscript}\\
+\midrule
+\endhead
+E01 & \path{phase3_canonical_roadmap.md} & Scope, scientific direction, and dataset roles.\\
+E02 & \path{memory/state.md} & Latest project and experiment status.\\
+E03 & \path{phase3_deadline_execution_2026-09-26.md} & Focused eight-run plan and E1/E3 roles.\\
+E04 & \path{datasets/bcs/sciencedb/split_report.md} & ScienceDB split counts and identity limitation.\\
+E05 & \path{datasets/behavior/cvb_beef/split_report.md} & Behavior mapping, grouping, and split counts.\\
+E06 & \path{datasets/id/sideviewcows2026/split_report.md} & SideView protocols and identity separation.\\
+E07 & \path{datasets/dataset_registry.csv} & Dataset roles, modalities, and availability.\\
+E08 & \path{artifacts/bcs_baseline/bcs_baseline_metrics.json} & Run 1 metrics and configuration.\\
+E09 & \path{artifacts/behavior_baseline/behavior_baseline_metrics.json} & Run 2 metrics.\\
+E10 & \path{scripts/train_sciencedb_bcs_baseline.py} & Ordinal-BCE implementation.\\
+E11 & \path{docs/audits/phase3_perception_feasibility.md} & Detector, mask, pose, and manual-review evidence.\\
+E12 & \path{scripts/train_cvb_beef_behavior_baseline.py} & Run 2 implementation.\\
+E13 & \path{docs/research_log/2026-09-23_behavior_primary_stack_correction.md} & Behavior dataset-role correction.\\
+E14 & \path{docs/research_log/2026-09-23_sciencedb_bcs_baseline_full_training_results.md} & Run 1 execution record.\\
+E15 & \path{artifacts/behavior_baseline/behavior_baseline_30epoch_summary.md} & Run 2 execution summary.\\
+E16 & \path{thesis_marking_rubrics.md} & BRACU report criteria.\\
+E17 & \path{thesis template/main.tex} & Supplied report structure.\\
+E18 & \path{cattle_thesis_p2_latex/core/titlepage.tex} & Draft author roster.\\
+E19 & \path{docs/research_log/2026-09-23_sideviewcows2026_reid_baseline_smoke_test.md} & Run 3 smoke validation.\\
+E20 & \path{scripts/train_sideview_reid_baseline.py} & Run 3 classifier and retrieval implementation.\\
+E21 & \path{artifacts/reid_baseline_smoke/reid_baseline_metrics.json} & Run 3 smoke scope only.\\
+E22 & \path{artifacts/reid_baseline/reid_baseline_metrics.json} & Run 3 full Protocol A results.\\
+E23 & \path{docs/research_log/2026-09-23_sideviewcows2026_reid_baseline_full_training_results.md} & Run 3 full-run record.\\
+E24 & \path{artifacts/bcs_perception_run4/bcs_perception_matched_test_comparison.json} & Run 4 coverage and matched comparison.\\
+E25 & \path{scripts/train_sciencedb_bcs_perception.py} & Run 4 four-channel model.\\
+E26 & \path{artifacts/behavior_perception_cache/perception_summary.json} & Run 5 cache coverage and exclusions.\\
+E27 & \path{artifacts/behavior_run5_test/run2_vs_run5_matched_comparison.json} & Run 5 matched task, class, and source metrics.\\
+E28 & \path{scripts/train_cvb_beef_behavior_tcn.py} & Run 5 temporal model and sampling.\\
+E29 & \path{artifacts/reid_perception_run6/reid_perception_metrics.json} & Run 6 representation and Protocol A results.\\
+E30 & \path{scripts/train_sideview_reid_perception.py} & Run 6 oracle crop-and-mask implementation.\\
+E31 & \path{artifacts/viewpoint_real_finetune/test_evaluation_metrics.json} & Held-out real-cattle viewpoint result.\\
+E32 & \path{docs/research_log/2026-09-24_sciencedb_bcs_perception_full_training_results.md} & Run 4 execution narrative.\\
+E33 & \path{docs/research_log/2026-09-24_run5_behavior_perception_test_evaluation_results.md} & Run 5 strict test-gate narrative.\\
+E34 & \path{docs/research_log/2026-09-24_sideviewcows2026_reid_perception_run6_full_training_results.md} & Run 6 full-run narrative.\\
+\bottomrule
+\end{longtable}
+\normalsize
 
-\subsection*{E03 -- Deadline comparison plan; stale status text not substituted for results}
-\sourcepath{phase3_deadline_execution_2026-09-26.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/phase3_deadline_execution_2026-09-26.md}{Pinned source record.}
+\section{Canonical Evaluation Boundaries}
 
-\subsection*{E04 -- Repaired bursts, counts and limitations}
-\sourcepath{datasets/bcs/sciencedb/split_report.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/datasets/bcs/sciencedb/split_report.md}{Pinned source record.}
+ScienceDB contains 37,045 training, 8,481 validation, and 8,040 test images in 3,958, 850, and 845 repaired burst groups. This supports sequence-safe evaluation, not a cow-disjoint claim. The Behavior protocol contains 3,785/680/809 Train/Validation/Test samples grouped by 267 source videos or sessions; Walking is available only in CVB. SideView Protocol A learns from 41 cows and evaluates 69 different cows using a 36,811-image parlor gallery, 25,260 barn queries, and 607 snapshot queries.\evidence{E04,E05,E06}
 
-\subsection*{E05 -- Labels, groups, partitions and split seed}
-\sourcepath{datasets/behavior/cvb_beef/split_report.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/datasets/behavior/cvb_beef/split_report.md}{Pinned source record.}
+Runs 4 and 5 use matched controls because their perception pipelines exclude some canonical samples. Run 4 and its Run 1 control share 7,549 test images. Run 5 and its Run 2 control share 780 test sequences. Run 6 uses all Protocol A inputs because SideView releases paired ground-truth masks, but its result is an oracle condition rather than automatic segmentation.\evidence{E24,E27,E29}
 
-\subsection*{E06 -- Approved primary role and prepared protocols}
-\sourcepath{datasets/id/sideviewcows2026/split_report.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/datasets/id/sideviewcows2026/split_report.md}{Pinned source record.}
+\section{Evidence Still Pending}
 
-\subsection*{E07 -- Metadata, availability and licenses; contradictions retained}
-\sourcepath{datasets/dataset_registry.csv}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/datasets/dataset_registry.csv}{Pinned source record.}
-
-\subsection*{E08 -- BCS results, configuration, hashes and missing execution revision}
-\sourcepath{artifacts/bcs_baseline/bcs_baseline_metrics.json}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/artifacts/bcs_baseline/bcs_baseline_metrics.json}{Pinned source record.}
-
-\subsection*{E09 -- Recorded Behavior results and selected epoch}
-\sourcepath{artifacts/behavior_baseline/behavior_baseline_metrics.json}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/artifacts/behavior_baseline/behavior_baseline_metrics.json}{Pinned source record.}
-
-\subsection*{E10 -- Ordinal implementation, input procedure and metrics}
-\sourcepath{scripts/train_sciencedb_bcs_baseline.py}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/scripts/train_sciencedb_bcs_baseline.py}{Pinned source record.}
-
-\subsection*{E11 -- Detection, segmentation and pose audit; restricted manual review}
-\sourcepath{docs/audits/phase3_perception_feasibility.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/docs/audits/phase3_perception_feasibility.md}{Pinned source record.}
-
-\subsection*{E12 -- Input extraction, fallbacks, code defaults and aggregation}
-\sourcepath{scripts/train_cvb_beef_behavior_baseline.py}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/scripts/train_cvb_beef_behavior_baseline.py}{Pinned source record.}
-
-\subsection*{E13 -- Approved Behavior role correction}
-\sourcepath{docs/research_log/2026-09-23_behavior_primary_stack_correction.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/docs/research_log/2026-09-23_behavior_primary_stack_correction.md}{Pinned source record.}
-
-\subsection*{E14 -- Runtime/cost narrative; history discrepancies retained}
-\sourcepath{docs/research_log/2026-09-23_sciencedb_bcs_baseline_full_training_results.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/docs/research_log/2026-09-23_sciencedb_bcs_baseline_full_training_results.md}{Pinned source record.}
-
-\subsection*{E15 -- Full-run summary, not a cache audit}
-\sourcepath{artifacts/behavior_baseline/behavior_baseline_30epoch_summary.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/artifacts/behavior_baseline/behavior_baseline_30epoch_summary.md}{Pinned source record.}
-
-\subsection*{E16 -- All fourteen marking criteria and allocations}
-\sourcepath{thesis_marking_rubrics.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/thesis_marking_rubrics.md}{Pinned source record.}
-
-\subsection*{E17 -- Official format and chapter mapping}
-\sourcepath{thesis template/main.tex}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/thesis%20template/main.tex}{Pinned source record.}
-
-\subsection*{E18 -- Existing author roster; final details pending}
-\sourcepath{cattle_thesis_p2_latex/core/titlepage.tex}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/cattle_thesis_p2_latex/core/titlepage.tex}{Pinned source record.}
-
-\subsection*{E19 -- New Re-ID implementation and smoke log}
-\sourcepath{docs/research_log/2026-09-23_sideviewcows2026_reid_baseline_smoke_test.md}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/docs/research_log/2026-09-23_sideviewcows2026_reid_baseline_smoke_test.md}{Pinned source record.}
-
-\subsection*{E20 -- Raw-feature classifier and normalized retrieval implementation}
-\sourcepath{scripts/train_sideview_reid_baseline.py}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/scripts/train_sideview_reid_baseline.py}{Pinned source record.}
-
-\subsection*{E21 -- Smoke artifact explicitly skips Protocol A retrieval}
-\sourcepath{artifacts/reid_baseline_smoke/reid_baseline_metrics.json}
-\par\href{https://github.com/Hasinish/cattle-health-monitoring-multi-task-model/blob/9baa0c68355d59a039a4c3ce17d71a6c1e16d4e2/artifacts/reid_baseline_smoke/reid_baseline_metrics.json}{Pinned source record.}
-
-\section{Prepared SideView Protocols}
-The identity-disjoint protocol has 77 training, 11 validation and 22 test cows, with 57,605, 7,225 and 15,430 images. The new baseline instead uses Protocol A's 41 training identities, with Protocol D recording partitions for development. These protocols must not be interchanged when reporting results.\evidence{E06,E19,E20}
-
-The report reconstructs 3,604 recording groups using a 60-second adjacency rule. This is the implemented heuristic; independence claims remain bounded by available metadata and checks. A prepared query/gallery table is not retrieval performance.\evidence{E06}
+Runs 7 and 8 require executed code, configurations, checkpoints, task-wise metrics, and matched single-task comparisons before the final negative-transfer analysis can be written. External-dataset results, repeated-seed uncertainty, and deployment validation are also absent unless later artifacts are added. These missing items are not inferred from plans or dataset availability.
