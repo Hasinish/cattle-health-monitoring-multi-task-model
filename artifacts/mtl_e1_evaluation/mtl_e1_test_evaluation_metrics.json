@@ -2,7 +2,7 @@
   "experiment": "Phase 3 Run 7 E1 Hard-Shared MTL Official Held-Out Evaluation",
   "evaluated_checkpoint": "/mtl-checkpoints/mtl_e1_hard_shared/mtl_e1_best.pth",
   "checkpoint_selection_criterion": "Predefined Minimum Validation E1 Objective (Epoch 3, val_e1_objective = 0.40036)",
-  "evaluation_timestamp": "2026-09-24 22:07:27 UTC",
+  "evaluation_timestamp": "2026-09-24 23:21:54 UTC",
   "populations": {
     "bcs_test_images": 7549,
     "behavior_test_sequences": 780,
