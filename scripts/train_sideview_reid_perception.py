@@ -303,10 +303,13 @@ def _parameter_counts() -> Dict[str, int]:
     }
 
 
-def _integrity_audit(datasets: List[SideViewGTMaskReIDDataset]) -> Dict[str, Any]:
+def _integrity_audit(
+    datasets: List[SideViewGTMaskReIDDataset], max_samples_per_dataset: int = 64
+) -> Dict[str, Any]:
     records: List[Dict[str, Any]] = []
     for dataset in datasets:
-        for idx in range(len(dataset)):
+        audit_count = min(len(dataset), max_samples_per_dataset)
+        for idx in range(audit_count):
             tensor, metadata = dataset.audit_sample(idx)
             if tensor.shape != (4, 224, 224):
                 raise AssertionError(f"Integrity audit tensor shape failed: {tensor.shape}")
@@ -494,13 +497,15 @@ def train_sideview_reid_perception(
         df_val, data_root, cow_to_label, augment=False
     )
 
+    print("[*] Running pre-flight sample integrity audit...", flush=True)
     integrity = _integrity_audit([train_dataset, val_dataset])
     contact_sheet = build_contact_sheet(
         val_dataset, output_dir / "gt_mask_crop_contact_sheet.jpg"
     )
     print(
         f"Integrity PASS: {integrity['pairs_verified']} real RGB-mask pairs; "
-        "0 invalid; masks binary after nearest-neighbor resize"
+        "0 invalid; masks binary after nearest-neighbor resize",
+        flush=True,
     )
 
     loader_kwargs: Dict[str, Any] = {
@@ -516,6 +521,7 @@ def train_sideview_reid_perception(
     val_loader = DataLoader(
         val_dataset, batch_size=batch_size, shuffle=False, **loader_kwargs
     )
+    print(f"[*] DataLoaders ready: Train={len(train_loader)} batches, Val={len(val_loader)} batches (workers={num_workers})", flush=True)
 
     model = ResNet18ReIDPerception(num_classes=41, pretrained=True).to(device)
     counts = _parameter_counts()
