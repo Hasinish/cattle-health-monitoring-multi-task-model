@@ -385,7 +385,7 @@ def smoke_test_remote(sample_size: int = 64, epochs: int = 2, batch_size: int = 
 @app.function(
     gpu="L40S",  # or T4 / configurable
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
-    timeout=7200,
+    timeout=14400,
     cpu=8.0,
     memory=32768,
 )
@@ -409,10 +409,47 @@ def train_full_remote(epochs: int = 30, batch_size: int = 64, lr: float = 1e-4, 
         seed=seed,
         smoke=False,
         device_str="cuda",
-        num_workers=4,
+        num_workers=8,
     )
     checkpoint_vol.commit()
     return metrics
+
+
+# ==============================================================================
+# 5. DEDICATED PROTOCOL A EVALUATION (LOADS SAVED CHECKPOINT)
+# ==============================================================================
+@app.function(
+    gpu="L40S",
+    volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
+    timeout=14400,
+    cpu=8.0,
+    memory=32768,
+)
+def evaluate_protocol_a_remote(batch_size: int = 128, num_workers: int = 8) -> Dict[str, Any]:
+    import sys
+    sys.path.insert(0, "/root")
+    sys.path.insert(0, "/root/scripts")
+    from scripts.train_sideview_reid_viewpoint import evaluate_protocol_a_from_checkpoint
+
+    out_dir = Path("/checkpoints/sideview_reid_viewpoint_ablation")
+    metrics = evaluate_protocol_a_from_checkpoint(
+        data_root=Path("/data/sideviewcows2026"),
+        protocols_dir=Path("/root/datasets/id/sideviewcows2026"),
+        viewpoint_checkpoint_path=Path("/checkpoints/viewpoint_aux/viewpoint_resnet18_real_best.pth"),
+        checkpoint_dir=out_dir,
+        batch_size=batch_size,
+        num_workers=num_workers,
+        device_str="cuda",
+    )
+    checkpoint_vol.commit()
+
+    metrics_file = out_dir / "reid_viewpoint_metrics.json"
+    metrics_bytes = metrics_file.read_bytes() if metrics_file.exists() else b"{}"
+
+    return {
+        "metrics": metrics,
+        "metrics_bytes": metrics_bytes,
+    }
 
 
 # ==============================================================================
@@ -474,8 +511,32 @@ def smoke_test(sample_size: int = 64, epochs: int = 2, batch_size: int = 64, see
 
 
 @app.local_entrypoint()
+def evaluate_protocol_a(batch_size: int = 128, num_workers: int = 8):
+    print(f"[LOCAL] Launching Protocol A retrieval evaluation on dryousufmozumder (batch_size={batch_size}, workers={num_workers})...")
+    res = evaluate_protocol_a_remote.remote(batch_size=batch_size, num_workers=num_workers)
+    metrics = res["metrics"]
+
+    local_dir = REPO_ROOT / "artifacts" / "reid_viewpoint_ablation"
+    local_dir.mkdir(parents=True, exist_ok=True)
+    if "metrics_bytes" in res and res["metrics_bytes"]:
+        (local_dir / "reid_viewpoint_metrics.json").write_bytes(res["metrics_bytes"])
+    else:
+        with open(local_dir / "reid_viewpoint_metrics.json", "w", encoding="utf-8") as f:
+            json.dump(metrics, f, indent=2)
+
+    print("\n" + "=" * 78)
+    print("PROTOCOL A RETRIEVAL RESULTS (VIEWPOINT ABLATION):")
+    barn = metrics["retrieval_results"]["query_barn"]
+    snap = metrics["retrieval_results"]["query_snapshots"]
+    print(f"  Barn -> Parlor:      Rank-1: {barn['rank_1']:.2f}% | Rank-5: {barn['rank_5']:.2f}% | Rank-10: {barn['rank_10']:.2f}% | mAP: {barn['mAP']:.2f}%")
+    print(f"  Snapshots -> Parlor: Rank-1: {snap['rank_1']:.2f}% | Rank-5: {snap['rank_5']:.2f}% | Rank-10: {snap['rank_10']:.2f}% | mAP: {snap['mAP']:.2f}%")
+    print("=" * 78)
+
+
+@app.local_entrypoint()
 def main(epochs: int = 30, batch_size: int = 64, lr: float = 1e-4, seed: int = 2026):
     print("[LOCAL] Launching full 30-epoch training and Protocol A evaluation...")
     metrics = train_full_remote.remote(epochs=epochs, batch_size=batch_size, lr=lr, seed=seed)
     print("\n[OK] Full training finished!")
     print(json.dumps(metrics, indent=2))
+

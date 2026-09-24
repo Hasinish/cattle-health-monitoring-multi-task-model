@@ -600,6 +600,105 @@ def train_sideview_reid_viewpoint(
     return metrics
 
 
+def evaluate_protocol_a_from_checkpoint(
+    data_root: Path,
+    protocols_dir: Path,
+    viewpoint_checkpoint_path: Path,
+    checkpoint_dir: Path,
+    batch_size: int = 128,
+    num_workers: int = 8,
+    device_str: str = "cuda",
+) -> Dict[str, Any]:
+    """Evaluates canonical Protocol A retrieval directly from pre-trained checkpoints without re-training."""
+    t0 = time.perf_counter()
+    device = torch.device(device_str if (torch.cuda.is_available() and device_str == "cuda") else "cpu")
+    print("=" * 80)
+    print("SIDEVIEWCOWS2026 RE-ID + VIEWPOINT PROTOCOL A RETRIEVAL EVALUATION")
+    print(f"Device               : {device} ({torch.cuda.get_device_name(0) if device.type == 'cuda' else 'CPU'})")
+    print(f"Checkpoint Directory : {checkpoint_dir}")
+    print(f"Batch Size           : {batch_size} | Num Workers: {num_workers}")
+    print("=" * 80)
+
+    best_ckpt_path = checkpoint_dir / "reid_viewpoint_best.pth"
+    latest_ckpt_path = checkpoint_dir / "reid_viewpoint_latest.pth"
+    if not best_ckpt_path.exists():
+        raise FileNotFoundError(f"Missing best checkpoint: {best_ckpt_path}")
+
+    best_ckpt = torch.load(best_ckpt_path, map_location=device, weights_only=False)
+    latest_ckpt = torch.load(latest_ckpt_path, map_location=device, weights_only=False) if latest_ckpt_path.exists() else {}
+
+    model = ResNet18ReIDViewpointAblation(
+        num_classes=41,
+        viewpoint_checkpoint_path=str(viewpoint_checkpoint_path),
+        pretrained=False,
+    ).to(device)
+    model.load_state_dict(best_ckpt["model_state_dict"])
+    model.assert_frozen_viewpoint()
+    model.eval()
+
+    proto_a_path = protocols_dir / "protocol_cross_setting.csv"
+    if not proto_a_path.exists():
+        raise FileNotFoundError(f"Missing Protocol A CSV: {proto_a_path}")
+    df_a = pd.read_csv(proto_a_path)
+
+    evaluation_cows = sorted(df_a[df_a["setting_role"].ne("train")]["individual_id"].astype(str).unique())
+    gallery_df = df_a[df_a["setting_role"].eq("gallery")].reset_index(drop=True)
+    barn_df = df_a[df_a["setting_role"].eq("query_barn")].reset_index(drop=True)
+    snapshots_df = df_a[df_a["setting_role"].eq("query_snapshots")].reset_index(drop=True)
+
+    print(f"[*] Evaluation Cows: {len(evaluation_cows)} (Held-out Protocol A)")
+    print(f"[*] Gallery Parlor: {len(gallery_df)} | Query Barn: {len(barn_df)} | Query Snapshots: {len(snapshots_df)}")
+
+    dummy_label_map = {c: 0 for c in evaluation_cows}
+    eval_loaders = []
+    for frame in (gallery_df, barn_df, snapshots_df):
+        ds = SideViewGTMaskReIDDataset(frame, data_root, dummy_label_map, augment=False)
+        eval_loaders.append(DataLoader(ds, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True))
+
+    print("\n[*] 1/3 Extracting Gallery Parlor Embeddings...")
+    gallery_feats, gallery_ids = extract_dataset_embeddings(model, eval_loaders[0], device, desc="Gallery Parlor")
+    print("\n[*] 2/3 Extracting Query Barn Embeddings...")
+    barn_feats, barn_ids = extract_dataset_embeddings(model, eval_loaders[1], device, desc="Query Barn")
+    print("\n[*] 3/3 Extracting Query Snapshots Embeddings...")
+    snap_feats, snap_ids = extract_dataset_embeddings(model, eval_loaders[2], device, desc="Query Snapshots")
+
+    print("\n[*] Computing Protocol A retrieval metrics (Barn -> Parlor)...")
+    barn_eval = evaluate_retrieval_chunked(barn_feats, barn_ids, gallery_feats, gallery_ids)
+    print(f"    Rank-1: {barn_eval['rank_1']:.2f}% | Rank-5: {barn_eval['rank_5']:.2f}% | Rank-10: {barn_eval['rank_10']:.2f}% | mAP: {barn_eval['mAP']:.2f}%")
+
+    print("\n[*] Computing Protocol A retrieval metrics (Snapshots -> Parlor)...")
+    snap_eval = evaluate_retrieval_chunked(snap_feats, snap_ids, gallery_feats, gallery_ids, chunk_size=607)
+    print(f"    Rank-1: {snap_eval['rank_1']:.2f}% | Rank-5: {snap_eval['rank_5']:.2f}% | Rank-10: {snap_eval['rank_10']:.2f}% | mAP: {snap_eval['mAP']:.2f}%")
+
+    metrics = {
+        "task": "sideviewcows2026_reid_viewpoint_ablation",
+        "condition": "SideViewCows2026 GT-Mask + Viewpoint Prior (ResNet-18 Real Cattle 3-Class)",
+        "status": "EVALUATION_COMPLETE",
+        "smoke": False,
+        "seed": best_ckpt.get("seed", 2026),
+        "epochs": latest_ckpt.get("epoch", 30),
+        "best_epoch": best_ckpt.get("epoch", -1),
+        "best_val_top1_acc": best_ckpt.get("best_val_metric", -1.0),
+        "val_metrics_at_best": best_ckpt.get("val_metrics", {}),
+        "history": latest_ckpt.get("history", []),
+        "parameter_counts": best_ckpt.get("parameter_counts", {}),
+        "retrieval_results": {
+            "query_barn": barn_eval,
+            "query_snapshots": snap_eval,
+        },
+        "held_out_protocol_a_images_loaded": len(gallery_df) + len(barn_df) + len(snapshots_df),
+        "evaluation_elapsed_sec": round(time.perf_counter() - t0, 2),
+    }
+
+    metrics_path = checkpoint_dir / "reid_viewpoint_metrics.json"
+    with open(metrics_path, "w", encoding="utf-8") as f:
+        json.dump(metrics, f, indent=2)
+    print(f"\n[OK] Saved complete metrics to {metrics_path}")
+
+    return metrics
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="SideViewCows2026 Re-ID + Viewpoint Ablation")
     parser.add_argument("--data-root", type=str, default="/data/sideviewcows2026")

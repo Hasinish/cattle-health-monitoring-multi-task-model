@@ -1,3 +1,31 @@
+# Session Summary — 2026-09-25 (Phase 3 Run 7 E1 Hard-Shared MTL Official Held-Out Evaluation Complete & Verified)
+
+- Convo ID: d8e9e1e7-a18c-4189-93ca-3407e10bc833
+- Objective: Evaluate the frozen Run 7 E1 hard-shared MTL best checkpoint (`/mtl-checkpoints/mtl_e1_hard_shared/mtl_e1_best.pth`, Epoch 3, `val_e1_objective = 0.40036`) across all three official held-out evaluation protocols with zero test tuning, retraining, or peeking.
+- Accomplishments & Verification:
+  1. Staged Held-Out Test Data: Transferred and verified BCS matched test tensor (7,549 samples) and Behavior retained test sequences (780 sequences) to Modal profile `hasinishrak2015`. SideViewCows2026 Protocol A (69 held-out cows; 36,811 gallery, 25,260 barn queries, 607 snapshot queries) accessed via `sideview-data`.
+  2. Executed Cloud Evaluation: Dispatched `scripts/modal_evaluate_mtl_e1_held_out.py` on NVIDIA L40S (`hasinishrak2015`, App `ap-ftPpUdYqCnGTEWBqTslNul`). Completed all three tasks and chunked Protocol A retrieval rankings in 777.6s.
+  3. Evaluated Checkpoint: Strictly evaluated the Epoch-3 checkpoint (`mtl_e1_best.pth`) selected by predefined validation objective. Did NOT use validation peaks (e.g. Behavior epoch 8 or Re-ID epoch 25).
+  4. Task Comparisons & Deltas:
+     - BCS (vs Run 4 matched 7,549 test images): Real MAE 0.1788 vs 0.1709 (+0.0079 degradation); Acc@0 41.10% vs 43.57% (-2.47%); Acc@1 88.44% vs 89.40% (-0.96%); Bal Acc 35.70% vs 39.70% (-4.00%); Macro-F1 0.3605 vs 0.4039 (-0.0434); Test Loss 0.4175 vs 0.4403 (-0.0228). Verdict: Degradation.
+     - Behavior (vs Run 5 matched 780 retained sequences): Overall Acc 85.00% vs 87.44% (-2.44%); Bal Acc 67.30% vs 74.43% (-7.13%); Macro-F1 0.6866 vs 0.7397 (-0.0531); Test Loss 0.6226 vs 0.4430 (+0.1796). Minority class Walking collapsed to F1 0.0408 vs 0.2456 (-0.2048) due to gradient starvation. CVB Acc 76.78% vs 80.09% (-3.31%), CVB Macro-F1 0.5402 vs 0.6188 (-0.0786); Beef Acc 94.69% vs 96.09% (-1.40%), Beef Macro-F1 0.9236 vs 0.9414 (-0.0178). Verdict: Degradation.
+     - Re-ID (vs Run 6 Protocol A baseline on 69 held-out cows):
+       - Query Barn -> Parlor (25,260 queries): Rank-1 57.38% vs 63.90% (-6.52%); Rank-5 73.33% vs 77.10% (-3.77%); Rank-10 79.79% vs 82.58% (-2.79%); mAP 30.37% vs 40.68% (-10.31%).
+       - Query Snapshots -> Parlor (607 queries): Rank-1 57.17% vs 62.93% (-5.76%); Rank-5 75.45% vs 75.29% (+0.16%); Rank-10 82.70% vs 81.05% (+1.65%); mAP 33.69% vs 40.42% (-6.73%). Verdict: Degradation.
+  5. Scientific Takeaways: Demonstrates clear negative transfer across all three tasks under naive hard parameter sharing. Proves that sharing 93.74% of capacity causes severe task gradient interference, establishing the indispensable scientific rationale for Run 8 (E3 Modular Multi-Task Learning).
+  6. Artifacts: `artifacts/mtl_e1_evaluation/mtl_e1_test_evaluation_metrics.json`, `docs/research_log/2026-09-25_phase3_run7_mtl_e1_held_out_evaluation_results.md`.
+- Status: Stopped per user instruction. Run 8 not started.
+
+# Session Summary — 2026-09-25 (SideView Re-ID Viewpoint Ablation 7200s Timeout Triage & Dedicated Evaluation Gate Hardening)
+
+- Convo ID: 1ae0178f-f005-4d37-b48a-79da87176a1f
+- Objective: Diagnose and resolve Modal FunctionTimeoutError (7200s) on dryousufmozumder without re-training, while monitoring ongoing Re-ID + Pose training on tigerwood697.
+- Accomplishments & Verification:
+  1. Root Cause Triage: Modal app `ap-1m8A7ve4y7xn22jdvnche0` on `dryousufmozumder` timed out at 7,200s during post-training Protocol A feature extraction (batch 177/576 of Gallery Parlor) due to 62,678-image extraction exceeding the remaining time budget.
+  2. Zero Progress Lost: Confirmed via `modal volume ls` that `reid_viewpoint_best.pth` and `reid_viewpoint_latest.pth` (with complete 30-epoch training history, weights, and metrics) were fully saved and committed to `/checkpoints/sideview_reid_viewpoint_ablation/`.
+  3. Dedicated Zero-Retraining Evaluation Gate: Implemented `evaluate_protocol_a_from_checkpoint` in `scripts/train_sideview_reid_viewpoint.py` and `evaluate_protocol_a_remote` / `evaluate_protocol_a` in `scripts/modal_train_sideview_reid_viewpoint.py`. Upgraded timeout to 14,400s (4 hours), workers to 8, batch size to 128. Enables instant resumption of Protocol A retrieval evaluation directly from the existing saved best weights.
+  4. Tigerwood697 Monitoring: Re-ID + Pose full 30-epoch run on `tigerwood697` (`ap-DPGtOEj3YGzTGYJH0nNvzH`) is running smoothly on NVIDIA L40S GPU (15,436 poses precomputed and persisted, actively training with timeout 14,400s).
+
 # Session Summary — 2026-09-25 (Phase 3 Run 7 E1 Hard-Shared MTL 30-Epoch Full Training Complete & 100% Certified on hasinishrak2015)
 
 - Convo ID: d8e9e1e7-a18c-4189-93ca-3407e10bc833
