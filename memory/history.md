@@ -1,4 +1,16 @@
-# Session Summary — 2026-09-25 (Phase 3 Run 7 E1 Hard-Shared MTL Official Held-Out Evaluation Complete & Verified)
+# Session Summary — 2026-09-25 (SideView Re-ID + Viewpoint Ablation Full Protocol A Evaluation Complete)
+
+- Convo ID: 97e51fe5-68bd-4b5c-a515-62d78c5c1c83
+- Objective: Properly document and sync the completed SideViewCows2026 Re-ID + Viewpoint Ablation Protocol A evaluation into GitHub using measured facts only.
+- Accomplishments & Verification:
+  1. Verified Checkpoint & Metrics: App `ap-AeQjQdRmqaL05QDCRVtGJi` on Modal profile `dryousufmozumder` completed chunked Protocol A retrieval evaluation across all 62,678 held-out images (36,811 gallery, 25,260 barn queries, 607 snapshot queries across 69 unseen cows) in 653.7s.
+  2. Protocol A Retrieval Measured Facts:
+     - Query Snapshots -> Parlor (607 queries): **Rank-1: 65.40%**, **Rank-5: 78.42%**, **Rank-10: 83.03%**, **mAP: 41.17%** (vs Run 6: Rank-1 62.93%, mAP 40.42%).
+     - Query Barn -> Parlor (25,260 queries): **Rank-1: 63.41%**, **Rank-5: 77.29%**, **Rank-10: 83.02%**, **mAP: 38.32%** (vs Run 6: Rank-1 63.90%, mAP 40.68%).
+  3. Comparison to Run 6 Baseline: Snapshots metrics improved across all retrieval thresholds and mAP; Barn results were mixed (Rank-1 and mAP lower, Rank-5 and Rank-10 higher).
+  4. Documentation & Sync: Created `docs/research_log/2026-09-25_sideviewcows2026_reid_viewpoint_ablation_full_training_results.md`, updated `docs/research_log/README.md`, updated `memory/state.md`.
+
+# Session Summary — 2026-09-25 (Phase 3 Run 7 E1 Hard-Shared MTL Official Held-Out Evaluation Results)
 
 - Convo ID: d8e9e1e7-a18c-4189-93ca-3407e10bc833
 - Objective: Evaluate the frozen Run 7 E1 hard-shared MTL best checkpoint (`/mtl-checkpoints/mtl_e1_hard_shared/mtl_e1_best.pth`, Epoch 3, `val_e1_objective = 0.40036`) across all three official held-out evaluation protocols with zero test tuning, retraining, or peeking.
