@@ -1,3 +1,15 @@
+# Session Summary — 2026-09-25 (CVB+Beef Behavior Viewpoint Feasibility Audit & Cloud Smoke Certification Complete)
+
+- Convo ID: d8e9e1e7-a18c-4189-93ca-3407e10bc833
+- Objective: Transfer certified real-cattle viewpoint checkpoint to `hasinishrak2015`, conduct viewpoint feasibility audit on authentic Run-5 CVB+Beef train/val sequences, and smoke-certify controlled Run 5 + Viewpoint model on Modal Tesla T4.
+- Accomplishments & Verification:
+  1. Checkpoint Transfer & Bit Identity: Transferred `viewpoint_resnet18_real_best.pth` (134,275,929 bytes) from `tigerwood693` (`viewpoint-checkpoints`) to `hasinishrak2015` (`mtl-checkpoints/viewpoint_aux/`). Verified bit-identical SHA-256: `a93b9232e640388447f994cbffe93e6115d1af18e9188aa32cd117aeca454d1a`.
+  2. Viewpoint Transfer Sanity Audit (N=54 sequences, 432 frames, train/val only): Evaluated deterministic stratified sample (seed 2026, 6 per cell across all 9 source x class cells: 5 CVB, 4 Beef; 4 train, 2 val). Results: 41.90% front, 43.29% side, 14.81% rear (non-degenerate: PASS); mean confidence 0.7402 (median 0.7510); mean entropy 0.6122 nats (max 1.0986 nats); low-confidence rate (<50%) 12.04%; temporal adjacent transition stability 82.54%; temporally constant sequences 57.41% (31/54 seqs with 0 flips); mean switches 1.22. (Strictly transfer sanity metrics, NOT viewpoint accuracy).
+  3. High Source / Camera Shortcut Risk Discovered: Total Variation Distance = 0.7646 between sources. CVB (barn CCTV) predicts 7.9% front, 70.8% side, 21.2% rear, whereas Kaggle Beef (pasture/feedlot) predicts 84.4% front, 8.8% side, 6.8% rear. High risk of dataset shortcut learning if injected into temporal model.
+  4. Controlled Run 5 + Viewpoint Architecture: Run 5 visual 4-channel ResNet-18 (512-D) + Viewpoint MLP (3->16->16, 400 params) -> fused 528-D per-frame feature -> TCN(in_features=528, hidden=256, 5 classes; 740,357 params). Total trainable params: 11,920,405 (+16,784 / +0.14% vs Run 5). Frozen viewpoint network: 11,178,051 params. Total params: 23,098,456.
+  5. Modal Tesla T4 Smoke Test: Remote smoke test on Tesla T4 (`hasinishrak2015`, App `ap-zvPm0AfMAK9vPE8pQpsuWj`): verified zero viewpoint gradients, train loss dropped monotonically 1.8819 -> 0.6371 (-1.2448), val acc 75.0%, bit-identical checkpoint reload (`max_logit_diff == 0.00000000`), zero test evaluations.
+  6. Stop Condition Respected & Scientific Verdict: Full training was NOT launched. Behavior + Viewpoint ablation is deferred / not recommended for primary track due to high source shortcut risk and strong existing Run 5 baseline (74.43% balanced accuracy).
+
 # Session Summary — 2026-09-25 (SideViewCows2026 Re-ID + Pose Ablation 4 Fixes, Unit Testing & Cloud Re-Smoke Certified on tigerwood697)
 
 - Convo ID: 1ae0178f-f005-4d37-b48a-79da87176a1f

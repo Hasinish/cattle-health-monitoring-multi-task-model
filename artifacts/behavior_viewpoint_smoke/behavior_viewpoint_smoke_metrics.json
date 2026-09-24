@@ -1,0 +1,28 @@
+{
+  "status": "PASS",
+  "smoke_timestamp": "2026-09-24 19:42:24 UTC",
+  "architecture": {
+    "model_class": "BehaviorTemporalViewpointModel",
+    "visual_backbone": "4-channel ResNet-18 (512-D per frame)",
+    "viewpoint_network": "Frozen ResNet-18 (3 classes: front, side, rear, 512 -> 3)",
+    "viewpoint_mlp": "Linear(3, 16) -> LN -> ReLU -> Linear(16, 16) -> LN (400 params)",
+    "fused_feature_dim": 528,
+    "temporal_network": "1D TCN (2 Conv1d blocks, hidden_dim=256, AdaptiveAvgPool1d, Linear(256, 5))",
+    "trainable_parameters": 11920405,
+    "frozen_parameters": 11178051,
+    "total_parameters": 23098456,
+    "parameter_delta_vs_run5": 16784,
+    "parameter_delta_pct": 0.141
+  },
+  "smoke_training": {
+    "epochs": 2,
+    "train_loss_history": [
+      1.8819,
+      0.6371
+    ],
+    "loss_drop": 1.2448,
+    "viewpoint_gradients_asserted_zero": true,
+    "checkpoint_reload_max_logit_diff": 0.0,
+    "test_split_evaluated": false
+  }
+}

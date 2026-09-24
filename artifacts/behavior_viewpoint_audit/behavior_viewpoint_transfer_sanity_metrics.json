@@ -1,0 +1,289 @@
+{
+  "audit_timestamp": "2026-09-24 19:41:38 UTC",
+  "model_name": "Frozen Real-Cattle Viewpoint ResNet-18 (3 Classes: front, side, rear)",
+  "checkpoint_sha256": "a93b9232e640388447f994cbffe93e6115d1af18e9188aa32cd117aeca454d1a",
+  "sample_seed": 2026,
+  "sample_size_sequences": 54,
+  "sample_size_frames": 432,
+  "overall": {
+    "predicted_distribution": {
+      "front": 0.419,
+      "side": 0.4329,
+      "rear": 0.1481
+    },
+    "mean_confidence": 0.7402,
+    "median_confidence": 0.751,
+    "mean_entropy_nats": 0.6122,
+    "low_confidence_rate_lt_05": 0.1204,
+    "mean_temporal_transition_stability": 0.8254,
+    "temporally_constant_sequence_rate": 0.5741,
+    "mean_class_switches_per_sequence": 1.22,
+    "is_non_degenerate": true,
+    "source_shortcut_risk_level": "HIGH",
+    "source_tvd": 0.7646
+  },
+  "by_source": {
+    "cvb": {
+      "total_sequences": 30,
+      "total_frames": 240,
+      "distribution": {
+        "front": 0.0792,
+        "side": 0.7083,
+        "rear": 0.2125
+      },
+      "mean_confidence": 0.6942,
+      "mean_entropy_nats": 0.7222,
+      "low_confidence_rate": 0.1375,
+      "mean_temporal_stability": 0.8238,
+      "temporally_constant_rate": 0.5333,
+      "mean_class_switches": 1.23
+    },
+    "beef_cattle_behavior": {
+      "total_sequences": 24,
+      "total_frames": 192,
+      "distribution": {
+        "front": 0.8438,
+        "side": 0.0885,
+        "rear": 0.0677
+      },
+      "mean_confidence": 0.7978,
+      "mean_entropy_nats": 0.4746,
+      "low_confidence_rate": 0.099,
+      "mean_temporal_stability": 0.8274,
+      "temporally_constant_rate": 0.625,
+      "mean_class_switches": 1.21
+    }
+  },
+  "by_canonical_class": {
+    "Standing": {
+      "total_sequences": 12,
+      "total_frames": 96,
+      "distribution": {
+        "front": 0.3958,
+        "side": 0.4271,
+        "rear": 0.1771
+      },
+      "mean_confidence": 0.6703,
+      "mean_entropy_nats": 0.7302,
+      "low_confidence_rate": 0.1667,
+      "mean_temporal_stability": 0.7619,
+      "temporally_constant_rate": 0.5833,
+      "mean_class_switches": 1.67
+    },
+    "Lying": {
+      "total_sequences": 12,
+      "total_frames": 96,
+      "distribution": {
+        "front": 0.4167,
+        "side": 0.4688,
+        "rear": 0.1146
+      },
+      "mean_confidence": 0.6627,
+      "mean_entropy_nats": 0.7661,
+      "low_confidence_rate": 0.1562,
+      "mean_temporal_stability": 0.7976,
+      "temporally_constant_rate": 0.4167,
+      "mean_class_switches": 1.42
+    },
+    "Feeding": {
+      "total_sequences": 12,
+      "total_frames": 96,
+      "distribution": {
+        "front": 0.4792,
+        "side": 0.2708,
+        "rear": 0.25
+      },
+      "mean_confidence": 0.7594,
+      "mean_entropy_nats": 0.5742,
+      "low_confidence_rate": 0.0938,
+      "mean_temporal_stability": 0.7857,
+      "temporally_constant_rate": 0.5,
+      "mean_class_switches": 1.5
+    },
+    "Drinking": {
+      "total_sequences": 12,
+      "total_frames": 96,
+      "distribution": {
+        "front": 0.5104,
+        "side": 0.4688,
+        "rear": 0.0208
+      },
+      "mean_confidence": 0.8844,
+      "mean_entropy_nats": 0.3338,
+      "low_confidence_rate": 0.0521,
+      "mean_temporal_stability": 0.9405,
+      "temporally_constant_rate": 0.8333,
+      "mean_class_switches": 0.42
+    },
+    "Walking": {
+      "total_sequences": 6,
+      "total_frames": 48,
+      "distribution": {
+        "front": 0.1667,
+        "side": 0.625,
+        "rear": 0.2083
+      },
+      "mean_confidence": 0.7085,
+      "mean_entropy_nats": 0.7009,
+      "low_confidence_rate": 0.1458,
+      "mean_temporal_stability": 0.8571,
+      "temporally_constant_rate": 0.5,
+      "mean_class_switches": 1.0
+    }
+  },
+  "by_source_x_class_cells": {
+    "cvb_Standing": {
+      "source": "cvb",
+      "class": "Standing",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "distribution": {
+        "front": 0.1042,
+        "side": 0.6667,
+        "rear": 0.2292
+      },
+      "mean_confidence": 0.6668,
+      "mean_entropy_nats": 0.7694,
+      "low_confidence_rate": 0.1042,
+      "mean_temporal_stability": 0.9286,
+      "temporally_constant_rate": 0.8333,
+      "mean_class_switches": 0.5
+    },
+    "cvb_Lying": {
+      "source": "cvb",
+      "class": "Lying",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "distribution": {
+        "front": 0.0625,
+        "side": 0.7708,
+        "rear": 0.1667
+      },
+      "mean_confidence": 0.6289,
+      "mean_entropy_nats": 0.8501,
+      "low_confidence_rate": 0.1458,
+      "mean_temporal_stability": 0.8095,
+      "temporally_constant_rate": 0.5,
+      "mean_class_switches": 1.33
+    },
+    "cvb_Feeding": {
+      "source": "cvb",
+      "class": "Feeding",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "distribution": {
+        "front": 0.0417,
+        "side": 0.5417,
+        "rear": 0.4167
+      },
+      "mean_confidence": 0.6577,
+      "mean_entropy_nats": 0.7868,
+      "low_confidence_rate": 0.1875,
+      "mean_temporal_stability": 0.6429,
+      "temporally_constant_rate": 0.1667,
+      "mean_class_switches": 2.5
+    },
+    "cvb_Drinking": {
+      "source": "cvb",
+      "class": "Drinking",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "distribution": {
+        "front": 0.0208,
+        "side": 0.9375,
+        "rear": 0.0417
+      },
+      "mean_confidence": 0.8092,
+      "mean_entropy_nats": 0.5039,
+      "low_confidence_rate": 0.1042,
+      "mean_temporal_stability": 0.881,
+      "temporally_constant_rate": 0.6667,
+      "mean_class_switches": 0.83
+    },
+    "cvb_Walking": {
+      "source": "cvb",
+      "class": "Walking",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "distribution": {
+        "front": 0.1667,
+        "side": 0.625,
+        "rear": 0.2083
+      },
+      "mean_confidence": 0.7085,
+      "mean_entropy_nats": 0.7009,
+      "low_confidence_rate": 0.1458,
+      "mean_temporal_stability": 0.8571,
+      "temporally_constant_rate": 0.5,
+      "mean_class_switches": 1.0
+    },
+    "beef_cattle_behavior_Standing": {
+      "source": "beef_cattle_behavior",
+      "class": "Standing",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "distribution": {
+        "front": 0.6875,
+        "side": 0.1875,
+        "rear": 0.125
+      },
+      "mean_confidence": 0.6739,
+      "mean_entropy_nats": 0.691,
+      "low_confidence_rate": 0.2292,
+      "mean_temporal_stability": 0.5952,
+      "temporally_constant_rate": 0.3333,
+      "mean_class_switches": 2.83
+    },
+    "beef_cattle_behavior_Lying": {
+      "source": "beef_cattle_behavior",
+      "class": "Lying",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "distribution": {
+        "front": 0.7708,
+        "side": 0.1667,
+        "rear": 0.0625
+      },
+      "mean_confidence": 0.6966,
+      "mean_entropy_nats": 0.6822,
+      "low_confidence_rate": 0.1667,
+      "mean_temporal_stability": 0.7857,
+      "temporally_constant_rate": 0.3333,
+      "mean_class_switches": 1.5
+    },
+    "beef_cattle_behavior_Feeding": {
+      "source": "beef_cattle_behavior",
+      "class": "Feeding",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "distribution": {
+        "front": 0.9167,
+        "side": 0.0,
+        "rear": 0.0833
+      },
+      "mean_confidence": 0.8612,
+      "mean_entropy_nats": 0.3617,
+      "low_confidence_rate": 0.0,
+      "mean_temporal_stability": 0.9286,
+      "temporally_constant_rate": 0.8333,
+      "mean_class_switches": 0.5
+    },
+    "beef_cattle_behavior_Drinking": {
+      "source": "beef_cattle_behavior",
+      "class": "Drinking",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "distribution": {
+        "front": 1.0,
+        "side": 0.0,
+        "rear": 0.0
+      },
+      "mean_confidence": 0.9595,
+      "mean_entropy_nats": 0.1636,
+      "low_confidence_rate": 0.0,
+      "mean_temporal_stability": 1.0,
+      "temporally_constant_rate": 1.0,
+      "mean_class_switches": 0.0
+    }
+  }
+}
