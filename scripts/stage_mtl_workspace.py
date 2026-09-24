@@ -234,8 +234,10 @@ def transfer_chunk_relay(
 
     # Read in stream blocks
     with open(local_temp_file, "wb") as f:
-        def _cb(n_bytes: int):
-            dl_pbar.update(n_bytes)
+        def _cb(*args, **kwargs):
+            n = kwargs.get("advance") or (args[0] if args else kwargs.get("n", 0))
+            if n:
+                dl_pbar.update(n)
 
         # Using modal.Volume.read_file_into_fileobj with progress callback
         source_vol.read_file_into_fileobj(source_path, f, progress_cb=_cb)
@@ -251,28 +253,30 @@ def transfer_chunk_relay(
         raise ValueError(f"Checksum mismatch for chunk {source_path}: expected {expected_sha}, got {actual_sha}")
 
     # 3. Upload chunk to target volume
-    up_pbar = CleanProgressBar(
-        total_bytes=expected_size,
-        desc=f"{task_name} | UP CHUNK {chunk_idx + 1}/{num_chunks}",
-    )
+    print(f"\n[*] {task_name} | UP CHUNK {chunk_idx + 1}/{num_chunks} ({expected_size / (1024*1024):.1f} MB) -> {target_path}...", flush=True)
+    t0 = time.time()
+    done = threading.Event()
 
-    # Wrap file in monitored reader for progress
-    class MonitoredReader(io.BufferedReader):
-        def __init__(self, raw, pbar):
-            super().__init__(raw)
-            self._pbar = pbar
+    def _heartbeat():
+        while not done.wait(5.0):
+            el = int(time.time() - t0)
+            em, es = divmod(el, 60)
+            sys.stdout.write(f"\r    ... uploading {task_name} chunk {chunk_idx + 1}/{num_chunks} [{em:02d}:{es:02d} elapsed]")
+            sys.stdout.flush()
 
-        def read(self, size=-1):
-            chunk = super().read(size)
-            if chunk:
-                self._pbar.update(len(chunk))
-            return chunk
-
-    with open(local_temp_file, "rb") as raw_f:
-        wrapped_f = MonitoredReader(raw_f, up_pbar)
+    hb_thread = threading.Thread(target=_heartbeat, daemon=True)
+    hb_thread.start()
+    try:
         with target_vol.batch_upload(force=True) as batch:
-            batch.put_file(wrapped_f, target_path)
-    up_pbar.close()
+            batch.put_file(local_temp_file, target_path)
+    finally:
+        done.set()
+        hb_thread.join(timeout=1.0)
+
+    el = max(time.time() - t0, 0.001)
+    rate = (expected_size / (1024 * 1024)) / el
+    sys.stdout.write(f"\r    ✓ Uploaded chunk {chunk_idx + 1}/{num_chunks} in {el:.1f}s ({rate:.1f} MB/s)\n")
+    sys.stdout.flush()
 
     # 4. Immediate local deletion to preserve low disk requirement
     if not keep_temp and local_temp_file.exists():
