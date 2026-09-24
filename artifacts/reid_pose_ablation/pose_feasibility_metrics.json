@@ -1,0 +1,99 @@
+{
+  "dataset": "SideViewCows2026",
+  "condition": "Run 6 GT-Mask Cow Crop (5% margin)",
+  "pose_model": "DeepLabCut SuperAnimal-Quadruped ResNet-50",
+  "detector_model": "fasterrcnn_resnet50_fpn_v2",
+  "evaluation_subset": "Protocol D Train/Val strictly from 41 training cows",
+  "total_evaluated": 50,
+  "pose_output_returned": 42,
+  "pose_output_returned_rate": 84.0,
+  "pose_detector_failures": 8,
+  "pose_detector_failure_rate": 16.0,
+  "pose_inference_errors": 0,
+  "mean_raw_confidence": 0.3899,
+  "median_raw_confidence": 0.3226,
+  "mean_keypoints_inside_mask_rate": 73.93,
+  "scientific_caveats": [
+    "SideViewCows2026 provides NO keypoint ground truth.",
+    "Confidence scores reflect model activation strength, NOT anatomical pose accuracy.",
+    "Keypoints-inside-mask rate is a geometric sanity check only, confirming points land on cow silhouette.",
+    "Canonical Protocol A held-out cows (69 identities) remained strictly untouched."
+  ],
+  "top_5_confident_keypoints": [
+    [
+      "front_left_paw",
+      {
+        "mean_confidence": 0.5799,
+        "pct_above_02": 90.48
+      }
+    ],
+    [
+      "front_right_paw",
+      {
+        "mean_confidence": 0.5562,
+        "pct_above_02": 92.86
+      }
+    ],
+    [
+      "back_right_paw",
+      {
+        "mean_confidence": 0.5402,
+        "pct_above_02": 90.48
+      }
+    ],
+    [
+      "front_right_thai",
+      {
+        "mean_confidence": 0.5257,
+        "pct_above_02": 92.86
+      }
+    ],
+    [
+      "front_left_thai",
+      {
+        "mean_confidence": 0.5068,
+        "pct_above_02": 97.62
+      }
+    ]
+  ],
+  "bottom_5_confident_keypoints": [
+    [
+      "tail_end",
+      {
+        "mean_confidence": 0.1994,
+        "pct_above_02": 35.71
+      }
+    ],
+    [
+      "body_middle_right",
+      {
+        "mean_confidence": 0.2437,
+        "pct_above_02": 66.67
+      }
+    ],
+    [
+      "right_antler_end",
+      {
+        "mean_confidence": 0.2473,
+        "pct_above_02": 54.76
+      }
+    ],
+    [
+      "left_earend",
+      {
+        "mean_confidence": 0.2611,
+        "pct_above_02": 66.67
+      }
+    ],
+    [
+      "left_earbase",
+      {
+        "mean_confidence": 0.2679,
+        "pct_above_02": 57.14
+      }
+    ]
+  ],
+  "contact_sheet_path": "/checkpoints/sideview_pose_feasibility/sideview_pose_contact_sheet.jpg",
+  "keypoints_csv_path": "/checkpoints/sideview_pose_feasibility/pose_keypoints_summary.csv",
+  "duration_seconds": 20.89
+}

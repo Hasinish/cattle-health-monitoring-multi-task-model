@@ -279,7 +279,7 @@ def verify_readiness_remote() -> dict:
                 rgb_im = im.convert("RGB")
                 w, h = rgb_im.size
             with Image.open(mask_path) as mk:
-                mask_arr = np.array(mk)
+                mask_arr = np.array(mk.convert("L"))
             # Check dimensions match
             dim_match = (mask_arr.shape == (h, w))
             # Check binary mask values (0 and >0)

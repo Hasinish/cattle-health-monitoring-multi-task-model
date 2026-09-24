@@ -1,0 +1,45 @@
+{
+  "status": "SMOKE_CERTIFIED",
+  "condition": "SideViewCows2026 GT-Mask + SuperAnimal Pose (ResNet-50)",
+  "epochs": 2,
+  "best_epoch": 2,
+  "best_val_metrics": {
+    "val_loss": 3.481,
+    "val_top1_acc": 26.56,
+    "val_bal_acc": 15.75,
+    "val_macro_f1": 0.0904
+  },
+  "trainable_parameters": {
+    "visual_backbone_trainable_parameters": 11179648,
+    "pose_mlp_trainable_parameters": 28736,
+    "classifier_trainable_parameters": 23657,
+    "total_trainable_parameters": 11232041
+  },
+  "checkpoint_reload_max_logit_diff": 0.0,
+  "checkpoint_reload_max_emb_diff": 0.0,
+  "test_protocol_a_evaluated": false,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 3.8432,
+      "train_top1_acc": 1.56,
+      "val_loss": 3.5774,
+      "val_top1_acc": 23.44,
+      "val_bal_acc": 12.08,
+      "val_macro_f1": 0.0678,
+      "duration_s": 3.9
+    },
+    {
+      "epoch": 2,
+      "train_loss": 2.3362,
+      "train_top1_acc": 73.44,
+      "val_loss": 3.481,
+      "val_top1_acc": 26.56,
+      "val_bal_acc": 15.75,
+      "val_macro_f1": 0.0904,
+      "duration_s": 3.22
+    }
+  ],
+  "best_checkpoint_path": "/checkpoints/sideview_reid_pose_smoke/reid_pose_smoke_best.pth",
+  "duration_total_s": 59.64
+}

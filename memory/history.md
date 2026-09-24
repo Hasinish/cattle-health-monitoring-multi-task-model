@@ -1,3 +1,15 @@
+# Session Summary — 2026-09-25 (SideViewCows2026 Re-ID + SuperAnimal Pose Ablation Feasibility & Smoke Certification Complete)
+
+- Convo ID: 1ae0178f-f005-4d37-b48a-79da87176a1f
+- Objective: Prepare, audit, and smoke-certify a controlled SideViewCows2026 Re-ID + SuperAnimal Pose ablation on Modal profile `tigerwood697`.
+- Accomplishments & Verification:
+  1. Profile & Volume Audit (`tigerwood697`): Balance $18.69, volume `sideview-data` (80,260 images + 80,260 masks across 110 cows), `reid-checkpoints` (writable), Tesla T4 (14.56 GB VRAM) verified.
+  2. Pose Feasibility Audit on Run 6 Crops: Evaluated frozen DeepLabCut SuperAnimal-Quadruped ResNet-50 across 50 Protocol-D train/val crops (GT-mask cow crop + 5% margin) from the 41 training cows. 84.0% return rate, 16.0% detector failure rate, 0.3899 mean confidence, 73.93% keypoints inside GT mask (strictly geometric sanity, NOT pose accuracy). Top limbs: `front_left_paw` (0.5799), `front_right_paw` (0.5562). Noisy priors: `tail_end` (0.1994), `right_antler_end` (0.2473). Generated contact sheet (`artifacts/reid_pose_ablation/sideview_pose_contact_sheet.jpg`).
+  3. Clean Representation & Architecture: 156-D normalized pose vector `[x_norm, y_norm, conf, is_valid]` for 39 keypoints -> Pose MLP (`Linear(156, 128) -> LN -> ReLU -> Drop(0.2) -> Linear(128, 64) -> LN`, 28,736 params). Fused with Run 6 4-channel ResNet-18 spatial trunk (11,179,648 params) into 576-D unit-L2 normalized embedding -> `Linear(576, 41)` classifier (23,657 params). Total trainable params: 11,232,041 (+31,360 / +0.28% vs Run 6's 11,200,681). Horizontal flip disabled in training to preserve bilateral limb asymmetry.
+  4. Remote Cloud Readiness & Smoke Certification: Dispatched `verify_readiness_remote` and `smoke_test_remote` on Modal Tesla T4 (`tigerwood697`, App `ap-B5uJTFPiFJmYqxPAHJqXgS`): verified volumes, protocol disjointness (41 train, 69 eval, 0 overlap), in-memory pose precomputation (128 crops in 35.65s), 2 epochs training (loss 3.8432 -> 2.3362, val acc 26.56%), bit-identical reload verification (`max_logit_diff == 0.00000000`, `max_emb_diff == 0.00000000`), unit-L2 norm = 1.000000. Protocol A 69 held-out evaluation cows strictly untouched.
+  5. Boundaries & Adherence: Full 30-epoch training was NOT launched in strict adherence to user stop condition. Manual launch command provided.
+  6. Documentation: Produced `docs/research_log/2026-09-25_sideviewcows2026_reid_pose_ablation_smoke_certification.md`, updated index in `docs/research_log/README.md`, updated `memory/state.md`.
+
 # Session Summary — 2026-09-24 (Phase 3 Run 7 E1 Hard-Shared MTL Implementation, Readiness & Smoke Test Certified)
 
 - Convo ID: 1ae0178f-f005-4d37-b48a-79da87176a1f

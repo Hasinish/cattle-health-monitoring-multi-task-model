@@ -345,6 +345,10 @@ Execution and training scripts for single-task perception models, data staging, 
 - `train_sciencedb_bcs_perception.py`: Phase 3 Run 4 ScienceDB BCS perception-enhanced single-task training script with 4-channel ResNet-18 and ordinal head.
 - `train_cvb_beef_behavior_tcn.py`: Phase 3 Run 5 CVB + Kaggle Beef Behavior perception-enhanced temporal model training script with 2-block TCN.
 - `train_sideview_reid_perception.py`: Phase 3 Run 6 SideViewCows2026 Re-ID perception-enhanced single-task training script with 41-class linear classifier.
+- `train_sideview_reid_pose.py`: SideViewCows2026 Re-ID + DeepLabCut SuperAnimal-Quadruped Pose ablation training script featuring 4-channel ResNet-18 visual trunk (`11,179,648` params), Pose MLP branch (`28,736` params), unit-L2 576-D fused embedding, and `Linear(576, 41)` classifier (`23,657` params). Total trainable parameters: `11,232,041`.
+- `modal_train_sideview_reid_pose.py`: Modal cloud wrapper for Re-ID + Pose ablation on profile `tigerwood697`, featuring `verify_readiness`, Tesla T4 `smoke_test`, and full 30-epoch `main` entrypoints.
+- `audit_sideview_pose_feasibility.py`: Standalone pose feasibility evaluation engine assessing SuperAnimal ResNet-50 keypoint statistics and mask containment sanity across Run 6 crops.
+- `modal_audit_sideview_pose.py`: Modal wrapper for cloud execution of the SideView pose feasibility audit on profile `tigerwood697`.
 
 ### `tests/`
 Automated unit and integration test suites.
