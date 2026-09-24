@@ -153,14 +153,16 @@ def transfer_beef_remote(src_creds: Dict[str, str], extract: bool = True) -> Dic
         # Heartbeat / checkpoint thread to keep container and volume fresh
         stop_event = threading.Event()
         def heartbeat():
-            while not stop_event.wait(60.0):
+            while not stop_event.wait(5.0):
                 if temp_dest.exists():
                     curr_bytes = temp_dest.stat().st_size
                     curr_gb = curr_bytes / (1024**3)
-                    pct = (curr_bytes / expected_size) * 100
+                    pct = min(100.0, (curr_bytes / expected_size) * 100)
                     elapsed = time.time() - t_start
                     speed = (curr_bytes / (1024**2)) / max(0.1, elapsed)
-                    print(f"  >>> Streaming: {curr_gb:.2f} / 45.22 GB ({pct:.1f}%) | Speed: {speed:.1f} MB/s | Elapsed: {elapsed:.0f}s", flush=True)
+                    rem_bytes = max(0, expected_size - curr_bytes)
+                    eta = rem_bytes / max(1.0, speed * 1024 * 1024)
+                    print(f"  >>> [STREAMING BEEF] {curr_gb:.2f} / 45.22 GB ({pct:.1f}%) | Speed: {speed:.1f} MB/s | Elapsed: {elapsed:.0f}s | ETA: {eta:.0f}s", flush=True)
 
         hb_thread = threading.Thread(target=heartbeat, daemon=True)
         hb_thread.start()

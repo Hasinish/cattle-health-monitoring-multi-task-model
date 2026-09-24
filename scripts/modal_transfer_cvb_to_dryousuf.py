@@ -98,11 +98,32 @@ def pack_cvb_remote() -> Dict[str, Any]:
 
     print("[*] Running uncompressed tar creation (sequential 100+ MB/s)...")
     t0 = time.time()
-    
-    cmd = ["tar", "-cf", str(tar_path), "-C", "/data", "cvb"]
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    if res.returncode != 0:
-        raise RuntimeError(f"tar packing failed: {res.stderr}")
+    expected_cvb_bytes = 14.29 * (1024**3)
+
+    # Launch live packing progress monitor thread (every 5 seconds)
+    stop_pack = threading.Event()
+    def pack_monitor():
+        while not stop_pack.wait(5.0):
+            if tar_path.exists():
+                curr = tar_path.stat().st_size
+                curr_gb = curr / (1024**3)
+                pct = min(100.0, (curr / expected_cvb_bytes) * 100)
+                el = time.time() - t0
+                spd = (curr / (1024**2)) / max(0.1, el)
+                rem_bytes = max(0, expected_cvb_bytes - curr)
+                eta = rem_bytes / max(1.0, spd * 1024 * 1024)
+                print(f"  >>> [PACKING CVB] {curr_gb:.2f} / 14.29 GB ({pct:.1f}%) | Speed: {spd:.1f} MB/s | Elapsed: {el:.0f}s | ETA: {eta:.0f}s", flush=True)
+
+    m_pack = threading.Thread(target=pack_monitor, daemon=True)
+    m_pack.start()
+
+    try:
+        cmd = ["tar", "-cf", str(tar_path), "-C", "/data", "cvb"]
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        if res.returncode != 0:
+            raise RuntimeError(f"tar packing failed: {res.stderr}")
+    finally:
+        stop_pack.set()
 
     elapsed = time.time() - t0
     size_gb = tar_path.stat().st_size / (1024**3)
@@ -144,20 +165,25 @@ def transfer_cvb_remote(src_creds: Dict[str, str], cleanup_tar: bool = True) -> 
 
     dest_tar = Path("/data/cvb_archive.tar")
     temp_tar = Path("/data/cvb_archive.tar.transfer_tmp")
+    expected_cvb_bytes = 14.29 * (1024**3)
 
     # 1. Stream cloud-to-cloud
     print("[*] Checking source archive...")
     t_start = time.time()
 
-    # Heartbeat thread
+    # 5-second live streaming heartbeat thread
     stop_event = threading.Event()
     def heartbeat():
-        while not stop_event.wait(30.0):
+        while not stop_event.wait(5.0):
             if temp_tar.exists():
-                curr_gb = temp_tar.stat().st_size / (1024**3)
+                curr_bytes = temp_tar.stat().st_size
+                curr_gb = curr_bytes / (1024**3)
+                pct = min(100.0, (curr_bytes / expected_cvb_bytes) * 100)
                 el = time.time() - t_start
-                spd = (temp_tar.stat().st_size / (1024**2)) / max(0.1, el)
-                print(f"  >>> Streaming: {curr_gb:.2f} GB transferred | Speed: {spd:.1f} MB/s | Elapsed: {el:.0f}s", flush=True)
+                spd = (curr_bytes / (1024**2)) / max(0.1, el)
+                rem_bytes = max(0, expected_cvb_bytes - curr_bytes)
+                eta = rem_bytes / max(1.0, spd * 1024 * 1024)
+                print(f"  >>> [STREAMING CVB] {curr_gb:.2f} / 14.29 GB ({pct:.1f}%) | Speed: {spd:.1f} MB/s | Elapsed: {el:.0f}s | ETA: {eta:.0f}s", flush=True)
 
     hb = threading.Thread(target=heartbeat, daemon=True)
     hb.start()
@@ -176,19 +202,35 @@ def transfer_cvb_remote(src_creds: Dict[str, str], cleanup_tar: bool = True) -> 
     avg_speed = (dest_tar.stat().st_size / (1024**2)) / max(0.1, elapsed_dl)
     print(f"\n[OK] cvb_archive.tar transferred in {elapsed_dl:.1f}s ({avg_speed:.1f} MB/s)!")
 
-    # 2. Extract in-place
+    # 2. Extract in-place with live extraction monitor
     print("\n" + "=" * 75)
-    print("  📦 EXTRACTING CVB ARCHIVE ON DESTINATION")
+    print("  📦 EXTRACTING CVB ARCHIVE ON DESTINATION (226,344 files)")
     print("=" * 75)
     t_ext = time.time()
     
-    cmd = ["tar", "-xf", str(dest_tar), "-C", "/data"]
-    print(f"[*] Running: {' '.join(cmd)}")
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    if res.returncode != 0:
-        print(f"[!] tar extraction warning/error: {res.stderr[:500]}")
-    else:
-        print("[OK] Extraction completed cleanly!")
+    stop_ext = threading.Event()
+    cvb_dest_dir = Path("/data/cvb")
+    def ext_monitor():
+        while not stop_ext.wait(5.0):
+            if cvb_dest_dir.exists():
+                f_count = sum(len(files) for _, _, files in os.walk(cvb_dest_dir))
+                pct = min(100.0, (f_count / 226344) * 100)
+                el = time.time() - t_ext
+                print(f"  >>> [EXTRACTING CVB] {f_count:,} / 226,344 files ({pct:.1f}%) | Elapsed: {el:.0f}s", flush=True)
+
+    m_ext = threading.Thread(target=ext_monitor, daemon=True)
+    m_ext.start()
+
+    try:
+        cmd = ["tar", "-xf", str(dest_tar), "-C", "/data"]
+        print(f"[*] Running: {' '.join(cmd)}")
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        if res.returncode != 0:
+            print(f"[!] tar extraction warning/error: {res.stderr[:500]}")
+        else:
+            print("[OK] Extraction completed cleanly!")
+    finally:
+        stop_ext.set()
 
     ext_time = time.time() - t_ext
     print(f"[OK] Extraction finished in {ext_time:.1f}s ({ext_time/60:.1f} mins).")
