@@ -10,7 +10,7 @@
   5. Re-ID True Cross-Invocation Resume: Staged completed range chunks on persistent volume `/mtl-data/reid/.download_staging/`; resume skips verified parts; stitches into ephemeral `/tmp/sideview_mtl/parlor.zip`; selective extraction extracts only the 15,436 Train/Val pairs (30,872 files); unlinks zip and cleans up `.download_staging/`.
   6. Active `--fast` Flag: Upgraded `--fast` from cosmetic to active configuration selector (Fast mode: 16 workers, 1024 MB chunks, 64 MB buffer vs Standard mode: 8 workers, 512 MB chunks, 16 MB buffer); wired `buffer_mb` through transfer relay engine.
   7. Comprehensive Manifest Provenance: Strengthened `staging_manifest.json` and schema with Git commit SHA, source profiles/volumes/records, byte sizes, SHA-256 hashes, exact counts, and 0 held-out cow overlap.
-  8. Testing & Boundaries: All 4 synthetic hardening tests passed (`tests/test_mtl_staging_hardening.py`). Dry runs passed (`python scripts/stage_mtl_workspace.py --task all --dry-run` and `--fast`). Zero real bytes transferred; zero GPU compute launched.
+  8. Profile-Isolated Export Scripts & Testing: Resolved Modal multi-profile volume binding collision by separating source export into `scripts/modal_export_bcs.py` (`tigerwood697`) and `scripts/modal_export_behavior.py` (`tigerwood693`). All 4 synthetic unit tests passed (`tests/test_mtl_staging_hardening.py`). Both standard and fast dry runs passed. Ready for execution.
 
 # Session Summary — 2026-09-24 (BCS Staging Verification Patch & 16GB Memory-Safe Hardening)
 

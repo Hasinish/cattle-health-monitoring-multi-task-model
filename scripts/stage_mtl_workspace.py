@@ -300,7 +300,7 @@ def stage_bcs(
 
     # 1. Trigger export preparation on tigerwood697
     if dry_run:
-        print("[DRY-RUN] Would execute modal_export_mtl_sources.py::prepare_bcs_export_remote on tigerwood697")
+        print("[DRY-RUN] Would execute modal_export_bcs.py::prepare_bcs_export_remote on tigerwood697")
         print("[DRY-RUN] Estimated payload: train_bcs_224.pt (~6.89 GB) + val_bcs_224.pt (~1.57 GB) = ~8.46 GB")
         est_chunks = math.ceil(8467234812 / (chunk_size_mb * 1024 * 1024))
         print(f"[DRY-RUN] Chunk size: {chunk_size_mb} MB (~{est_chunks} sequential chunks, relay buffer: {buffer_mb} MB)")
@@ -314,7 +314,7 @@ def stage_bcs(
     # Run remote export preparation function
     cmd = [
         "modal", "run", "--profile", "tigerwood697",
-        "scripts/modal_export_mtl_sources.py::prepare_bcs_export_remote",
+        "scripts/modal_export_bcs.py::prepare_bcs_export_remote",
         "--chunk-size-mb", str(chunk_size_mb),
     ]
     subprocess.run(cmd, check=True)
@@ -407,7 +407,7 @@ def stage_bcs(
 
     # Cleanup source chunks on tigerwood697
     print("[*] Cleaning up temporary export chunks on source profile tigerwood697...")
-    subprocess.run(["modal", "run", "--profile", "tigerwood697", "scripts/modal_export_mtl_sources.py::cleanup_bcs_export_remote"], check=False)
+    subprocess.run(["modal", "run", "--profile", "tigerwood697", "scripts/modal_export_bcs.py::cleanup_bcs_export_remote"], check=False)
 
     if state_file.exists():
         state_file.unlink()
@@ -435,7 +435,7 @@ def stage_behavior(
     print("=" * 70)
 
     if dry_run:
-        print("[DRY-RUN] Would execute modal_export_mtl_sources.py::prepare_behavior_export_remote on tigerwood693")
+        print("[DRY-RUN] Would execute modal_export_behavior.py::prepare_behavior_export_remote on tigerwood693")
         print("[DRY-RUN] Packages 4,271 retained sequences (3,641 Train, 630 Val) into uncompressed tar archive (~900MB - 1.1GB)")
         est_chunks = math.ceil(1050000000 / (chunk_size_mb * 1024 * 1024))
         print(f"[DRY-RUN] Chunk size: {chunk_size_mb} MB (~{est_chunks} sequential chunks, relay buffer: {buffer_mb} MB)")
@@ -449,7 +449,7 @@ def stage_behavior(
     # Run remote export preparation function
     cmd = [
         "modal", "run", "--profile", "tigerwood693",
-        "scripts/modal_export_mtl_sources.py::prepare_behavior_export_remote",
+        "scripts/modal_export_behavior.py::prepare_behavior_export_remote",
         "--chunk-size-mb", str(chunk_size_mb),
     ]
     subprocess.run(cmd, check=True)
@@ -522,7 +522,7 @@ def stage_behavior(
 
     # Cleanup source chunks on tigerwood693
     print("[*] Cleaning up temporary export chunks on source profile tigerwood693...")
-    subprocess.run(["modal", "run", "--profile", "tigerwood693", "scripts/modal_export_mtl_sources.py::cleanup_behavior_export_remote"], check=False)
+    subprocess.run(["modal", "run", "--profile", "tigerwood693", "scripts/modal_export_behavior.py::cleanup_behavior_export_remote"], check=False)
 
     if state_file.exists():
         state_file.unlink()
