@@ -113,12 +113,12 @@ def prepare_behavior_export_remote(chunk_size_mb: int = 1024) -> Dict[str, Any]:
         except Exception as e:
             print(f"[!] Warning reading existing manifest: {e}. Regenerating...")
 
-    # Build uncompressed tar archive on ephemeral disk
+    # Build uncompressed tar archive on ephemeral disk via native Linux tar (100x faster than python tarfile)
     tar_tmp = Path("/tmp/behavior_retained.tar")
     if tar_tmp.exists():
         tar_tmp.unlink()
 
-    print(f"[*] Packaging {len(allowed_sequences)} sequence directories into {tar_tmp}...")
+    print(f"[*] Packaging {len(allowed_sequences)} sequences into {tar_tmp} via native Linux tar...")
     sys.stdout.flush()
     t0 = time.time()
 
@@ -129,25 +129,21 @@ def prepare_behavior_export_remote(chunk_size_mb: int = 1024) -> Dict[str, Any]:
         "perception_manifest.csv",
     ]
 
-    with tarfile.open(tar_tmp, "w") as tar:
-        # Add manifest files first
+    pack_list_file = Path("/tmp/pack_list.txt")
+    with open(pack_list_file, "w", encoding="utf-8") as f:
         for mf in manifest_files_to_pack:
-            mf_path = prod_dir / mf
-            if mf_path.exists():
-                tar.add(mf_path, arcname=mf)
-
-        # Add sequence directories
-        packed_count = 0
+            if (prod_dir / mf).exists():
+                f.write(f"{mf}\n")
         for seq_id in sorted(allowed_sequences):
-            seq_dir = prod_dir / seq_id
-            if seq_dir.exists() and seq_dir.is_dir():
-                tar.add(seq_dir, arcname=seq_id)
-                packed_count += 1
-                if packed_count % 500 == 0 or packed_count == len(allowed_sequences):
-                    print(f"    Packed {packed_count}/{len(allowed_sequences)} sequences ({packed_count / len(allowed_sequences) * 100:.1f}%)...")
-                    sys.stdout.flush()
+            seq_p = prod_dir / seq_id
+            if seq_p.exists():
+                f.write(f"{seq_id}\n")
             else:
-                raise FileNotFoundError(f"Missing sequence directory: {seq_dir}")
+                raise FileNotFoundError(f"Missing sequence directory: {seq_p}")
+
+    import subprocess
+    cmd = ["tar", "-cf", str(tar_tmp), "-C", str(prod_dir), "-T", str(pack_list_file)]
+    subprocess.run(cmd, check=True)
 
     pack_duration = time.time() - t0
     tar_size = tar_tmp.stat().st_size
@@ -216,3 +212,9 @@ def cleanup_behavior_export_remote() -> None:
         shutil.rmtree(export_dir, ignore_errors=True)
         behavior_vol.commit()
         print("[+] Cleaned up /cache/export_behavior on tigerwood693")
+
+
+@app.local_entrypoint()
+def main(chunk_size_mb: int = 1024):
+    res = prepare_behavior_export_remote.remote(chunk_size_mb=chunk_size_mb)
+    print(f"\n[✓] Behavior export complete: {res['total_bytes'] / (1024**2):.1f} MB across {res['num_chunks']} chunks")

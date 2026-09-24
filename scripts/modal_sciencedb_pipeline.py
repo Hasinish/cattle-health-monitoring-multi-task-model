@@ -28,7 +28,7 @@ SCIENCEDB_URL = (
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .apt_install("aria2", "unar")
-    .pip_install("tqdm")
+    .pip_install("tqdm", "pillow")
 )
 
 app = modal.App("sciencedb-bcs-pipeline", image=image)
