@@ -1,0 +1,742 @@
+{
+  "audit_timestamp": "2026-09-24 19:22:59 UTC",
+  "model_name": "DeepLabCut SuperAnimal-Quadruped ResNet-50",
+  "sample_seed": 2026,
+  "sample_size_sequences": 54,
+  "sample_size_frames": 432,
+  "overall": {
+    "frame_level_pose_return_rate": 0.544,
+    "frame_level_detector_failure_rate": 0.456,
+    "frame_level_inference_error_rate": 0.0,
+    "sequence_level_all_8_frames_rate": 0.3148,
+    "sequence_level_ge_1_frame_rate": 0.8704,
+    "mean_keypoint_confidence": 0.4658,
+    "median_keypoint_confidence": 0.4381,
+    "predicted_mask_geometric_containment_sanity_rate_all": 0.7377,
+    "predicted_mask_geometric_containment_sanity_rate_conf02": 0.7388,
+    "mean_temporal_displacement_norm": 0.1116,
+    "total_skeleton_jumps_gt_025": 880,
+    "temporal_stability_breakdown": {
+      "PARTIAL_DETECTION_FAILURE": 32,
+      "SEVERE_INSTABILITY": 17,
+      "MODERATE_JUMPS": 4,
+      "STABLE": 1
+    }
+  },
+  "by_source": {
+    "cvb": {
+      "total_sequences": 30,
+      "total_frames": 240,
+      "pose_return_rate": 0.5,
+      "detector_failure_rate": 0.5,
+      "all_8_frames_rate": 0.3333,
+      "mean_keypoint_confidence": 0.4673,
+      "predicted_mask_containment_sanity_rate_all": 0.9257,
+      "predicted_mask_containment_sanity_rate_conf02": 0.9284,
+      "mean_temporal_displacement_norm": 0.0786,
+      "total_jumps_gt_025": 364
+    },
+    "beef_cattle_behavior": {
+      "total_sequences": 24,
+      "total_frames": 192,
+      "pose_return_rate": 0.599,
+      "detector_failure_rate": 0.401,
+      "all_8_frames_rate": 0.2917,
+      "mean_keypoint_confidence": 0.4643,
+      "predicted_mask_containment_sanity_rate_all": 0.5416,
+      "predicted_mask_containment_sanity_rate_conf02": 0.541,
+      "mean_temporal_displacement_norm": 0.1528,
+      "total_jumps_gt_025": 516
+    }
+  },
+  "by_canonical_class": {
+    "Standing": {
+      "total_sequences": 12,
+      "total_frames": 96,
+      "pose_return_rate": 0.5521,
+      "detector_failure_rate": 0.4479,
+      "all_8_frames_rate": 0.25,
+      "mean_keypoint_confidence": 0.473,
+      "predicted_mask_containment_sanity_rate_all": 0.762,
+      "predicted_mask_containment_sanity_rate_conf02": 0.7624,
+      "mean_temporal_displacement_norm": 0.1121,
+      "total_jumps_gt_025": 197
+    },
+    "Lying": {
+      "total_sequences": 12,
+      "total_frames": 96,
+      "pose_return_rate": 0.2708,
+      "detector_failure_rate": 0.7292,
+      "all_8_frames_rate": 0.0,
+      "mean_keypoint_confidence": 0.3148,
+      "predicted_mask_containment_sanity_rate_all": 0.7623,
+      "predicted_mask_containment_sanity_rate_conf02": 0.7703,
+      "mean_temporal_displacement_norm": 0.0789,
+      "total_jumps_gt_025": 45
+    },
+    "Feeding": {
+      "total_sequences": 12,
+      "total_frames": 96,
+      "pose_return_rate": 0.5833,
+      "detector_failure_rate": 0.4167,
+      "all_8_frames_rate": 0.4167,
+      "mean_keypoint_confidence": 0.4603,
+      "predicted_mask_containment_sanity_rate_all": 0.6506,
+      "predicted_mask_containment_sanity_rate_conf02": 0.6467,
+      "mean_temporal_displacement_norm": 0.1481,
+      "total_jumps_gt_025": 299
+    },
+    "Drinking": {
+      "total_sequences": 12,
+      "total_frames": 96,
+      "pose_return_rate": 0.7604,
+      "detector_failure_rate": 0.2396,
+      "all_8_frames_rate": 0.5,
+      "mean_keypoint_confidence": 0.4807,
+      "predicted_mask_containment_sanity_rate_all": 0.7116,
+      "predicted_mask_containment_sanity_rate_conf02": 0.712,
+      "mean_temporal_displacement_norm": 0.1503,
+      "total_jumps_gt_025": 327
+    },
+    "Walking": {
+      "total_sequences": 6,
+      "total_frames": 48,
+      "pose_return_rate": 0.5625,
+      "detector_failure_rate": 0.4375,
+      "all_8_frames_rate": 0.5,
+      "mean_keypoint_confidence": 0.5686,
+      "predicted_mask_containment_sanity_rate_all": 0.9174,
+      "predicted_mask_containment_sanity_rate_conf02": 0.9259,
+      "mean_temporal_displacement_norm": 0.0255,
+      "total_jumps_gt_025": 12
+    }
+  },
+  "by_source_x_class_cells": {
+    "cvb_Standing": {
+      "source": "cvb",
+      "class": "Standing",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "pose_return_rate": 0.4167,
+      "detector_failure_rate": 0.5833,
+      "all_8_frames_rate": 0.1667,
+      "mean_keypoint_confidence": 0.4078,
+      "predicted_mask_containment_sanity_rate_all": 0.9115,
+      "predicted_mask_containment_sanity_rate_conf02": 0.9136,
+      "mean_temporal_displacement_norm": 0.0713,
+      "total_jumps_gt_025": 71
+    },
+    "cvb_Lying": {
+      "source": "cvb",
+      "class": "Lying",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "pose_return_rate": 0.2708,
+      "detector_failure_rate": 0.7292,
+      "all_8_frames_rate": 0.0,
+      "mean_keypoint_confidence": 0.2945,
+      "predicted_mask_containment_sanity_rate_all": 0.9467,
+      "predicted_mask_containment_sanity_rate_conf02": 0.9403,
+      "mean_temporal_displacement_norm": 0.0609,
+      "total_jumps_gt_025": 19
+    },
+    "cvb_Feeding": {
+      "source": "cvb",
+      "class": "Feeding",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "pose_return_rate": 0.4167,
+      "detector_failure_rate": 0.5833,
+      "all_8_frames_rate": 0.1667,
+      "mean_keypoint_confidence": 0.45,
+      "predicted_mask_containment_sanity_rate_all": 0.9462,
+      "predicted_mask_containment_sanity_rate_conf02": 0.9517,
+      "mean_temporal_displacement_norm": 0.1252,
+      "total_jumps_gt_025": 100
+    },
+    "cvb_Drinking": {
+      "source": "cvb",
+      "class": "Drinking",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "pose_return_rate": 0.8333,
+      "detector_failure_rate": 0.1667,
+      "all_8_frames_rate": 0.8333,
+      "mean_keypoint_confidence": 0.4935,
+      "predicted_mask_containment_sanity_rate_all": 0.9212,
+      "predicted_mask_containment_sanity_rate_conf02": 0.9219,
+      "mean_temporal_displacement_norm": 0.1103,
+      "total_jumps_gt_025": 162
+    },
+    "cvb_Walking": {
+      "source": "cvb",
+      "class": "Walking",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "pose_return_rate": 0.5625,
+      "detector_failure_rate": 0.4375,
+      "all_8_frames_rate": 0.5,
+      "mean_keypoint_confidence": 0.5686,
+      "predicted_mask_containment_sanity_rate_all": 0.9174,
+      "predicted_mask_containment_sanity_rate_conf02": 0.9259,
+      "mean_temporal_displacement_norm": 0.0255,
+      "total_jumps_gt_025": 12
+    },
+    "beef_cattle_behavior_Standing": {
+      "source": "beef_cattle_behavior",
+      "class": "Standing",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "pose_return_rate": 0.6875,
+      "detector_failure_rate": 0.3125,
+      "all_8_frames_rate": 0.3333,
+      "mean_keypoint_confidence": 0.5126,
+      "predicted_mask_containment_sanity_rate_all": 0.6713,
+      "predicted_mask_containment_sanity_rate_conf02": 0.6708,
+      "mean_temporal_displacement_norm": 0.1529,
+      "total_jumps_gt_025": 126
+    },
+    "beef_cattle_behavior_Lying": {
+      "source": "beef_cattle_behavior",
+      "class": "Lying",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "pose_return_rate": 0.2708,
+      "detector_failure_rate": 0.7292,
+      "all_8_frames_rate": 0.0,
+      "mean_keypoint_confidence": 0.3352,
+      "predicted_mask_containment_sanity_rate_all": 0.5779,
+      "predicted_mask_containment_sanity_rate_conf02": 0.6002,
+      "mean_temporal_displacement_norm": 0.0968,
+      "total_jumps_gt_025": 26
+    },
+    "beef_cattle_behavior_Feeding": {
+      "source": "beef_cattle_behavior",
+      "class": "Feeding",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "pose_return_rate": 0.75,
+      "detector_failure_rate": 0.25,
+      "all_8_frames_rate": 0.6667,
+      "mean_keypoint_confidence": 0.466,
+      "predicted_mask_containment_sanity_rate_all": 0.4865,
+      "predicted_mask_containment_sanity_rate_conf02": 0.4772,
+      "mean_temporal_displacement_norm": 0.171,
+      "total_jumps_gt_025": 199
+    },
+    "beef_cattle_behavior_Drinking": {
+      "source": "beef_cattle_behavior",
+      "class": "Drinking",
+      "total_sequences": 6,
+      "total_frames": 48,
+      "pose_return_rate": 0.6875,
+      "detector_failure_rate": 0.3125,
+      "all_8_frames_rate": 0.1667,
+      "mean_keypoint_confidence": 0.4651,
+      "predicted_mask_containment_sanity_rate_all": 0.4577,
+      "predicted_mask_containment_sanity_rate_conf02": 0.4575,
+      "mean_temporal_displacement_norm": 0.1904,
+      "total_jumps_gt_025": 165
+    }
+  },
+  "keypoint_rankings": {
+    "top_10_reliable_keypoints": [
+      {
+        "name": "front_right_paw",
+        "mean_confidence": 0.6289,
+        "median_confidence": 0.6741,
+        "pct_ge_02": 0.9787,
+        "pct_ge_05": 0.7064,
+        "predicted_mask_containment_rate": 0.634,
+        "mean_temporal_displacement_norm": 0.1142
+      },
+      {
+        "name": "tail_base",
+        "mean_confidence": 0.616,
+        "median_confidence": 0.6599,
+        "pct_ge_02": 0.9404,
+        "pct_ge_05": 0.6426,
+        "predicted_mask_containment_rate": 0.8809,
+        "mean_temporal_displacement_norm": 0.1939
+      },
+      {
+        "name": "left_eye",
+        "mean_confidence": 0.6062,
+        "median_confidence": 0.6755,
+        "pct_ge_02": 0.8894,
+        "pct_ge_05": 0.6383,
+        "predicted_mask_containment_rate": 0.7404,
+        "mean_temporal_displacement_norm": 0.1596
+      },
+      {
+        "name": "front_left_paw",
+        "mean_confidence": 0.5977,
+        "median_confidence": 0.6172,
+        "pct_ge_02": 0.9064,
+        "pct_ge_05": 0.6426,
+        "predicted_mask_containment_rate": 0.6468,
+        "mean_temporal_displacement_norm": 0.1056
+      },
+      {
+        "name": "back_left_thai",
+        "mean_confidence": 0.5881,
+        "median_confidence": 0.5608,
+        "pct_ge_02": 0.9745,
+        "pct_ge_05": 0.5617,
+        "predicted_mask_containment_rate": 0.8213,
+        "mean_temporal_displacement_norm": 0.1374
+      },
+      {
+        "name": "front_right_thai",
+        "mean_confidence": 0.5857,
+        "median_confidence": 0.6286,
+        "pct_ge_02": 0.9447,
+        "pct_ge_05": 0.6553,
+        "predicted_mask_containment_rate": 0.8553,
+        "mean_temporal_displacement_norm": 0.1072
+      },
+      {
+        "name": "right_eye",
+        "mean_confidence": 0.5856,
+        "median_confidence": 0.6274,
+        "pct_ge_02": 0.9064,
+        "pct_ge_05": 0.6298,
+        "predicted_mask_containment_rate": 0.8085,
+        "mean_temporal_displacement_norm": 0.1497
+      },
+      {
+        "name": "back_right_thai",
+        "mean_confidence": 0.5769,
+        "median_confidence": 0.598,
+        "pct_ge_02": 0.9149,
+        "pct_ge_05": 0.5915,
+        "predicted_mask_containment_rate": 0.7277,
+        "mean_temporal_displacement_norm": 0.1423
+      },
+      {
+        "name": "back_left_knee",
+        "mean_confidence": 0.5719,
+        "median_confidence": 0.588,
+        "pct_ge_02": 0.8936,
+        "pct_ge_05": 0.5787,
+        "predicted_mask_containment_rate": 0.6894,
+        "mean_temporal_displacement_norm": 0.1093
+      },
+      {
+        "name": "nose",
+        "mean_confidence": 0.5709,
+        "median_confidence": 0.5664,
+        "pct_ge_02": 0.8681,
+        "pct_ge_05": 0.5489,
+        "predicted_mask_containment_rate": 0.7404,
+        "mean_temporal_displacement_norm": 0.1929
+      }
+    ],
+    "bottom_10_weak_noisy_keypoints": [
+      {
+        "name": "left_antler_end",
+        "mean_confidence": 0.3399,
+        "median_confidence": 0.3241,
+        "pct_ge_02": 0.8,
+        "pct_ge_05": 0.1362,
+        "predicted_mask_containment_rate": 0.6085,
+        "mean_temporal_displacement_norm": 0.1612
+      },
+      {
+        "name": "right_antler_end",
+        "mean_confidence": 0.3383,
+        "median_confidence": 0.3052,
+        "pct_ge_02": 0.7745,
+        "pct_ge_05": 0.1277,
+        "predicted_mask_containment_rate": 0.6128,
+        "mean_temporal_displacement_norm": 0.2436
+      },
+      {
+        "name": "throat_end",
+        "mean_confidence": 0.3358,
+        "median_confidence": 0.3152,
+        "pct_ge_02": 0.783,
+        "pct_ge_05": 0.1489,
+        "predicted_mask_containment_rate": 0.8255,
+        "mean_temporal_displacement_norm": 0.0959
+      },
+      {
+        "name": "right_earend",
+        "mean_confidence": 0.3246,
+        "median_confidence": 0.2992,
+        "pct_ge_02": 0.8,
+        "pct_ge_05": 0.1191,
+        "predicted_mask_containment_rate": 0.7106,
+        "mean_temporal_displacement_norm": 0.2474
+      },
+      {
+        "name": "throat_base",
+        "mean_confidence": 0.3216,
+        "median_confidence": 0.2812,
+        "pct_ge_02": 0.7106,
+        "pct_ge_05": 0.2,
+        "predicted_mask_containment_rate": 0.7787,
+        "mean_temporal_displacement_norm": 0.0967
+      },
+      {
+        "name": "body_middle_right",
+        "mean_confidence": 0.3146,
+        "median_confidence": 0.2993,
+        "pct_ge_02": 0.7745,
+        "pct_ge_05": 0.1021,
+        "predicted_mask_containment_rate": 0.8128,
+        "mean_temporal_displacement_norm": 0.0788
+      },
+      {
+        "name": "body_middle_left",
+        "mean_confidence": 0.3086,
+        "median_confidence": 0.2779,
+        "pct_ge_02": 0.7617,
+        "pct_ge_05": 0.1191,
+        "predicted_mask_containment_rate": 0.8426,
+        "mean_temporal_displacement_norm": 0.1035
+      },
+      {
+        "name": "neck_end",
+        "mean_confidence": 0.3022,
+        "median_confidence": 0.2781,
+        "pct_ge_02": 0.7149,
+        "pct_ge_05": 0.1277,
+        "predicted_mask_containment_rate": 0.8723,
+        "mean_temporal_displacement_norm": 0.1475
+      },
+      {
+        "name": "left_earend",
+        "mean_confidence": 0.2932,
+        "median_confidence": 0.2531,
+        "pct_ge_02": 0.6468,
+        "pct_ge_05": 0.1234,
+        "predicted_mask_containment_rate": 0.6085,
+        "mean_temporal_displacement_norm": 0.1998
+      },
+      {
+        "name": "tail_end",
+        "mean_confidence": 0.2049,
+        "median_confidence": 0.1572,
+        "pct_ge_02": 0.3872,
+        "pct_ge_05": 0.0596,
+        "predicted_mask_containment_rate": 0.6426,
+        "mean_temporal_displacement_norm": 0.2366
+      }
+    ]
+  },
+  "keypoint_details": {
+    "nose": {
+      "mean_confidence": 0.5709,
+      "median_confidence": 0.5664,
+      "pct_ge_02": 0.8681,
+      "pct_ge_05": 0.5489,
+      "predicted_mask_containment_rate": 0.7404,
+      "mean_temporal_displacement_norm": 0.1929
+    },
+    "upper_jaw": {
+      "mean_confidence": 0.518,
+      "median_confidence": 0.4941,
+      "pct_ge_02": 0.8128,
+      "pct_ge_05": 0.4936,
+      "predicted_mask_containment_rate": 0.583,
+      "mean_temporal_displacement_norm": 0.177
+    },
+    "lower_jaw": {
+      "mean_confidence": 0.4675,
+      "median_confidence": 0.4671,
+      "pct_ge_02": 0.817,
+      "pct_ge_05": 0.4681,
+      "predicted_mask_containment_rate": 0.6128,
+      "mean_temporal_displacement_norm": 0.173
+    },
+    "mouth_end_right": {
+      "mean_confidence": 0.4381,
+      "median_confidence": 0.4388,
+      "pct_ge_02": 0.8213,
+      "pct_ge_05": 0.4255,
+      "predicted_mask_containment_rate": 0.7277,
+      "mean_temporal_displacement_norm": 0.1563
+    },
+    "mouth_end_left": {
+      "mean_confidence": 0.4609,
+      "median_confidence": 0.4501,
+      "pct_ge_02": 0.8596,
+      "pct_ge_05": 0.4426,
+      "predicted_mask_containment_rate": 0.7489,
+      "mean_temporal_displacement_norm": 0.1816
+    },
+    "right_eye": {
+      "mean_confidence": 0.5856,
+      "median_confidence": 0.6274,
+      "pct_ge_02": 0.9064,
+      "pct_ge_05": 0.6298,
+      "predicted_mask_containment_rate": 0.8085,
+      "mean_temporal_displacement_norm": 0.1497
+    },
+    "right_earbase": {
+      "mean_confidence": 0.3997,
+      "median_confidence": 0.39,
+      "pct_ge_02": 0.7787,
+      "pct_ge_05": 0.3574,
+      "predicted_mask_containment_rate": 0.8255,
+      "mean_temporal_displacement_norm": 0.1596
+    },
+    "right_earend": {
+      "mean_confidence": 0.3246,
+      "median_confidence": 0.2992,
+      "pct_ge_02": 0.8,
+      "pct_ge_05": 0.1191,
+      "predicted_mask_containment_rate": 0.7106,
+      "mean_temporal_displacement_norm": 0.2474
+    },
+    "right_antler_base": {
+      "mean_confidence": 0.423,
+      "median_confidence": 0.4191,
+      "pct_ge_02": 0.8383,
+      "pct_ge_05": 0.4043,
+      "predicted_mask_containment_rate": 0.8383,
+      "mean_temporal_displacement_norm": 0.1576
+    },
+    "right_antler_end": {
+      "mean_confidence": 0.3383,
+      "median_confidence": 0.3052,
+      "pct_ge_02": 0.7745,
+      "pct_ge_05": 0.1277,
+      "predicted_mask_containment_rate": 0.6128,
+      "mean_temporal_displacement_norm": 0.2436
+    },
+    "left_eye": {
+      "mean_confidence": 0.6062,
+      "median_confidence": 0.6755,
+      "pct_ge_02": 0.8894,
+      "pct_ge_05": 0.6383,
+      "predicted_mask_containment_rate": 0.7404,
+      "mean_temporal_displacement_norm": 0.1596
+    },
+    "left_earbase": {
+      "mean_confidence": 0.3681,
+      "median_confidence": 0.3326,
+      "pct_ge_02": 0.7319,
+      "pct_ge_05": 0.2553,
+      "predicted_mask_containment_rate": 0.7489,
+      "mean_temporal_displacement_norm": 0.1475
+    },
+    "left_earend": {
+      "mean_confidence": 0.2932,
+      "median_confidence": 0.2531,
+      "pct_ge_02": 0.6468,
+      "pct_ge_05": 0.1234,
+      "predicted_mask_containment_rate": 0.6085,
+      "mean_temporal_displacement_norm": 0.1998
+    },
+    "left_antler_base": {
+      "mean_confidence": 0.4282,
+      "median_confidence": 0.4166,
+      "pct_ge_02": 0.8511,
+      "pct_ge_05": 0.3617,
+      "predicted_mask_containment_rate": 0.8,
+      "mean_temporal_displacement_norm": 0.1599
+    },
+    "left_antler_end": {
+      "mean_confidence": 0.3399,
+      "median_confidence": 0.3241,
+      "pct_ge_02": 0.8,
+      "pct_ge_05": 0.1362,
+      "predicted_mask_containment_rate": 0.6085,
+      "mean_temporal_displacement_norm": 0.1612
+    },
+    "neck_base": {
+      "mean_confidence": 0.5351,
+      "median_confidence": 0.5407,
+      "pct_ge_02": 0.9191,
+      "pct_ge_05": 0.566,
+      "predicted_mask_containment_rate": 0.8596,
+      "mean_temporal_displacement_norm": 0.1391
+    },
+    "neck_end": {
+      "mean_confidence": 0.3022,
+      "median_confidence": 0.2781,
+      "pct_ge_02": 0.7149,
+      "pct_ge_05": 0.1277,
+      "predicted_mask_containment_rate": 0.8723,
+      "mean_temporal_displacement_norm": 0.1475
+    },
+    "throat_base": {
+      "mean_confidence": 0.3216,
+      "median_confidence": 0.2812,
+      "pct_ge_02": 0.7106,
+      "pct_ge_05": 0.2,
+      "predicted_mask_containment_rate": 0.7787,
+      "mean_temporal_displacement_norm": 0.0967
+    },
+    "throat_end": {
+      "mean_confidence": 0.3358,
+      "median_confidence": 0.3152,
+      "pct_ge_02": 0.783,
+      "pct_ge_05": 0.1489,
+      "predicted_mask_containment_rate": 0.8255,
+      "mean_temporal_displacement_norm": 0.0959
+    },
+    "back_base": {
+      "mean_confidence": 0.3527,
+      "median_confidence": 0.3393,
+      "pct_ge_02": 0.8128,
+      "pct_ge_05": 0.1872,
+      "predicted_mask_containment_rate": 0.8723,
+      "mean_temporal_displacement_norm": 0.1577
+    },
+    "back_end": {
+      "mean_confidence": 0.5504,
+      "median_confidence": 0.5857,
+      "pct_ge_02": 0.9149,
+      "pct_ge_05": 0.617,
+      "predicted_mask_containment_rate": 0.8894,
+      "mean_temporal_displacement_norm": 0.1634
+    },
+    "back_middle": {
+      "mean_confidence": 0.4952,
+      "median_confidence": 0.4741,
+      "pct_ge_02": 0.9447,
+      "pct_ge_05": 0.4681,
+      "predicted_mask_containment_rate": 0.8596,
+      "mean_temporal_displacement_norm": 0.1054
+    },
+    "tail_base": {
+      "mean_confidence": 0.616,
+      "median_confidence": 0.6599,
+      "pct_ge_02": 0.9404,
+      "pct_ge_05": 0.6426,
+      "predicted_mask_containment_rate": 0.8809,
+      "mean_temporal_displacement_norm": 0.1939
+    },
+    "tail_end": {
+      "mean_confidence": 0.2049,
+      "median_confidence": 0.1572,
+      "pct_ge_02": 0.3872,
+      "pct_ge_05": 0.0596,
+      "predicted_mask_containment_rate": 0.6426,
+      "mean_temporal_displacement_norm": 0.2366
+    },
+    "front_left_thai": {
+      "mean_confidence": 0.5654,
+      "median_confidence": 0.5705,
+      "pct_ge_02": 0.9489,
+      "pct_ge_05": 0.6128,
+      "predicted_mask_containment_rate": 0.8426,
+      "mean_temporal_displacement_norm": 0.0953
+    },
+    "front_left_knee": {
+      "mean_confidence": 0.5216,
+      "median_confidence": 0.5302,
+      "pct_ge_02": 0.9149,
+      "pct_ge_05": 0.5277,
+      "predicted_mask_containment_rate": 0.6681,
+      "mean_temporal_displacement_norm": 0.1152
+    },
+    "front_left_paw": {
+      "mean_confidence": 0.5977,
+      "median_confidence": 0.6172,
+      "pct_ge_02": 0.9064,
+      "pct_ge_05": 0.6426,
+      "predicted_mask_containment_rate": 0.6468,
+      "mean_temporal_displacement_norm": 0.1056
+    },
+    "front_right_thai": {
+      "mean_confidence": 0.5857,
+      "median_confidence": 0.6286,
+      "pct_ge_02": 0.9447,
+      "pct_ge_05": 0.6553,
+      "predicted_mask_containment_rate": 0.8553,
+      "mean_temporal_displacement_norm": 0.1072
+    },
+    "front_right_knee": {
+      "mean_confidence": 0.5372,
+      "median_confidence": 0.5625,
+      "pct_ge_02": 0.9277,
+      "pct_ge_05": 0.6043,
+      "predicted_mask_containment_rate": 0.7532,
+      "mean_temporal_displacement_norm": 0.0889
+    },
+    "front_right_paw": {
+      "mean_confidence": 0.6289,
+      "median_confidence": 0.6741,
+      "pct_ge_02": 0.9787,
+      "pct_ge_05": 0.7064,
+      "predicted_mask_containment_rate": 0.634,
+      "mean_temporal_displacement_norm": 0.1142
+    },
+    "back_left_paw": {
+      "mean_confidence": 0.5543,
+      "median_confidence": 0.5515,
+      "pct_ge_02": 0.9277,
+      "pct_ge_05": 0.5532,
+      "predicted_mask_containment_rate": 0.4851,
+      "mean_temporal_displacement_norm": 0.1346
+    },
+    "back_left_thai": {
+      "mean_confidence": 0.5881,
+      "median_confidence": 0.5608,
+      "pct_ge_02": 0.9745,
+      "pct_ge_05": 0.5617,
+      "predicted_mask_containment_rate": 0.8213,
+      "mean_temporal_displacement_norm": 0.1374
+    },
+    "back_right_thai": {
+      "mean_confidence": 0.5769,
+      "median_confidence": 0.598,
+      "pct_ge_02": 0.9149,
+      "pct_ge_05": 0.5915,
+      "predicted_mask_containment_rate": 0.7277,
+      "mean_temporal_displacement_norm": 0.1423
+    },
+    "back_left_knee": {
+      "mean_confidence": 0.5719,
+      "median_confidence": 0.588,
+      "pct_ge_02": 0.8936,
+      "pct_ge_05": 0.5787,
+      "predicted_mask_containment_rate": 0.6894,
+      "mean_temporal_displacement_norm": 0.1093
+    },
+    "back_right_knee": {
+      "mean_confidence": 0.5448,
+      "median_confidence": 0.5359,
+      "pct_ge_02": 0.9106,
+      "pct_ge_05": 0.5277,
+      "predicted_mask_containment_rate": 0.6043,
+      "mean_temporal_displacement_norm": 0.145
+    },
+    "back_right_paw": {
+      "mean_confidence": 0.5574,
+      "median_confidence": 0.5386,
+      "pct_ge_02": 0.9277,
+      "pct_ge_05": 0.5319,
+      "predicted_mask_containment_rate": 0.5064,
+      "mean_temporal_displacement_norm": 0.1444
+    },
+    "belly_bottom": {
+      "mean_confidence": 0.4387,
+      "median_confidence": 0.4295,
+      "pct_ge_02": 0.9277,
+      "pct_ge_05": 0.4,
+      "predicted_mask_containment_rate": 0.6851,
+      "mean_temporal_displacement_norm": 0.0859
+    },
+    "body_middle_right": {
+      "mean_confidence": 0.3146,
+      "median_confidence": 0.2993,
+      "pct_ge_02": 0.7745,
+      "pct_ge_05": 0.1021,
+      "predicted_mask_containment_rate": 0.8128,
+      "mean_temporal_displacement_norm": 0.0788
+    },
+    "body_middle_left": {
+      "mean_confidence": 0.3086,
+      "median_confidence": 0.2779,
+      "pct_ge_02": 0.7617,
+      "pct_ge_05": 0.1191,
+      "predicted_mask_containment_rate": 0.8426,
+      "mean_temporal_displacement_norm": 0.1035
+    }
+  }
+}
