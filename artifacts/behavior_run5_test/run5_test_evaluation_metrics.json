@@ -1,0 +1,96 @@
+{
+  "overall_accuracy": 0.8744,
+  "balanced_accuracy": 0.7443,
+  "macro_f1": 0.7397,
+  "macro_precision": 0.738,
+  "macro_recall": 0.7443,
+  "per_class": {
+    "Standing": {
+      "precision": 0.7117,
+      "recall": 0.7315,
+      "f1": 0.7215,
+      "support": 108
+    },
+    "Lying": {
+      "precision": 0.9808,
+      "recall": 0.8608,
+      "f1": 0.9169,
+      "support": 237
+    },
+    "Feeding": {
+      "precision": 0.9231,
+      "recall": 0.9711,
+      "f1": 0.9465,
+      "support": 346
+    },
+    "Drinking": {
+      "precision": 0.8485,
+      "recall": 0.8889,
+      "f1": 0.8682,
+      "support": 63
+    },
+    "Walking": {
+      "precision": 0.2258,
+      "recall": 0.2692,
+      "f1": 0.2456,
+      "support": 26
+    }
+  },
+  "per_class_f1": {
+    "Standing": 0.7215,
+    "Lying": 0.9169,
+    "Feeding": 0.9465,
+    "Drinking": 0.8682,
+    "Walking": 0.2456
+  },
+  "confusion_matrix": [
+    [
+      79,
+      3,
+      2,
+      8,
+      16
+    ],
+    [
+      23,
+      204,
+      10,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      336,
+      2,
+      8
+    ],
+    [
+      3,
+      0,
+      4,
+      56,
+      0
+    ],
+    [
+      6,
+      1,
+      12,
+      0,
+      7
+    ]
+  ],
+  "cvb_metrics": {
+    "support": 422,
+    "overall_accuracy": 0.8009,
+    "balanced_accuracy": 0.6105,
+    "macro_f1": 0.6188
+  },
+  "beef_metrics": {
+    "support": 358,
+    "overall_accuracy": 0.9609,
+    "balanced_accuracy": 0.9426,
+    "macro_f1": 0.9414
+  },
+  "walking_is_cvb_only": true
+}

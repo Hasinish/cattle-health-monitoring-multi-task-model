@@ -1,0 +1,1720 @@
+{
+  "model_type": "ResNet18BCSPerception_4Ch",
+  "parameters": 11181700,
+  "baseline_parameters": 11178564,
+  "parameter_delta": 3136,
+  "epochs_trained": 30,
+  "best_epoch": 2,
+  "best_val_real_mae": 0.1761,
+  "best_metrics": {
+    "epoch": 2,
+    "train_loss": 0.2434,
+    "val_loss": 0.4875,
+    "real_mae": 0.1761,
+    "acc_0": 0.4137,
+    "acc_1": 0.8965,
+    "balanced_accuracy": 0.3876,
+    "macro_f1": 0.3803,
+    "precision": 0.4653,
+    "recall": 0.3876,
+    "confusion_matrix": [
+      [
+        320,
+        458,
+        138,
+        51,
+        0
+      ],
+      [
+        209,
+        952,
+        574,
+        208,
+        5
+      ],
+      [
+        54,
+        405,
+        888,
+        536,
+        15
+      ],
+      [
+        16,
+        165,
+        503,
+        958,
+        65
+      ],
+      [
+        2,
+        37,
+        118,
+        1024,
+        116
+      ]
+    ],
+    "lr": 9.9e-05,
+    "epoch_time_s": 18.58,
+    "best_epoch": 2
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.3573,
+      "val_loss": 0.419,
+      "real_mae": 0.1791,
+      "acc_0": 0.3949,
+      "acc_1": 0.9021,
+      "balanced_accuracy": 0.3719,
+      "macro_f1": 0.3739,
+      "precision": 0.4461,
+      "recall": 0.3719,
+      "confusion_matrix": [
+        [
+          282,
+          443,
+          184,
+          54,
+          4
+        ],
+        [
+          132,
+          771,
+          842,
+          195,
+          8
+        ],
+        [
+          34,
+          364,
+          915,
+          541,
+          44
+        ],
+        [
+          16,
+          106,
+          497,
+          934,
+          154
+        ],
+        [
+          3,
+          13,
+          104,
+          992,
+          185
+        ]
+      ],
+      "lr": 0.0001,
+      "epoch_time_s": 19.69
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.2434,
+      "val_loss": 0.4875,
+      "real_mae": 0.1761,
+      "acc_0": 0.4137,
+      "acc_1": 0.8965,
+      "balanced_accuracy": 0.3876,
+      "macro_f1": 0.3803,
+      "precision": 0.4653,
+      "recall": 0.3876,
+      "confusion_matrix": [
+        [
+          320,
+          458,
+          138,
+          51,
+          0
+        ],
+        [
+          209,
+          952,
+          574,
+          208,
+          5
+        ],
+        [
+          54,
+          405,
+          888,
+          536,
+          15
+        ],
+        [
+          16,
+          165,
+          503,
+          958,
+          65
+        ],
+        [
+          2,
+          37,
+          118,
+          1024,
+          116
+        ]
+      ],
+      "lr": 9.9e-05,
+      "epoch_time_s": 18.58
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.1779,
+      "val_loss": 0.5333,
+      "real_mae": 0.1923,
+      "acc_0": 0.3816,
+      "acc_1": 0.8684,
+      "balanced_accuracy": 0.3677,
+      "macro_f1": 0.3706,
+      "precision": 0.4235,
+      "recall": 0.3677,
+      "confusion_matrix": [
+        [
+          322,
+          428,
+          145,
+          66,
+          6
+        ],
+        [
+          217,
+          832,
+          518,
+          358,
+          23
+        ],
+        [
+          75,
+          361,
+          630,
+          781,
+          51
+        ],
+        [
+          16,
+          165,
+          394,
+          962,
+          170
+        ],
+        [
+          4,
+          24,
+          96,
+          936,
+          237
+        ]
+      ],
+      "lr": 9.8e-05,
+      "epoch_time_s": 18.37
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.1302,
+      "val_loss": 0.6568,
+      "real_mae": 0.1919,
+      "acc_0": 0.3883,
+      "acc_1": 0.8624,
+      "balanced_accuracy": 0.3711,
+      "macro_f1": 0.3727,
+      "precision": 0.4156,
+      "recall": 0.3711,
+      "confusion_matrix": [
+        [
+          329,
+          433,
+          155,
+          50,
+          0
+        ],
+        [
+          253,
+          843,
+          596,
+          244,
+          12
+        ],
+        [
+          83,
+          378,
+          803,
+          575,
+          59
+        ],
+        [
+          29,
+          147,
+          511,
+          851,
+          169
+        ],
+        [
+          9,
+          33,
+          255,
+          791,
+          209
+        ]
+      ],
+      "lr": 9.6e-05,
+      "epoch_time_s": 18.28
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.0991,
+      "val_loss": 0.7527,
+      "real_mae": 0.1887,
+      "acc_0": 0.3799,
+      "acc_1": 0.8817,
+      "balanced_accuracy": 0.354,
+      "macro_f1": 0.3457,
+      "precision": 0.4167,
+      "recall": 0.354,
+      "confusion_matrix": [
+        [
+          255,
+          463,
+          176,
+          71,
+          2
+        ],
+        [
+          196,
+          823,
+          610,
+          308,
+          11
+        ],
+        [
+          34,
+          353,
+          763,
+          720,
+          28
+        ],
+        [
+          6,
+          157,
+          417,
+          1020,
+          107
+        ],
+        [
+          1,
+          34,
+          97,
+          1056,
+          109
+        ]
+      ],
+      "lr": 9.3e-05,
+      "epoch_time_s": 18.3
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.0757,
+      "val_loss": 0.829,
+      "real_mae": 0.1949,
+      "acc_0": 0.3774,
+      "acc_1": 0.8622,
+      "balanced_accuracy": 0.3625,
+      "macro_f1": 0.3641,
+      "precision": 0.4292,
+      "recall": 0.3625,
+      "confusion_matrix": [
+        [
+          304,
+          337,
+          231,
+          90,
+          5
+        ],
+        [
+          178,
+          614,
+          753,
+          386,
+          17
+        ],
+        [
+          85,
+          159,
+          823,
+          770,
+          61
+        ],
+        [
+          19,
+          85,
+          437,
+          987,
+          179
+        ],
+        [
+          1,
+          13,
+          84,
+          977,
+          222
+        ]
+      ],
+      "lr": 9.1e-05,
+      "epoch_time_s": 18.36
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.0609,
+      "val_loss": 0.8952,
+      "real_mae": 0.1978,
+      "acc_0": 0.37,
+      "acc_1": 0.8557,
+      "balanced_accuracy": 0.3484,
+      "macro_f1": 0.3506,
+      "precision": 0.4181,
+      "recall": 0.3484,
+      "confusion_matrix": [
+        [
+          242,
+          391,
+          276,
+          52,
+          6
+        ],
+        [
+          144,
+          614,
+          843,
+          327,
+          20
+        ],
+        [
+          64,
+          206,
+          966,
+          603,
+          59
+        ],
+        [
+          22,
+          95,
+          569,
+          849,
+          172
+        ],
+        [
+          1,
+          25,
+          181,
+          869,
+          221
+        ]
+      ],
+      "lr": 8.7e-05,
+      "epoch_time_s": 18.36
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.0462,
+      "val_loss": 0.7518,
+      "real_mae": 0.1876,
+      "acc_0": 0.4002,
+      "acc_1": 0.8667,
+      "balanced_accuracy": 0.3849,
+      "macro_f1": 0.3896,
+      "precision": 0.4333,
+      "recall": 0.3849,
+      "confusion_matrix": [
+        [
+          322,
+          410,
+          166,
+          63,
+          6
+        ],
+        [
+          215,
+          855,
+          496,
+          361,
+          21
+        ],
+        [
+          76,
+          329,
+          712,
+          704,
+          77
+        ],
+        [
+          13,
+          140,
+          369,
+          961,
+          224
+        ],
+        [
+          4,
+          17,
+          98,
+          900,
+          278
+        ]
+      ],
+      "lr": 8.4e-05,
+      "epoch_time_s": 18.43
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.0386,
+      "val_loss": 0.796,
+      "real_mae": 0.1866,
+      "acc_0": 0.3994,
+      "acc_1": 0.8714,
+      "balanced_accuracy": 0.3808,
+      "macro_f1": 0.3873,
+      "precision": 0.4301,
+      "recall": 0.3808,
+      "confusion_matrix": [
+        [
+          305,
+          437,
+          164,
+          56,
+          5
+        ],
+        [
+          216,
+          862,
+          580,
+          273,
+          17
+        ],
+        [
+          61,
+          336,
+          849,
+          562,
+          90
+        ],
+        [
+          18,
+          181,
+          477,
+          832,
+          199
+        ],
+        [
+          3,
+          28,
+          109,
+          883,
+          274
+        ]
+      ],
+      "lr": 8e-05,
+      "epoch_time_s": 18.38
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.0344,
+      "val_loss": 0.9541,
+      "real_mae": 0.1939,
+      "acc_0": 0.3748,
+      "acc_1": 0.8704,
+      "balanced_accuracy": 0.3609,
+      "macro_f1": 0.3593,
+      "precision": 0.4113,
+      "recall": 0.3609,
+      "confusion_matrix": [
+        [
+          336,
+          369,
+          178,
+          83,
+          1
+        ],
+        [
+          261,
+          733,
+          595,
+          340,
+          19
+        ],
+        [
+          78,
+          309,
+          723,
+          758,
+          30
+        ],
+        [
+          13,
+          149,
+          411,
+          960,
+          174
+        ],
+        [
+          5,
+          36,
+          81,
+          997,
+          178
+        ]
+      ],
+      "lr": 7.5e-05,
+      "epoch_time_s": 18.23
+    },
+    {
+      "epoch": 11,
+      "train_loss": 0.0265,
+      "val_loss": 0.903,
+      "real_mae": 0.1841,
+      "acc_0": 0.399,
+      "acc_1": 0.8813,
+      "balanced_accuracy": 0.3723,
+      "macro_f1": 0.3795,
+      "precision": 0.4352,
+      "recall": 0.3723,
+      "confusion_matrix": [
+        [
+          230,
+          516,
+          163,
+          57,
+          1
+        ],
+        [
+          172,
+          941,
+          626,
+          189,
+          20
+        ],
+        [
+          48,
+          424,
+          933,
+          440,
+          53
+        ],
+        [
+          12,
+          212,
+          578,
+          721,
+          184
+        ],
+        [
+          2,
+          36,
+          135,
+          830,
+          294
+        ]
+      ],
+      "lr": 7.1e-05,
+      "epoch_time_s": 18.28
+    },
+    {
+      "epoch": 12,
+      "train_loss": 0.024,
+      "val_loss": 0.9544,
+      "real_mae": 0.185,
+      "acc_0": 0.3957,
+      "acc_1": 0.879,
+      "balanced_accuracy": 0.3686,
+      "macro_f1": 0.367,
+      "precision": 0.4436,
+      "recall": 0.3686,
+      "confusion_matrix": [
+        [
+          260,
+          452,
+          200,
+          53,
+          2
+        ],
+        [
+          178,
+          824,
+          719,
+          219,
+          8
+        ],
+        [
+          51,
+          330,
+          955,
+          530,
+          32
+        ],
+        [
+          13,
+          167,
+          537,
+          890,
+          100
+        ],
+        [
+          2,
+          33,
+          166,
+          932,
+          164
+        ]
+      ],
+      "lr": 6.6e-05,
+      "epoch_time_s": 18.35
+    },
+    {
+      "epoch": 13,
+      "train_loss": 0.0187,
+      "val_loss": 0.9581,
+      "real_mae": 0.1854,
+      "acc_0": 0.403,
+      "acc_1": 0.8713,
+      "balanced_accuracy": 0.383,
+      "macro_f1": 0.3889,
+      "precision": 0.4424,
+      "recall": 0.383,
+      "confusion_matrix": [
+        [
+          288,
+          413,
+          198,
+          67,
+          1
+        ],
+        [
+          215,
+          814,
+          624,
+          274,
+          21
+        ],
+        [
+          55,
+          288,
+          868,
+          615,
+          72
+        ],
+        [
+          6,
+          149,
+          480,
+          906,
+          166
+        ],
+        [
+          5,
+          18,
+          140,
+          860,
+          274
+        ]
+      ],
+      "lr": 6.1e-05,
+      "epoch_time_s": 18.24
+    },
+    {
+      "epoch": 14,
+      "train_loss": 0.016,
+      "val_loss": 0.9622,
+      "real_mae": 0.1888,
+      "acc_0": 0.398,
+      "acc_1": 0.863,
+      "balanced_accuracy": 0.381,
+      "macro_f1": 0.381,
+      "precision": 0.439,
+      "recall": 0.381,
+      "confusion_matrix": [
+        [
+          323,
+          386,
+          181,
+          73,
+          4
+        ],
+        [
+          210,
+          777,
+          613,
+          341,
+          7
+        ],
+        [
+          74,
+          274,
+          763,
+          721,
+          66
+        ],
+        [
+          11,
+          134,
+          378,
+          1038,
+          146
+        ],
+        [
+          3,
+          20,
+          157,
+          907,
+          210
+        ]
+      ],
+      "lr": 5.6e-05,
+      "epoch_time_s": 18.25
+    },
+    {
+      "epoch": 15,
+      "train_loss": 0.0136,
+      "val_loss": 1.0315,
+      "real_mae": 0.1854,
+      "acc_0": 0.3902,
+      "acc_1": 0.8835,
+      "balanced_accuracy": 0.3643,
+      "macro_f1": 0.3572,
+      "precision": 0.4371,
+      "recall": 0.3643,
+      "confusion_matrix": [
+        [
+          278,
+          457,
+          169,
+          62,
+          1
+        ],
+        [
+          182,
+          847,
+          647,
+          266,
+          6
+        ],
+        [
+          62,
+          324,
+          832,
+          662,
+          18
+        ],
+        [
+          13,
+          147,
+          480,
+          981,
+          86
+        ],
+        [
+          1,
+          34,
+          132,
+          1018,
+          112
+        ]
+      ],
+      "lr": 5.1e-05,
+      "epoch_time_s": 18.71
+    },
+    {
+      "epoch": 16,
+      "train_loss": 0.0114,
+      "val_loss": 1.0835,
+      "real_mae": 0.1901,
+      "acc_0": 0.3903,
+      "acc_1": 0.8625,
+      "balanced_accuracy": 0.3676,
+      "macro_f1": 0.3739,
+      "precision": 0.4481,
+      "recall": 0.3676,
+      "confusion_matrix": [
+        [
+          275,
+          440,
+          198,
+          53,
+          1
+        ],
+        [
+          166,
+          832,
+          701,
+          240,
+          9
+        ],
+        [
+          62,
+          343,
+          906,
+          553,
+          34
+        ],
+        [
+          8,
+          160,
+          598,
+          815,
+          126
+        ],
+        [
+          0,
+          30,
+          280,
+          764,
+          223
+        ]
+      ],
+      "lr": 4.5e-05,
+      "epoch_time_s": 18.25
+    },
+    {
+      "epoch": 17,
+      "train_loss": 0.0094,
+      "val_loss": 1.1016,
+      "real_mae": 0.1893,
+      "acc_0": 0.3866,
+      "acc_1": 0.8725,
+      "balanced_accuracy": 0.3667,
+      "macro_f1": 0.3702,
+      "precision": 0.4371,
+      "recall": 0.3667,
+      "confusion_matrix": [
+        [
+          258,
+          408,
+          224,
+          73,
+          4
+        ],
+        [
+          159,
+          673,
+          762,
+          334,
+          20
+        ],
+        [
+          49,
+          245,
+          855,
+          678,
+          71
+        ],
+        [
+          4,
+          118,
+          432,
+          983,
+          170
+        ],
+        [
+          1,
+          21,
+          78,
+          944,
+          253
+        ]
+      ],
+      "lr": 4e-05,
+      "epoch_time_s": 18.37
+    },
+    {
+      "epoch": 18,
+      "train_loss": 0.0081,
+      "val_loss": 1.04,
+      "real_mae": 0.1872,
+      "acc_0": 0.3943,
+      "acc_1": 0.8754,
+      "balanced_accuracy": 0.3788,
+      "macro_f1": 0.3783,
+      "precision": 0.4285,
+      "recall": 0.3788,
+      "confusion_matrix": [
+        [
+          342,
+          409,
+          150,
+          60,
+          6
+        ],
+        [
+          256,
+          757,
+          624,
+          298,
+          13
+        ],
+        [
+          77,
+          295,
+          812,
+          664,
+          50
+        ],
+        [
+          24,
+          149,
+          415,
+          965,
+          154
+        ],
+        [
+          1,
+          34,
+          112,
+          944,
+          206
+        ]
+      ],
+      "lr": 3.5e-05,
+      "epoch_time_s": 18.33
+    },
+    {
+      "epoch": 19,
+      "train_loss": 0.0061,
+      "val_loss": 1.0723,
+      "real_mae": 0.1849,
+      "acc_0": 0.3994,
+      "acc_1": 0.8778,
+      "balanced_accuracy": 0.3752,
+      "macro_f1": 0.3755,
+      "precision": 0.4376,
+      "recall": 0.3752,
+      "confusion_matrix": [
+        [
+          297,
+          463,
+          167,
+          40,
+          0
+        ],
+        [
+          208,
+          901,
+          636,
+          192,
+          11
+        ],
+        [
+          79,
+          383,
+          928,
+          466,
+          42
+        ],
+        [
+          32,
+          192,
+          567,
+          812,
+          104
+        ],
+        [
+          2,
+          43,
+          155,
+          913,
+          184
+        ]
+      ],
+      "lr": 3e-05,
+      "epoch_time_s": 18.23
+    },
+    {
+      "epoch": 20,
+      "train_loss": 0.0055,
+      "val_loss": 1.0355,
+      "real_mae": 0.1823,
+      "acc_0": 0.406,
+      "acc_1": 0.8814,
+      "balanced_accuracy": 0.3826,
+      "macro_f1": 0.3848,
+      "precision": 0.4461,
+      "recall": 0.3826,
+      "confusion_matrix": [
+        [
+          296,
+          438,
+          178,
+          51,
+          4
+        ],
+        [
+          193,
+          840,
+          701,
+          203,
+          11
+        ],
+        [
+          66,
+          313,
+          965,
+          510,
+          44
+        ],
+        [
+          19,
+          169,
+          523,
+          864,
+          132
+        ],
+        [
+          0,
+          41,
+          141,
+          906,
+          209
+        ]
+      ],
+      "lr": 2.6e-05,
+      "epoch_time_s": 18.13
+    },
+    {
+      "epoch": 21,
+      "train_loss": 0.0046,
+      "val_loss": 1.1245,
+      "real_mae": 0.1917,
+      "acc_0": 0.3875,
+      "acc_1": 0.8652,
+      "balanced_accuracy": 0.3671,
+      "macro_f1": 0.3646,
+      "precision": 0.4376,
+      "recall": 0.3671,
+      "confusion_matrix": [
+        [
+          298,
+          387,
+          217,
+          62,
+          3
+        ],
+        [
+          193,
+          703,
+          757,
+          286,
+          9
+        ],
+        [
+          92,
+          224,
+          910,
+          627,
+          45
+        ],
+        [
+          37,
+          120,
+          516,
+          946,
+          88
+        ],
+        [
+          3,
+          31,
+          149,
+          942,
+          172
+        ]
+      ],
+      "lr": 2.1e-05,
+      "epoch_time_s": 18.17
+    },
+    {
+      "epoch": 22,
+      "train_loss": 0.0036,
+      "val_loss": 1.0849,
+      "real_mae": 0.1876,
+      "acc_0": 0.3938,
+      "acc_1": 0.8716,
+      "balanced_accuracy": 0.3735,
+      "macro_f1": 0.3745,
+      "precision": 0.434,
+      "recall": 0.3735,
+      "confusion_matrix": [
+        [
+          295,
+          420,
+          199,
+          50,
+          3
+        ],
+        [
+          205,
+          744,
+          714,
+          273,
+          12
+        ],
+        [
+          78,
+          279,
+          901,
+          584,
+          56
+        ],
+        [
+          23,
+          126,
+          500,
+          927,
+          131
+        ],
+        [
+          2,
+          27,
+          155,
+          902,
+          211
+        ]
+      ],
+      "lr": 1.7e-05,
+      "epoch_time_s": 18.33
+    },
+    {
+      "epoch": 23,
+      "train_loss": 0.0033,
+      "val_loss": 1.0391,
+      "real_mae": 0.1844,
+      "acc_0": 0.4071,
+      "acc_1": 0.873,
+      "balanced_accuracy": 0.3856,
+      "macro_f1": 0.3888,
+      "precision": 0.4419,
+      "recall": 0.3856,
+      "confusion_matrix": [
+        [
+          289,
+          445,
+          167,
+          60,
+          6
+        ],
+        [
+          190,
+          846,
+          610,
+          285,
+          17
+        ],
+        [
+          72,
+          285,
+          841,
+          637,
+          63
+        ],
+        [
+          20,
+          142,
+          417,
+          961,
+          167
+        ],
+        [
+          0,
+          28,
+          133,
+          891,
+          245
+        ]
+      ],
+      "lr": 1.4e-05,
+      "epoch_time_s": 18.25
+    },
+    {
+      "epoch": 24,
+      "train_loss": 0.0024,
+      "val_loss": 1.0481,
+      "real_mae": 0.184,
+      "acc_0": 0.4004,
+      "acc_1": 0.8799,
+      "balanced_accuracy": 0.3781,
+      "macro_f1": 0.3784,
+      "precision": 0.4434,
+      "recall": 0.3781,
+      "confusion_matrix": [
+        [
+          293,
+          456,
+          160,
+          57,
+          1
+        ],
+        [
+          208,
+          856,
+          630,
+          245,
+          9
+        ],
+        [
+          78,
+          341,
+          840,
+          607,
+          32
+        ],
+        [
+          26,
+          155,
+          465,
+          941,
+          120
+        ],
+        [
+          0,
+          32,
+          144,
+          921,
+          200
+        ]
+      ],
+      "lr": 1e-05,
+      "epoch_time_s": 18.22
+    },
+    {
+      "epoch": 25,
+      "train_loss": 0.0023,
+      "val_loss": 1.0808,
+      "real_mae": 0.1857,
+      "acc_0": 0.3979,
+      "acc_1": 0.8755,
+      "balanced_accuracy": 0.3759,
+      "macro_f1": 0.3785,
+      "precision": 0.4445,
+      "recall": 0.3759,
+      "confusion_matrix": [
+        [
+          273,
+          440,
+          187,
+          65,
+          2
+        ],
+        [
+          179,
+          775,
+          687,
+          292,
+          15
+        ],
+        [
+          68,
+          268,
+          866,
+          643,
+          53
+        ],
+        [
+          11,
+          144,
+          453,
+          966,
+          133
+        ],
+        [
+          1,
+          28,
+          107,
+          931,
+          230
+        ]
+      ],
+      "lr": 8e-06,
+      "epoch_time_s": 18.23
+    },
+    {
+      "epoch": 26,
+      "train_loss": 0.002,
+      "val_loss": 1.0911,
+      "real_mae": 0.1824,
+      "acc_0": 0.4053,
+      "acc_1": 0.8808,
+      "balanced_accuracy": 0.3784,
+      "macro_f1": 0.3736,
+      "precision": 0.4421,
+      "recall": 0.3784,
+      "confusion_matrix": [
+        [
+          301,
+          486,
+          138,
+          41,
+          1
+        ],
+        [
+          219,
+          1011,
+          536,
+          176,
+          6
+        ],
+        [
+          83,
+          429,
+          875,
+          485,
+          26
+        ],
+        [
+          30,
+          229,
+          524,
+          841,
+          83
+        ],
+        [
+          1,
+          42,
+          159,
+          955,
+          140
+        ]
+      ],
+      "lr": 5e-06,
+      "epoch_time_s": 18.45
+    },
+    {
+      "epoch": 27,
+      "train_loss": 0.002,
+      "val_loss": 1.0398,
+      "real_mae": 0.1824,
+      "acc_0": 0.4055,
+      "acc_1": 0.8791,
+      "balanced_accuracy": 0.383,
+      "macro_f1": 0.3874,
+      "precision": 0.4482,
+      "recall": 0.383,
+      "confusion_matrix": [
+        [
+          287,
+          447,
+          181,
+          51,
+          1
+        ],
+        [
+          191,
+          861,
+          653,
+          230,
+          13
+        ],
+        [
+          73,
+          320,
+          893,
+          570,
+          42
+        ],
+        [
+          17,
+          154,
+          503,
+          889,
+          144
+        ],
+        [
+          0,
+          28,
+          155,
+          874,
+          240
+        ]
+      ],
+      "lr": 3e-06,
+      "epoch_time_s": 18.2
+    },
+    {
+      "epoch": 28,
+      "train_loss": 0.002,
+      "val_loss": 1.0628,
+      "real_mae": 0.1836,
+      "acc_0": 0.3986,
+      "acc_1": 0.8808,
+      "balanced_accuracy": 0.3756,
+      "macro_f1": 0.3774,
+      "precision": 0.4459,
+      "recall": 0.3756,
+      "confusion_matrix": [
+        [
+          281,
+          422,
+          215,
+          47,
+          2
+        ],
+        [
+          190,
+          762,
+          754,
+          231,
+          11
+        ],
+        [
+          69,
+          265,
+          968,
+          557,
+          39
+        ],
+        [
+          17,
+          130,
+          541,
+          894,
+          125
+        ],
+        [
+          1,
+          27,
+          143,
+          915,
+          211
+        ]
+      ],
+      "lr": 2e-06,
+      "epoch_time_s": 18.28
+    },
+    {
+      "epoch": 29,
+      "train_loss": 0.0015,
+      "val_loss": 1.0453,
+      "real_mae": 0.1827,
+      "acc_0": 0.4031,
+      "acc_1": 0.8812,
+      "balanced_accuracy": 0.3836,
+      "macro_f1": 0.3874,
+      "precision": 0.4434,
+      "recall": 0.3836,
+      "confusion_matrix": [
+        [
+          312,
+          419,
+          187,
+          47,
+          2
+        ],
+        [
+          213,
+          824,
+          665,
+          231,
+          15
+        ],
+        [
+          81,
+          305,
+          886,
+          583,
+          43
+        ],
+        [
+          24,
+          144,
+          499,
+          891,
+          149
+        ],
+        [
+          0,
+          28,
+          127,
+          904,
+          238
+        ]
+      ],
+      "lr": 1e-06,
+      "epoch_time_s": 18.27
+    },
+    {
+      "epoch": 30,
+      "train_loss": 0.0016,
+      "val_loss": 1.0991,
+      "real_mae": 0.1818,
+      "acc_0": 0.4041,
+      "acc_1": 0.8823,
+      "balanced_accuracy": 0.3785,
+      "macro_f1": 0.3771,
+      "precision": 0.4453,
+      "recall": 0.3785,
+      "confusion_matrix": [
+        [
+          309,
+          466,
+          160,
+          32,
+          0
+        ],
+        [
+          212,
+          954,
+          615,
+          160,
+          7
+        ],
+        [
+          78,
+          387,
+          963,
+          440,
+          30
+        ],
+        [
+          23,
+          204,
+          614,
+          774,
+          92
+        ],
+        [
+          1,
+          41,
+          184,
+          912,
+          159
+        ]
+      ],
+      "lr": 1e-06,
+      "epoch_time_s": 18.28
+    }
+  ],
+  "test_metrics": {
+    "evaluation_protocol": "Fair Matched-Subset Test Comparison",
+    "valid_comparison_statement": "The VALID direct comparison is between '2_run1_matched_perception_subset' and '3_run4_matched_perception_subset' evaluated on the EXACT SAME image identities where perception succeeded. The original 8,040-image Run 1 metric is reported for reference only and is NOT directly comparable to the smaller filtered perception subset.",
+    "test_split_integrity_statement": "Canonical test labels and data were NOT used for training or checkpoint selection. A small test-subset plumbing evaluation was performed during pipeline verification. Final full Run 4 test evaluation remains post-training only. Test metrics never affect checkpoint or hyperparameter selection.",
+    "coverage_statistics": {
+      "canonical_full_test_count": 8040,
+      "manifest_test_rows": 8040,
+      "successful_perception_test_count": 7549,
+      "excluded_detection_failures": 489,
+      "excluded_sam_failures": 2,
+      "perception_coverage_percentage": 93.89
+    },
+    "1_run1_original_full_test": {
+      "description": "Original Run 1 RGB Baseline evaluated on all 8,040 canonical test images (Reference only; not directly comparable to subset)",
+      "checkpoint": "/checkpoints/bcs_baseline/bcs_baseline_best.pth",
+      "total_samples": 8040,
+      "real_mae": 0.1848,
+      "acc_0": 0.4163,
+      "acc_1": 0.8674,
+      "balanced_accuracy": 0.4041,
+      "macro_f1": 0.411
+    },
+    "2_run1_matched_perception_subset": {
+      "test_loss": 0.8224,
+      "total_test_samples": 7549,
+      "checkpoint_path": "/checkpoints/bcs_baseline/bcs_baseline_best.pth",
+      "real_mae": 0.1929,
+      "acc_0": 0.4084,
+      "acc_1": 0.8495,
+      "balanced_accuracy": 0.4023,
+      "macro_f1": 0.4074,
+      "precision": 0.4407,
+      "recall": 0.4023,
+      "confusion_matrix": [
+        [
+          403,
+          425,
+          172,
+          130,
+          12
+        ],
+        [
+          195,
+          812,
+          483,
+          371,
+          28
+        ],
+        [
+          58,
+          414,
+          630,
+          873,
+          103
+        ],
+        [
+          13,
+          126,
+          330,
+          972,
+          209
+        ],
+        [
+          2,
+          24,
+          97,
+          401,
+          266
+        ]
+      ]
+    },
+    "3_run4_matched_perception_subset": {
+      "test_loss": 0.4403,
+      "total_test_samples": 7549,
+      "real_mae": 0.1709,
+      "acc_0": 0.4357,
+      "acc_1": 0.894,
+      "balanced_accuracy": 0.397,
+      "macro_f1": 0.4039,
+      "precision": 0.4848,
+      "recall": 0.397,
+      "confusion_matrix": [
+        [
+          383,
+          522,
+          177,
+          60,
+          0
+        ],
+        [
+          208,
+          931,
+          535,
+          213,
+          2
+        ],
+        [
+          40,
+          519,
+          920,
+          585,
+          14
+        ],
+        [
+          17,
+          130,
+          496,
+          942,
+          65
+        ],
+        [
+          1,
+          19,
+          127,
+          530,
+          113
+        ]
+      ]
+    },
+    "matched_delta_run4_minus_run1": {
+      "real_mae_delta": -0.022,
+      "acc_1_delta_pct": 4.45,
+      "acc_0_delta_pct": 2.73,
+      "balanced_accuracy_delta_pct": -0.53,
+      "macro_f1_delta": -0.0035
+    }
+  }
+}

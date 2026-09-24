@@ -1,0 +1,245 @@
+{
+  "timestamp": "2026-09-24 00:26:16",
+  "matched_sample_count": 780,
+  "run2_canonical_historical": {
+    "candidate_count": 809,
+    "overall_accuracy": 0.8888,
+    "balanced_accuracy": 0.7172,
+    "macro_f1": 0.7413,
+    "test_loss": 0.5312,
+    "per_class": {
+      "Lying": {
+        "precision": 0.9634,
+        "recall": 0.9472,
+        "f1": 0.9552,
+        "support": 284
+      },
+      "Feeding": {
+        "precision": 0.8931,
+        "recall": 0.9538,
+        "f1": 0.9225,
+        "support": 281
+      },
+      "Drinking": {
+        "precision": 0.8254,
+        "recall": 0.8615,
+        "f1": 0.843,
+        "support": 58
+      },
+      "Standing": {
+        "precision": 0.7785,
+        "recall": 0.7585,
+        "f1": 0.7684,
+        "support": 160
+      },
+      "Walking": {
+        "precision": 0.25,
+        "recall": 0.1923,
+        "f1": 0.2174,
+        "support": 26,
+        "note": "CVB-only"
+      }
+    },
+    "dataset_breakdown": {
+      "cvb": {
+        "overall_accuracy": 0.8412,
+        "balanced_accuracy": 0.6402,
+        "macro_f1": 0.6541,
+        "support": 381
+      },
+      "beef_cattle_behavior": {
+        "overall_accuracy": 0.9406,
+        "balanced_accuracy": 0.8988,
+        "macro_f1": 0.9113,
+        "support": 428
+      }
+    }
+  },
+  "run2_matched_subset": {
+    "overall_accuracy": 0.8846,
+    "balanced_accuracy": 0.713,
+    "macro_f1": 0.7378,
+    "test_loss": 0.5505,
+    "per_class": {
+      "Standing": {
+        "precision": 0.9444,
+        "recall": 0.6296,
+        "f1": 0.7556,
+        "support": 108
+      },
+      "Lying": {
+        "precision": 0.9573,
+        "recall": 0.9451,
+        "f1": 0.9512,
+        "support": 237
+      },
+      "Feeding": {
+        "precision": 0.8636,
+        "recall": 0.9884,
+        "f1": 0.9218,
+        "support": 346
+      },
+      "Drinking": {
+        "precision": 0.8793,
+        "recall": 0.8095,
+        "f1": 0.843,
+        "support": 63
+      },
+      "Walking": {
+        "precision": 0.25,
+        "recall": 0.1923,
+        "f1": 0.2174,
+        "support": 26
+      }
+    },
+    "cvb_metrics": {
+      "support": 422,
+      "overall_accuracy": 0.8412,
+      "balanced_accuracy": 0.6062,
+      "macro_f1": 0.6541
+    },
+    "beef_metrics": {
+      "support": 358,
+      "overall_accuracy": 0.9358,
+      "balanced_accuracy": 0.9048,
+      "macro_f1": 0.9079
+    },
+    "confusion_matrix": [
+      [
+        68,
+        9,
+        14,
+        7,
+        10
+      ],
+      [
+        1,
+        224,
+        10,
+        0,
+        2
+      ],
+      [
+        1,
+        0,
+        342,
+        0,
+        3
+      ],
+      [
+        1,
+        0,
+        11,
+        51,
+        0
+      ],
+      [
+        1,
+        1,
+        19,
+        0,
+        5
+      ]
+    ]
+  },
+  "run5_perception_tcn_matched_subset": {
+    "overall_accuracy": 0.8744,
+    "balanced_accuracy": 0.7443,
+    "macro_f1": 0.7397,
+    "test_loss": 0.443,
+    "per_class": {
+      "Standing": {
+        "precision": 0.7117,
+        "recall": 0.7315,
+        "f1": 0.7215,
+        "support": 108
+      },
+      "Lying": {
+        "precision": 0.9808,
+        "recall": 0.8608,
+        "f1": 0.9169,
+        "support": 237
+      },
+      "Feeding": {
+        "precision": 0.9231,
+        "recall": 0.9711,
+        "f1": 0.9465,
+        "support": 346
+      },
+      "Drinking": {
+        "precision": 0.8485,
+        "recall": 0.8889,
+        "f1": 0.8682,
+        "support": 63
+      },
+      "Walking": {
+        "precision": 0.2258,
+        "recall": 0.2692,
+        "f1": 0.2456,
+        "support": 26
+      }
+    },
+    "cvb_metrics": {
+      "support": 422,
+      "overall_accuracy": 0.8009,
+      "balanced_accuracy": 0.6105,
+      "macro_f1": 0.6188
+    },
+    "beef_metrics": {
+      "support": 358,
+      "overall_accuracy": 0.9609,
+      "balanced_accuracy": 0.9426,
+      "macro_f1": 0.9414
+    },
+    "confusion_matrix": [
+      [
+        79,
+        3,
+        2,
+        8,
+        16
+      ],
+      [
+        23,
+        204,
+        10,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        336,
+        2,
+        8
+      ],
+      [
+        3,
+        0,
+        4,
+        56,
+        0
+      ],
+      [
+        6,
+        1,
+        12,
+        0,
+        7
+      ]
+    ]
+  },
+  "matched_delta_run5_minus_run2": {
+    "overall_accuracy": -0.0102,
+    "balanced_accuracy": 0.0313,
+    "macro_f1": 0.0019,
+    "test_loss": -0.1075,
+    "per_class_f1_delta": {
+      "Standing": -0.0341,
+      "Lying": -0.0343,
+      "Feeding": 0.0247,
+      "Drinking": 0.0252,
+      "Walking": 0.0282
+    }
+  }
+}

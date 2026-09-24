@@ -1,0 +1,127 @@
+{
+  "evaluation_protocol": "Fair Matched-Subset Test Comparison",
+  "valid_comparison_statement": "The VALID direct comparison is between '2_run1_matched_perception_subset' and '3_run4_matched_perception_subset' evaluated on the EXACT SAME image identities where perception succeeded. The original 8,040-image Run 1 metric is reported for reference only and is NOT directly comparable to the smaller filtered perception subset.",
+  "test_split_integrity_statement": "Canonical test labels and data were NOT used for training or checkpoint selection. A small test-subset plumbing evaluation was performed during pipeline verification. Final full Run 4 test evaluation remains post-training only. Test metrics never affect checkpoint or hyperparameter selection.",
+  "coverage_statistics": {
+    "canonical_full_test_count": 8040,
+    "manifest_test_rows": 8040,
+    "successful_perception_test_count": 7549,
+    "excluded_detection_failures": 489,
+    "excluded_sam_failures": 2,
+    "perception_coverage_percentage": 93.89
+  },
+  "1_run1_original_full_test": {
+    "description": "Original Run 1 RGB Baseline evaluated on all 8,040 canonical test images (Reference only; not directly comparable to subset)",
+    "checkpoint": "/checkpoints/bcs_baseline/bcs_baseline_best.pth",
+    "total_samples": 8040,
+    "real_mae": 0.1848,
+    "acc_0": 0.4163,
+    "acc_1": 0.8674,
+    "balanced_accuracy": 0.4041,
+    "macro_f1": 0.411
+  },
+  "2_run1_matched_perception_subset": {
+    "test_loss": 0.8224,
+    "total_test_samples": 7549,
+    "checkpoint_path": "/checkpoints/bcs_baseline/bcs_baseline_best.pth",
+    "real_mae": 0.1929,
+    "acc_0": 0.4084,
+    "acc_1": 0.8495,
+    "balanced_accuracy": 0.4023,
+    "macro_f1": 0.4074,
+    "precision": 0.4407,
+    "recall": 0.4023,
+    "confusion_matrix": [
+      [
+        403,
+        425,
+        172,
+        130,
+        12
+      ],
+      [
+        195,
+        812,
+        483,
+        371,
+        28
+      ],
+      [
+        58,
+        414,
+        630,
+        873,
+        103
+      ],
+      [
+        13,
+        126,
+        330,
+        972,
+        209
+      ],
+      [
+        2,
+        24,
+        97,
+        401,
+        266
+      ]
+    ]
+  },
+  "3_run4_matched_perception_subset": {
+    "test_loss": 0.4403,
+    "total_test_samples": 7549,
+    "real_mae": 0.1709,
+    "acc_0": 0.4357,
+    "acc_1": 0.894,
+    "balanced_accuracy": 0.397,
+    "macro_f1": 0.4039,
+    "precision": 0.4848,
+    "recall": 0.397,
+    "confusion_matrix": [
+      [
+        383,
+        522,
+        177,
+        60,
+        0
+      ],
+      [
+        208,
+        931,
+        535,
+        213,
+        2
+      ],
+      [
+        40,
+        519,
+        920,
+        585,
+        14
+      ],
+      [
+        17,
+        130,
+        496,
+        942,
+        65
+      ],
+      [
+        1,
+        19,
+        127,
+        530,
+        113
+      ]
+    ]
+  },
+  "matched_delta_run4_minus_run1": {
+    "real_mae_delta": -0.022,
+    "acc_1_delta_pct": 4.45,
+    "acc_0_delta_pct": 2.73,
+    "balanced_accuracy_delta_pct": -0.53,
+    "macro_f1_delta": -0.0035
+  }
+}

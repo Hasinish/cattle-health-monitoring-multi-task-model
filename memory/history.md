@@ -1,3 +1,72 @@
+# Session Summary — 2026-09-24 (Run 4 BCS and Run 5 Behavior Training & Test Evidence Synchronized to GitHub main)
+
+- Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f
+- Objective: Audit, verify, and synchronize the already-completed Run 4 BCS and Run 5 Behavior full-training and final-test evidence from local artifacts into GitHub `main`.
+- Actions & Forensic Verification Completed:
+  1. Inspected and verified all Run 4 artifacts under `artifacts/bcs_perception_run4/`:
+     - Full 30-epoch training metrics (`bcs_perception_training_metrics.json`), best epoch = 2 (Val Real MAE: 0.1761, Acc@1: 89.65%).
+     - Test metrics (`bcs_perception_test_metrics.json`) and matched comparison (`bcs_perception_matched_test_comparison.json`, `.md`) confirming N=7,549 successful-perception ScienceDB test images (93.89% coverage; 489 detection misses + 2 SAM misses excluded).
+     - Verified metrics: Real BCS MAE 0.1709 vs 0.1929 matched baseline (-0.0220 BCS units), Acc@1 89.40% vs 84.95% (+4.45%), Acc@0 43.57% vs 40.84% (+2.73%), Test Loss 0.4403 vs 0.8224 (-46.5%).
+     - Strictly enforced scientific wording: ScienceDB test unit = image/sample, evaluation = repaired burst-group-disjoint / sequence-safe protocol, never biological cows.
+  2. Inspected and verified all Run 5 artifacts under `artifacts/behavior_run5_training/` and `artifacts/behavior_run5_test/`:
+     - Full 30-epoch training metrics (`behavior_tcn_metrics.json`, 1,009.91s duration), best epoch = 9 (Val Macro-F1: 0.7722, Bal Acc: 78.38%, Acc: 87.62%).
+     - Final test evaluation metrics (`run5_test_evaluation_metrics.json`) and matched comparison (`run2_vs_run5_matched_comparison.json`, `.md`) confirming N=780 retained grouped sequences/samples (29 stanchion occlusions excluded; 96.4% coverage).
+     - Verified metrics: Balanced Accuracy 74.43% vs 71.30% matched baseline (+3.13%), Test Loss 0.4430 vs 0.5505 (-19.5%), Macro-F1 0.7397 vs 0.7378 (+0.0019), Walking F1 0.2456 vs 0.2174 (+13.0% rel), Kaggle Beef Acc 96.09% vs 93.58% (+2.51%) and Macro-F1 0.9414 vs 0.9079 (+0.0335).
+     - Strictly enforced scientific wording: CVB+Beef test unit = grouped sequence/sample, CVB protected by source-video grouping, Beef protected by recording-session grouping, never cow-disjoint or "held-out cows".
+  3. Cleaned stale 0-byte `.git/index.lock` from interrupted previous process.
+  4. Updated `memory/state.md`, `memory/history.md`, `docs/research_log/README.md`, and research logs (`2026-09-24_sciencedb_bcs_perception_full_training_results.md`, `2026-09-24_run5_behavior_perception_test_evaluation_results.md`).
+  5. Small result artifacts tracked and verified; heavy checkpoints (`.pth`) and datasets remain strictly gitignored.
+
+# Session Summary — 2026-09-24 (Phase 3 Run 4 ScienceDB BCS Perception Full Training & Matched Test Evaluation Complete)
+
+- Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004
+- Objective: Execute full 30-epoch training and fair matched-subset test evaluation for Phase 3 Run 4 ScienceDB BCS Perception-Enhanced Model on Modal profile `tigerwood697`.
+- Key Accomplishments & Certified Results:
+  1. Full 30 Epochs Completed on NVIDIA L40S at **18.58s/epoch** (total runtime <10 mins) using in-memory preloaded monolithic binary tensors.
+  2. Best Validation Model at Epoch 2 (Val Real MAE: **0.1761**, Acc@1: **89.65%**).
+  3. Matched Head-to-Head Comparison on ScienceDB Test Set (7,549 successful-perception ScienceDB test images; repaired burst-group-disjoint protocol; test unit = image/sample, NOT biological cows):
+     - **Real BCS MAE (Primary)**: Run 1 Matched: 0.1929 -> Run 4: **0.1709** (**-0.0220 BCS units improvement!**)
+     - **Acc@1 (+/- 0.25 units)**: Run 1 Matched: 84.95% -> Run 4: **89.40%** (**+4.45% gain!**)
+     - **Acc@0 (Exact match)**: Run 1 Matched: 40.84% -> Run 4: **43.57%** (**+2.73% gain!**)
+     - **Test Loss**: Run 1 Matched: 0.8224 -> Run 4: **0.4403** (**-46.5% reduction!**)
+  4. Checkpoints and evaluation reports committed to `sciencedb-checkpoints` and synced locally to `artifacts/bcs_perception_run4/`.
+  5. Milestone: ALL 5 initial runs (Run 1 BCS RGB, Run 2 Behavior RGB, Run 3 Re-ID RGB, Run 4 BCS Perception, Run 5 Behavior Perception+TCN) are 100% COMPLETE & CERTIFIED! Next up: Run 6 Re-ID Perception!
+
+# Session Summary — 2026-09-24 (Phase 3 Run 5 Strict Test Evaluation & Matched Run 2 Comparison Complete)
+
+- Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004
+- Objective: Execute the strict one-time post-training test evaluation gate for Phase 3 Run 5 (Perception+TCN) and head-to-head matched comparison against historical Run 2 RGB baseline on Modal profile `tigerwood693`.
+- Key Accomplishments & Certified Held-Out Test Metrics:
+  1. Test Set Caching & RAM Loading: 780 / 809 test sequences retained (29 stanchion occlusions excluded). In-memory RAM preloader loaded all 780 sequences (1.19 GB) in **4.4 seconds** flat!
+  2. Matched Head-to-Head Comparison on Primary Behavior Test Set (N=780 grouped sequences/samples; CVB protected by source-video grouping, Beef protected by recording-session grouping; NEVER described as cow-disjoint or 'held-out cows'):
+     - **Balanced Accuracy**: Run 2 Matched: 71.30% -> Run 5 Perception+TCN: **74.43%** (**+3.13% gain!**)
+     - **Test Loss**: Run 2 Matched: 0.5505 -> Run 5 Perception+TCN: **0.4430** (**-0.1075 / -19.5% reduction!**)
+     - **Macro-F1**: Run 2 Matched: 0.7378 -> Run 5 Perception+TCN: **0.7397** (+0.0019)
+     - **Overall Accuracy**: Run 2 Matched: 88.46% -> Run 5: **87.44%** (-1.02%)
+  3. Per-Class F1 Improvements on Held-Out Test Set:
+     - **Feeding F1**: 0.9218 -> **0.9465** (+0.0247)
+     - **Drinking F1**: 0.8430 -> **0.8682** (+0.0252)
+     - **Walking (CVB minority)**: 0.2174 -> **0.2456** (+0.0282, **+13.0% relative gain**)
+  4. Domain Breakdown:
+     - **Kaggle Beef (Single-Animal Crops)**: Accuracy jumped from 93.58% to **96.09%** (+2.51%) and Macro-F1 jumped from 0.9079 to **0.9414** (+0.0335)!
+     - **CVB (Barn CCTV)**: Accuracy 80.09%, Macro-F1 0.6188 (multi-animal pen stanchion noise).
+  5. Artifacts & Volumes: Comparison report, JSONs, and metrics permanently saved and committed to `/checkpoints/behavior_run5_perception/` and synced locally to `artifacts/behavior_run5_test/`.
+  6. ScienceDB BCS Packed Tensors completed (`ap-ic0XHKDJip1QkAkAjBK3Ws`), 30-epoch Run 4 BCS training is actively in flight!
+
+# Session Summary — 2026-09-24 (Phase 3 Run 5 Behavior Perception-Enhanced TCN 30-Epoch Full Training Completed)
+
+- Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004
+- Objective: Execute full 30-epoch training of Phase 3 Run 5 Behavior Perception-Enhanced Temporal Model (4-channel ResNet-18 + 1D TCN) on Modal profile `tigerwood693`.
+- Key Accomplishments & Certified Metrics:
+  1. Full 30 Epochs Completed in ~17 mins (~35s/epoch) on NVIDIA L40S (`ap-S405sWmuNqeenUylBipoDg`).
+  2. Best Validation Model at Epoch 9:
+     - Val Macro-F1: **0.7722** (beating Run 2 RGB single-task baseline of **0.7399** by **+3.23%**)
+     - Val Balanced Accuracy: **78.38%** (beating Run 2 baseline of **73.40%** by **+4.98%**)
+     - Val Accuracy: **87.62%** (beating Run 2 baseline of **87.06%** by **+0.56%**)
+  3. Total Trainable Parameters: **11,903,621** (exactly matched expected count).
+  4. Checkpoints committed to `/checkpoints/behavior_run5_perception/behavior_tcn_best.pth`.
+  5. Ready for one-time post-training test evaluation gate & matched Run 2 comparison (`evaluate_test_run5`).
+
 # Session Summary — 2026-09-24 (ScienceDB BCS FUSE IOPS Bottleneck Solved via Monolithic Tensor Packing)
 
 - Convo ID: 540530b4-9a5f-4d20-b0aa-fe673856f004
