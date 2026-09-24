@@ -153,6 +153,72 @@ def download_sciencedb():
     return {"status": "success", "total_files": total_files}
 
 
+@app.function(
+    volumes={VOLUME_DIR: volume},
+    timeout=600,
+    cpu=1.0,
+    memory=2048,
+)
+def verify_sciencedb():
+    """Verify extracted ScienceDB Cattle BCS dataset in Modal volume."""
+    from PIL import Image
+
+    dataset_dir = os.path.join(VOLUME_DIR, "dataset")
+    expected_classes = ["3.25", "3.5", "3.75", "4.0", "4.25"]
+
+    print("=" * 70)
+    print("  SCIENCEDB CATTLE BCS PHYSICAL VERIFICATION")
+    print(f"  Volume Directory: {dataset_dir}")
+    print("=" * 70)
+
+    if not os.path.exists(dataset_dir):
+        print(f"[ERROR] Directory {dataset_dir} does not exist in volume.")
+        return {"status": "not_found", "total_images": 0}
+
+    class_counts = {}
+    total_images = 0
+    sample_images = []
+
+    for c in expected_classes:
+        cdir = os.path.join(dataset_dir, c)
+        if os.path.exists(cdir):
+            imgs = [f for f in os.listdir(cdir) if f.lower().endswith((".jpg", ".jpeg", ".png"))]
+            class_counts[c] = len(imgs)
+            total_images += len(imgs)
+            if imgs and len(sample_images) < 5:
+                sample_images.append(os.path.join(cdir, imgs[0]))
+        else:
+            class_counts[c] = 0
+
+    print(f"✓ Total Images Found: {total_images:,}")
+    print("Class Counts:")
+    for c, cnt in class_counts.items():
+        print(f"  - Class {c}: {cnt:,} images")
+
+    print("\nSample PIL Image Decodes:")
+    for p in sample_images:
+        try:
+            with Image.open(p) as img:
+                print(f"  ✓ {os.path.basename(p)}: format={img.format}, size={img.size}, mode={img.mode}")
+        except Exception as e:
+            print(f"  ✗ {p}: {e}")
+
+    rar_path = os.path.join(VOLUME_DIR, "dataset.rar")
+    rar_present = os.path.exists(rar_path)
+    print(f"Archive dataset.rar cleanup status: {'STILL PRESENT' if rar_present else 'CLEANED UP (space reclaimed)'}")
+
+    return {
+        "status": "verified" if total_images >= 50000 else "incomplete",
+        "total_images": total_images,
+        "class_counts": class_counts,
+    }
+
+
 @app.local_entrypoint()
 def main():
     download_sciencedb.remote()
+
+
+@app.local_entrypoint()
+def verify():
+    verify_sciencedb.remote()

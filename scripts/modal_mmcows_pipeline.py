@@ -129,6 +129,84 @@ def download_mmcows(hf_token: str = ""):
     return {"status": "success", "total_files": total_files}
 
 
+@app.function(
+    volumes={VOLUME_DIR: volume},
+    timeout=600,
+    cpu=1.0,
+    memory=2048,
+)
+def verify_mmcows():
+    """Verify extracted MmCows behavior dataset in Modal volume."""
+    from PIL import Image
+
+    extracted_dir = os.path.join(VOLUME_DIR, "cropped_bboxes")
+    behaviors_dir = os.path.join(extracted_dir, "behaviors")
+
+    print("=" * 70)
+    print("  MMCOWS BEHAVIOR DATASET PHYSICAL VERIFICATION")
+    print(f"  Volume Directory: {extracted_dir}")
+    print("=" * 70)
+
+    if not os.path.exists(extracted_dir):
+        print(f"[ERROR] Directory {extracted_dir} does not exist in volume.")
+        return {"status": "not_found", "total_files": 0}
+
+    total_files = 0
+    total_bytes = 0
+    class_counts = {}
+    sample_images = []
+    unique_cows = set()
+
+    for root, _, files in os.walk(extracted_dir):
+        total_files += len(files)
+        for f in files:
+            p = os.path.join(root, f)
+            try:
+                total_bytes += os.path.getsize(p)
+            except OSError:
+                pass
+            if f.lower().endswith((".jpg", ".jpeg", ".png")):
+                parts = f.split("_")
+                if len(parts) >= 3:
+                    unique_cows.add(parts[2])
+                if len(sample_images) < 5:
+                    sample_images.append(p)
+
+    if os.path.exists(behaviors_dir):
+        for c in sorted(os.listdir(behaviors_dir)):
+            cdir = os.path.join(behaviors_dir, c)
+            if os.path.isdir(cdir):
+                class_counts[c] = len(os.listdir(cdir))
+
+    size_gb = total_bytes / (1024 ** 3)
+    print(f"✓ Total Files Found: {total_files:,}")
+    print(f"✓ Total Disk Space:  {size_gb:.2f} GB")
+    print(f"✓ Unique Cow IDs:    {len(unique_cows)} cows identified")
+    if class_counts:
+        print("Behavior Class Counts:")
+        for c, count in class_counts.items():
+            print(f"  - Class {c}: {count:,} images")
+
+    print("\nSample PIL Image Decodes:")
+    for p in sample_images:
+        try:
+            with Image.open(p) as img:
+                print(f"  ✓ {os.path.basename(p)}: format={img.format}, size={img.size}, mode={img.mode}")
+        except Exception as e:
+            print(f"  ✗ {p}: {e}")
+
+    zip_path = os.path.join(VOLUME_DIR, "cropped_bboxes.zip")
+    zip_present = os.path.exists(zip_path)
+    print(f"Archive cropped_bboxes.zip cleanup status: {'STILL PRESENT' if zip_present else 'CLEANED UP (space reclaimed)'}")
+
+    return {
+        "status": "verified" if total_files >= 200000 else "incomplete",
+        "total_files": total_files,
+        "size_gb": round(size_gb, 2),
+        "unique_cows": len(unique_cows),
+    }
+
+
 @app.local_entrypoint()
 def main(hf_token: str = ""):
     token = hf_token or os.environ.get("HF_TOKEN", "")
@@ -149,3 +227,8 @@ def main(hf_token: str = ""):
         print("Notice: No HF_TOKEN found in .env or arguments. Proceeding as guest.")
 
     download_mmcows.remote(hf_token=token)
+
+
+@app.local_entrypoint()
+def verify():
+    verify_mmcows.remote()
