@@ -93,6 +93,7 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `assets/agent_behavior_inspection/`: Staging directory containing 20 MmCows crops, 20 CBVD-5 crops, 20 CBVD-5 scenes, and `manifest.json`.
 - `research_log/`: Centralized research log repository documenting experiments, dataset investigations, architectural decisions, and ablation studies.
   - `README.md`: Research log protocol, entry structure guidelines, and historical log index table.
+  - `2026-09-24_mtl_e1_hard_shared_implementation_and_smoke.md`: Run 7 E1 Hard-Shared MTL Control implementation, shared 4-channel ResNet-18 spatial backbone architecture, task-specific heads (BCS ordinal, Behavior temporal TCN, Re-ID linear), task-balanced schedule (537 super-steps, fixed 1/1/1 weights), zero-GPU cloud readiness audit (PASS), and Modal NVIDIA Tesla T4 smoke test verification (`max_logit_diff == 0.00000000`, checkpoints committed to `/mtl-checkpoints/mtl_e1_smoke/`).
   - `2026-09-24_hasinishrak2015_mtl_staging_certification.md`: Unified MTL workspace staging and zero-GPU forensic certification on Modal profile `hasinishrak2015`, verifying BCS monolithic tensors, all 4,271 Behavior sequences, zero-copy SideView parlor pairs across 41 cows, and staging manifest generation.
   - `2026-09-24_sideviewcows2026_gt_mask_reid_perception_smoke.md`: Run 6 GT/oracle target-mask Re-ID representation, 4-channel ResNet-18 controlled architecture, canonical protocol isolation, local GTX 1050 Ti smoke assertions, and pending full-training boundary.
   - `2026-09-24_sciencedb_bcs_perception_pipeline_preparation.md`: Architecture, cache pipeline, failure counting consistency, test isolation protocol, and matched-subset baseline comparison for Run 4 ScienceDB BCS Perception-Enhanced model.
@@ -311,6 +312,7 @@ Automation utilities for batch experiments, metric aggregation, dataset restorat
 
 ### `artifacts/`
 Generated manifests, audit CSVs, and model evaluation outputs.
+- `mtl_e1_smoke/`: Phase 3 Run 7 E1 Hard-Shared MTL Control cloud smoke test artifacts on profile `hasinishrak2015` (NVIDIA Tesla T4). Contains `mtl_e1_smoke_metrics.json` (architecture parameter counts [11,926,706 total, 11,179,648 shared], 2-epoch smoke loss trajectory, task validation metrics, bit-identical checkpoint reload verification `max_logit_diff == 0.00000000`, and active Git SHA `c41e26e9bc0e6f937a652d88fd9e1db396bc1097`). Checkpoints committed to `/mtl-checkpoints/mtl_e1_smoke/`.
 - `bcs_perception_run4/`: Phase 3 Run 4 ScienceDB BCS perception-enhanced training and evaluation artifacts. Contains `bcs_perception_training_metrics.json` (30-epoch training history, best epoch 2 metrics, parameter delta), `bcs_perception_test_metrics.json` (evaluated on 7,549 successful-perception ScienceDB test images, test loss 0.4403, real MAE 0.1709, acc@1 89.40%), `bcs_perception_matched_test_comparison.json`, and `bcs_perception_matched_test_comparison.md` (matched head-to-head comparison against frozen Run 1 RGB baseline on the exact same 7,549 test image identities). Large `.pth` model checkpoints remain gitignored.
 - `behavior_run5_training/`: Phase 3 Run 5 Behavior perception-enhanced temporal model training artifacts. Contains `behavior_tcn_metrics.json` (1,009.91s duration, full 30-epoch history, parameter counts [11,903,621], best epoch 9 validation metrics [Macro-F1 0.7722, Bal Acc 78.38%], reproducible seed 2026, and retained sample ID lists for 3,641 train and 630 val sequences).
 - `behavior_run5_test/`: Phase 3 Run 5 Behavior perception-enhanced temporal model final test evaluation artifacts. Contains `run5_test_evaluation_metrics.json` (final metrics on 780 retained test sequences, test loss 0.4430, balanced accuracy 74.43%, macro-F1 0.7397, walking F1 0.2456), `run2_vs_run5_matched_comparison.json`, and `run2_vs_run5_matched_comparison.md` (matched head-to-head comparison against frozen Run 2 RGB baseline on the exact same 780 retained test sequence identities).
@@ -336,8 +338,17 @@ Generated manifests, audit CSVs, and model evaluation outputs.
   - `pose_keypoints_expanded_hrnet_w32.csv` & `pose_keypoints_expanded_resnet_50.csv`: Extracted 39-keypoint coordinates and confidence scores across 300 samples per backbone.
   - `superanimal_quadruped_schema.json`: Official DeepLabCut 39-keypoint quadruped schema and body part index mapping.
 
+### `scripts/`
+Execution and training scripts for single-task perception models, data staging, and multi-task learning.
+- `train_mtl_e1_hard_shared.py`: Standalone PyTorch engine for Phase 3 Run 7 E1 Hard-Shared Multi-Task Learning control (`MTLE1HardSharedModel`), featuring shared 4-channel ResNet-18 spatial backbone (`11,179,648` params), task heads (`BCSOrdinalHead`, `BehaviorTemporalTCN`, `ReIDHead`), deterministic task-balanced super-step schedule (537 steps/epoch, fixed 1/1/1 weights), and evaluation suite. Total trainable parameters: `11,926,706`.
+- `modal_train_mtl_e1_hard_shared.py`: Modal cloud dispatch wrapper for Run 7 on profile `hasinishrak2015`, mounting `/mtl-data`, `/mtl-checkpoints`, and `/sideview`. Implements CPU `verify_readiness`, Tesla T4 `smoke_test`, and L40S `main` full 30-epoch training entrypoint.
+- `train_sciencedb_bcs_perception.py`: Phase 3 Run 4 ScienceDB BCS perception-enhanced single-task training script with 4-channel ResNet-18 and ordinal head.
+- `train_cvb_beef_behavior_tcn.py`: Phase 3 Run 5 CVB + Kaggle Beef Behavior perception-enhanced temporal model training script with 2-block TCN.
+- `train_sideview_reid_perception.py`: Phase 3 Run 6 SideViewCows2026 Re-ID perception-enhanced single-task training script with 41-class linear classifier.
+
 ### `tests/`
 Automated unit and integration test suites.
+- `test_mtl_e1_hard_shared.py`: Comprehensive test suite for Run 7 E1 hard-shared model verifying parameter counts, conv1 mean initialization, multi-task forward shapes, backward gradient accumulation into the shared backbone, bit-identical checkpoint reload, and SideView protocol separation (zero held-out cow access).
 - `test_mtl_staging_hardening.py`: Synthetic test suite for MTL data staging hardening verifying Behavior 2-digit format, train/val disjointness, Pandas Re-ID protocol integrity, persistent range-chunk resume in `.download_staging/`, and staging manifest schema validation.
 
 ### `videos/`

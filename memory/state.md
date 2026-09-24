@@ -25,8 +25,19 @@
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | 8-RUN SEQUENCE | STEP 1: COMPLETE | GATE 1: CLEARED | ALL STEP 4 SINGLE-TASK RGB BASELINES COMPLETE | RUNS 1, 2, 3, 4, 5, 6 ARE 100% COMPLETE & CERTIFIED | MTL CLOUD-TO-CLOUD DATA STAGING COMPLETE ON HASINISHRAK2015 | READY FOR RUN 7 MTL CONTROL BASELINE)
-- **Immediate next action:** Implement and launch Step 7 MTL Control Baseline (E1: Hard Sharing) multi-task training on `hasinishrak2015` mounting `mtl-data` and `sideview-data`.
+## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | 8-RUN SEQUENCE | RUNS 1–6: COMPLETE & CERTIFIED | RUN 7 IMPLEMENTATION & SMOKE: COMPLETE | AWAITING MANUAL FULL TRAINING LAUNCH)
+- **Run 7 Status Summary**:
+  * **Run 7 implementation**: COMPLETE ✅
+  * **Run 7 readiness**: PASS ✅
+  * **Run 7 smoke**: PASS ✅ (Modal Tesla T4, bit-identical reload max_logit_diff = 0.00000000)
+  * **Run 7 full training**: NOT STARTED — awaiting manual user launch ⏳
+- **Immediate next action:** User manually launches full 30-epoch Run 7 E1 Hard-Shared MTL training run via:
+  `modal run --detach --profile hasinishrak2015 scripts/modal_train_mtl_e1_hard_shared.py::main --epochs 30`
+- [x] **Phase 3 Run 7 E1 Hard-Shared MTL Implementation, Readiness & Smoke Test (IMPLEMENTED & SMOKE CERTIFIED; FULL RUN AWAITING MANUAL LAUNCH):**
+  1. **Architecture & Hard Sharing**: Built `MTLE1HardSharedModel` with exactly ONE shared 4-channel ResNet-18 spatial feature extractor (`11,179,648` params, conv1 initialized from ImageNet + mean 4th channel) coupled to: (a) BCS cumulative Ordinal BCE head (`2,052` params), (b) Behavior 1D TCN (`723,973` params, 2 Conv1d blocks + AdaptiveAvgPool1d + Linear(256, 5)), and (c) Re-ID Linear(512, 41) classifier (`21,033` params). Total trainable parameters: `11,926,706`. Programmatically asserted hard sharing (`model.assert_hard_sharing()`).
+  2. **Data & Scheduling**: Zero dummy/background label padding. Balanced super-step schedule with fixed weights (w_bcs=1.0, w_beh=1.0, w_reid=1.0). 537 super-steps per epoch (BCS=1.00x, Behavior=1.18x oversampled, Re-ID=1.35x oversampled).
+  3. **Zero-GPU Cloud Readiness**: Executed `verify_readiness_remote` on Modal (`hasinishrak2015`, App `ap-dJw1WALcst0rsfjbDvKQ3z`): verified writable `/mtl-checkpoints`, staging status `CERTIFIED_READY_FOR_MTL`, 34,369 Train + 7,817 Val BCS samples in RAM, 3,641 Train + 630 Val Behavior sequences (34,168 frames + 34,168 masks), 41 Re-ID train cows (12,753 train pairs, 2,683 val pairs), 0 overlap with 69 held-out cows. 0 test leakage across all 3 tasks.
+  4. **Cloud GPU Smoke Test**: Executed `smoke_test_remote` on Modal Tesla T4 (`hasinishrak2015`, App `ap-C6fr97nFN503dgBR5PHTrt`, 2 epochs, batch sizes 8/4/8). Train loss dropped 1.7787 -> 1.4754. Checkpoint reload verified bit-identically (`max_logit_diff == 0.00000000`). Persisted checkpoints to `/mtl-checkpoints/mtl_e1_smoke/`. Full training was NOT launched.
 - [x] **MTL Cloud-to-Cloud Direct Staging Bridge Built & Fully Verified (COMPLETE & CERTIFIED):** Deployed `scripts/modal_cloud_direct_staging.py` connecting Modal accounts across datacenter backbone with ZERO local PC bandwidth. 
   1. **BCS Tensors**: Staged all 8.08 GB of BCS perception-cached tensors and manifests (`train_bcs_224.pt`, `val_bcs_224.pt`, manifests) from `tigerwood697` to `hasinishrak2015` (`/mtl-data/bcs/`) in 89.6 seconds total.
   2. **Behavior Sequences**: Upgraded `scripts/modal_export_behavior.py` to a 64-worker parallel NVMe pre-staging engine. Staged 4,271 sequences on `tigerwood693` in 72.4s (59 seq/s), tarred in 3.62s (652.3 MB single chunk). Streamed cloud-to-cloud to `hasinishrak2015` in 7.3s (90.0 MB/s) and extracted into `/mtl-data/behavior/` in 124.4s. 100% verified (4,275 entries).

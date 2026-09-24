@@ -1,7 +1,7 @@
 # 📊 Live Modal Billing & Credit Dashboard
 
 > **Live Auto-Refreshed Monitor**  
-> **Last Synchronized:** `2026-09-24 23:01:41`  
+> **Last Synchronized:** `2026-09-24 23:29:21`  
 > **Active Target Account:** `hasinishrak2015`
 
 ---
@@ -12,9 +12,9 @@
 | :--- | :--- |
 | 👥 **Discovered Accounts** | **6** (`dryousufmozumder, hasinishrak2015, hasinishrak74001, mohtasimahmedsamii, tigerwood693, tigerwood697`) |
 | 🎁 **Total Credit Grants** | **$122.00** |
-| 💸 **Total Consumed** | **$45.96** |
-| 🟢 **Total Remaining Balance** | **$76.40** |
-| 🚀 **Total Combined L40S Runtime** | **~2349 mins (~39.1 hours)** |
+| 💸 **Total Consumed** | **$45.98** |
+| 🟢 **Total Remaining Balance** | **$76.38** |
+| 🚀 **Total Combined L40S Runtime** | **~2348 mins (~39.1 hours)** |
 | ⚡ **Total Combined H100 Runtime** | **~923 mins (~15.4 hours)** |
 
 ---
@@ -24,7 +24,7 @@
 | Account Profile | Mode | Grant | Consumed | Remaining Balance | Est. L40S | Est. H100 | Status | Direct Ledger |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `dryousufmozumder` | Standby | $30.00 | $2.98 | **$27.02** | ~831m | ~327m | 🟢 Healthy | [View Ledger](https://modal.com/settings/dryousufmozumder/billing) |
-| `hasinishrak2015` | 🔥 **ACTIVE** | $30.00 | $0.83 | **$29.17** | ~897m | ~353m | 🟢 Healthy | [View Ledger](https://modal.com/settings/hasinishrak2015/billing) |
+| `hasinishrak2015` | 🔥 **ACTIVE** | $30.00 | $0.85 | **$29.15** | ~896m | ~353m | 🟢 Healthy | [View Ledger](https://modal.com/settings/hasinishrak2015/billing) |
 | `hasinishrak74001` | Standby | $1.00 | $1.36 | **$0.00** | ~0m | ~0m | 🔴 Depleted | [View Ledger](https://modal.com/settings/hasinishrak74001/billing) |
 | `mohtasimahmedsamii` | Standby | $1.00 | $0.95 | **$0.05** | ~1m | ~0m | 🟡 Low | [View Ledger](https://modal.com/settings/mohtasimahmedsamii/billing) |
 | `tigerwood693` | Standby | $30.00 | $28.54 | **$1.46** | ~45m | ~17m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood693/billing) |
@@ -46,9 +46,9 @@
 ### 💳 Profile: `hasinishrak2015` (CURRENT ACTIVE)
 - **Status**: 🟢 Healthy
 - **Grant Ceiling**: `$30.00`
-- **Metered Usage**: `$0.83`
-- **Remaining Balance**: **`$29.17`**
-- **Est. L40S GPU Runtime**: **~897 minutes** (14h 57m)
+- **Metered Usage**: `$0.85`
+- **Remaining Balance**: **`$29.15`**
+- **Est. L40S GPU Runtime**: **~896 minutes** (14h 56m)
 - **Est. H100 GPU Runtime**: **~353 minutes** (5h 53m)
 - **Out-of-Pocket Billed**: `$0.00`
 - **Direct Modal Link**: `https://modal.com/settings/hasinishrak2015/billing`

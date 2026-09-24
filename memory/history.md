@@ -1,3 +1,15 @@
+# Session Summary — 2026-09-24 (Phase 3 Run 7 E1 Hard-Shared MTL Implementation, Readiness & Smoke Test Certified)
+
+- Convo ID: 1ae0178f-f005-4d37-b48a-79da87176a1f
+- Objective: Implement, harden, and smoke-verify Phase 3 Run 7 (E1 Hard-Shared Multi-Task Learning Control baseline) on Modal profile `hasinishrak2015` across ScienceDB BCS, CVB + Beef Behavior, and SideViewCows2026 Re-ID.
+- Accomplishments & Verification:
+  1. Architecture Implemented: Built `scripts/train_mtl_e1_hard_shared.py` and `scripts/modal_train_mtl_e1_hard_shared.py`. Implemented `MTLE1HardSharedModel` with exactly ONE shared 4-channel ResNet-18 spatial feature extractor (`11,179,648` params, conv1 initialized from ImageNet + mean 4th channel) coupled to: (a) BCS cumulative Ordinal BCE head (`2,052` params), (b) Behavior 1D TCN (`723,973` params, 2 Conv1d blocks + AdaptiveAvgPool1d + Linear(256, 5)), and (c) Re-ID Linear(512, 41) classifier (`21,033` params). Total trainable parameters: `11,926,706`. Programmatically asserted hard sharing (`model.assert_hard_sharing()`).
+  2. Data Loading & Task-Balanced Schedule: Zero dummy/background label padding. Memory-efficient super-step schedule with fixed equal weights (w_bcs=1.0, w_beh=1.0, w_reid=1.0). 537 super-steps per epoch (BCS=1.00x, Behavior=1.18x oversampled, Re-ID=1.35x oversampled).
+  3. Local Unit Tests: Created `tests/test_mtl_e1_hard_shared.py`. All 6 unit tests passed in 2.18s (exact parameter counts, conv1 init, forward shapes, backward gradient accumulation into shared backbone, bit-identical reload, protocol disjointness).
+  4. Zero-GPU Cloud Readiness: Executed `verify_readiness_remote` on Modal (`hasinishrak2015`, App `ap-dJw1WALcst0rsfjbDvKQ3z`): verified writable `/mtl-checkpoints`, staging status `CERTIFIED_READY_FOR_MTL`, 34,369 Train + 7,817 Val BCS samples in RAM, 3,641 Train + 630 Val Behavior sequences (34,168 frames + 34,168 masks), 41 Re-ID train cows (12,753 train pairs, 2,683 val pairs), 0 overlap with 69 held-out cows. 0 test leakage across all 3 tasks.
+  5. Cloud GPU Smoke Test: Executed `smoke_test_remote` on Modal Tesla T4 (`hasinishrak2015`, App `ap-C6fr97nFN503dgBR5PHTrt`, 2 epochs, batch sizes 8/4/8). Train loss dropped 1.7787 -> 1.4754. Checkpoint reload verified bit-identically (`max_logit_diff == 0.00000000`). Persisted checkpoints to `/mtl-checkpoints/mtl_e1_smoke/`. Receipt saved at `artifacts/mtl_e1_smoke/mtl_e1_smoke_metrics.json`.
+  6. Scientific Guardrails & Boundaries: Canonical test splits and 69 held-out evaluation cows remained strictly untouched. Full 30-epoch training was NOT launched and awaits manual user command.
+
 # Session Summary — 2026-09-24 (MTL Workspace Staging & Zero-Copy Certification on hasinishrak2015 Complete)
 
 - Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f

@@ -1,0 +1,117 @@
+{
+  "git_commit_sha": "c41e26e9bc0e6f937a652d88fd9e1db396bc1097",
+  "smoke": true,
+  "epochs": 2,
+  "total_duration_seconds": 3.6,
+  "best_val_objective": 1.77984,
+  "best_metrics": {
+    "val_e1_objective": 1.77984,
+    "bcs": {
+      "val_loss": 0.75679,
+      "real_mae": 0.4375,
+      "acc_0": 0.125,
+      "acc_1": 0.625,
+      "balanced_accuracy": 0.1667,
+      "macro_f1": 0.0571
+    },
+    "behavior": {
+      "val_loss": 1.63499,
+      "accuracy": 0.25,
+      "balanced_accuracy": 0.25,
+      "macro_f1": 0.2222,
+      "per_class_f1": {
+        "Standing": 0.0,
+        "Lying": 0.0,
+        "Feeding": 0.6667
+      }
+    },
+    "reid": {
+      "val_loss": 2.94772,
+      "top1_accuracy": 0.25,
+      "balanced_accuracy": 0.25,
+      "macro_f1": 0.1
+    }
+  },
+  "checkpoint_reload_max_logit_diff": 0.0,
+  "parameters": {
+    "shared_backbone_parameters": 11179648,
+    "bcs_head_parameters": 2052,
+    "behavior_tcn_parameters": 723973,
+    "reid_head_parameters": 21033,
+    "total_trainable_parameters": 11926706
+  },
+  "best_checkpoint_path": "/mtl-checkpoints/mtl_e1_smoke/mtl_e1_smoke_best.pth",
+  "latest_checkpoint_path": "/mtl-checkpoints/mtl_e1_smoke/mtl_e1_smoke_latest.pth",
+  "epoch_history": [
+    {
+      "epoch": 1,
+      "duration_seconds": 2.0,
+      "train_loss_total": 1.77872,
+      "train_loss_bcs": 0.73391,
+      "train_loss_beh": 1.55948,
+      "train_loss_reid": 3.04278,
+      "val_e1_objective": 1.77984,
+      "bcs": {
+        "val_loss": 0.75679,
+        "real_mae": 0.4375,
+        "acc_0": 0.125,
+        "acc_1": 0.625,
+        "balanced_accuracy": 0.1667,
+        "macro_f1": 0.0571
+      },
+      "behavior": {
+        "val_loss": 1.63499,
+        "accuracy": 0.25,
+        "balanced_accuracy": 0.25,
+        "macro_f1": 0.2222,
+        "per_class_f1": {
+          "Standing": 0.0,
+          "Lying": 0.0,
+          "Feeding": 0.6667
+        }
+      },
+      "reid": {
+        "val_loss": 2.94772,
+        "top1_accuracy": 0.25,
+        "balanced_accuracy": 0.25,
+        "macro_f1": 0.1
+      },
+      "is_best": true
+    },
+    {
+      "epoch": 2,
+      "duration_seconds": 0.5,
+      "train_loss_total": 1.4754,
+      "train_loss_bcs": 0.67935,
+      "train_loss_beh": 0.98342,
+      "train_loss_reid": 2.76342,
+      "val_e1_objective": 1.88237,
+      "bcs": {
+        "val_loss": 0.7447,
+        "real_mae": 0.4062,
+        "acc_0": 0.25,
+        "acc_1": 0.5,
+        "balanced_accuracy": 0.2778,
+        "macro_f1": 0.2286
+      },
+      "behavior": {
+        "val_loss": 1.86363,
+        "accuracy": 0.0,
+        "balanced_accuracy": 0.0,
+        "macro_f1": 0.0,
+        "per_class_f1": {
+          "Standing": 0.0,
+          "Lying": 0.0,
+          "Feeding": 0.0
+        }
+      },
+      "reid": {
+        "val_loss": 3.03878,
+        "top1_accuracy": 0.0,
+        "balanced_accuracy": 0.0,
+        "macro_f1": 0.0
+      },
+      "is_best": false
+    }
+  ]
+}
