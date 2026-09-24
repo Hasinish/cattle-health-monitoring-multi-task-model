@@ -18,12 +18,12 @@ import shutil
 import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
-try:
+if sys.version_info >= (3, 11):
     import tomllib
-except ImportError:
-    import tomli as tomllib
+else:
+    import tomli as tomllib  # type: ignore[import-not-found]
 
 try:
     import modal
@@ -31,7 +31,6 @@ except ImportError:
     print("Error: modal package not found. Run: pip install modal")
     sys.exit(1)
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Persistent volume on target profile (hasinishrak2015)
 mtl_data_vol = modal.Volume.from_name("mtl-data", create_if_missing=True)
@@ -205,7 +204,6 @@ def transfer_bcs_remote(creds: Dict[str, str]) -> Dict[str, Any]:
 )
 def transfer_behavior_remote(creds: Dict[str, str]) -> Dict[str, Any]:
     """Transfers packaged Behavior dataset from tigerwood693 to hasinishrak2015 in the cloud."""
-    import tarfile
 
     print("=" * 70)
     print("  🚀 BEHAVIOR DIRECT CLOUD-TO-CLOUD TRANSFER")
@@ -281,7 +279,6 @@ sideview_vol = modal.Volume.from_name("sideview-data", create_if_missing=True)
 )
 def stage_reid_remote() -> Dict[str, Any]:
     """Clones required Protocol A parlor images/masks directly from sideview-data to mtl-data."""
-    import pandas as pd
 
     print("=" * 70)
     print("  🚀 RE-ID ZERO-DOWNLOAD CLOUD VOLUME CLONE")
