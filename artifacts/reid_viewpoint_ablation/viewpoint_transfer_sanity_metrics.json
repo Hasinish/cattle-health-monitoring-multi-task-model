@@ -1,0 +1,47 @@
+{
+  "sample_size": 50,
+  "seed": 2026,
+  "device": "cuda",
+  "source_checkpoint": "viewpoint_resnet18_real_best.pth",
+  "protocol_d_cows_audited": 41,
+  "held_out_protocol_a_cows_touched": 0,
+  "prediction_distribution": {
+    "front_count": 17,
+    "front_pct": 34.0,
+    "side_count": 13,
+    "side_pct": 26.0,
+    "rear_count": 20,
+    "rear_pct": 40.0
+  },
+  "front_pct": 34.0,
+  "side_pct": 26.0,
+  "rear_pct": 40.0,
+  "confidence_statistics": {
+    "mean": 0.7014,
+    "std": 0.1743,
+    "median": 0.6829,
+    "min": 0.3581,
+    "max": 0.9956
+  },
+  "mean_confidence": 0.7014,
+  "entropy_statistics": {
+    "mean": 0.6875,
+    "std": 0.2855,
+    "median": 0.7874,
+    "min": 0.0307,
+    "max": 1.0971
+  },
+  "low_confidence_pct_50": 14.0,
+  "low_confidence_pct_60": 30.0,
+  "low_confidence_count_50": 7,
+  "low_confidence_count_60": 15,
+  "subset_breakdown": {
+    "parlor": {
+      "count": 50,
+      "mean_conf": 0.7014,
+      "front_count": 17,
+      "side_count": 13,
+      "rear_count": 20
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "task": "sideviewcows2026_reid_viewpoint_ablation",
+  "smoke": true,
+  "seed": 2026,
+  "epochs": 2,
+  "best_epoch": 1,
+  "best_val_top1_acc": 0.0,
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 3.983,
+      "train_top1_acc": 6.25,
+      "val_loss": 4.0015,
+      "val_top1_acc": 0.0,
+      "val_balanced_acc": 0.0,
+      "val_macro_f1": 0.0,
+      "lr": 5.05e-05,
+      "duration_sec": 25.27
+    },
+    {
+      "epoch": 2,
+      "train_loss": 3.3459,
+      "train_top1_acc": 9.38,
+      "val_loss": 3.9442,
+      "val_top1_acc": 0.0,
+      "val_balanced_acc": 0.0,
+      "val_macro_f1": 0.0,
+      "lr": 1e-06,
+      "duration_sec": 4.55
+    }
+  ],
+  "shape_checks": {
+    "input_shape": [
+      64,
+      4,
+      224,
+      224
+    ],
+    "fused_raw_shape": [
+      64,
+      528
+    ],
+    "embedding_shape": [
+      64,
+      528
+    ],
+    "logits_shape": [
+      64,
+      41
+    ],
+    "embedding_norm_min": 0.9999998807907104,
+    "embedding_norm_max": 1.0
+  },
+  "parameter_counts": {
+    "run6_trainable_parameters": 11200681,
+    "visual_backbone_parameters": 11179648,
+    "viewpoint_mlp_parameters": 400,
+    "identity_classifier_parameters": 21689,
+    "total_trainable_parameters": 11201737,
+    "added_trainable_parameters_vs_run6": 1056,
+    "added_trainable_percentage": 0.0094,
+    "frozen_viewpoint_parameters": 11178051,
+    "total_model_parameters": 22379788
+  },
+  "checkpoint_reload": {
+    "max_logit_difference": 0.0,
+    "bit_identical": true
+  },
+  "retrieval_results": {
+    "status": "NOT_LOADED_OR_EVALUATED_IN_SMOKE_MODE",
+    "protocol_a_held_out_evaluated": false,
+    "held_out_images_loaded": 0
+  },
+  "held_out_protocol_a_images_loaded": 0,
+  "total_elapsed_sec": 57.65
+}
