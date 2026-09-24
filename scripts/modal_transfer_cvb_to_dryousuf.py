@@ -125,7 +125,7 @@ def pack_cvb_remote() -> Dict[str, Any]:
         rel = meta_dir.relative_to(cvb_dir)
         tasks.append((meta_dir, stage_dir / rel))
 
-    print(f"  ✓ Discovered {len(tasks):,} discrete folders across CVB.")
+    print(f"  [OK] Discovered {len(tasks):,} discrete folders across CVB.")
     print(f"[2/3] Launching 64-worker parallel pre-staging into local NVMe SSD...")
 
     t_stage = time.time()
