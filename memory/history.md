@@ -1,3 +1,16 @@
+# Session Summary — 2026-09-24 (MTL Maximum-Speed Resumable Data Staging Pipeline Preparation on hasinishrak2015)
+
+- Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f
+- Objective: Build the maximum-speed, resumable, low-disk MTL data staging pipeline for target Modal profile `hasinishrak2015` (`mtl-data`, `mtl-checkpoints`) to stage all Train/Val inputs for Run 7 (E1) and Run 8 (E3).
+- Architecture & Implementation Details:
+  1. BCS (`tigerwood697` -> `hasinishrak2015`): Reuses certified Run 4 monolithic binary tensors (`train_bcs_224.pt` ~6.89 GB, `val_bcs_224.pt` ~1.57 GB) + manifests. Chunked source-side to 1024MB parts with SHA-256; sequential PC relay with immediate local chunk deletion (peak local disk <= 1024 MB); reassembled on target. Test tensors strictly excluded.
+  2. Behavior (`tigerwood693` -> `hasinishrak2015`): Packages 4,271 retained sequences (3,641 Train, 630 Val) into an uncompressed tar archive (~1.05 GB) on ephemeral storage inside `tigerwood693`. Chunked to 1024MB parts, sequential PC relay, and extracted directly on target. Test sequences strictly excluded.
+  3. Re-ID (Zenodo -> `hasinishrak2015` DIRECT): 16-worker HTTP Range download of `parlor.zip` (9.60 GB) inside `hasinishrak2015` ephemeral `/tmp/`. Selectively extracts the exact 15,436 Train/Val image & mask pairs for the 41 representation learning cows. 0 bytes relayed through PC. Temporary archive purged immediately.
+  4. Master Controller (`scripts/stage_mtl_workspace.py`): Supports `--task {all,bcs,behavior,reid}`, `--dry-run`, `--fast`, `--yes`, `--verify`, `--workers`, `--chunk-size-mb`, `--keep-temp`. Features live `CleanProgressBar` rendering `%`, MB/s, and ETA.
+  5. Target Worker (`scripts/modal_stage_mtl_target.py`) and Source Worker (`scripts/modal_export_mtl_sources.py`).
+  6. Verification: Syntax verified, dry-run executed (`python scripts/stage_mtl_workspace.py --task all --dry-run`).
+  7. Strict boundaries: Zero full transfers launched; zero GPU compute consumed; zero model implementation or training.
+
 # Session Summary — 2026-09-24 (Phase 3 Run 6 Modal Cloud Wrapper Preparation on dryousufmozumder)
 
 - Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f

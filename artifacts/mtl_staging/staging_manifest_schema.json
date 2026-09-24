@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MTLWorkspaceStagingManifest",
+  "description": "Schema for /mtl-data/staging_manifest.json on Modal profile hasinishrak2015",
+  "type": "object",
+  "required": [
+    "workspace_profile",
+    "volumes",
+    "audit_timestamp",
+    "tasks",
+    "leakage_checks",
+    "status"
+  ],
+  "properties": {
+    "workspace_profile": { "type": "string", "enum": ["hasinishrak2015"] },
+    "volumes": {
+      "type": "object",
+      "properties": {
+        "data_volume": { "type": "string", "enum": ["mtl-data"] },
+        "checkpoints_volume": { "type": "string", "enum": ["mtl-checkpoints"] }
+      },
+      "required": ["data_volume", "checkpoints_volume"]
+    },
+    "audit_timestamp": { "type": "string" },
+    "tasks": {
+      "type": "object",
+      "properties": {
+        "bcs": {
+          "type": "object",
+          "properties": {
+            "train_samples": { "type": "integer" },
+            "val_samples": { "type": "integer" },
+            "tensor_shape": { "type": "array", "items": { "type": "integer" } },
+            "train_pt_bytes": { "type": "integer" },
+            "val_pt_bytes": { "type": "integer" }
+          },
+          "required": ["train_samples", "val_samples", "tensor_shape"]
+        },
+        "behavior": {
+          "type": "object",
+          "properties": {
+            "train_sequences": { "type": "integer", "enum": [3641] },
+            "val_sequences": { "type": "integer", "enum": [630] },
+            "total_sequences": { "type": "integer", "enum": [4271] }
+          },
+          "required": ["train_sequences", "val_sequences", "total_sequences"]
+        },
+        "reid": {
+          "type": "object",
+          "properties": {
+            "train_pairs": { "type": "integer", "enum": [12753] },
+            "val_pairs": { "type": "integer", "enum": [2683] },
+            "total_pairs": { "type": "integer", "enum": [15436] },
+            "unique_cows": { "type": "integer", "enum": [41] },
+            "held_out_cow_overlap": { "type": "integer", "enum": [0] }
+          },
+          "required": ["train_pairs", "val_pairs", "total_pairs", "unique_cows", "held_out_cow_overlap"]
+        }
+      },
+      "required": ["bcs", "behavior", "reid"]
+    },
+    "leakage_checks": {
+      "type": "object",
+      "properties": {
+        "bcs_test_absent": { "type": "boolean", "enum": [true] },
+        "behavior_test_absent": { "type": "boolean", "enum": [true] },
+        "reid_evaluation_subsets_absent": { "type": "boolean", "enum": [true] },
+        "reid_held_out_cow_overlap": { "type": "integer", "enum": [0] }
+      },
+      "required": [
+        "bcs_test_absent",
+        "behavior_test_absent",
+        "reid_evaluation_subsets_absent",
+        "reid_held_out_cow_overlap"
+      ]
+    },
+    "status": { "type": "string", "enum": ["CERTIFIED_READY_FOR_MTL"] }
+  }
+}
