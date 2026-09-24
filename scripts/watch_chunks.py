@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Clean, Zero-Overlap Live Streaming Dashboard for SideView Re-ID + Pose Evaluation."""
+"""Real-time Unbuffered Live Dashboard for SideView Re-ID + Pose Evaluation."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ if sys.platform == "win32":
         sys.stdout.reconfigure(encoding="utf-8")
     except Exception:
         pass
-    os.system("")  # Enable ANSI escape sequences in Windows console
+    os.system("")  # Enable ANSI in Windows terminal
 
 APP_ID = "ap-Zb0le0pHhi8z9ahux6fTJg"
 PROFILE = "dryousufmozumder"
@@ -27,7 +27,7 @@ last_render_time = 0.0
 def render_dashboard(force: bool = False):
     global last_render_time
     now = time.time()
-    if not force and (now - last_render_time < 0.25):
+    if not force and (now - last_render_time < 0.2):
         return
     last_render_time = now
 
@@ -38,7 +38,7 @@ def render_dashboard(force: bool = False):
     print("=" * 82)
     
     if not chunk_tracker:
-        print("  Connecting to Modal log stream... Waiting for chunk progress...")
+        print("  Connecting to live stream... Waiting for chunk progress...")
     else:
         for cid in sorted(chunk_tracker.keys()):
             stat = chunk_tracker[cid]
@@ -55,10 +55,8 @@ def render_dashboard(force: bool = False):
     print("=" * 82)
     sys.stdout.flush()
 
-env = dict(os.environ, PYTHONIOENCODING="utf-8")
-
-def parse_line(raw_line: str):
-    line = raw_line.strip()
+def parse_line(line: str):
+    line = line.strip()
     if not line:
         return
 
@@ -80,48 +78,29 @@ def parse_line(raw_line: str):
         sys.stdout.write(f"\n[MILESTONE] {line}\n")
         sys.stdout.flush()
 
-# Step 1: Pre-populate from recent logs
-try:
-    init_res = subprocess.run(
-        ["modal", "app", "logs", APP_ID, "--tail", "300", "--profile", PROFILE],
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        env=env,
-        timeout=10,
-    )
-    for l in init_res.stdout.splitlines():
-        parse_line(l)
-except Exception:
-    pass
-
-render_dashboard(force=True)
-
-# Step 2: Stream live updates continuously
+env = dict(os.environ, PYTHONIOENCODING="utf-8")
 cmd = ["modal", "app", "logs", APP_ID, "-f", "--profile", PROFILE]
 
-while True:
-    try:
-        proc = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            env=env,
-            bufsize=1,
-        )
+try:
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        env=env,
+    )
+    fd = proc.stdout.fileno()
+    buf = b""
 
-        for raw_line in iter(proc.stdout.readline, ""):
-            parse_line(raw_line)
+    while True:
+        raw = os.read(fd, 2048)
+        if not raw:
+            break
+        buf += raw
+        parts = re.split(b"[\r\n]+", buf)
+        buf = parts[-1]
+        for part in parts[:-1]:
+            decoded = part.decode("utf-8", errors="replace")
+            parse_line(decoded)
 
-        proc.wait()
-        time.sleep(1.0)
-
-    except KeyboardInterrupt:
-        print("\n[Stopped monitoring]")
-        break
-    except Exception:
-        time.sleep(2.0)
+except KeyboardInterrupt:
+    print("\n[Stopped monitoring]")
