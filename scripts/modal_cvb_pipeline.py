@@ -63,8 +63,8 @@ app = modal.App("cvb-dataset-pipeline", image=image)
 @app.function(
     volumes={VOLUME_DIR: volume},
     timeout=7200,  # 2 hours max
-    cpu=1.0,       # Minimal container resources (AGENTS.md rule)
-    memory=2048,   # 2 GB RAM (AGENTS.md rule)
+    cpu=4.0,       # 4 CPUs for high-throughput TLS socket handling
+    memory=8192,   # 8 GB RAM for 256MB RAM write caching
 )
 def download_cvb():
     """Download CVB dataset via aria2c with live progress and periodic volume commits."""
@@ -78,9 +78,9 @@ def download_cvb():
     input_txt = "/tmp/58916v001.txt"
 
     print("=" * 70)
-    print("  CVB (CATTLE VISUAL BEHAVIORS) MODAL CLOUD DOWNLOADER")
+    print("  CVB (CATTLE VISUAL BEHAVIORS) MODAL TURBO CLOUD DOWNLOADER")
     print("  Target Volume: cvb-data mounted at /data/cvb")
-    print("  CPU: 1.0 | RAM: 2048 MB (Minimal Cost Tier)")
+    print("  Engine: aria2c (96 concurrent streams, 256MB RAM cache, 4 CPUs)")
     print("=" * 70)
 
     # Decompress input file
@@ -88,7 +88,7 @@ def download_cvb():
     t0 = time.time()
     with gzip.open("/root/58916v001.txt.gz", "rb") as f_in, open(input_txt, "wb") as f_out:
         shutil.copyfileobj(f_in, f_out)
-    print(f"✓ Decompressed {os.path.getsize(input_txt) / (1024 * 1024):.2f} MB link manifest in {time.time() - t0:.1f}s")
+    print(f"[OK] Decompressed {os.path.getsize(input_txt) / (1024 * 1024):.2f} MB link manifest in {time.time() - t0:.1f}s")
 
     # Count existing files in CVB_DIR
     print("\n[2/3] Checking existing files in /data/cvb...")
@@ -99,7 +99,7 @@ def download_cvb():
     stop_event = threading.Event()
 
     def checkpoint_worker():
-        while not stop_event.wait(60.0):
+        while not stop_event.wait(120.0):
             try:
                 # Count files and size
                 f_count = 0
@@ -125,15 +125,19 @@ def download_cvb():
     monitor_thread = threading.Thread(target=checkpoint_worker, daemon=True)
     monitor_thread.start()
 
-    # Launch aria2c
-    print("\n[3/3] Starting aria2c with 64 parallel connections (Turbo Mode)...")
+    # Launch turbo aria2c
+    print("\n[3/3] Starting aria2c with 96 concurrent downloads + 256MB RAM buffer...")
     print("      Streaming live progress summary below:\n")
 
     cmd = [
         "aria2c",
         "-x", "16",
-        "-j", "64",
+        "-j", "96",
         "-s", "16",
+        "--disk-cache=256M",
+        "--file-allocation=none",
+        "--enable-http-pipelining=true",
+        "--optimize-concurrent-downloads=true",
         f"--input-file={input_txt}",
         f"--dir={CVB_DIR}",
         "--continue=true",
