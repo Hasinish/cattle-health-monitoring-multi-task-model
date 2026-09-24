@@ -250,10 +250,11 @@ def transfer_behavior_remote(creds: Dict[str, str]) -> Dict[str, Any]:
             print(f" done in {el:.1f}s ({speed:.1f} MB/s)!")
 
     assert tar_tmp.stat().st_size == manifest["total_bytes"], "Reassembled tar size mismatch"
-    print(f"\n[+] Extracting {tar_tmp} into {beh_dir}...")
+    print(f"\n[+] Extracting {tar_tmp} into {beh_dir} via native Linux tar...")
     t_ext = time.time()
-    with tarfile.open(tar_tmp, "r") as tar:
-        tar.extractall(path=beh_dir)
+    import subprocess
+    cmd = ["tar", "-xf", str(tar_tmp), "-C", str(beh_dir)]
+    subprocess.run(cmd, check=True)
     print(f"  ✓ Extraction complete in {time.time() - t_ext:.1f}s!")
 
     if tar_tmp.exists():

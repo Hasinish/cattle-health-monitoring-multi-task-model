@@ -51,8 +51,8 @@ def _compute_sha256(filepath: Path, chunk_size: int = 16 * 1024 * 1024) -> str:
 
 @app.function(
     volumes={"/cache": behavior_vol},
-    cpu=2.0,
-    memory=4096,
+    cpu=4.0,
+    memory=8192,
     timeout=1800,
 )
 def prepare_behavior_export_remote(chunk_size_mb: int = 1024) -> Dict[str, Any]:
@@ -113,14 +113,15 @@ def prepare_behavior_export_remote(chunk_size_mb: int = 1024) -> Dict[str, Any]:
         except Exception as e:
             print(f"[!] Warning reading existing manifest: {e}. Regenerating...")
 
-    # Build uncompressed tar archive on ephemeral disk via native Linux tar (100x faster than python tarfile)
+    # Build uncompressed tar archive on ephemeral disk via 64-worker parallel NVMe pre-staging
     tar_tmp = Path("/tmp/behavior_retained.tar")
     if tar_tmp.exists():
         tar_tmp.unlink()
 
-    print(f"[*] Packaging {len(allowed_sequences)} sequences into {tar_tmp} via native Linux tar...")
-    sys.stdout.flush()
-    t0 = time.time()
+    stage_dir = Path("/tmp/stage_behavior")
+    if stage_dir.exists():
+        shutil.rmtree(stage_dir, ignore_errors=True)
+    stage_dir.mkdir(parents=True, exist_ok=True)
 
     manifest_files_to_pack = [
         "retained_train.csv",
@@ -129,27 +130,73 @@ def prepare_behavior_export_remote(chunk_size_mb: int = 1024) -> Dict[str, Any]:
         "perception_manifest.csv",
     ]
 
-    pack_list_file = Path("/tmp/pack_list.txt")
-    with open(pack_list_file, "w", encoding="utf-8") as f:
-        for mf in manifest_files_to_pack:
-            if (prod_dir / mf).exists():
-                f.write(f"{mf}\n")
-        for seq_id in sorted(allowed_sequences):
-            seq_p = prod_dir / seq_id
-            if seq_p.exists():
-                f.write(f"{seq_id}\n")
-            else:
-                raise FileNotFoundError(f"Missing sequence directory: {seq_p}")
+    for mf in manifest_files_to_pack:
+        src_f = prod_dir / mf
+        if src_f.exists():
+            shutil.copy2(src_f, stage_dir / mf)
 
+    # Parallel pre-stage of 4,271 sequence directories to local NVMe
+    total_seqs = len(allowed_sequences)
+    print(f"[*] Starting 64-worker parallel NVMe pre-staging of {total_seqs} sequences...")
+    sys.stdout.flush()
+
+    seq_list = sorted(allowed_sequences)
+    t_stage_0 = time.time()
+    done_count = 0
+    errors: List[str] = []
+
+    def _copy_seq(seq_id: str) -> bool:
+        src = prod_dir / seq_id
+        dst = stage_dir / seq_id
+        if not src.exists():
+            return False
+        shutil.copytree(src, dst)
+        return True
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    with ThreadPoolExecutor(max_workers=64) as executor:
+        futures = {executor.submit(_copy_seq, s): s for s in seq_list}
+        for future in as_completed(futures):
+            s = futures[future]
+            try:
+                ok = future.result()
+                if not ok:
+                    errors.append(f"Missing: {s}")
+            except Exception as e:
+                errors.append(f"{s}: {e}")
+            done_count += 1
+            if done_count % 250 == 0 or done_count == total_seqs:
+                el = time.time() - t_stage_0
+                rate = done_count / el if el > 0 else 0
+                eta = (total_seqs - done_count) / rate if rate > 0 else 0
+                print(f"    -> [{done_count:4d}/{total_seqs}] ({done_count/total_seqs*100:5.1f}%) "
+                      f"staged in {el:5.1f}s | Speed: {rate:5.1f} seq/s | ETA: {eta:4.1f}s")
+                sys.stdout.flush()
+
+    if errors:
+        raise RuntimeError(f"Encountered {len(errors)} errors copying sequences: {errors[:5]}")
+
+    stage_duration = time.time() - t_stage_0
+    print(f"[+] All {total_seqs} sequences pre-staged to local NVMe in {stage_duration:.1f}s ({total_seqs/stage_duration:.1f} seq/s)!")
+    sys.stdout.flush()
+
+    # Now tar on local NVMe disk at native SSD speeds
+    print(f"[*] Creating {tar_tmp} on local NVMe disk...")
+    sys.stdout.flush()
+    t_tar = time.time()
     import subprocess
-    cmd = ["tar", "-cf", str(tar_tmp), "-C", str(prod_dir), "-T", str(pack_list_file)]
+    cmd = ["tar", "-cf", str(tar_tmp), "-C", str(stage_dir), "."]
     subprocess.run(cmd, check=True)
+    tar_duration = time.time() - t_tar
 
-    pack_duration = time.time() - t0
     tar_size = tar_tmp.stat().st_size
     tar_sha = _compute_sha256(tar_tmp)
-    print(f"[+] Tar packaging completed in {pack_duration:.1f}s ({tar_size / (1024**2):.1f} MB, sha={tar_sha[:10]}...)")
+    print(f"[+] Local NVMe tar completed in {tar_duration:.2f}s ({tar_size / (1024**2):.1f} MB, sha={tar_sha[:10]}...)")
     sys.stdout.flush()
+
+    # Free up memory/disk from stage_dir
+    shutil.rmtree(stage_dir, ignore_errors=True)
 
     # Split into chunks of chunk_size_mb
     chunk_bytes = chunk_size_mb * 1024 * 1024
