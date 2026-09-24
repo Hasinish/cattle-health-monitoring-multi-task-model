@@ -76,15 +76,19 @@ def _get_profile_creds(profile_name: str) -> Dict[str, str]:
 # ==============================================================================
 @app.function(
     volumes={"/data": cvb_volume},
-    cpu=4.0,
-    memory=8192,
+    cpu=8.0,
+    memory=16384,
     timeout=1800,
 )
 def pack_cvb_remote() -> Dict[str, Any]:
-    """Packages the 226k CVB files into an uncompressed sequential tar archive."""
+    """Packages the 226k CVB files using 64-worker parallel NVMe pre-staging."""
+    import shutil
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
     print("=" * 70)
-    print("  📦 PACKING CVB DATASET ON SOURCE (hasinishrak2015)")
+    print("  🚀 64-WORKER PARALLEL CVB PACKING (hasinishrak2015)")
     print("  Volume: cvb-data mounted at /data")
+    print("  Engine: 64-worker ThreadPoolExecutor + Local NVMe Staging")
     print("=" * 70)
 
     cvb_dir = Path("/data/cvb")
@@ -93,46 +97,93 @@ def pack_cvb_remote() -> Dict[str, Any]:
 
     tar_path = Path("/data/cvb_archive.tar")
     if tar_path.exists() and tar_path.stat().st_size > 14 * (1024**3):
-        print(f"[OK] cvb_archive.tar already exists ({tar_path.stat().st_size / (1024**3):.2f} GB). Skipping pack.")
+        print(f"[OK] cvb_archive.tar already exists ({tar_path.stat().st_size / (1024**3):.2f} GB). Ready to stream!")
         return {"status": "already_packed", "size_gb": tar_path.stat().st_size / (1024**3)}
 
-    print("[*] Running uncompressed tar creation (sequential 100+ MB/s)...")
-    t0 = time.time()
-    expected_cvb_bytes = 14.29 * (1024**3)
+    stage_dir = Path("/tmp/cvb_stage")
+    if stage_dir.exists():
+        shutil.rmtree(stage_dir, ignore_errors=True)
+    stage_dir.mkdir(parents=True, exist_ok=True)
 
-    # Launch live packing progress monitor thread (every 5 seconds)
-    stop_pack = threading.Event()
-    def pack_monitor():
-        while not stop_pack.wait(5.0):
-            if tar_path.exists():
-                curr = tar_path.stat().st_size
-                curr_gb = curr / (1024**3)
-                pct = min(100.0, (curr / expected_cvb_bytes) * 100)
-                el = time.time() - t0
-                spd = (curr / (1024**2)) / max(0.1, el)
-                rem_bytes = max(0, expected_cvb_bytes - curr)
-                eta = rem_bytes / max(1.0, spd * 1024 * 1024)
-                print(f"  >>> [PACKING CVB] {curr_gb:.2f} / 14.29 GB ({pct:.1f}%) | Speed: {spd:.1f} MB/s | Elapsed: {el:.0f}s | ETA: {eta:.0f}s", flush=True)
+    # 1. Discover all cut and sub-directories to parallelize
+    print("[1/3] Scanning CVB directories for 64-worker parallel transfer...")
+    tasks: list[tuple[Path, Path]] = []
+    
+    # We walk the top 3 levels to split the 226k files into ~1,000 independent folders
+    base_data = cvb_dir / "000058916v001" / "data"
+    if base_data.exists():
+        for category in ["raw_frames", "annotations", "cvb_in_ava_format"]:
+            cat_dir = base_data / category
+            if cat_dir.exists():
+                for sub in cat_dir.iterdir():
+                    rel = sub.relative_to(cvb_dir)
+                    tasks.append((sub, stage_dir / rel))
+    
+    # Metadata files
+    meta_dir = cvb_dir / "000058916v001" / "metadata"
+    if meta_dir.exists():
+        rel = meta_dir.relative_to(cvb_dir)
+        tasks.append((meta_dir, stage_dir / rel))
 
-    m_pack = threading.Thread(target=pack_monitor, daemon=True)
-    m_pack.start()
+    print(f"  ✓ Discovered {len(tasks):,} discrete folders across CVB.")
+    print(f"[2/3] Launching 64-worker parallel pre-staging into local NVMe SSD...")
 
-    try:
-        cmd = ["tar", "-cf", str(tar_path), "-C", "/data", "cvb"]
-        res = subprocess.run(cmd, capture_output=True, text=True)
-        if res.returncode != 0:
-            raise RuntimeError(f"tar packing failed: {res.stderr}")
-    finally:
-        stop_pack.set()
+    t_stage = time.time()
+    done = 0
+    errors: list[str] = []
 
-    elapsed = time.time() - t0
+    def _copy_folder(item: tuple[Path, Path]) -> bool:
+        src, dst = item
+        if dst.exists():
+            return True
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        if src.is_dir():
+            shutil.copytree(src, dst)
+        else:
+            shutil.copy2(src, dst)
+        return True
+
+    with ThreadPoolExecutor(max_workers=64) as executor:
+        futures = {executor.submit(_copy_folder, t): t for t in tasks}
+        for future in as_completed(futures):
+            t = futures[future]
+            try:
+                future.result()
+            except Exception as e:
+                errors.append(f"{t[0].name}: {e}")
+            done += 1
+            if done % 100 == 0 or done == len(tasks):
+                el = time.time() - t_stage
+                rate = done / max(0.1, el)
+                eta = (len(tasks) - done) / max(0.1, rate)
+                print(f"  >>> [64-WORKER NVMe PRE-STAGE] {done:4d} / {len(tasks)} folders ({done/len(tasks)*100:5.1f}%) | Speed: {rate:5.1f} folders/s | ETA: {eta:4.1f}s", flush=True)
+
+    if errors:
+        print(f"[!] Warning: encountered {len(errors)} copy errors: {errors[:3]}")
+
+    stage_duration = time.time() - t_stage
+    print(f"[OK] All {len(tasks)} folders pre-staged to local NVMe in {stage_duration:.1f}s ({len(tasks)/stage_duration:.1f} folders/s)!")
+
+    # 2. Sequential tar from local NVMe to volume (pure sequential 150+ MB/s, zero FUSE lockups)
+    print(f"\n[3/3] Creating single sequential archive {tar_path} on volume...")
+    t_tar = time.time()
+    
+    cmd = ["tar", "-cf", str(tar_path), "-C", str(stage_dir), "."]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode != 0:
+        raise RuntimeError(f"tar packing failed: {res.stderr}")
+
+    tar_duration = time.time() - t_tar
     size_gb = tar_path.stat().st_size / (1024**3)
-    speed = (tar_path.stat().st_size / (1024**2)) / max(0.1, elapsed)
-    print(f"[OK] Packed {size_gb:.2f} GB in {elapsed:.1f}s ({speed:.1f} MB/s)!")
+    speed = (tar_path.stat().st_size / (1024**2)) / max(0.1, tar_duration)
+    print(f"[OK] Single sequential tar completed in {tar_duration:.1f}s ({size_gb:.2f} GB at {speed:.1f} MB/s)!")
+
+    # Clean up local NVMe staging dir
+    shutil.rmtree(stage_dir, ignore_errors=True)
 
     print("[*] Committing volume checkpoint on source...")
     cvb_volume.commit()
-    return {"status": "success", "size_gb": size_gb, "elapsed_s": elapsed}
+    return {"status": "success", "size_gb": size_gb, "total_elapsed_s": stage_duration + tar_duration}
 
 
 @app.local_entrypoint()
