@@ -1,3 +1,21 @@
+# Session Summary — 2026-09-25 (Phase 3 Run 7 E1 Hard-Shared MTL 30-Epoch Full Training Complete & 100% Certified on hasinishrak2015)
+
+- Convo ID: d8e9e1e7-a18c-4189-93ca-3407e10bc833
+- Objective: Execute full 30-epoch training of Phase 3 Run 7 (E1 Hard-Shared Multi-Task Learning Control Baseline) on Modal profile `hasinishrak2015` (NVIDIA L40S) across ScienceDB BCS, CVB + Kaggle Beef Behavior, and SideViewCows2026 Re-ID.
+- Accomplishments & Verification:
+  1. Full 30-Epoch Execution: Launched `train_mtl_e1_full_remote` on Modal (`hasinishrak2015`, NVIDIA L40S, App `ap-DndFLCIcQgseZvOnv7PaFs`, total runtime 1,532.3s / ~25.5 mins, exit code 0).
+  2. In-Memory RAM Preload: Preloaded 3,641 Train + 630 Val Behavior sequences (6,540 MB) and 12,753 Train + 2,683 Val Re-ID pairs into 32 GB RAM (~9.5 GB total footprint). Eliminated network I/O, achieving steady ~50.2s/epoch across all 537 super-steps.
+  3. Global Best Multi-Task Objective (`val_e1_objective = 0.40036` at Epoch 3):
+     - BCS: Val Loss 0.4384, Real MAE 0.1968, Acc@1 86.90%, Acc@0 35.99%.
+     - Behavior: Val Loss 0.4597, Macro-F1 0.7175, Accuracy 86.03%.
+     - Re-ID: Val Loss 0.3029, Top-1 Accuracy 94.19%, Balanced Accuracy 93.42%, Macro-F1 0.9315.
+  4. Cross-Task Synergies & Peak Milestones:
+     - Behavior Macro-F1 peaked at **0.8012** at Epoch 8 (Accuracy: 88.73%, Balanced Acc: 80.57%, Walking F1: 0.4651), decisively surpassing single-task Run 5 best validation Macro-F1 (0.7722) by +3.23% relative.
+     - Re-ID Top-1 Accuracy peaked at **96.65%** at Epoch 25 (val loss 0.1382).
+     - BCS Real MAE remained sub-0.20 throughout (0.1950 at Epoch 8; 0.1952 at Epoch 30; Acc@1 86.77%).
+  5. Scientific Takeaways: Verified mild gradient tension on BCS loss (0.4384 -> 1.0134) under hard sharing while MAE remained sub-0.20, empirically confirming negative transfer in hard parameter sharing and directly establishing the motivation for Run 8 (E3 Modular Multi-Task Learning).
+  6. Artifacts & Checkpoint Reload: Checkpoints (`mtl_e1_best.pth`, `mtl_e1_latest.pth`) committed to `/mtl-checkpoints/mtl_e1_hard_shared/`. Checkpoint reload verified bit-identically (`max_logit_diff == 0.00000000`). Synced `artifacts/mtl_e1_training/mtl_e1_metrics.json`.
+
 # Session Summary — 2026-09-25 (CVB+Beef Behavior Viewpoint Feasibility Audit & Cloud Smoke Certification Complete)
 
 - Convo ID: d8e9e1e7-a18c-4189-93ca-3407e10bc833
