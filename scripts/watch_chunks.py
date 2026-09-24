@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Clean, Zero-Overlap Live Dashboard for SideView Re-ID + Pose Evaluation."""
+"""Clean, Zero-Overlap Live Streaming Dashboard for SideView Re-ID + Pose Evaluation."""
 
 from __future__ import annotations
 
@@ -20,7 +20,6 @@ if sys.platform == "win32":
 APP_ID = "ap-Zb0le0pHhi8z9ahux6fTJg"
 PROFILE = "dryousufmozumder"
 
-# Store latest status string for each chunk: {chunk_id: full_progress_string}
 chunk_tracker: Dict[int, str] = {}
 chunk_pcts: Dict[int, int] = {}
 last_render_time = 0.0
@@ -28,11 +27,10 @@ last_render_time = 0.0
 def render_dashboard(force: bool = False):
     global last_render_time
     now = time.time()
-    if not force and (now - last_render_time < 0.4):
+    if not force and (now - last_render_time < 0.25):
         return
     last_render_time = now
 
-    # Clear terminal screen cleanly using ANSI
     sys.stdout.write("\033[H\033[J")
     
     print("=" * 82)
@@ -40,13 +38,11 @@ def render_dashboard(force: bool = False):
     print("=" * 82)
     
     if not chunk_tracker:
-        print("  Connecting to Modal log stream... Waiting for chunk progress...")
+        print("  Streaming live from Modal... Waiting for chunk progress...")
     else:
-        # Display each tracked chunk in numerical order
         for cid in sorted(chunk_tracker.keys()):
             stat = chunk_tracker[cid]
-            # Highlight completed chunks
-            if "100%" in stat:
+            if "100%" in stat or chunk_pcts.get(cid, 0) >= 100:
                 print(f"  [DONE] {stat}")
             else:
                 print(f"  [RUN ] {stat}")
@@ -60,45 +56,52 @@ def render_dashboard(force: bool = False):
     sys.stdout.flush()
 
 env = dict(os.environ, PYTHONIOENCODING="utf-8")
-cmd = ["modal", "app", "logs", APP_ID, "--profile", PROFILE]
+# Notice -f flag for live streaming!
+cmd = ["modal", "app", "logs", APP_ID, "-f", "--profile", PROFILE]
 
-try:
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        env=env,
-        bufsize=1,
-    )
+print(f"Connecting to live stream for app {APP_ID}...")
 
-    for raw_line in iter(proc.stdout.readline, ""):
-        line = raw_line.strip()
-        if not line:
-            continue
+while True:
+    try:
+        proc = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            env=env,
+            bufsize=1,
+        )
 
-        # Look for chunk progress lines
-        # Example: "Chunk 01/42:  47%|████▋     | 704/1500 [04:04<04:53,  2.71it/s]"
-        match = re.search(r"Chunk\s+(\d+)/(\d+):\s*(.*)", line)
-        if match:
-            c_idx = int(match.group(1))
-            total_c = int(match.group(2))
-            details = match.group(3).strip()
+        for raw_line in iter(proc.stdout.readline, ""):
+            line = raw_line.strip()
+            if not line:
+                continue
 
-            pct_match = re.search(r"(\d+)%", details)
-            pct_val = int(pct_match.group(1)) if pct_match else 0
-            chunk_pcts[c_idx] = pct_val
+            match = re.search(r"Chunk\s+(\d+)/(\d+):\s*(.*)", line)
+            if match:
+                c_idx = int(match.group(1))
+                total_c = int(match.group(2))
+                details = match.group(3).strip()
 
-            clean_entry = f"Chunk {c_idx:02d}/{total_c:02d}: {details}"
-            chunk_tracker[c_idx] = clean_entry
-            render_dashboard()
+                pct_match = re.search(r"(\d+)%", details)
+                pct_val = int(pct_match.group(1)) if pct_match else 0
+                chunk_pcts[c_idx] = pct_val
 
-        # Check for final retrieval milestone
-        elif any(k in line for k in ["PROTOCOL A RETRIEVAL", "Snapshots -> Parlor", "Barn -> Parlor", "Rank-1:"]):
-            sys.stdout.write(f"\n[MILESTONE] {line}\n")
-            sys.stdout.flush()
+                clean_entry = f"Chunk {c_idx:02d}/{total_c:02d}: {details}"
+                chunk_tracker[c_idx] = clean_entry
+                render_dashboard()
 
-except KeyboardInterrupt:
-    print("\n[Stopped monitoring]")
+            elif any(k in line for k in ["PROTOCOL A RETRIEVAL", "Snapshots -> Parlor", "Barn -> Parlor", "Rank-1:"]):
+                sys.stdout.write(f"\n[MILESTONE] {line}\n")
+                sys.stdout.flush()
+
+        proc.wait()
+        time.sleep(1.0)
+
+    except KeyboardInterrupt:
+        print("\n[Stopped monitoring]")
+        break
+    except Exception as e:
+        time.sleep(2.0)
