@@ -1,3 +1,23 @@
+# Session Summary — 2026-09-24 (Phase 3 Run 6 Modal Cloud Wrapper Preparation on dryousufmozumder)
+
+- Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f
+- Objective: Prepare the Modal cloud wrapper for Phase 3 Run 6 (SideViewCows2026 GT/oracle segmentation-guided Re-ID) targeting Modal workspace `dryousufmozumder`.
+- Deliverables & Verification Completed:
+  1. Created `scripts/modal_train_sideview_reid_perception.py`:
+     - Workspace: `dryousufmozumder`.
+     - Volumes: `sideview-data` at `/data` (80,260 RGB, 80,260 masks, 110 biological cows), `reid-checkpoints` at `/checkpoints` (isolated dir `/checkpoints/sideview_reid_perception_run6`).
+     - Core trainer: `train_sideview_reid_perception(...)` from `scripts/train_sideview_reid_perception.py`.
+     - Scientific condition: GT/oracle target mask crop + 5% margin + binary mask channel [R,G,B,Mask], ResNet-18 (11,200,681 params).
+     - Canonical protocol: 41 representation-learning cows (Protocol D train=12,753, val=2,683); 69 completely held-out evaluation cows (Protocol A parlor gallery, barn query, snapshot query; strictly isolated from training).
+  2. Implemented 3 required entrypoints:
+     - `verify_readiness`: cheap non-training dataset and protocol audit.
+     - `smoke_test`: cheap T4 GPU 2-epoch smoke test (`smoke=True`, `max_logit_difference == 0.0`, zero Protocol A held-out evaluations).
+     - `main`: prepared 30-epoch full launch on NVIDIA L40S, deferred for user manual execution.
+  3. Local Verification: Python compile passed (exit code 0), trainer imported cleanly (exit code 0), AST top-level entrypoints validated.
+  4. Documentation: Created research log `docs/research_log/2026-09-24_sideviewcows2026_reid_perception_run6_modal_wrapper_preparation.md` and updated `docs/research_log/README.md`.
+  5. State Sync: Updated `memory/state.md` and mirrored to `D:\custom-antigravity`.
+  6. Boundary: Full training and Protocol A final evaluation NOT launched.
+
 # Session Summary — 2026-09-24 (Run 4 BCS and Run 5 Behavior Training & Test Evidence Synchronized to GitHub main)
 
 - Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f
