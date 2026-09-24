@@ -83,5 +83,10 @@ To stage the unified MTL dataset on the target Modal profile `hasinishrak2015` w
 ## 4. Verification & Readiness
 
 - Local syntax compilation (`python -m py_compile`) passed on all three scripts with exit code 0.
+- **BCS Staging Verification Hardening Patch**:
+  - Corrected tensor payload schema expectation from `payload["images"]` to authentic Run 4 keys: `payload["tensors"]` (`torch.uint8` tensor with shape `[N, 4, 224, 224]`), `payload["targets"]` (`torch.long`), and `payload["raw_labels"]` (`torch.float32`).
+  - Upgraded Modal container RAM from 4096 MB to 16384 MB (16 GB) in both `reassemble_bcs_remote` and `verify_mtl_workspace_remote` to safely accommodate `train_bcs_224.pt` (~6.42 GiB in RAM) without risk of OOM.
+  - Enforced memory-safe sequential verification: loads `train_bcs_224.pt`, validates shape `[N, 4, 224, 224]` and keys, deletes payload, triggers `gc.collect()`, then sequentially loads and validates `val_bcs_224.pt`, deletes payload, and triggers `gc.collect()`. Never loads train and val simultaneously.
+  - Synthetic unit test (`scratch/verify_bcs_staging_schema.py`) verified 100% of sequential verification logic and confirmed rejection of faulty `images` schemas.
 - Dry-run verification (`python scripts/stage_mtl_workspace.py --task all --dry-run`) verified all execution plans, file counts, and estimated payloads without initiating full data movement or launching GPU instances.
 - Zero GPU compute was consumed; zero full transfers were automatically initiated.

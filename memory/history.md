@@ -1,3 +1,14 @@
+# Session Summary — 2026-09-24 (BCS Staging Verification Patch & 16GB Memory-Safe Hardening)
+
+- Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f
+- Objective: Patch BCS staging verification bugs before any real MTL data transfer.
+- Changes & Key Hardening:
+  1. Corrected payload schema: Replaced faulty `payload["images"]` access with authentic Run 4 keys: `payload["tensors"]` (`torch.uint8` tensor `[N, 4, 224, 224]`), `payload["targets"]` (`torch.long`), and `payload["raw_labels"]` (`torch.float32`).
+  2. Memory-Safe Sequential Loading: Upgraded Modal container RAM from 4096 MB to 16384 MB (16 GB) in `reassemble_bcs_remote` and `verify_mtl_workspace_remote` to safely load `train_bcs_224.pt` (~6.42 GiB). Eliminated simultaneous loading; now loads `train_bcs_224.pt`, verifies shape/keys, deletes payload, triggers `gc.collect()`, then sequentially loads and verifies `val_bcs_224.pt`, deletes, and triggers `gc.collect()`.
+  3. Whole-Repo Audit: Confirmed zero remaining occurrences of `images` key across all MTL staging code.
+  4. Synthetic Verification: Passed local unit test (`scratch/verify_bcs_staging_schema.py`) validating shape checks, key assertions, and rejection of legacy schemas.
+  5. Boundaries: Zero real transfers or SideView downloads launched.
+
 # Session Summary — 2026-09-24 (Phase 3 Run 6 SideViewCows2026 Re-ID Perception Full Training & Protocol A Evaluation Complete)
 
 - Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f
@@ -949,7 +960,11 @@
 
 <!-- IMPORTANT FOR AGENTS: Always prepend new conversation log entries to the top of this list (most recent first). Do not append to the bottom. -->
 
-- **[2026-09-23] Convo 3ec35c2e-9eec-4b84-811f-b48cb01a486b**: Executing derived RT-DETR-L cow-cropped version of the finalized 880-image real viewpoint dataset (`self_clean_v1`) locally.
+- **[2026-09-24] Convo 6c47aa76-9e9a-4b74-8056-43795b4b0c8f**: Patched BCS staging verification schema to authentic Run 4 keys (`tensors`, `targets`, `raw_labels` with shape `[N, 4, 224, 224]`) replacing invalid `images` assumption; upgraded Modal container RAM to 16,384 MB (16 GB); enforced memory-safe sequential loading and garbage collection; verified with synthetic unit test; zero real data transfers launched.
+- **[2026-09-24] Convo 6c47aa76-9e9a-4b74-8056-43795b4b0c8f**: Built and dry-run certified high-speed, resumable, low-disk MTL staging pipeline on `hasinishrak2015` (`mtl-data`, `mtl-checkpoints`) staging Train/Val inputs for Run 7 (E1) and Run 8 (E3). Zero real transfers launched.
+- **[2026-09-24] Convo 6c47aa76-9e9a-4b74-8056-43795b4b0c8f**: Completed Phase 3 Run 6 SideViewCows2026 GT-mask Re-ID full 30-epoch training and Protocol A held-out evaluation on Modal (`dryousufmozumder`, L40S; Snapshots Rank-1 62.93% vs 38.88%, mAP 40.42% vs 27.05%). Certified Run 6.
+- **[2026-09-24] Convo 6c47aa76-9e9a-4b74-8056-43795b4b0c8f**: Prepared Modal cloud wrapper for Phase 3 Run 6 (SideViewCows2026 GT-mask Re-ID) on `dryousufmozumder`.
+- **[2026-09-24] Convo 6c47aa76-9e9a-4b74-8056-43795b4b0c8f**: Synchronized Phase 3 Run 4 ScienceDB BCS and Run 5 CVB+Beef Behavior training and test evaluation results into repo. Certified Runs 4 and 5.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Completed full 30-epoch training and test evaluation of Run 2 Behavior RGB baseline on Modal L40S (88.88% test acc, 71.72% bal acc, 0.7413 macro-F1). Certified Run 2 in deadline plan.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Activated Phase 3 Deadline Execution Priority Overlay for 26 September 2026 thesis deadline (`phase3_deadline_execution_2026-09-26.md`), focusing on the 8 minimum defensible thesis runs and deferring exhaustive ablations while preserving the canonical roadmap.
 - **[2026-09-23] Convo 27258369-7cbf-4892-a73a-a5cd707dc4d5**: Upgraded ScienceDB RGB BCS baseline wrapper to NVIDIA L4 on Modal (`tigerwood697`, App `ap-LpbnMu603XOremldE0aTYr`). 100% passed all 6 pre-flight checks on L4 (22.03 GB VRAM). Preserved T4 audit history. Full training not launched.

@@ -88,7 +88,7 @@ def _compute_sha256(filepath: Path, chunk_size: int = 16 * 1024 * 1024) -> str:
 @app.function(
     volumes={"/mtl-data": mtl_data_vol},
     cpu=2.0,
-    memory=4096,
+    memory=16384,
     timeout=1800,
 )
 def reassemble_bcs_remote(manifest: Dict[str, Any]) -> Dict[str, Any]:
@@ -167,14 +167,42 @@ def reassemble_bcs_remote(manifest: Dict[str, Any]) -> Dict[str, Any]:
     if staging_dir.exists() and not list(staging_dir.iterdir()):
         staging_dir.rmdir()
 
-    # Verify PyTorch loadability
-    print("\n[*] Verifying PyTorch tensor loadability...")
+    # Verify PyTorch loadability (sequential and memory-safe)
+    print("\n[*] Verifying PyTorch tensor loadability (memory-safe sequential)...")
     sys.stdout.flush()
-    train_data = torch.load(bcs_root / "train_bcs_224.pt", weights_only=False)
-    val_data = torch.load(bcs_root / "val_bcs_224.pt", weights_only=False)
-    print(f"    train_bcs_224.pt keys: {list(train_data.keys())} (images: {train_data['images'].shape})")
-    print(f"    val_bcs_224.pt keys:   {list(val_data.keys())} (images: {val_data['images'].shape})")
-    del train_data, val_data
+    import gc
+
+    # 1. Train sequential load and verification
+    train_pt_path = bcs_root / "train_bcs_224.pt"
+    print("    Loading train_bcs_224.pt sequentially...")
+    train_payload = torch.load(train_pt_path, weights_only=False)
+    for req_key in ("tensors", "targets", "raw_labels"):
+        assert req_key in train_payload, f"train_bcs_224.pt missing required key: {req_key}"
+    train_tensors = train_payload["tensors"]
+    assert train_tensors.ndim == 4 and train_tensors.shape[1:] == (4, 224, 224), \
+        f"train_bcs_224.pt invalid tensor shape: {train_tensors.shape}, expected [N, 4, 224, 224]"
+    assert len(train_tensors) == len(train_payload["targets"]) == len(train_payload["raw_labels"]), \
+        f"train_bcs_224.pt length mismatch: tensors={len(train_tensors)}, targets={len(train_payload['targets'])}, raw_labels={len(train_payload['raw_labels'])}"
+    train_samples = int(train_tensors.shape[0])
+    print(f"    train_bcs_224.pt verified: {train_samples:,} samples, keys={list(train_payload.keys())}, tensors shape={train_tensors.shape}")
+    del train_payload, train_tensors
+    gc.collect()
+
+    # 2. Val sequential load and verification
+    val_pt_path = bcs_root / "val_bcs_224.pt"
+    print("    Loading val_bcs_224.pt sequentially...")
+    val_payload = torch.load(val_pt_path, weights_only=False)
+    for req_key in ("tensors", "targets", "raw_labels"):
+        assert req_key in val_payload, f"val_bcs_224.pt missing required key: {req_key}"
+    val_tensors = val_payload["tensors"]
+    assert val_tensors.ndim == 4 and val_tensors.shape[1:] == (4, 224, 224), \
+        f"val_bcs_224.pt invalid tensor shape: {val_tensors.shape}, expected [N, 4, 224, 224]"
+    assert len(val_tensors) == len(val_payload["targets"]) == len(val_payload["raw_labels"]), \
+        f"val_bcs_224.pt length mismatch: tensors={len(val_tensors)}, targets={len(val_payload['targets'])}, raw_labels={len(val_payload['raw_labels'])}"
+    val_samples = int(val_tensors.shape[0])
+    print(f"    val_bcs_224.pt verified:   {val_samples:,} samples, keys={list(val_payload.keys())}, tensors shape={val_tensors.shape}")
+    del val_payload, val_tensors
+    gc.collect()
 
     # Assert test data absent
     assert not (bcs_root / "test_bcs_224.pt").exists(), "CRITICAL: test_bcs_224.pt found in MTL data volume!"
@@ -493,12 +521,13 @@ def stage_reid_direct_remote(threads: int = 16) -> Dict[str, Any]:
 @app.function(
     volumes={"/mtl-data": mtl_data_vol, "/mtl-checkpoints": mtl_checkpoints_vol},
     cpu=2.0,
-    memory=4096,
+    memory=16384,
     timeout=600,
 )
 def verify_mtl_workspace_remote() -> Dict[str, Any]:
     """Exhaustively verifies all 3 tasks on /mtl-data and creates staging_manifest.json."""
     import torch
+    import gc
     from PIL import Image
 
     print("=" * 70)
@@ -533,16 +562,41 @@ def verify_mtl_workspace_remote() -> Dict[str, Any]:
     assert not (bcs_root / "test_bcs_224.pt").exists(), "LEAKAGE: test_bcs_224.pt present in /mtl-data/bcs"
     assert not (bcs_root / "test_perception.csv").exists(), "LEAKAGE: test_perception.csv present in /mtl-data/bcs"
 
-    train_tensors = torch.load(bcs_train_pt, weights_only=False)
-    val_tensors = torch.load(bcs_val_pt, weights_only=False)
+    # Memory-safe sequential verification: load train, verify, delete, gc, load val, verify, delete, gc
+    print("    Verifying train_bcs_224.pt sequentially...")
+    train_payload = torch.load(bcs_train_pt, weights_only=False)
+    for req_key in ("tensors", "targets", "raw_labels"):
+        assert req_key in train_payload, f"train_bcs_224.pt missing required key: {req_key}"
+    train_tensors = train_payload["tensors"]
+    assert train_tensors.ndim == 4 and train_tensors.shape[1:] == (4, 224, 224), \
+        f"train_bcs_224.pt invalid tensor shape: {train_tensors.shape}, expected [N, 4, 224, 224]"
+    assert len(train_tensors) == len(train_payload["targets"]) == len(train_payload["raw_labels"]), \
+        f"train_bcs_224.pt length mismatch: tensors={len(train_tensors)}, targets={len(train_payload['targets'])}, raw_labels={len(train_payload['raw_labels'])}"
+    train_samples = int(train_tensors.shape[0])
+    tensor_shape = list(train_tensors.shape[1:])
+    del train_payload, train_tensors
+    gc.collect()
+
+    print("    Verifying val_bcs_224.pt sequentially...")
+    val_payload = torch.load(bcs_val_pt, weights_only=False)
+    for req_key in ("tensors", "targets", "raw_labels"):
+        assert req_key in val_payload, f"val_bcs_224.pt missing required key: {req_key}"
+    val_tensors = val_payload["tensors"]
+    assert val_tensors.ndim == 4 and val_tensors.shape[1:] == (4, 224, 224), \
+        f"val_bcs_224.pt invalid tensor shape: {val_tensors.shape}, expected [N, 4, 224, 224]"
+    assert len(val_tensors) == len(val_payload["targets"]) == len(val_payload["raw_labels"]), \
+        f"val_bcs_224.pt length mismatch: tensors={len(val_tensors)}, targets={len(val_payload['targets'])}, raw_labels={len(val_payload['raw_labels'])}"
+    val_samples = int(val_tensors.shape[0])
+    del val_payload, val_tensors
+    gc.collect()
+
     bcs_audit = {
-        "train_samples": int(train_tensors["images"].shape[0]),
-        "val_samples": int(val_tensors["images"].shape[0]),
-        "tensor_shape": list(train_tensors["images"].shape[1:]),
+        "train_samples": train_samples,
+        "val_samples": val_samples,
+        "tensor_shape": tensor_shape,
         "train_pt_bytes": bcs_train_pt.stat().st_size,
         "val_pt_bytes": bcs_val_pt.stat().st_size,
     }
-    del train_tensors, val_tensors
     print(f"[*] BCS Audit PASS: Train={bcs_audit['train_samples']}, Val={bcs_audit['val_samples']}, Shape={bcs_audit['tensor_shape']} ✅")
 
     # 3. Audit Task B: Behavior

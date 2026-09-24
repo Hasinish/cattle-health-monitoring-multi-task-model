@@ -565,7 +565,7 @@ def verify_workspace(dry_run: bool = False) -> Dict[str, Any]:
 
     if dry_run:
         print("[DRY-RUN] Would execute modal_stage_mtl_target.py::verify_mtl_workspace_remote on hasinishrak2015")
-        print("[DRY-RUN] Checks BCS: train_bcs_224.pt, val_bcs_224.pt, manifests present; test files absent")
+        print("[DRY-RUN] Checks BCS: sequential 16 GB load of train_bcs_224.pt and val_bcs_224.pt (tensors, targets, raw_labels), test absent")
         print("[DRY-RUN] Checks Behavior: 4,271 sequences, 8 frames + 8 masks per sequence, manifests present; test absent")
         print("[DRY-RUN] Checks Re-ID: 15,436 pairs, 41 cows, 0 held-out overlap, no persistent barn/snapshots")
         print("[DRY-RUN] Checks mtl-checkpoints volume writeability")
