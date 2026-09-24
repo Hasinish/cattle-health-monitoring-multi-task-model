@@ -1,3 +1,23 @@
+# Session Summary — 2026-09-24 (Phase 3 Run 6 SideViewCows2026 Re-ID Perception Full Training & Protocol A Evaluation Complete)
+
+- Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f
+- Objective: Synchronize, analyze, and certify the completed Phase 3 Run 6 SideViewCows2026 GT/oracle-mask Perception-Enhanced Re-ID full 30-epoch training and Protocol A held-out evaluation from Modal profile `dryousufmozumder`.
+- Key Findings & Verification:
+  1. Full 30-epoch training completed on NVIDIA L40S (`dryousufmozumder`, App `ap-BCWOf9lNl7G74mzZpMOGwQ`, runtime 2,350.67s / ~39.1 mins).
+  2. Best representation checkpoint captured at Epoch 28: Val Top-1 Accuracy: 98.84%, Val Balanced Accuracy: 98.88%, Val Macro-F1: 0.9879.
+  3. Canonical Protocol A held-out evaluation on 69 unseen cows against 36,811 parlor gallery images achieved monumental gains over Run 3 RGB baseline:
+     - Query Snapshots -> Gallery Parlor (607 handheld pasture queries across 63 unseen cows, extreme angle/posture shift):
+       - Rank-1 / Top-1 Accuracy: **62.93% vs 38.88% (+24.05% absolute gain / +61.9% relative surge)** 🚀
+       - Rank-5 Accuracy: **75.29% vs 57.17% (+18.12%)**
+       - Rank-10 Accuracy: **81.05% vs 64.58% (+16.47%)**
+       - Mean Average Precision (mAP): **40.42% vs 27.05% (+13.37% absolute gain / +49.4% relative surge)** 🚀
+     - Query Barn -> Gallery Parlor (25,260 handheld queries across 69 unseen cows):
+       - Rank-1 Accuracy: **63.90% vs 58.64% (+5.26% gain)** 🏆
+       - mAP: **40.68% vs 38.32% (+2.36% gain)** 🏆
+  4. Bit-identical checkpoint reload verified with `max_logit_difference == 0.00000000`.
+  5. Downloaded artifacts synced locally: `reid_perception_metrics.json`, `gt_mask_crop_contact_sheet.jpg`. Created matched comparison report `run3_vs_run6_matched_comparison.md`.
+  6. All 6 preliminary single-task and perception runs (Runs 1-6) are now 100% complete and certified! Ready for final multi-task phase (Runs 7 & 8).
+
 # Session Summary — 2026-09-24 (MTL Maximum-Speed Resumable Data Staging Pipeline Preparation on hasinishrak2015)
 
 - Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f

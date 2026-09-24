@@ -1,0 +1,802 @@
+{
+  "task": "run6_sideview_gt_mask_perception_reid",
+  "status": "full_training_complete",
+  "representation": {
+    "condition": "GT/oracle segmentation-guided Re-ID representation",
+    "automatic_deployment_pipeline": false,
+    "mask_source": "SideViewCows2026 target-cow ground truth",
+    "crop_source": "bounding box derived from the same GT target-cow mask",
+    "crop_margin_fraction": 0.05,
+    "rgb_mask_crop_coordinates_identical": true,
+    "rgb_normalization": "ImageNet",
+    "mask_normalization": "none; binary float {0,1}",
+    "rgb_multiplied_by_mask": false
+  },
+  "hardware": {
+    "device": "cuda",
+    "gpu_name": "NVIDIA L40S"
+  },
+  "protocol": {
+    "canonical_train_images": 12753,
+    "canonical_val_images": 2683,
+    "representation_learning_cows": 41,
+    "held_out_evaluation_cows": 69,
+    "smoke_train_images": 12753,
+    "smoke_val_images": 2683,
+    "smoke_unique_cows_accessed": 41,
+    "accessed_cows_subset_of_41_training_cows": true,
+    "held_out_images_loaded": 62678
+  },
+  "integrity": {
+    "pairs_verified": 128,
+    "invalid_pairs": 0,
+    "all_rgb_paths_exist": true,
+    "all_mask_paths_exist": true,
+    "all_masks_nonempty": true,
+    "all_crops_in_bounds": true,
+    "all_rgb_mask_crop_coordinates_identical": true,
+    "all_resized_masks_binary": true,
+    "example_records": [
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_001",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0001.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0001.png",
+        "original_size_wh": [
+          1045,
+          562
+        ],
+        "crop_box_xyxy_exclusive": [
+          20,
+          0,
+          961,
+          556
+        ],
+        "crop_size_wh_before_resize": [
+          941,
+          556
+        ],
+        "foreground_pixels": 237230,
+        "foreground_fraction": 0.4039401317917894,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_001",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0002.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0002.png",
+        "original_size_wh": [
+          518,
+          438
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          518,
+          438
+        ],
+        "crop_size_wh_before_resize": [
+          518,
+          438
+        ],
+        "foreground_pixels": 114007,
+        "foreground_fraction": 0.5024902593395744,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_001",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0003.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0003.png",
+        "original_size_wh": [
+          546,
+          436
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          546,
+          436
+        ],
+        "crop_size_wh_before_resize": [
+          546,
+          436
+        ],
+        "foreground_pixels": 124525,
+        "foreground_fraction": 0.523091205430655,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_001",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0004.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0004.png",
+        "original_size_wh": [
+          572,
+          441
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          572,
+          441
+        ],
+        "crop_size_wh_before_resize": [
+          572,
+          441
+        ],
+        "foreground_pixels": 130314,
+        "foreground_fraction": 0.5166024451738738,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_001",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0005.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0005.png",
+        "original_size_wh": [
+          604,
+          448
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          604,
+          448
+        ],
+        "crop_size_wh_before_resize": [
+          604,
+          448
+        ],
+        "foreground_pixels": 142222,
+        "foreground_fraction": 0.5255957308420057,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_001",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0006.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0006.png",
+        "original_size_wh": [
+          607,
+          455
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          607,
+          455
+        ],
+        "crop_size_wh_before_resize": [
+          607,
+          455
+        ],
+        "foreground_pixels": 150286,
+        "foreground_fraction": 0.544149754693412,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_001",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0007.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0007.png",
+        "original_size_wh": [
+          638,
+          460
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          638,
+          460
+        ],
+        "crop_size_wh_before_resize": [
+          638,
+          460
+        ],
+        "foreground_pixels": 161375,
+        "foreground_fraction": 0.5498671118985962,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      },
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_001",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0008.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0008.png",
+        "original_size_wh": [
+          658,
+          458
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          658,
+          458
+        ],
+        "crop_size_wh_before_resize": [
+          658,
+          458
+        ],
+        "foreground_pixels": 171874,
+        "foreground_fraction": 0.570320277139937,
+        "mask_values_after_resize": [
+          0.0,
+          1.0
+        ]
+      }
+    ],
+    "crop_width_range_before_resize": [
+      518,
+      976
+    ],
+    "crop_height_range_before_resize": [
+      429,
+      580
+    ]
+  },
+  "contact_sheet": {
+    "path": "/checkpoints/sideview_reid_perception_run6/gt_mask_crop_contact_sheet.jpg",
+    "examples": 6,
+    "rows": [
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_016",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0343.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0343.png",
+        "original_size_wh": [
+          667,
+          511
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          18,
+          667,
+          511
+        ],
+        "crop_size_wh_before_resize": [
+          667,
+          493
+        ],
+        "foreground_pixels": 138094,
+        "foreground_fraction": 0.4051614114664781
+      },
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_017",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0364.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0364.png",
+        "original_size_wh": [
+          883,
+          546
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          883,
+          546
+        ],
+        "crop_size_wh_before_resize": [
+          883,
+          546
+        ],
+        "foreground_pixels": 232910,
+        "foreground_fraction": 0.4830974989525386
+      },
+      {
+        "cow_id": "144",
+        "recording_id": "parlor_cow_0144_sess_018",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/144/144_0395.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/144/144_0395.png",
+        "original_size_wh": [
+          968,
+          528
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          3,
+          968,
+          528
+        ],
+        "crop_size_wh_before_resize": [
+          968,
+          525
+        ],
+        "foreground_pixels": 273476,
+        "foreground_fraction": 0.5350691835712497
+      },
+      {
+        "cow_id": "163",
+        "recording_id": "parlor_cow_0163_sess_016",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/163/163_0349.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/163/163_0349.png",
+        "original_size_wh": [
+          834,
+          516
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          834,
+          516
+        ],
+        "crop_size_wh_before_resize": [
+          834,
+          516
+        ],
+        "foreground_pixels": 235704,
+        "foreground_fraction": 0.5477106686743628
+      },
+      {
+        "cow_id": "163",
+        "recording_id": "parlor_cow_0163_sess_017",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/163/163_0378.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/163/163_0378.png",
+        "original_size_wh": [
+          634,
+          562
+        ],
+        "crop_box_xyxy_exclusive": [
+          0,
+          0,
+          634,
+          562
+        ],
+        "crop_size_wh_before_resize": [
+          634,
+          562
+        ],
+        "foreground_pixels": 201377,
+        "foreground_fraction": 0.5651767571876017
+      },
+      {
+        "cow_id": "163",
+        "recording_id": "parlor_cow_0163_sess_018",
+        "subset": "parlor",
+        "image_path": "/data/sideviewcows2026/parlor/images/163/163_0385.jpg",
+        "mask_path": "/data/sideviewcows2026/parlor/masks/163/163_0385.png",
+        "original_size_wh": [
+          545,
+          509
+        ],
+        "crop_box_xyxy_exclusive": [
+          100,
+          82,
+          545,
+          509
+        ],
+        "crop_size_wh_before_resize": [
+          445,
+          427
+        ],
+        "foreground_pixels": 136095,
+        "foreground_fraction": 0.49060038571763304
+      }
+    ]
+  },
+  "shape_checks": {
+    "input_shape": [
+      64,
+      4,
+      224,
+      224
+    ],
+    "raw_feature_shape": [
+      64,
+      512
+    ],
+    "embedding_shape": [
+      64,
+      512
+    ],
+    "logits_shape": [
+      64,
+      41
+    ],
+    "embedding_norm_min": 0.9999999403953552,
+    "embedding_norm_max": 1.0
+  },
+  "parameter_counts": {
+    "run3_rgb_trainable_parameters": 11197545,
+    "run6_rgb_mask_trainable_parameters": 11200681,
+    "fourth_channel_parameter_difference": 3136
+  },
+  "training": {
+    "epochs": 30,
+    "batch_size": 64,
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 0.6995,
+        "train_top1_acc": 86.28,
+        "val_loss": 0.2835,
+        "val_top1_acc": 93.03,
+        "val_bal_acc": 93.61,
+        "val_macro_f1": 0.9223,
+        "lr": 9.972883382072954e-05,
+        "duration_sec": 174.75
+      },
+      {
+        "epoch": 2,
+        "train_loss": 0.0303,
+        "train_top1_acc": 99.8,
+        "val_loss": 0.1481,
+        "val_top1_acc": 96.12,
+        "val_bal_acc": 96.81,
+        "val_macro_f1": 0.9609,
+        "lr": 9.891830623632339e-05,
+        "duration_sec": 35.77
+      },
+      {
+        "epoch": 3,
+        "train_loss": 0.0098,
+        "train_top1_acc": 99.98,
+        "val_loss": 0.124,
+        "val_top1_acc": 96.5,
+        "val_bal_acc": 97.38,
+        "val_macro_f1": 0.9658,
+        "lr": 9.757729755661011e-05,
+        "duration_sec": 35.61
+      },
+      {
+        "epoch": 4,
+        "train_loss": 0.0057,
+        "train_top1_acc": 99.98,
+        "val_loss": 0.0971,
+        "val_top1_acc": 97.43,
+        "val_bal_acc": 97.61,
+        "val_macro_f1": 0.9713,
+        "lr": 9.572050015330873e-05,
+        "duration_sec": 35.98
+      },
+      {
+        "epoch": 5,
+        "train_loss": 0.0033,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0979,
+        "val_top1_acc": 96.94,
+        "val_bal_acc": 97.66,
+        "val_macro_f1": 0.968,
+        "lr": 9.336825748732972e-05,
+        "duration_sec": 35.78
+      },
+      {
+        "epoch": 6,
+        "train_loss": 0.0067,
+        "train_top1_acc": 99.91,
+        "val_loss": 0.0683,
+        "val_top1_acc": 98.21,
+        "val_bal_acc": 97.98,
+        "val_macro_f1": 0.9791,
+        "lr": 9.05463412215599e-05,
+        "duration_sec": 35.65
+      },
+      {
+        "epoch": 7,
+        "train_loss": 0.0033,
+        "train_top1_acc": 99.98,
+        "val_loss": 0.0997,
+        "val_top1_acc": 97.13,
+        "val_bal_acc": 97.95,
+        "val_macro_f1": 0.972,
+        "lr": 8.728566886113101e-05,
+        "duration_sec": 35.5
+      },
+      {
+        "epoch": 8,
+        "train_loss": 0.0017,
+        "train_top1_acc": 99.99,
+        "val_loss": 0.069,
+        "val_top1_acc": 97.91,
+        "val_bal_acc": 98.24,
+        "val_macro_f1": 0.9786,
+        "lr": 8.362196501476347e-05,
+        "duration_sec": 35.25
+      },
+      {
+        "epoch": 9,
+        "train_loss": 0.0011,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0642,
+        "val_top1_acc": 98.29,
+        "val_bal_acc": 98.46,
+        "val_macro_f1": 0.9827,
+        "lr": 7.959536998847741e-05,
+        "duration_sec": 35.68
+      },
+      {
+        "epoch": 10,
+        "train_loss": 0.001,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0658,
+        "val_top1_acc": 98.29,
+        "val_bal_acc": 98.35,
+        "val_macro_f1": 0.9819,
+        "lr": 7.524999999999999e-05,
+        "duration_sec": 35.7
+      },
+      {
+        "epoch": 11,
+        "train_loss": 0.0007,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0604,
+        "val_top1_acc": 98.47,
+        "val_bal_acc": 98.56,
+        "val_macro_f1": 0.9845,
+        "lr": 7.06334638322521e-05,
+        "duration_sec": 35.73
+      },
+      {
+        "epoch": 12,
+        "train_loss": 0.0006,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0588,
+        "val_top1_acc": 98.43,
+        "val_bal_acc": 98.51,
+        "val_macro_f1": 0.9839,
+        "lr": 6.579634122155988e-05,
+        "duration_sec": 35.33
+      },
+      {
+        "epoch": 13,
+        "train_loss": 0.0005,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0595,
+        "val_top1_acc": 98.36,
+        "val_bal_acc": 98.41,
+        "val_macro_f1": 0.9824,
+        "lr": 6.079162869547907e-05,
+        "duration_sec": 35.5
+      },
+      {
+        "epoch": 14,
+        "train_loss": 0.0005,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0527,
+        "val_top1_acc": 98.73,
+        "val_bal_acc": 98.71,
+        "val_macro_f1": 0.9863,
+        "lr": 5.567415893174884e-05,
+        "duration_sec": 35.4
+      },
+      {
+        "epoch": 15,
+        "train_loss": 0.0004,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0562,
+        "val_top1_acc": 98.47,
+        "val_bal_acc": 98.49,
+        "val_macro_f1": 0.9836,
+        "lr": 5.05e-05,
+        "duration_sec": 35.43
+      },
+      {
+        "epoch": 16,
+        "train_loss": 0.0004,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0531,
+        "val_top1_acc": 98.66,
+        "val_bal_acc": 98.68,
+        "val_macro_f1": 0.9857,
+        "lr": 4.532584106825115e-05,
+        "duration_sec": 35.53
+      },
+      {
+        "epoch": 17,
+        "train_loss": 0.0003,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0523,
+        "val_top1_acc": 98.55,
+        "val_bal_acc": 98.59,
+        "val_macro_f1": 0.9846,
+        "lr": 4.0208371304520894e-05,
+        "duration_sec": 35.7
+      },
+      {
+        "epoch": 18,
+        "train_loss": 0.0004,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0549,
+        "val_top1_acc": 98.47,
+        "val_bal_acc": 98.61,
+        "val_macro_f1": 0.9846,
+        "lr": 3.520365877844009e-05,
+        "duration_sec": 35.42
+      },
+      {
+        "epoch": 19,
+        "train_loss": 0.0003,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0515,
+        "val_top1_acc": 98.62,
+        "val_bal_acc": 98.5,
+        "val_macro_f1": 0.9848,
+        "lr": 3.036653616774789e-05,
+        "duration_sec": 35.72
+      },
+      {
+        "epoch": 20,
+        "train_loss": 0.0003,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0527,
+        "val_top1_acc": 98.43,
+        "val_bal_acc": 98.39,
+        "val_macro_f1": 0.9829,
+        "lr": 2.5750000000000002e-05,
+        "duration_sec": 35.97
+      },
+      {
+        "epoch": 21,
+        "train_loss": 0.0003,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0532,
+        "val_top1_acc": 98.55,
+        "val_bal_acc": 98.66,
+        "val_macro_f1": 0.9857,
+        "lr": 2.140463001152258e-05,
+        "duration_sec": 35.8
+      },
+      {
+        "epoch": 22,
+        "train_loss": 0.0003,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0504,
+        "val_top1_acc": 98.58,
+        "val_bal_acc": 98.49,
+        "val_macro_f1": 0.9848,
+        "lr": 1.737803498523653e-05,
+        "duration_sec": 35.28
+      },
+      {
+        "epoch": 23,
+        "train_loss": 0.0003,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0529,
+        "val_top1_acc": 98.62,
+        "val_bal_acc": 98.73,
+        "val_macro_f1": 0.9859,
+        "lr": 1.3714331138868993e-05,
+        "duration_sec": 35.83
+      },
+      {
+        "epoch": 24,
+        "train_loss": 0.0002,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0515,
+        "val_top1_acc": 98.55,
+        "val_bal_acc": 98.56,
+        "val_macro_f1": 0.9845,
+        "lr": 1.0453658778440105e-05,
+        "duration_sec": 35.98
+      },
+      {
+        "epoch": 25,
+        "train_loss": 0.0002,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0492,
+        "val_top1_acc": 98.66,
+        "val_bal_acc": 98.69,
+        "val_macro_f1": 0.9859,
+        "lr": 7.631742512670283e-06,
+        "duration_sec": 36.06
+      },
+      {
+        "epoch": 26,
+        "train_loss": 0.0002,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0501,
+        "val_top1_acc": 98.62,
+        "val_bal_acc": 98.62,
+        "val_macro_f1": 0.9854,
+        "lr": 5.2794998466912506e-06,
+        "duration_sec": 36.17
+      },
+      {
+        "epoch": 27,
+        "train_loss": 0.0002,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0495,
+        "val_top1_acc": 98.62,
+        "val_bal_acc": 98.62,
+        "val_macro_f1": 0.9859,
+        "lr": 3.4227024433898994e-06,
+        "duration_sec": 36.07
+      },
+      {
+        "epoch": 28,
+        "train_loss": 0.0002,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0487,
+        "val_top1_acc": 98.84,
+        "val_bal_acc": 98.88,
+        "val_macro_f1": 0.9879,
+        "lr": 2.0816937636766182e-06,
+        "duration_sec": 35.66
+      },
+      {
+        "epoch": 29,
+        "train_loss": 0.0002,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0499,
+        "val_top1_acc": 98.7,
+        "val_bal_acc": 98.56,
+        "val_macro_f1": 0.9857,
+        "lr": 1.2711661792704665e-06,
+        "duration_sec": 35.53
+      },
+      {
+        "epoch": 30,
+        "train_loss": 0.0002,
+        "train_top1_acc": 100.0,
+        "val_loss": 0.0501,
+        "val_top1_acc": 98.66,
+        "val_bal_acc": 98.75,
+        "val_macro_f1": 0.9863,
+        "lr": 1e-06,
+        "duration_sec": 35.85
+      }
+    ],
+    "total_training_time_sec": 1220.59,
+    "loss_finite": true,
+    "backward_pass_verified": true
+  },
+  "total_pipeline_runtime_sec": 2350.67,
+  "checkpoint_reload": {
+    "checkpoint_saved": true,
+    "bit_identical_logits": true,
+    "max_logit_difference": 0.0
+  },
+  "protocol_a_retrieval": {
+    "query_barn": {
+      "num_queries": 25260,
+      "num_gallery": 36811,
+      "rank_1": 63.9,
+      "rank_5": 77.1,
+      "rank_10": 82.58,
+      "mAP": 40.68
+    },
+    "query_snapshots": {
+      "num_queries": 607,
+      "num_gallery": 36811,
+      "rank_1": 62.93,
+      "rank_5": 75.29,
+      "rank_10": 81.05,
+      "mAP": 40.42
+    }
+  },
+  "git_sha_at_execution": "UNKNOWN",
+  "timestamp": "2026-09-24 12:44:24"
+}
