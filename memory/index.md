@@ -328,6 +328,10 @@ Generated manifests, audit CSVs, and model evaluation outputs.
   - `pose_keypoints_expanded_hrnet_w32.csv` & `pose_keypoints_expanded_resnet_50.csv`: Extracted 39-keypoint coordinates and confidence scores across 300 samples per backbone.
   - `superanimal_quadruped_schema.json`: Official DeepLabCut 39-keypoint quadruped schema and body part index mapping.
 
+### `tests/`
+Automated unit and integration test suites.
+- `test_mtl_staging_hardening.py`: Synthetic test suite for MTL data staging hardening verifying Behavior 2-digit format, train/val disjointness, Pandas Re-ID protocol integrity, persistent range-chunk resume in `.download_staging/`, and staging manifest schema validation.
+
 ### `videos/`
 Test video files and sample inference output clips demonstrating real-time bounding box detection, tracking, and multitask predictions.
 

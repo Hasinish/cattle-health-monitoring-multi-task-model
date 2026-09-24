@@ -1,3 +1,17 @@
+# Session Summary — 2026-09-24 (Final Pre-Transfer Hardening of MTL Staging Pipeline)
+
+- Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f
+- Objective: Perform the final pre-transfer hardening of the MTL staging pipeline across `scripts/modal_stage_mtl_target.py`, `scripts/stage_mtl_workspace.py`, and `artifacts/mtl_staging/staging_manifest_schema.json` before any real data transfer.
+- Changes & Key Hardening:
+  1. Behavior Authentic 2-Digit Filenames: Standardized all verifiers and documentation to `frame_00.jpg` ... `frame_07.jpg` and `mask_00.png` ... `mask_07.png`, matching authentic Run 5 cache generation in `scripts/build_behavior_perception_cache.py`. Purged all 3-digit references.
+  2. Missing Pandas Import Fixed: Added explicit `import pandas as pd` in Re-ID verification scope inside `verify_mtl_workspace_remote()`.
+  3. Exhaustive 4,271 Behavior Verification: Replaced 10-sample heuristic with exhaustive audit verifying all 4,271 sequences (3,641 Train, 630 Val; 34,168 frames + 34,168 masks + metadata, non-empty) and asserted Train and Val sequence IDs are disjoint.
+  4. Re-ID Ephemeral Disk Provisioning: Explicitly set `ephemeral_disk=20480` (20 GiB) on `stage_reid_direct_remote()`.
+  5. Re-ID True Cross-Invocation Resume: Staged completed range chunks on persistent volume `/mtl-data/reid/.download_staging/`; resume skips verified parts; stitches into ephemeral `/tmp/sideview_mtl/parlor.zip`; selective extraction extracts only the 15,436 Train/Val pairs (30,872 files); unlinks zip and cleans up `.download_staging/`.
+  6. Active `--fast` Flag: Upgraded `--fast` from cosmetic to active configuration selector (Fast mode: 16 workers, 1024 MB chunks, 64 MB buffer vs Standard mode: 8 workers, 512 MB chunks, 16 MB buffer); wired `buffer_mb` through transfer relay engine.
+  7. Comprehensive Manifest Provenance: Strengthened `staging_manifest.json` and schema with Git commit SHA, source profiles/volumes/records, byte sizes, SHA-256 hashes, exact counts, and 0 held-out cow overlap.
+  8. Testing & Boundaries: All 4 synthetic hardening tests passed (`tests/test_mtl_staging_hardening.py`). Dry runs passed (`python scripts/stage_mtl_workspace.py --task all --dry-run` and `--fast`). Zero real bytes transferred; zero GPU compute launched.
+
 # Session Summary — 2026-09-24 (BCS Staging Verification Patch & 16GB Memory-Safe Hardening)
 
 - Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f

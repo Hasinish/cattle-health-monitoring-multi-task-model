@@ -18,8 +18,8 @@ Target Structure:
         perception_summary.json
         perception_manifest.csv
         <sequence_id>/
-            frame_000.jpg ... frame_007.jpg
-            mask_000.png ... mask_007.png
+            frame_00.jpg ... frame_07.jpg
+            mask_00.png ... mask_07.png
             perception_metadata.json
     reid/
         parlor/
@@ -295,24 +295,51 @@ def reassemble_behavior_remote(manifest: Dict[str, Any]) -> Dict[str, Any]:
                 if s_id:
                     retained_ids.add(s_id)
 
-    print(f"[*] Verifying {len(retained_ids)} retained sequence directories on volume...")
+    assert len(retained_ids) == 4271, f"Expected 4,271 retained sequences, got {len(retained_ids)}"
+    print(f"[*] Exhaustively verifying all {len(retained_ids)} retained sequences (perception_metadata.json + 8 frames + 8 masks)...")
     sys.stdout.flush()
-    missing_dirs = []
+
+    missing_items = []
     for seq_id in retained_ids:
         s_dir = beh_root / seq_id
         if not s_dir.exists():
-            missing_dirs.append(seq_id)
-    if missing_dirs:
-        raise FileNotFoundError(f"Missing {len(missing_dirs)} sequence directories (e.g. {missing_dirs[:5]})")
+            missing_items.append(f"{seq_id}/ (dir missing)")
+            if len(missing_items) >= 10:
+                break
+            continue
+        meta_p = s_dir / "perception_metadata.json"
+        if not meta_p.exists() or meta_p.stat().st_size == 0:
+            missing_items.append(f"{seq_id}/perception_metadata.json")
+        for t in range(8):
+            f_p = s_dir / f"frame_{t:02d}.jpg"
+            m_p = s_dir / f"mask_{t:02d}.png"
+            if not f_p.exists() or f_p.stat().st_size == 0:
+                missing_items.append(str(f_p))
+            if not m_p.exists() or m_p.stat().st_size == 0:
+                missing_items.append(str(m_p))
+        if len(missing_items) >= 10:
+            break
 
-    assert len(retained_ids) == 4271, f"Expected 4,271 retained sequences, got {len(retained_ids)}"
+    if missing_items:
+        raise FileNotFoundError(f"Missing/empty files in Behavior sequences: {len(missing_items)} (samples: {missing_items[:5]})")
+
     assert not (beh_root / "production_test").exists(), "CRITICAL: production_test found in MTL data volume!"
     assert not (beh_root / "retained_test.csv").exists(), "CRITICAL: retained_test.csv found in MTL data volume!"
     assert not (beh_root / "failed_test.csv").exists(), "CRITICAL: failed_test.csv found in MTL data volume!"
 
+    # Save export provenance metadata
+    export_meta = {
+        "archive_sha256": actual_sha,
+        "total_bytes": expected_size,
+        "num_chunks": num_chunks,
+        "retained_sequences": len(retained_ids),
+    }
+    with open(beh_root / ".export_meta.json", "w", encoding="utf-8") as f:
+        json.dump(export_meta, f, indent=2)
+
     mtl_data_vol.commit()
-    print("[+] Behavior Assembly Complete and Verified ✅")
-    return {"status": "SUCCESS", "total_sequences": len(retained_ids)}
+    print(f"[+] Behavior Assembly Complete and Exhaustively Verified ({len(retained_ids)} sequences, 34,168 frames, 34,168 masks) ✅")
+    return {"status": "SUCCESS", "total_sequences": len(retained_ids), "archive_sha256": actual_sha}
 
 
 # ==============================================================================
@@ -322,6 +349,7 @@ def reassemble_behavior_remote(manifest: Dict[str, Any]) -> Dict[str, Any]:
     volumes={"/mtl-data": mtl_data_vol},
     cpu=2.0,
     memory=4096,
+    ephemeral_disk=20480,
     timeout=3600,
 )
 def stage_reid_direct_remote(threads: int = 16) -> Dict[str, Any]:
@@ -329,6 +357,8 @@ def stage_reid_direct_remote(threads: int = 16) -> Dict[str, Any]:
 
     selectively extracts ONLY the 15,436 canonical Train/Val image and mask pairs
     for the 41 representation learning cows, asserts zero leakage, and unlinks zip.
+    Completed range chunks are staged on persistent volume /mtl-data/reid/.download_staging/
+    to guarantee resume across Modal container invocations.
     0 bytes relayed through the user's PC.
     """
     import pandas as pd
@@ -419,58 +449,99 @@ def stage_reid_direct_remote(threads: int = 16) -> Dict[str, Any]:
             "unique_cows": len(train_cows),
         }
 
-    # 3. Direct high-speed download of parlor.zip to ephemeral /tmp/
+    # 3. Direct high-speed resumable download of parlor.zip
+    # Completed chunks are saved to persistent staging on /mtl-data/reid/.download_staging
+    # so they survive across Modal container restarts/invocations!
+    staging_dir = reid_root / ".download_staging"
+    staging_dir.mkdir(parents=True, exist_ok=True)
+
     tmp_dir = Path("/tmp/sideview_mtl")
     tmp_dir.mkdir(parents=True, exist_ok=True)
     parlor_zip_path = tmp_dir / "parlor.zip"
     parlor_info = FILES_CATALOG["parlor.zip"]
     expected_bytes = parlor_info["size"]
 
-    print(f"\n[*] Downloading parlor.zip ({expected_bytes / (1024**3):.2f} GB) directly to ephemeral storage...")
+    print(f"\n[*] Resumable Download: parlor.zip ({expected_bytes / (1024**3):.2f} GB)...")
+    print(f"    Persistent chunk staging: {staging_dir}")
+    print(f"    Assembly target:          {parlor_zip_path}")
     sys.stdout.flush()
 
-    if not parlor_zip_path.exists() or parlor_zip_path.stat().st_size != expected_bytes:
-        chunk_size = (expected_bytes + threads - 1) // threads
-        pbar = CleanProgressBar(total_bytes=expected_bytes, desc="⚡ Downloading parlor.zip")
-        part_paths = []
+    chunk_size = (expected_bytes + threads - 1) // threads
+    part_specs = []
+    initial_downloaded_bytes = 0
 
-        from concurrent.futures import ThreadPoolExecutor, as_completed
-        with ThreadPoolExecutor(max_workers=threads) as executor:
-            futures = []
-            for i in range(threads):
-                start_b = i * chunk_size
-                end_b = min(expected_bytes - 1, start_b + chunk_size - 1)
-                if start_b > end_b:
-                    continue
-                part_p = tmp_dir / f"parlor.part_{start_b}_{end_b}"
-                part_paths.append(part_p)
-                futures.append(
-                    executor.submit(
-                        download_chunk_with_retry,
-                        parlor_info["url"],
-                        part_p,
-                        start_b,
-                        end_b,
-                        pbar,
-                    )
-                )
-            for f in as_completed(futures):
-                f.result()
-        pbar.close()
-
-        # Stitch into parlor.zip
-        print("\n[*] Assembling parlor.zip parts...")
-        sys.stdout.flush()
-        with open(parlor_zip_path, "wb") as out_f:
-            for part_p in part_paths:
-                with open(part_p, "rb") as in_f:
-                    shutil.copyfileobj(in_f, out_f, length=16 * 1024 * 1024)
+    for i in range(threads):
+        start_b = i * chunk_size
+        end_b = min(expected_bytes - 1, start_b + chunk_size - 1)
+        if start_b > end_b:
+            continue
+        part_p = staging_dir / f"parlor.part_{start_b}_{end_b}"
+        part_specs.append((part_p, start_b, end_b))
+        if part_p.exists():
+            existing_sz = part_p.stat().st_size
+            expected_part_sz = end_b - start_b + 1
+            if existing_sz == expected_part_sz:
+                initial_downloaded_bytes += existing_sz
+            elif existing_sz > expected_part_sz:
+                # Corrupt or oversized chunk from different chunking scheme
                 part_p.unlink()
 
-        assert parlor_zip_path.stat().st_size == expected_bytes, "parlor.zip download incomplete"
-        print(f"[+] Download complete: {parlor_zip_path.stat().st_size / (1024**3):.2f} GB")
+    if initial_downloaded_bytes > 0:
+        print(f"[*] Found {initial_downloaded_bytes / (1024**3):.2f} GB of verified completed chunks from prior invocation! Resuming...")
+        sys.stdout.flush()
 
-    # 4. Selective extraction: Extract ONLY the 15,436 Train/Val members
+    pbar = CleanProgressBar(
+        total_bytes=expected_bytes,
+        initial_bytes=initial_downloaded_bytes,
+        desc="⚡ Downloading parlor.zip",
+    )
+
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    with ThreadPoolExecutor(max_workers=threads) as executor:
+        futures = []
+        for part_p, start_b, end_b in part_specs:
+            expected_part_sz = end_b - start_b + 1
+            if part_p.exists() and part_p.stat().st_size == expected_part_sz:
+                # Chunk already verified complete on volume
+                continue
+            futures.append(
+                executor.submit(
+                    download_chunk_with_retry,
+                    parlor_info["url"],
+                    part_p,
+                    start_b,
+                    end_b,
+                    pbar,
+                )
+            )
+        for f in as_completed(futures):
+            f.result()
+    pbar.close()
+
+    # Commit persistent volume so all completed chunks are safely recorded
+    mtl_data_vol.commit()
+
+    # Verify all parts exist and have exact expected byte sizes
+    for part_p, start_b, end_b in part_specs:
+        expected_part_sz = end_b - start_b + 1
+        if not part_p.exists():
+            raise FileNotFoundError(f"Missing chunk after download: {part_p}")
+        if part_p.stat().st_size != expected_part_sz:
+            raise ValueError(f"Chunk size mismatch for {part_p.name}: expected {expected_part_sz}, got {part_p.stat().st_size}")
+
+    # Stitch parts from persistent volume into ephemeral /tmp/sideview_mtl/parlor.zip
+    print("\n[*] Assembling parlor.zip from persistent chunks into ephemeral disk...")
+    sys.stdout.flush()
+    with open(parlor_zip_path, "wb") as out_f:
+        for part_p, _, _ in part_specs:
+            with open(part_p, "rb") as in_f:
+                shutil.copyfileobj(in_f, out_f, length=16 * 1024 * 1024)
+
+    assert parlor_zip_path.stat().st_size == expected_bytes, \
+        f"parlor.zip size mismatch: expected {expected_bytes}, got {parlor_zip_path.stat().st_size}"
+    print(f"[+] Assembled parlor.zip ({parlor_zip_path.stat().st_size / (1024**3):.2f} GB) in ephemeral storage")
+
+    # 4. Selective extraction: Extract ONLY the 15,436 Train/Val members (30,872 files)
     print(f"\n[*] Selectively extracting {len(required_archive_members)} files to {reid_root}...")
     sys.stdout.flush()
 
@@ -487,11 +558,20 @@ def stage_reid_direct_remote(threads: int = 16) -> Dict[str, Any]:
     extract_duration = time.time() - t0
     print(f"[+] Selective extraction complete in {extract_duration:.1f}s ({extracted_count} files)")
 
-    # 5. Delete temporary parlor.zip immediately to free ephemeral container disk
+    # 5. Clean up temporary files:
+    # A. Delete ephemeral parlor.zip and tmp_dir immediately
     if parlor_zip_path.exists():
         parlor_zip_path.unlink()
     shutil.rmtree(tmp_dir, ignore_errors=True)
-    print("[+] Cleaned up temporary parlor.zip archive")
+    print("[+] Cleaned up temporary parlor.zip archive from ephemeral disk")
+
+    # B. Delete persistent download staging chunks from volume
+    for part_p, _, _ in part_specs:
+        if part_p.exists():
+            part_p.unlink()
+    if staging_dir.exists() and not list(staging_dir.iterdir()):
+        staging_dir.rmdir()
+    print("[+] Cleaned up persistent download staging chunks from /mtl-data/reid/.download_staging")
 
     # 6. Strict Assertions
     # Check no barn or snapshots data exists in reid_root
@@ -522,12 +602,13 @@ def stage_reid_direct_remote(threads: int = 16) -> Dict[str, Any]:
     volumes={"/mtl-data": mtl_data_vol, "/mtl-checkpoints": mtl_checkpoints_vol},
     cpu=2.0,
     memory=16384,
-    timeout=600,
+    timeout=1200,
 )
-def verify_mtl_workspace_remote() -> Dict[str, Any]:
+def verify_mtl_workspace_remote(staging_git_sha: str = "") -> Dict[str, Any]:
     """Exhaustively verifies all 3 tasks on /mtl-data and creates staging_manifest.json."""
-    import torch
     import gc
+    import torch
+    import pandas as pd
     from PIL import Image
 
     print("=" * 70)
@@ -590,14 +671,28 @@ def verify_mtl_workspace_remote() -> Dict[str, Any]:
     del val_payload, val_tensors
     gc.collect()
 
+    print("    Computing SHA-256 hashes of BCS tensors...")
+    train_pt_sha = _compute_sha256(bcs_train_pt)
+    val_pt_sha = _compute_sha256(bcs_val_pt)
+
+    bcs_total_bytes = (
+        bcs_train_pt.stat().st_size
+        + bcs_val_pt.stat().st_size
+        + bcs_train_csv.stat().st_size
+        + bcs_val_csv.stat().st_size
+    )
+
     bcs_audit = {
         "train_samples": train_samples,
         "val_samples": val_samples,
         "tensor_shape": tensor_shape,
         "train_pt_bytes": bcs_train_pt.stat().st_size,
         "val_pt_bytes": bcs_val_pt.stat().st_size,
+        "train_pt_sha256": train_pt_sha,
+        "val_pt_sha256": val_pt_sha,
+        "total_bytes": bcs_total_bytes,
     }
-    print(f"[*] BCS Audit PASS: Train={bcs_audit['train_samples']}, Val={bcs_audit['val_samples']}, Shape={bcs_audit['tensor_shape']} ✅")
+    print(f"[*] BCS Audit PASS: Train={bcs_audit['train_samples']}, Val={bcs_audit['val_samples']}, Shape={bcs_audit['tensor_shape']}, Bytes={bcs_total_bytes / (1024**3):.2f} GB ✅")
 
     # 3. Audit Task B: Behavior
     beh_root = data_root / "behavior"
@@ -621,27 +716,78 @@ def verify_mtl_workspace_remote() -> Dict[str, Any]:
 
     assert len(beh_train_ids) == 3641, f"Expected 3,641 Behavior train sequences, got {len(beh_train_ids)}"
     assert len(beh_val_ids) == 630, f"Expected 630 Behavior val sequences, got {len(beh_val_ids)}"
+
+    beh_disjoint_overlap = beh_train_ids.intersection(beh_val_ids)
+    assert not beh_disjoint_overlap, f"LEAKAGE: Behavior train and val sets share {len(beh_disjoint_overlap)} sample IDs!"
+
     total_beh = len(beh_train_ids) + len(beh_val_ids)
     assert total_beh == 4271, f"Expected 4,271 Behavior sequences, got {total_beh}"
 
-    # Sample check 10 random sequences for 8 frames + 8 masks + metadata
-    all_beh_ids = list(beh_train_ids.union(beh_val_ids))
-    for s_id in all_beh_ids[:10]:
+    # Exhaustive check: verify ALL 4,271 sequences for 8 frames + 8 masks + metadata (authentic 2-digit format)
+    print(f"[*] Exhaustively verifying all {total_beh} Behavior sequences (3,641 Train, 630 Val)...")
+    sys.stdout.flush()
+
+    all_beh_ids = sorted(beh_train_ids.union(beh_val_ids))
+    missing_items = []
+    total_beh_bytes = 0
+
+    for s_id in all_beh_ids:
         s_dir = beh_root / s_id
-        assert s_dir.exists(), f"Missing sequence directory: {s_dir}"
-        assert (s_dir / "perception_metadata.json").exists(), f"Missing metadata in {s_dir}"
+        if not s_dir.exists():
+            missing_items.append(f"{s_id}/ (missing directory)")
+            if len(missing_items) >= 10:
+                break
+            continue
+
+        meta_p = s_dir / "perception_metadata.json"
+        if not meta_p.exists() or meta_p.stat().st_size == 0:
+            missing_items.append(f"{s_id}/perception_metadata.json (missing/empty)")
+        else:
+            total_beh_bytes += meta_p.stat().st_size
+
         for t in range(8):
-            f_p = s_dir / f"frame_{t:03d}.jpg"
-            m_p = s_dir / f"mask_{t:03d}.png"
-            assert f_p.exists() and f_p.stat().st_size > 0, f"Missing frame {f_p}"
-            assert m_p.exists() and m_p.stat().st_size > 0, f"Missing mask {m_p}"
+            f_p = s_dir / f"frame_{t:02d}.jpg"
+            m_p = s_dir / f"mask_{t:02d}.png"
+            if not f_p.exists() or f_p.stat().st_size == 0:
+                missing_items.append(str(f_p))
+            else:
+                total_beh_bytes += f_p.stat().st_size
+
+            if not m_p.exists() or m_p.stat().st_size == 0:
+                missing_items.append(str(m_p))
+            else:
+                total_beh_bytes += m_p.stat().st_size
+
+        if len(missing_items) >= 10:
+            break
+
+    assert not missing_items, f"Behavior integrity audit failed with {len(missing_items)} missing/empty files: {missing_items[:5]}"
+
+    total_beh_bytes += beh_train_csv.stat().st_size + beh_val_csv.stat().st_size
+    if (beh_root / "perception_summary.json").exists():
+        total_beh_bytes += (beh_root / "perception_summary.json").stat().st_size
+    if (beh_root / "perception_manifest.csv").exists():
+        total_beh_bytes += (beh_root / "perception_manifest.csv").stat().st_size
+
+    beh_archive_sha = ""
+    export_meta_p = beh_root / ".export_meta.json"
+    if export_meta_p.exists():
+        try:
+            beh_archive_sha = json.loads(export_meta_p.read_text()).get("archive_sha256", "")
+        except Exception:
+            pass
 
     beh_audit = {
         "train_sequences": len(beh_train_ids),
         "val_sequences": len(beh_val_ids),
         "total_sequences": total_beh,
+        "total_frames": total_beh * 8,
+        "total_masks": total_beh * 8,
+        "total_bytes": total_beh_bytes,
+        "archive_sha256": beh_archive_sha,
+        "train_val_disjoint": True,
     }
-    print(f"[*] Behavior Audit PASS: Train={beh_audit['train_sequences']}, Val={beh_audit['val_sequences']}, Total={total_beh} ✅")
+    print(f"[*] Behavior Audit PASS: All {total_beh} sequences verified (34,168 frames + 34,168 masks, {total_beh_bytes / (1024**2):.1f} MB) ✅")
 
     # 4. Audit Task C: Re-ID
     reid_root = data_root / "reid"
@@ -659,14 +805,28 @@ def verify_mtl_workspace_remote() -> Dict[str, Any]:
     df_train_reid = df_d_41[df_d_41["closed_set_split"].eq("train")].reset_index(drop=True)
     df_val_reid = df_d_41[df_d_41["closed_set_split"].eq("val")].reset_index(drop=True)
 
-    # Check existence of all 15,436 pairs
+    # Check existence and non-zero size of all 15,436 pairs (30,872 files)
+    print(f"[*] Verifying existence of all 15,436 Re-ID pairs (30,872 files)...")
+    sys.stdout.flush()
+
     missing_reid = []
+    total_reid_bytes = 0
     for split_df in (df_train_reid, df_val_reid):
         for _, row in split_df.iterrows():
             img_rel = str(row["image_path"]).replace("\\", "/").split("sideviewcows2026/")[-1].lstrip("/")
             mask_rel = str(row["mask_path"]).replace("\\", "/").split("sideviewcows2026/")[-1].lstrip("/")
-            if not (reid_root / img_rel).exists() or not (reid_root / mask_rel).exists():
+            img_p = reid_root / img_rel
+            mask_p = reid_root / mask_rel
+
+            if not img_p.exists() or img_p.stat().st_size == 0 or not mask_p.exists() or mask_p.stat().st_size == 0:
                 missing_reid.append((img_rel, mask_rel))
+                if len(missing_reid) >= 10:
+                    break
+            else:
+                total_reid_bytes += img_p.stat().st_size + mask_p.stat().st_size
+
+        if len(missing_reid) >= 10:
+            break
 
     assert not missing_reid, f"Missing {len(missing_reid)} Re-ID files (e.g. {missing_reid[:3]})"
     reid_cows_on_disk = set(p.name for p in (reid_root / "parlor" / "images").iterdir() if p.is_dir())
@@ -677,19 +837,44 @@ def verify_mtl_workspace_remote() -> Dict[str, Any]:
         "train_pairs": len(df_train_reid),
         "val_pairs": len(df_val_reid),
         "total_pairs": len(df_train_reid) + len(df_val_reid),
+        "total_files": (len(df_train_reid) + len(df_val_reid)) * 2,
         "unique_cows": len(reid_cows_on_disk),
         "held_out_cow_overlap": 0,
+        "total_bytes": total_reid_bytes,
     }
-    print(f"[*] Re-ID Audit PASS: Train={reid_audit['train_pairs']}, Val={reid_audit['val_pairs']}, Cows={reid_audit['unique_cows']} ✅")
+    print(f"[*] Re-ID Audit PASS: Train={reid_audit['train_pairs']}, Val={reid_audit['val_pairs']}, Cows={reid_audit['unique_cows']}, Bytes={total_reid_bytes / (1024**3):.2f} GB ✅")
 
-    # 5. Build and write /mtl-data/staging_manifest.json
+    # 5. Build and write /mtl-data/staging_manifest.json with comprehensive provenance
     manifest_data = {
         "workspace_profile": "hasinishrak2015",
+        "staging_git_sha": staging_git_sha,
         "volumes": {
             "data_volume": "mtl-data",
             "checkpoints_volume": "mtl-checkpoints",
         },
         "audit_timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "sources": {
+            "bcs": {
+                "source_profile": "tigerwood697",
+                "source_volume": "sciencedb-perception-cache",
+                "source_files": [
+                    "train_bcs_224.pt",
+                    "val_bcs_224.pt",
+                    "train_perception.csv",
+                    "val_perception.csv",
+                ],
+            },
+            "behavior": {
+                "source_profile": "tigerwood693",
+                "source_volume": "behavior-perception-cache",
+                "source_archive": "behavior_retained.tar",
+            },
+            "reid": {
+                "source_dataset": "SideViewCows2026",
+                "zenodo_record": "21605650",
+                "source_archive": "parlor.zip",
+            },
+        },
         "tasks": {
             "bcs": bcs_audit,
             "behavior": beh_audit,
@@ -705,7 +890,7 @@ def verify_mtl_workspace_remote() -> Dict[str, Any]:
     }
 
     manifest_path = data_root / "staging_manifest.json"
-    with open(manifest_path, "w") as f:
+    with open(manifest_path, "w", encoding="utf-8") as f:
         json.dump(manifest_data, f, indent=2)
 
     mtl_data_vol.commit()

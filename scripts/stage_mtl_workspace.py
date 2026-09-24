@@ -215,6 +215,7 @@ def transfer_chunk_relay(
     task_name: str,
     chunk_idx: int,
     num_chunks: int,
+    buffer_mb: int = 16,
     keep_temp: bool = False,
 ) -> None:
     """Transfers a single chunk from source volume to target volume via a low-memory local buffer.
@@ -231,7 +232,7 @@ def transfer_chunk_relay(
         desc=f"{task_name} | DL CHUNK {chunk_idx + 1}/{num_chunks}",
     )
 
-    # Read in 16MB blocks
+    # Read in stream blocks
     with open(local_temp_file, "wb") as f:
         def _cb(n_bytes: int):
             dl_pbar.update(n_bytes)
@@ -243,8 +244,8 @@ def transfer_chunk_relay(
     if local_temp_file.stat().st_size != expected_size:
         raise ValueError(f"Downloaded chunk size mismatch: expected {expected_size}, got {local_temp_file.stat().st_size}")
 
-    # 2. Checksum verification
-    actual_sha = _compute_sha256(local_temp_file)
+    # 2. Checksum verification with configured buffer size
+    actual_sha = _compute_sha256(local_temp_file, chunk_size=buffer_mb * 1024 * 1024)
     if actual_sha != expected_sha:
         local_temp_file.unlink()
         raise ValueError(f"Checksum mismatch for chunk {source_path}: expected {expected_sha}, got {actual_sha}")
@@ -284,6 +285,7 @@ def transfer_chunk_relay(
 def stage_bcs(
     dry_run: bool = False,
     chunk_size_mb: int = 1024,
+    buffer_mb: int = 16,
     keep_temp: bool = False,
     temp_dir: Path = REPO_ROOT / "scratch" / "mtl_staging_temp",
 ) -> Dict[str, Any]:
@@ -300,7 +302,8 @@ def stage_bcs(
     if dry_run:
         print("[DRY-RUN] Would execute modal_export_mtl_sources.py::prepare_bcs_export_remote on tigerwood697")
         print("[DRY-RUN] Estimated payload: train_bcs_224.pt (~6.89 GB) + val_bcs_224.pt (~1.57 GB) = ~8.46 GB")
-        print(f"[DRY-RUN] Chunk size: {chunk_size_mb} MB (~8-9 sequential chunks)")
+        est_chunks = math.ceil(8467234812 / (chunk_size_mb * 1024 * 1024))
+        print(f"[DRY-RUN] Chunk size: {chunk_size_mb} MB (~{est_chunks} sequential chunks, relay buffer: {buffer_mb} MB)")
         print("[DRY-RUN] Target reassembly would verify SHA-256 and assert test_bcs_224.pt is absent")
         return {"status": "DRY_RUN", "estimated_bytes": 8467234812}
 
@@ -383,6 +386,7 @@ def stage_bcs(
             task_name="BCS",
             chunk_idx=idx,
             num_chunks=num_chunks,
+            buffer_mb=buffer_mb,
             keep_temp=keep_temp,
         )
 
@@ -417,6 +421,7 @@ def stage_bcs(
 def stage_behavior(
     dry_run: bool = False,
     chunk_size_mb: int = 1024,
+    buffer_mb: int = 16,
     keep_temp: bool = False,
     temp_dir: Path = REPO_ROOT / "scratch" / "mtl_staging_temp",
 ) -> Dict[str, Any]:
@@ -432,7 +437,8 @@ def stage_behavior(
     if dry_run:
         print("[DRY-RUN] Would execute modal_export_mtl_sources.py::prepare_behavior_export_remote on tigerwood693")
         print("[DRY-RUN] Packages 4,271 retained sequences (3,641 Train, 630 Val) into uncompressed tar archive (~900MB - 1.1GB)")
-        print(f"[DRY-RUN] Chunk size: {chunk_size_mb} MB (~1-2 sequential chunks)")
+        est_chunks = math.ceil(1050000000 / (chunk_size_mb * 1024 * 1024))
+        print(f"[DRY-RUN] Chunk size: {chunk_size_mb} MB (~{est_chunks} sequential chunks, relay buffer: {buffer_mb} MB)")
         print("[DRY-RUN] Target extraction would extract directly into /mtl-data/behavior/ and assert test data absent")
         return {"status": "DRY_RUN", "estimated_bytes": 1050000000}
 
@@ -495,6 +501,7 @@ def stage_behavior(
             task_name="Behavior",
             chunk_idx=idx,
             num_chunks=num_chunks,
+            buffer_mb=buffer_mb,
             keep_temp=keep_temp,
         )
 
@@ -537,10 +544,12 @@ def stage_reid(dry_run: bool = False, workers: int = 16) -> Dict[str, Any]:
 
     if dry_run:
         print("[DRY-RUN] Would execute modal_stage_mtl_target.py::stage_reid_direct_remote on hasinishrak2015")
-        print(f"[DRY-RUN] Direct 16-worker HTTP Range download of parlor.zip (9,598,064,961 bytes) to ephemeral /tmp/")
+        print(f"[DRY-RUN] Direct {workers}-worker HTTP Range download of parlor.zip (9,598,064,961 bytes) to ephemeral /tmp/")
+        print("[DRY-RUN] Ephemeral disk allocated: 20480 MiB (20 GiB)")
+        print("[DRY-RUN] Persistent range chunk staging at /mtl-data/reid/.download_staging/ guarantees cross-invocation resume")
         print("[DRY-RUN] Computes exact 15,436 Train/Val records for the 41 representation learning cows (12,753 Train, 2,683 Val)")
         print("[DRY-RUN] Selectively extracts ONLY the 15,436 image files and 15,436 mask files (30,872 files) into /mtl-data/reid/")
-        print("[DRY-RUN] Unlinks temporary parlor.zip archive immediately; asserts 0 held-out cow overlap and zero barn/snapshots data")
+        print("[DRY-RUN] Unlinks temporary parlor.zip and purges download_staging immediately; asserts 0 held-out cow overlap and zero barn/snapshots data")
         return {"status": "DRY_RUN", "direct_cloud_bytes": 9598064961}
 
     print(f"[*] Launching direct cloud download & extraction inside hasinishrak2015 with {workers} range workers...")
@@ -563,19 +572,30 @@ def verify_workspace(dry_run: bool = False) -> Dict[str, Any]:
     print("  Target Profile: hasinishrak2015")
     print("=" * 70)
 
+    try:
+        git_sha = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"],
+            cwd=str(REPO_ROOT),
+            text=True,
+        ).strip()
+    except Exception:
+        git_sha = "unknown"
+
     if dry_run:
         print("[DRY-RUN] Would execute modal_stage_mtl_target.py::verify_mtl_workspace_remote on hasinishrak2015")
+        print(f"[DRY-RUN] Git provenance SHA: {git_sha}")
         print("[DRY-RUN] Checks BCS: sequential 16 GB load of train_bcs_224.pt and val_bcs_224.pt (tensors, targets, raw_labels), test absent")
-        print("[DRY-RUN] Checks Behavior: 4,271 sequences, 8 frames + 8 masks per sequence, manifests present; test absent")
+        print("[DRY-RUN] Checks Behavior: all 4,271 sequences (frame_00.jpg..frame_07.jpg, mask_00.png..mask_07.png, disjoint train/val), test absent")
         print("[DRY-RUN] Checks Re-ID: 15,436 pairs, 41 cows, 0 held-out overlap, no persistent barn/snapshots")
         print("[DRY-RUN] Checks mtl-checkpoints volume writeability")
-        print("[DRY-RUN] Generates /mtl-data/staging_manifest.json and syncs to artifacts/mtl_staging/staging_manifest.json")
-        return {"status": "DRY_RUN"}
+        print("[DRY-RUN] Generates /mtl-data/staging_manifest.json with full provenance (git SHA, sources, hashes, byte sizes) and syncs to artifacts/mtl_staging/staging_manifest.json")
+        return {"status": "DRY_RUN", "git_sha": git_sha}
 
-    print("[*] Running remote audit on hasinishrak2015...")
+    print(f"[*] Running remote audit on hasinishrak2015 (staging_git_sha={git_sha})...")
     cmd = [
         "modal", "run", "--profile", "hasinishrak2015",
         "scripts/modal_stage_mtl_target.py::verify_mtl_workspace_remote",
+        "--staging-git-sha", git_sha,
     ]
     subprocess.run(cmd, check=True)
 
@@ -616,7 +636,7 @@ def main() -> None:
     parser.add_argument(
         "--fast",
         action="store_true",
-        help="Enable fast mode with high-throughput buffers and large chunk sizes",
+        help="Enable fast mode with high-throughput defaults (16 workers, 1024 MB chunks, 64 MB buffer)",
     )
     parser.add_argument(
         "--dry-run",
@@ -636,14 +656,20 @@ def main() -> None:
     parser.add_argument(
         "--workers",
         type=int,
-        default=16,
-        help="Number of parallel workers/threads for HTTP Range downloads (default: 16)",
+        default=None,
+        help="Number of parallel workers/threads for HTTP Range downloads (default: 16 in --fast, 8 in standard)",
     )
     parser.add_argument(
         "--chunk-size-mb",
         type=int,
-        default=1024,
-        help="Size of sequential transfer chunks in megabytes (default: 1024)",
+        default=None,
+        help="Size of sequential transfer chunks in megabytes (default: 1024 in --fast, 512 in standard)",
+    )
+    parser.add_argument(
+        "--buffer-mb",
+        type=int,
+        default=None,
+        help="Streaming I/O buffer size in megabytes (default: 64 in --fast, 16 in standard)",
     )
     parser.add_argument(
         "--keep-temp",
@@ -659,13 +685,27 @@ def main() -> None:
 
     args = parser.parse_args()
 
+    # Determine high-throughput vs standard defaults based on --fast flag
+    if args.fast:
+        workers = args.workers if args.workers is not None else 16
+        chunk_size_mb = args.chunk_size_mb if args.chunk_size_mb is not None else 1024
+        buffer_mb = args.buffer_mb if args.buffer_mb is not None else 64
+    else:
+        workers = args.workers if args.workers is not None else 8
+        chunk_size_mb = args.chunk_size_mb if args.chunk_size_mb is not None else 512
+        buffer_mb = args.buffer_mb if args.buffer_mb is not None else 16
+
+    mode_str = "DRY-RUN (Simulated)" if args.dry_run else ("ACTIVE (Fast Transfer)" if args.fast else "ACTIVE (Standard Transfer)")
+
     print("\n" + "=" * 76)
     print("  🚀 MAXIMUM-SPEED RESUMABLE MTL DATA STAGING CONTROLLER")
     print(f"  Target Modal Profile: hasinishrak2015")
-    print(f"  Mode:                {'DRY-RUN (Simulated)' if args.dry_run else 'ACTIVE (Fast Transfer)'}")
+    print(f"  Execution Mode:      {mode_str}")
+    print(f"  Fast Flag:           {'ENABLED' if args.fast else 'DISABLED'}")
     print(f"  Selected Task(s):    {args.task.upper() if not args.verify else 'VERIFICATION ONLY'}")
-    print(f"  Chunk Size:          {args.chunk_size_mb} MB")
-    print(f"  Parallel Workers:    {args.workers}")
+    print(f"  Chunk Size:          {chunk_size_mb} MB")
+    print(f"  Streaming Buffer:    {buffer_mb} MB")
+    print(f"  Parallel Workers:    {workers}")
     print("=" * 76)
 
     if args.verify:
@@ -684,7 +724,8 @@ def main() -> None:
     if args.task in ("all", "bcs"):
         stage_bcs(
             dry_run=args.dry_run,
-            chunk_size_mb=args.chunk_size_mb,
+            chunk_size_mb=chunk_size_mb,
+            buffer_mb=buffer_mb,
             keep_temp=args.keep_temp,
             temp_dir=args.temp_dir,
         )
@@ -693,7 +734,8 @@ def main() -> None:
     if args.task in ("all", "behavior"):
         stage_behavior(
             dry_run=args.dry_run,
-            chunk_size_mb=args.chunk_size_mb,
+            chunk_size_mb=chunk_size_mb,
+            buffer_mb=buffer_mb,
             keep_temp=args.keep_temp,
             temp_dir=args.temp_dir,
         )
@@ -702,7 +744,7 @@ def main() -> None:
     if args.task in ("all", "reid"):
         stage_reid(
             dry_run=args.dry_run,
-            workers=args.workers,
+            workers=workers,
         )
 
     # Verification
@@ -718,3 +760,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

@@ -5,14 +5,17 @@
   "type": "object",
   "required": [
     "workspace_profile",
+    "staging_git_sha",
     "volumes",
     "audit_timestamp",
+    "sources",
     "tasks",
     "leakage_checks",
     "status"
   ],
   "properties": {
     "workspace_profile": { "type": "string", "enum": ["hasinishrak2015"] },
+    "staging_git_sha": { "type": "string" },
     "volumes": {
       "type": "object",
       "properties": {
@@ -22,6 +25,39 @@
       "required": ["data_volume", "checkpoints_volume"]
     },
     "audit_timestamp": { "type": "string" },
+    "sources": {
+      "type": "object",
+      "properties": {
+        "bcs": {
+          "type": "object",
+          "properties": {
+            "source_profile": { "type": "string", "enum": ["tigerwood697"] },
+            "source_volume": { "type": "string", "enum": ["sciencedb-perception-cache"] },
+            "source_files": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["source_profile", "source_volume", "source_files"]
+        },
+        "behavior": {
+          "type": "object",
+          "properties": {
+            "source_profile": { "type": "string", "enum": ["tigerwood693"] },
+            "source_volume": { "type": "string", "enum": ["behavior-perception-cache"] },
+            "source_archive": { "type": "string", "enum": ["behavior_retained.tar"] }
+          },
+          "required": ["source_profile", "source_volume", "source_archive"]
+        },
+        "reid": {
+          "type": "object",
+          "properties": {
+            "source_dataset": { "type": "string", "enum": ["SideViewCows2026"] },
+            "zenodo_record": { "type": "string", "enum": ["21605650"] },
+            "source_archive": { "type": "string", "enum": ["parlor.zip"] }
+          },
+          "required": ["source_dataset", "zenodo_record", "source_archive"]
+        }
+      },
+      "required": ["bcs", "behavior", "reid"]
+    },
     "tasks": {
       "type": "object",
       "properties": {
@@ -32,18 +68,26 @@
             "val_samples": { "type": "integer" },
             "tensor_shape": { "type": "array", "items": { "type": "integer" } },
             "train_pt_bytes": { "type": "integer" },
-            "val_pt_bytes": { "type": "integer" }
+            "val_pt_bytes": { "type": "integer" },
+            "train_pt_sha256": { "type": "string" },
+            "val_pt_sha256": { "type": "string" },
+            "total_bytes": { "type": "integer" }
           },
-          "required": ["train_samples", "val_samples", "tensor_shape"]
+          "required": ["train_samples", "val_samples", "tensor_shape", "train_pt_bytes", "val_pt_bytes", "train_pt_sha256", "val_pt_sha256", "total_bytes"]
         },
         "behavior": {
           "type": "object",
           "properties": {
             "train_sequences": { "type": "integer", "enum": [3641] },
             "val_sequences": { "type": "integer", "enum": [630] },
-            "total_sequences": { "type": "integer", "enum": [4271] }
+            "total_sequences": { "type": "integer", "enum": [4271] },
+            "total_frames": { "type": "integer", "enum": [34168] },
+            "total_masks": { "type": "integer", "enum": [34168] },
+            "total_bytes": { "type": "integer" },
+            "archive_sha256": { "type": "string" },
+            "train_val_disjoint": { "type": "boolean", "enum": [true] }
           },
-          "required": ["train_sequences", "val_sequences", "total_sequences"]
+          "required": ["train_sequences", "val_sequences", "total_sequences", "total_frames", "total_masks", "total_bytes", "train_val_disjoint"]
         },
         "reid": {
           "type": "object",
@@ -51,10 +95,12 @@
             "train_pairs": { "type": "integer", "enum": [12753] },
             "val_pairs": { "type": "integer", "enum": [2683] },
             "total_pairs": { "type": "integer", "enum": [15436] },
+            "total_files": { "type": "integer", "enum": [30872] },
             "unique_cows": { "type": "integer", "enum": [41] },
-            "held_out_cow_overlap": { "type": "integer", "enum": [0] }
+            "held_out_cow_overlap": { "type": "integer", "enum": [0] },
+            "total_bytes": { "type": "integer" }
           },
-          "required": ["train_pairs", "val_pairs", "total_pairs", "unique_cows", "held_out_cow_overlap"]
+          "required": ["train_pairs", "val_pairs", "total_pairs", "total_files", "unique_cows", "held_out_cow_overlap", "total_bytes"]
         }
       },
       "required": ["bcs", "behavior", "reid"]
