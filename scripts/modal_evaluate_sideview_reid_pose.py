@@ -101,8 +101,7 @@ app = modal.App("sideview-reid-pose-evaluation", image=pose_image)
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
     timeout=1800,
     cpu=4.0,
-    memory=16384,
-    concurrency_limit=6,  # Safe concurrency limit: max 6 T4 GPUs (~$0.06/min total)
+    max_containers=6,  # Safe concurrency limit: max 6 T4 GPUs (~$0.06/min total)
 )
 def extract_pose_chunk_remote(
     chunk_rows: List[Dict[str, str]],
