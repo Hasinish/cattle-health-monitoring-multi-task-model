@@ -1,3 +1,13 @@
+# Session Summary — 2026-09-24 (MTL Workspace Staging & Zero-Copy Certification on hasinishrak2015 Complete)
+
+- Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f
+- Objective: Execute cloud-to-cloud MTL dataset migration and run zero-GPU forensic certification on Modal profile `hasinishrak2015`.
+- Accomplishments & Verification:
+  1. Cloud-to-Cloud Fast Direct Staging: Staged all 8.08 GB BCS monolithic tensors from `tigerwood697` to `hasinishrak2015` in 89.6s. Built a 64-worker NVMe pre-staging pipeline for Behavior on `tigerwood693`, tarred 4,271 sequences in 3.62s, streamed cloud-to-cloud in 7.3s (90 MB/s), and extracted on target in 124.4s.
+  2. Zero-Copy SideView Re-ID: Certified that `sideview-data` is already hydrated on `hasinishrak2015` (80,260 images + 80,260 masks). Verified zero-copy mounting of 15,436 train/val pairs (30,872 files) across 41 cows with 0 evaluation cow access.
+  3. Forensic Certification: Ran `verify_mtl_workspace_remote` on `hasinishrak2015` (App `ap-0QtIRqRuI3mDlksS8TnvLn`, exit code 0). Validated BCS tensors, all 4,271 Behavior sequences (34,168 frames + 34,168 masks), and SideView parlor pairs.
+  4. Staging Manifest: Generated `/mtl-data/staging_manifest.json`, synced locally to `artifacts/mtl_staging/staging_manifest.json`, passed 100% schema validation.
+
 # Session Summary — 2026-09-24 (Final Pre-Transfer Hardening of MTL Staging Pipeline)
 
 - Convo ID: 6c47aa76-9e9a-4b74-8056-43795b4b0c8f

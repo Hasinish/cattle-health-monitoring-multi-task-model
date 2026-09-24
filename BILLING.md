@@ -1,8 +1,8 @@
 # 📊 Live Modal Billing & Credit Dashboard
 
 > **Live Auto-Refreshed Monitor**  
-> **Last Synchronized:** `2026-09-24 22:55:04`  
-> **Active Target Account:** `tigerwood693`
+> **Last Synchronized:** `2026-09-24 22:58:58`  
+> **Active Target Account:** `hasinishrak2015`
 
 ---
 
@@ -12,10 +12,10 @@
 | :--- | :--- |
 | 👥 **Discovered Accounts** | **6** (`dryousufmozumder, hasinishrak2015, hasinishrak74001, mohtasimahmedsamii, tigerwood693, tigerwood697`) |
 | 🎁 **Total Credit Grants** | **$122.00** |
-| 💸 **Total Consumed** | **$46.17** |
-| 🟢 **Total Remaining Balance** | **$76.19** |
-| 🚀 **Total Combined L40S Runtime** | **~2342 mins (~39.0 hours)** |
-| ⚡ **Total Combined H100 Runtime** | **~920 mins (~15.3 hours)** |
+| 💸 **Total Consumed** | **$45.96** |
+| 🟢 **Total Remaining Balance** | **$76.40** |
+| 🚀 **Total Combined L40S Runtime** | **~2349 mins (~39.1 hours)** |
+| ⚡ **Total Combined H100 Runtime** | **~923 mins (~15.4 hours)** |
 
 ---
 
@@ -24,10 +24,10 @@
 | Account Profile | Mode | Grant | Consumed | Remaining Balance | Est. L40S | Est. H100 | Status | Direct Ledger |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `dryousufmozumder` | Standby | $30.00 | $2.98 | **$27.02** | ~831m | ~327m | 🟢 Healthy | [View Ledger](https://modal.com/settings/dryousufmozumder/billing) |
-| `hasinishrak2015` | Standby | $30.00 | $0.97 | **$29.03** | ~893m | ~351m | 🟢 Healthy | [View Ledger](https://modal.com/settings/hasinishrak2015/billing) |
+| `hasinishrak2015` | 🔥 **ACTIVE** | $30.00 | $0.83 | **$29.17** | ~897m | ~353m | 🟢 Healthy | [View Ledger](https://modal.com/settings/hasinishrak2015/billing) |
 | `hasinishrak74001` | Standby | $1.00 | $1.36 | **$0.00** | ~0m | ~0m | 🔴 Depleted | [View Ledger](https://modal.com/settings/hasinishrak74001/billing) |
 | `mohtasimahmedsamii` | Standby | $1.00 | $0.95 | **$0.05** | ~1m | ~0m | 🟡 Low | [View Ledger](https://modal.com/settings/mohtasimahmedsamii/billing) |
-| `tigerwood693` | 🔥 **ACTIVE** | $30.00 | $28.61 | **$1.39** | ~42m | ~16m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood693/billing) |
+| `tigerwood693` | Standby | $30.00 | $28.54 | **$1.46** | ~45m | ~17m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood693/billing) |
 | `tigerwood697` | Standby | $30.00 | $11.31 | **$18.69** | ~575m | ~226m | 🟢 Healthy | [View Ledger](https://modal.com/settings/tigerwood697/billing) |
 
 ---
@@ -43,13 +43,13 @@
 - **Est. H100 GPU Runtime**: **~327 minutes** (5h 27m)
 - **Out-of-Pocket Billed**: `$0.00`
 - **Direct Modal Link**: `https://modal.com/settings/dryousufmozumder/billing`
-### 💳 Profile: `hasinishrak2015` 
+### 💳 Profile: `hasinishrak2015` (CURRENT ACTIVE)
 - **Status**: 🟢 Healthy
 - **Grant Ceiling**: `$30.00`
-- **Metered Usage**: `$0.97`
-- **Remaining Balance**: **`$29.03`**
-- **Est. L40S GPU Runtime**: **~893 minutes** (14h 53m)
-- **Est. H100 GPU Runtime**: **~351 minutes** (5h 51m)
+- **Metered Usage**: `$0.83`
+- **Remaining Balance**: **`$29.17`**
+- **Est. L40S GPU Runtime**: **~897 minutes** (14h 57m)
+- **Est. H100 GPU Runtime**: **~353 minutes** (5h 53m)
 - **Out-of-Pocket Billed**: `$0.00`
 - **Direct Modal Link**: `https://modal.com/settings/hasinishrak2015/billing`
 ### 💳 Profile: `hasinishrak74001` 
@@ -70,13 +70,13 @@
 - **Est. H100 GPU Runtime**: **~0 minutes** (0h 0m)
 - **Out-of-Pocket Billed**: `$0.00`
 - **Direct Modal Link**: `https://modal.com/settings/mohtasimahmedsamii/billing`
-### 💳 Profile: `tigerwood693` (CURRENT ACTIVE)
+### 💳 Profile: `tigerwood693` 
 - **Status**: 🟢 Healthy
 - **Grant Ceiling**: `$30.00`
-- **Metered Usage**: `$28.61`
-- **Remaining Balance**: **`$1.39`**
-- **Est. L40S GPU Runtime**: **~42 minutes** (0h 42m)
-- **Est. H100 GPU Runtime**: **~16 minutes** (0h 16m)
+- **Metered Usage**: `$28.54`
+- **Remaining Balance**: **`$1.46`**
+- **Est. L40S GPU Runtime**: **~45 minutes** (0h 45m)
+- **Est. H100 GPU Runtime**: **~17 minutes** (0h 17m)
 - **Out-of-Pocket Billed**: `$0.00`
 - **Direct Modal Link**: `https://modal.com/settings/tigerwood693/billing`
 ### 💳 Profile: `tigerwood697` 
