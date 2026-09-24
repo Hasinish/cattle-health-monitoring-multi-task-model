@@ -23,6 +23,10 @@ from pathlib import Path
 
 # Guard against Windows cross-drive ValueError in ntpath.commonpath for Modal
 if sys.platform == "win32":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8")
     _orig_commonpath = os.path.commonpath
 
     def _safe_commonpath(paths):
@@ -63,8 +67,8 @@ app = modal.App("cvb-dataset-pipeline", image=image)
 @app.function(
     volumes={VOLUME_DIR: volume},
     timeout=7200,  # 2 hours max
-    cpu=4.0,       # 4 CPUs for high-throughput TLS socket handling
-    memory=8192,   # 8 GB RAM for 256MB RAM write caching
+    cpu=1.0,       # Minimal container resources (AGENTS.md rule)
+    memory=2048,   # 2 GB RAM (AGENTS.md rule)
 )
 def download_cvb():
     """Download CVB dataset via aria2c with live progress and periodic volume commits."""
@@ -78,9 +82,10 @@ def download_cvb():
     input_txt = "/tmp/58916v001.txt"
 
     print("=" * 70)
-    print("  CVB (CATTLE VISUAL BEHAVIORS) MODAL TURBO CLOUD DOWNLOADER")
+    print("  CVB (CATTLE VISUAL BEHAVIORS) MODAL CLOUD DOWNLOADER")
     print("  Target Volume: cvb-data mounted at /data/cvb")
-    print("  Engine: aria2c (96 concurrent streams, 256MB RAM cache, 4 CPUs)")
+    print("  Engine: aria2c (64 parallel connections)")
+    print("  CPU: 1.0 | RAM: 2048 MB (Minimal Cost Tier)")
     print("=" * 70)
 
     # Decompress input file
@@ -99,7 +104,7 @@ def download_cvb():
     stop_event = threading.Event()
 
     def checkpoint_worker():
-        while not stop_event.wait(120.0):
+        while not stop_event.wait(60.0):
             try:
                 # Count files and size
                 f_count = 0
@@ -125,19 +130,15 @@ def download_cvb():
     monitor_thread = threading.Thread(target=checkpoint_worker, daemon=True)
     monitor_thread.start()
 
-    # Launch turbo aria2c
-    print("\n[3/3] Starting aria2c with 96 concurrent downloads + 256MB RAM buffer...")
+    # Launch aria2c
+    print("\n[3/3] Starting aria2c with 64 parallel connections (Turbo Mode)...")
     print("      Streaming live progress summary below:\n")
 
     cmd = [
         "aria2c",
         "-x", "16",
-        "-j", "96",
+        "-j", "64",
         "-s", "16",
-        "--disk-cache=256M",
-        "--file-allocation=none",
-        "--enable-http-pipelining=true",
-        "--optimize-concurrent-downloads=true",
         f"--input-file={input_txt}",
         f"--dir={CVB_DIR}",
         "--continue=true",
@@ -174,10 +175,10 @@ def download_cvb():
     # Final volume commit
     print("\n[FINAL] Committing final volume state...")
     volume.commit()
-    print("✓ Volume committed!")
+    print("[OK] Volume committed!")
 
     if proc.returncode == 0:
-        print("\n🎉 [SUCCESS] All CVB files downloaded successfully!")
+        print("\n[SUCCESS] All CVB files downloaded successfully!")
     else:
         print(f"\n[INFO] aria2c exited with code {proc.returncode}.")
 
@@ -222,7 +223,7 @@ def verify_cvb():
                 json_files.append(p)
 
     size_gb = total_bytes / (1024 ** 3)
-    print(f"✓ Total Files Found: {total_files:,}")
+    print(f"[OK] Total Files Found: {total_files:,}")
     print(f"  - JPEG Frames:    {len(jpg_files):,}")
     print(f"  - JSON Files:     {len(json_files):,}")
     print(f"  - Total Disk:     {size_gb:.2f} GB")
@@ -232,9 +233,9 @@ def verify_cvb():
     for p in jpg_files[:5]:
         try:
             with Image.open(p) as img:
-                print(f"  ✓ {os.path.basename(p)}: format={img.format}, size={img.size}, mode={img.mode}")
+                print(f"  [OK] {os.path.basename(p)}: format={img.format}, size={img.size}, mode={img.mode}")
         except Exception as e:
-            print(f"  ✗ {p}: {e}")
+            print(f"  [FAIL] {p}: {e}")
 
     # Inspect 1 JSON annotation file
     print("\n[3/3] Inspecting sample JSON annotation...")
@@ -249,6 +250,6 @@ def verify_cvb():
             if "annotations" in data:
                 print(f"  Total annotations in clip: {len(data['annotations'])}")
         except Exception as e:
-            print(f"  ✗ Error reading JSON: {e}")
+            print(f"  [FAIL] Error reading JSON: {e}")
 
     print("\n[COMPLETE] CVB verification finished!")
