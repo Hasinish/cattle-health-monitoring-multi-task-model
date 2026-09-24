@@ -38,7 +38,7 @@ def render_dashboard(force: bool = False):
     print("=" * 82)
     
     if not chunk_tracker:
-        print("  Streaming live from Modal... Waiting for chunk progress...")
+        print("  Connecting to Modal log stream... Waiting for chunk progress...")
     else:
         for cid in sorted(chunk_tracker.keys()):
             stat = chunk_tracker[cid]
@@ -56,10 +56,50 @@ def render_dashboard(force: bool = False):
     sys.stdout.flush()
 
 env = dict(os.environ, PYTHONIOENCODING="utf-8")
-# Notice -f flag for live streaming!
-cmd = ["modal", "app", "logs", APP_ID, "-f", "--profile", PROFILE]
 
-print(f"Connecting to live stream for app {APP_ID}...")
+def parse_line(raw_line: str):
+    line = raw_line.strip()
+    if not line:
+        return
+
+    match = re.search(r"Chunk\s+(\d+)/(\d+):\s*(.*)", line)
+    if match:
+        c_idx = int(match.group(1))
+        total_c = int(match.group(2))
+        details = match.group(3).strip()
+
+        pct_match = re.search(r"(\d+)%", details)
+        pct_val = int(pct_match.group(1)) if pct_match else 0
+        chunk_pcts[c_idx] = pct_val
+
+        clean_entry = f"Chunk {c_idx:02d}/{total_c:02d}: {details}"
+        chunk_tracker[c_idx] = clean_entry
+        render_dashboard()
+
+    elif any(k in line for k in ["PROTOCOL A RETRIEVAL", "Snapshots -> Parlor", "Barn -> Parlor", "Rank-1:"]):
+        sys.stdout.write(f"\n[MILESTONE] {line}\n")
+        sys.stdout.flush()
+
+# Step 1: Pre-populate from recent logs
+try:
+    init_res = subprocess.run(
+        ["modal", "app", "logs", APP_ID, "--tail", "300", "--profile", PROFILE],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        env=env,
+        timeout=10,
+    )
+    for l in init_res.stdout.splitlines():
+        parse_line(l)
+except Exception:
+    pass
+
+render_dashboard(force=True)
+
+# Step 2: Stream live updates continuously
+cmd = ["modal", "app", "logs", APP_ID, "-f", "--profile", PROFILE]
 
 while True:
     try:
@@ -75,27 +115,7 @@ while True:
         )
 
         for raw_line in iter(proc.stdout.readline, ""):
-            line = raw_line.strip()
-            if not line:
-                continue
-
-            match = re.search(r"Chunk\s+(\d+)/(\d+):\s*(.*)", line)
-            if match:
-                c_idx = int(match.group(1))
-                total_c = int(match.group(2))
-                details = match.group(3).strip()
-
-                pct_match = re.search(r"(\d+)%", details)
-                pct_val = int(pct_match.group(1)) if pct_match else 0
-                chunk_pcts[c_idx] = pct_val
-
-                clean_entry = f"Chunk {c_idx:02d}/{total_c:02d}: {details}"
-                chunk_tracker[c_idx] = clean_entry
-                render_dashboard()
-
-            elif any(k in line for k in ["PROTOCOL A RETRIEVAL", "Snapshots -> Parlor", "Barn -> Parlor", "Rank-1:"]):
-                sys.stdout.write(f"\n[MILESTONE] {line}\n")
-                sys.stdout.flush()
+            parse_line(raw_line)
 
         proc.wait()
         time.sleep(1.0)
@@ -103,5 +123,5 @@ while True:
     except KeyboardInterrupt:
         print("\n[Stopped monitoring]")
         break
-    except Exception as e:
+    except Exception:
         time.sleep(2.0)
