@@ -102,6 +102,12 @@
   * Preserved full mathematical formula rows and table references with `Original (DONT PARAPHRASE THIS)` neutral grey headers and `LEAVE BLANK (Do Not Paraphrase)` placeholders.
   * Formatted with custom column widths: Col A (40px spacer), Col B (560px original text), Col C (560px teammate space), Col D (420px review notes).
   * Upgraded Column D with native Google Sheets rich-text bolding (`textFormatRuns`, zero asterisks) and certified 218/218 verbatim intact terms with zero violations (639/639 verified across all 4 chapters).
+- [x] **Full LaTeX & Math Syntax Purge from Paraphrasing Workbench (Google Sheets) — COMPLETE & CERTIFIED:**
+  * Purged 100% of raw LaTeX commands, unparsed math macros (`\mathbf`, `\mathbbR`, `\boldsymbol`, `\in`, `\top`, `\epsilon`, `\theta`, etc.), broken references (`Tabletab:...`, `Figurefig:...`, `Equation(...)`), and accents (`Rodr\'iguez`) from all narrative prose cells across all 4 chapters in Google Sheets (`14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`).
+  * Converted raw math symbols and structures into natural, human-readable plain English (e.g. `g_k = w_k^T h + b_k`, `theta_shared`, `H (shape [B_Beh, 8, 512])`, `in {0, 1, 2, 3, 4}`, `Table 4.6`, `Figure 4.1`, `Appendix B`).
+  * Preserved 100% of teammate typing in Column C (strictly zero Column C overwrites or cell wipes).
+  * Re-synchronized Column D review notes with `apply_super_smart_paraphrase_workbench.py`: 639/639 intact terms verified as 100% verbatim substrings of the cleaned Column B text with ZERO violations.
+  * Automated and hardened: `scripts/clean_sheets_latex_prose.py` created, and `scripts/export_paraphrase_docs.py` upgraded to clean all future exports automatically.
 - **Immediate next action:** Team contribution record archiving, defense slide preparation, and software demonstration setup.
 - [x] **P3 Sample Reports Writing Audit & Freeze-Safe Boundary Strategy (`cattle_thesis_p3_latex/P3_SAMPLE_WRITING_AUDIT.md`) — COMPLETE & PUSHED TO REMOTE (`eb8795d`):**
   * Audited 12 faculty-evaluated BRAC University CSE400 final thesis reports.

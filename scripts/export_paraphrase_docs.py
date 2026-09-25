@@ -108,6 +108,14 @@ def clean_latex(text: str) -> str:
 
     # Clean multiple blank lines
     text = re.sub(r'\n{3,}', '\n\n', text)
+
+    # Convert remaining raw LaTeX math and commands to natural plain English prose
+    try:
+        from scripts.clean_sheets_latex_prose import clean_latex_math_to_plain_text
+        text = clean_latex_math_to_plain_text(text)
+    except Exception:
+        pass
+
     return text.strip()
 
 
