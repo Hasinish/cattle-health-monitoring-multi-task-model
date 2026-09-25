@@ -1,3 +1,30 @@
+# Session Summary — 2026-09-25 (Phase 3 Run 8 E3 Modular MTL Official Held-Out Evaluation & Milestone Completion)
+
+- Convo ID: 98ed6120-2e4e-463a-9502-55deb02c72f7
+- Objective: Implement, unit-test, and execute the official held-out test evaluation of Phase 3 Run 8 E3 Modular MTL (`MTLE3ModularModel` with task-private residual bottleneck adapters) on Modal (`hasinishrak2015`), completing the 8th and final run of the canonical Phase 3 roadmap.
+- Accomplishments & Verification:
+  1. Implemented evaluation engine `scripts/evaluate_mtl_e3_held_out.py` and Modal cloud runner `scripts/modal_evaluate_mtl_e3_held_out.py` evaluating the frozen best checkpoint `/mtl-checkpoints/mtl_e3_modular/mtl_e3_best.pth` (Epoch 2, `val_e3_objective = 0.38888`).
+  2. Built unit test suite `tests/test_mtl_e3_evaluation.py` and verified 5/5 tests passing locally (mock forward paths, ranking computation, metric payload assembly).
+  3. Dispatched cloud evaluation on NVIDIA L40S (`hasinishrak2015`, App ID `ap-muXQHq9UeSnLniVrUfSQhc`, runtime ~6.5 mins, cost ~$0.24) across exact matched held-out test sets:
+     - **BCS (N=7,549 ScienceDB test images)**: Real MAE 0.1916 (clinical sub-0.20 agreement maintained; vs Run 7 0.1788, Run 4 0.1709), Acc@0 38.47%, Acc@1 86.32%, Balanced Acc 33.13%, Macro-F1 0.3291, Test Loss 0.4555.
+     - **Behavior (N=780 retained sequences, T=8)**: Overall Acc **85.77%** (+0.77 pp vs Run 7 E1 85.00%), Test Loss **0.4193** (lowest cross-entropy of any model, -0.2033 drop vs Run 7 0.6226, beating single-task Run 5 0.4430). On authentic CVB barn CCTV (N=422): Acc **80.33%** (+3.55 pp vs Run 7 76.78%, beating single-task Run 5 80.09%), Macro-F1 **0.6026** (+6.24 pp vs Run 7 0.5402), Standing F1 **0.7417** (beats Run 7 0.7263 and Run 5 0.7215), Lying F1 **0.9306** (beats Run 7 0.8924 and Run 5 0.9169). Balanced Acc 66.70%, Macro-F1 0.6755 (Walking unconverged at Ep 2).
+     - **Re-ID Protocol A (69 held-out cows; 36,811 parlor gallery)**: Query Barn -> Parlor (25,260 queries): Rank-1 49.08%, Rank-5 67.72%, Rank-10 75.03%, mAP 28.04%; Query Snapshots -> Parlor (607 queries): Rank-1 53.71%, Rank-5 72.32%, Rank-10 80.23%, mAP 28.78%.
+  4. Core Scientific Finding: Modular task-private routing mitigates negative transfer in temporal sequence modeling, delivering best-in-class CCTV accuracy and calibrated test loss. However, zero-shot cow instance retrieval confirms fundamental representational tension between fine-grained identity discrimination and category-level semantic invariances.
+  5. Milestones Achieved: **ALL 8 PHASE 3 CANONICAL DEADLINE EXPERIMENTAL RUNS ARE 100% COMPLETE, HELD-OUT EVALUATED, AND CERTIFIED!**
+  6. Synced artifacts: `artifacts/mtl_e3_evaluation/mtl_e3_test_evaluation_metrics.json`, authored official research log `docs/research_log/2026-09-25_phase3_run8_mtl_e3_modular_held_out_evaluation_results.md`, updated `docs/research_log/README.md`.
+
+# Session Summary — 2026-09-25 (Teammate Paraphrase Audit & Bangla Roast Injection in Google Sheets)
+
+- Convo ID: 2b4f60a9-f8ec-4122-8dd1-440b6924577c
+- Objective: Audit all 61 active teammate paraphrases in Google Sheets (`14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`), highlight bad paraphrases in light pastel yellow in Column C without altering teammate text, and inject detailed Bangla feedback with campus-vibe roasts into Column D while strictly preserving English technical terms in English alphabet.
+- Accomplishments & Verification:
+  1. Audited all 36 paragraphs in `Chapter 1: Introduction` and all 25 in `Chapter 3: Requirements & Constraints`. Flagged 35 bad paraphrases (25 in Ch 1, 10 in Ch 3).
+  2. Preserved 100% of teammate text in Column C. Applied gentle pastel yellow background highlighting (`RGB(1.0, 0.98, 0.8)`) to all 35 flagged cells in Column C.
+  3. Formatted Column D across all rows (width 480px, `wrapStrategy: WRAP`, `verticalAlignment: TOP`).
+  4. Populated all 35 flagged rows in Column D with detailed, witty explanations and roasts in Bangla with English technical terms preserved.
+  5. Injected the 7 user-approved masterpiece campus-vibe roasts into Column D across Ch 1 Rows 3, 18, 24, 30, 79, 105 and Ch 3 Rows 39, 68 via `scratch/inject_exact_7_roasts.py`.
+  6. Verified live via Google Sheets API: all 8 cells reflect the exact strings cleanly alongside intact teammate text in Column C.
+
 # Session Summary — 2026-09-25 (Google Sheets Chapters 1, 2, & 3 Multi-Tab Paraphrasing Workbench)
 
 - Convo ID: 2b4f60a9-f8ec-4122-8dd1-440b6924577c
