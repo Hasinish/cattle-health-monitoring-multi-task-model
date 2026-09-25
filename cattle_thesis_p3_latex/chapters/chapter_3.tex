@@ -1,76 +1,76 @@
 \section{Final Specifications and Requirements}
 
-The framework is intended to produce a body condition estimate, a behavior label, and an identity representation for cattle retrieval. It is evaluated as a research prototype rather than a deployed farm product. Its requirements therefore cover both prediction and the controls needed to interpret results: defined label spaces, protected data partitions, explicit failure handling, task-appropriate metrics, and reproducible configurations.
+The framework is designed to produce three outputs: a body condition estimate, a behavior label, and an identity representation for cattle retrieval. It is evaluated as a research prototype, not as a finished farm product. Because of this, the requirements include both prediction functions and the controls needed to interpret the results properly. These include clear label definitions, protected data splits, failure handling, task-specific metrics, and reproducible settings.
 
 \input{tables/requirements}
 
-The BCS pathway must predict within the documented physical score range. The behavior pathway must use the fixed five-class taxonomy. The Re-ID pathway must specify the learning identities, gallery, queries, and retrieval measures. Requirement R4 concerns the integration of all three tasks in a multi-task model, with explicit documentation of shared and task-specific parameters.
+For BCS, the model must predict within the documented score range. The behavior model must use the fixed five-class label set. The Re-ID model must clearly define the learning identities, gallery, queries, and retrieval metrics. Requirement R4 covers the final integration of all three tasks into one multi-task model, including a clear description of what is shared and what remains task-specific.
 
-The non-functional requirements are reproducibility, leakage resistance, maintainability, transparent failure reporting, and feasible execution. Dataset manifests, scripts, metrics, and configurations are versioned, while raw datasets and large checkpoints are stored separately. Reproduction requires access to both the recorded configuration and the corresponding data.
+The main non-functional requirements are reproducibility, leakage resistance, maintainability, clear failure reporting, and practical execution. Dataset manifests, scripts, metrics, and configurations are versioned. Raw datasets and large checkpoints are stored separately. Reproducing an experiment therefore requires both the recorded configuration and access to the correct data.
 
-Scientific validity imposes further requirements. Test data must not guide checkpoint selection. Comparisons affected by perception failures must use matched samples or clearly report coverage. Missing task labels must be handled through task-specific batches or an available-label mechanism, not interpreted as negative labels. Evaluation claims must also match the protected grouping unit: burst group, source video, recording session, or biological identity.
+Scientific validity adds further requirements. Test data must not be used for checkpoint selection. If perception failures remove samples, comparisons must either use matched samples or report the coverage clearly. Missing task labels must be handled with task-specific batches or another available-label method, not treated as negative labels. Finally, every evaluation claim must match the unit protected by the split, such as a burst group, source video, recording session, or biological identity.
 
 \section{Societal Impact}
 
-An integrated visual system could organize repeated cattle observations by associating body condition and behavior with an individual animal. This may support earlier review of unusual changes and reduce the burden of inspecting recordings manually. These are potential applications, not measured impacts: the study does not include farmer interviews, a deployment trial, or measurements of labor, productivity, treatment outcomes, or animal welfare.
+A unified visual monitoring system could help organize repeated cattle observations by linking body condition and behavior to individual animals. In practice, this could help people notice unusual changes earlier and reduce the amount of manual video checking. However, this study does not include farmer interviews, a field deployment, or measurements of labor savings, productivity, treatment outcomes, or animal welfare improvement. These remain possible benefits rather than measured results.
 
-Automated outputs should support human assessment rather than replace it. An identity error could attach observations to the wrong animal, while an incorrect behavior or BCS estimate could delay attention. A practical interface should retain the source image, time, confidence or retrieval evidence, and a means of human review. Veterinary and welfare decisions require appropriate professional judgment.
+The model should support human decision-making rather than replace it. A wrong identity match could attach observations to the wrong cow, while an incorrect BCS or behavior prediction could delay attention. A practical system should therefore keep the source image, time, confidence or retrieval evidence, and a way for a person to review the output. Veterinary and welfare decisions still require proper professional judgment.
 
-Accessibility depends on the operating context. Camera placement, housing, breed, lighting, network access, and staff practices vary between farms. Results on the selected datasets cannot establish suitability for every production environment, including farms in Bangladesh. Evaluation with intended users and local conditions would be required before claiming usability or adoption.
+Accessibility also depends on the farm environment. Camera placement, housing, breed, lighting, network access, and staff practices can vary widely. Results from the selected datasets cannot prove that the system will work in every production setting, including farms in Bangladesh. Testing with local users and local conditions would be needed before making claims about real-world usability or adoption.
 
-Farm imagery may contain people, layouts, or commercially sensitive information. Permission to access a dataset for research does not necessarily permit redistribution or commercial deployment. Privacy, ownership, and licensing conditions must be considered for each source and any future field installation.
+Farm images may also contain people, layouts, or commercially sensitive information. Permission to use a dataset for research does not automatically allow redistribution or commercial use. Privacy, ownership, and licensing conditions must therefore be checked for every dataset and for any future field deployment.
 
 \section{Environmental Impact}
 
-The computational footprint includes perception preprocessing, model training, storage, and data transfer, not only the downstream predictor. A compact prediction network can still depend on a comparatively expensive detector or segmentation model. Efficiency claims must therefore state whether upstream processing is included.
+The computational cost of the system includes perception preprocessing, model training, data storage, and data transfer. It is not limited to the final prediction network. Even a small downstream model can depend on a larger detector or segmentation model. For this reason, any efficiency claim should make clear whether upstream processing is included.
 
-We limited repeated computation by validating the pipeline before full experiments and reusing cached perception outputs and deterministic manifests. These practices reduce duplicated processing, but no complete power trace or location-specific emissions measurement was collected. The study therefore reports neither measured emissions nor carbon savings.
+We reduced repeated computation by checking the pipeline before full experiments, reusing validated cached outputs, and using deterministic manifests. These steps reduce unnecessary repeated processing, but we did not collect a complete power trace or location-specific emissions measurement. Therefore, the study does not claim measured carbon savings or measured emissions.
 
-Improved monitoring could support resource-efficient livestock management. However, the experiments do not measure feed savings, methane reduction, or changes in disease burden. Such effects would depend on how predictions influence farm decisions and would require a separate longitudinal evaluation.
+Better monitoring could eventually support more efficient livestock management. However, the experiments do not measure feed savings, methane reduction, or changes in disease burden. Those effects would depend on how the predictions change real farm decisions and would need a separate long-term study.
 
 \section{Ethical Issues}
 
-Responsible reporting requires a clear distinction between evidence and inference. ScienceDB is not described as cow-disjoint because biological identifiers are unavailable, and the primary behavior test is not presented as unseen-cow evaluation. The oracle segmentation-guided Re-ID experiment uses ground-truth masks; it does not demonstrate automatic segmentation. Mixed and negative findings are reported alongside improvements.
+A major ethical responsibility in this work is to separate what the data actually show from what we might assume. ScienceDB is not described as cow-disjoint because verified biological cow IDs are not available. The primary behavior evaluation is not described as unseen-cow evaluation. The oracle segmentation-guided Re-ID experiment uses ground-truth masks, so it is not evidence of an automatic segmentation system. Positive, mixed, and negative findings are all reported.
 
-Dataset reuse must be considered separately for each source. The dataset registry records available licenses and access conditions, but unresolved permissions must be confirmed before redistribution or deployment. No institutional ethics approval, exemption, user study, or field consent process is claimed without a supporting record.
+Dataset reuse must also be checked for each source. The dataset registry records the available licenses and access conditions, but any unresolved permission must be confirmed before redistribution or deployment. The thesis does not claim institutional ethics approval, an exemption, a user study, or field consent unless a supporting institutional record exists.
 
-Model selection uses validation data, while held-out task tests are reserved for evaluation. External test results must not be used to tune the model after inspection. Samples excluded because of perception failures are reported through coverage statistics rather than omitted without explanation.
+Validation data are used for model selection, while held-out test data are reserved for evaluation. External test data must not be used for tuning after the results are seen. Samples removed by perception failures are reported through coverage information instead of being silently ignored.
 
-The authors remain responsible for AI-assisted writing and coding. They must review the manuscript, verify its claims, disclose assistance according to university policy, and confirm the declaration and acknowledgments.
+The authors are still responsible for work produced with AI-assisted writing or coding. They must review the final manuscript, verify the claims, follow university disclosure rules, and confirm the declaration and acknowledgments.
 
 % TODO-P3-ADMIN: Confirm permissions and institutional requirements.
 \drafttodo{ETHICS-02}{Confirm dataset-specific reuse permissions and the university's ethics and AI-assistance disclosure requirements. No approval or exemption is asserted in advance.}
 
 \section{Standards and Technical Conventions}
 
-The study follows documented technical conventions without claiming certification against an unverified engineering standard. BCS labels are interpreted using their released score range and established anatomical context~\cite{edmonson1989bcs,ferguson1994bcs}. Behavior labels use a versioned mapping, and Re-ID uses a defined query--gallery protocol. These conventions support consistent evaluation but do not constitute product certification.
+The study follows documented technical conventions, but it does not claim certification under an engineering standard that has not been verified. BCS labels are interpreted using their released score range and established anatomical meaning~\cite{edmonson1989bcs,ferguson1994bcs}. Behavior labels use a versioned mapping, and Re-ID uses a defined query--gallery protocol. These rules make the evaluation more consistent, but they do not mean that the system is formally certified.
 
-The manuscript follows the supplied BRAC University chapter structure and an IEEE-style bibliography. Dataset licenses, privacy requirements, deployment safety, and any separate IEEE-format submission requirement need independent confirmation. Reference formatting does not imply journal submission or acceptance.
+The thesis follows the supplied BRAC University chapter structure and uses an IEEE-style bibliography. Dataset licenses, privacy requirements, deployment safety, and any separate IEEE-format submission requirement must be checked independently. Using IEEE reference formatting does not mean that the work has been submitted to or accepted by a journal.
 
 \section{Project Management Plan}
 
-The research is organized around protocol verification, perception assessment, single-task reference models, cattle-centered alternatives, and multi-task comparison. Each stage provides the data or reference configurations needed by the next. Table~\ref{tab:timeline} records the project milestones; the schedule itself is not evidence of experimental success.
+The project is organized into several main stages: protocol verification, perception assessment, single-task reference models, cattle-centered alternatives, and multi-task comparison. Each stage provides the information needed for the next. Table~\ref{tab:timeline} records the main project milestones. The timeline shows project progress, not scientific evidence.
 
 \input{tables/project_timeline}
 
-Computational resources were allocated according to the demands of preprocessing, training, and evaluation. Preliminary pipeline validation preceded full experiments, and reusable intermediate representations reduced repeated preprocessing. Detailed hardware and execution records support reproducibility without forming part of the scientific argument.
+Computational resources were selected according to the needs of preprocessing, training, and evaluation. Small pipeline checks were done before full experiments, and reusable intermediate outputs reduced repeated preprocessing. Detailed hardware and execution records are kept for reproducibility instead of being included as part of the main scientific argument.
 
-Versioned code, deterministic manifests, persistent data storage, and machine-readable results link each experiment to its configuration. These records support consistent execution across environments and preserve the information needed to reproduce a reported result.
+Versioned code, deterministic manifests, persistent data storage, and machine-readable results connect each experiment to its settings. These records help keep execution consistent across different environments and provide the information needed to reproduce reported results.
 
-Author contributions, author order, committee details, and submission metadata require confirmation by the authors and supervisors. They are not inferred from repository activity.
+Author contributions, author order, committee information, and submission details still need confirmation from the authors and supervisors. They are not guessed from repository activity.
 
 \section{Risk Management}
 
-Table~\ref{tab:risks} summarizes the principal scientific and operational risks. These include correlated observations crossing partitions, unsupported identity claims, source-linked classes, perception failures, causal attribution from combined configurations, and unequal training budgets in multi-task comparisons.
+Table~\ref{tab:risks} lists the main scientific and operational risks. These include related observations crossing train and test splits, unsupported identity claims, classes linked to one data source, perception failures, incorrect causal claims from combined model changes, and unfair comparisons caused by different training budgets.
 
 \input{tables/risks}
 
-The evaluation design addresses these risks through task-specific controls. ScienceDB burst groups and behavior videos or sessions remain within their assigned partitions, while SideView Protocol A separates biological identities between learning and evaluation. Matched subsets support comparison of the RGB and perception-enhanced BCS and behavior models on the same retained samples. The Re-ID model's oracle designation distinguishes ground-truth guidance from an automatic pipeline. Important limitations remain: ScienceDB identities are unknown, Walking is source-confounded, and the task models provide single-run estimates. The final sharing comparison must retain equivalent task protocols and disclose any differences in training budget.
+The evaluation design reduces these risks using task-specific controls. ScienceDB burst groups and behavior videos or sessions stay inside their assigned partitions. SideView Protocol A separates biological identities between representation learning and evaluation. Matched subsets are used to compare the RGB and perception-enhanced BCS and behavior models on the same retained samples. The Re-ID model is clearly described as oracle-guided when it uses ground-truth masks. Important limits still remain: ScienceDB cow identities are unknown, Walking is linked to one source, and the task models are based on single runs. The final MTL comparison must keep the task protocols comparable and report any difference in training budget.
 
 \section{Economic Analysis}
 
-The available records support a partial account of research costs, not a farm-deployment business case. Experiments differ in accelerator type, preprocessing requirements, storage, and billing coverage. Their elapsed times therefore cannot be converted into directly comparable costs without consistent rates or invoices. Table~\ref{tab:costs} reports only recorded information.
+The available records allow only a partial discussion of research cost, not a full farm-deployment business case. The experiments use different accelerators, preprocessing steps, storage needs, and billing conditions. Their runtime therefore cannot be turned into directly comparable cost values without consistent rates or invoices. Table~\ref{tab:costs} reports only information that was actually recorded.
 
 \input{tables/costs}
 
-A deployment estimate would require camera number and placement, inference frequency, computing hardware, connectivity, storage retention, maintenance, and human-review workload. These inputs are not fixed by the benchmark experiments. The study therefore does not claim measured return on investment, a payback period, or demonstrated cost savings from multi-task integration.
+A real deployment estimate would need information such as the number and placement of cameras, how often inference runs, the required computing hardware, network access, storage period, maintenance, and human-review workload. These values are not fixed by the benchmark experiments. Therefore, the study does not claim a measured return on investment, a payback period, or proven cost savings from multi-task integration.
