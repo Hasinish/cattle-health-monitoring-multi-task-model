@@ -33,6 +33,10 @@
   * **Run 7 full training**: COMPLETE & CERTIFIED ✅ (Modal L40S, 30 epochs, total runtime 1,532.3s / ~25.5 mins, App `ap-DndFLCIcQgseZvOnv7PaFs`, Best Multi-Task Objective 0.40036 at Epoch 3)
   * **Run 7 held-out evaluation**: COMPLETE & CERTIFIED ✅ (Modal L40S, App `ap-ftPpUdYqCnGTEWBqTslNul`, evaluated frozen Epoch 3 `mtl_e1_best.pth` across all 3 tasks with 0 test tuning/leakage: BCS matched N=7,549, Behavior matched N=780, Re-ID Protocol A 69 cows. Found textbook negative transfer / degradation across all 3 tasks under naive hard parameter sharing).
 - **Immediate next action:** Stopped per user instruction. Ready for Run 8 (E3 Modular Multi-Task Learning) when commanded.
+- [x] **P3 Sample Reports Writing Audit & Freeze-Safe Boundary Strategy (`cattle_thesis_p3_latex/P3_SAMPLE_WRITING_AUDIT.md`) — COMPLETE & PUSHED TO REMOTE (`eb8795d`):**
+  * Audited 12 faculty-evaluated BRAC University CSE400 final thesis reports.
+  * Formulated the 5 Laws of Academic Thesis Writing, stripped engineering diary prose, and identified the 5 dedicated freeze-safe paraphrasing tabs.
+  * Formatted, verified, committed, and pushed directly to `origin/main` (commit `eb8795d`).
 - [x] **Phase 3 Run 7 E1 Hard-Shared MTL Official Held-Out Evaluation (hasinishrak2015) — COMPLETE & CERTIFIED:**
   1. **Evaluated Checkpoint**: `/mtl-checkpoints/mtl_e1_hard_shared/mtl_e1_best.pth` (Epoch 3, `val_e1_objective = 0.40036`). Predefined validation objective selection strictly obeyed. Zero test-set peeking, tuning, or retraining.
   2. **BCS Test (N=7,549 ScienceDB images, exact Run 4 matched identities)**: Real MAE 0.1788 vs Run 4 0.1709 (+0.0079 degradation / +4.6% error); Acc@0 41.10% vs 43.57% (-2.47%); Acc@1 88.44% vs 89.40% (-0.96%); Bal Acc 35.70% vs 39.70% (-4.00%); Macro-F1 0.3605 vs 0.4039 (-0.0434); Test Loss 0.4175 vs 0.4403 (-0.0228). Verdict: Degradation.

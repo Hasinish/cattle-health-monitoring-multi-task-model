@@ -35,6 +35,15 @@ Phase 2 (P2) LaTeX thesis sources, defense posters, and compiled final thesis re
 - `T25301094_P2 Poster.pdf`: Compiled presentation poster for the P2 thesis defense exhibition.
 - `T25301094_P2_Report.pdf`: Compiled final P2 thesis report document ready for department archiving.
 
+### `cattle_thesis_p3_latex/`
+Phase 3 (P3) / Final CSE400 Undergraduate Thesis LaTeX sources, audit reports, and manuscript assets.
+- `P3_SAMPLE_WRITING_AUDIT.md`: Forensic audit of 12 BRAC CSE400 final thesis reports, establishing the 5 Writing Laws, removing episodic semester diary prose, defining the 5 freeze-safe paraphrasing tabs, and enforcing the red-lock on uncomputed MTL results.
+- `main.tex`: Master LaTeX document orchestrating the final Phase 3 thesis manuscript.
+- `chapters/`: Modular LaTeX files for Chapters 1 through 6 (`chapter_1.tex` through `chapter_9.tex`).
+- `core/`: Front matter, title pages, approval sheets, and abstract (`abstract.tex`).
+- `bibliography/`: BibTeX files covering literature citations.
+- `appendix/`: Supplementary appendices (evidence register, reproducibility protocols).
+
 ### `context/`
 Dataset preprocessing routines, member work splits, and original problem context files.
 - `context1_master_plan.txt`: Research master plan and pipeline roadmap.
