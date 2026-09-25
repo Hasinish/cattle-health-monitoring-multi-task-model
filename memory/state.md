@@ -25,14 +25,17 @@
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | 8-RUN SEQUENCE | RUNS 1–6: COMPLETE & CERTIFIED | RUN 7 TRAINING & HELD-OUT EVALUATION: COMPLETE & CERTIFIED | STOPPED BEFORE RUN 8)
-- **Run 7 Status Summary**:
-  * **Run 7 implementation**: COMPLETE ✅
-  * **Run 7 readiness**: PASS ✅
-  * **Run 7 smoke**: PASS ✅ (Modal Tesla T4, bit-identical reload max_logit_diff = 0.00000000)
-  * **Run 7 full training**: COMPLETE & CERTIFIED ✅ (Modal L40S, 30 epochs, total runtime 1,532.3s / ~25.5 mins, App `ap-DndFLCIcQgseZvOnv7PaFs`, Best Multi-Task Objective 0.40036 at Epoch 3)
-  * **Run 7 held-out evaluation**: COMPLETE & CERTIFIED ✅ (Modal L40S, App `ap-ftPpUdYqCnGTEWBqTslNul`, evaluated frozen Epoch 3 `mtl_e1_best.pth` across all 3 tasks with 0 test tuning/leakage: BCS matched N=7,549, Behavior matched N=780, Re-ID Protocol A 69 cows. Found textbook negative transfer / degradation across all 3 tasks under naive hard parameter sharing).
-- **Immediate next action:** Stopped per user instruction. Ready for Run 8 (E3 Modular Multi-Task Learning) when commanded.
+## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | 8-RUN SEQUENCE | RUNS 1–6: COMPLETE & CERTIFIED | RUN 7 TRAINING & HELD-OUT EVALUATION: COMPLETE & CERTIFIED | RUN 8 IMPLEMENTATION & READINESS: COMPLETE & CERTIFIED | STOPPED BEFORE SMOKE/TRAINING)
+- **Run 8 E3 Modular MTL Status Summary**:
+  * **Run 8 architecture & scripts**: COMPLETE ✅ (`scripts/train_mtl_e3_modular.py`, `scripts/modal_train_mtl_e3_modular.py`)
+  * **Run 8 unit test suite**: PASS ✅ (`tests/test_mtl_e3_modular.py`, 8/8 tests passed in 3.53s)
+  * **Run 8 parameter verification**: CERTIFIED ✅ (11,179,648 shared backbone [90.72%], 395,904 task-private adapters [3.21%; 131,968 each], 747,058 task heads [6.06%]; total 12,322,610 trainable params, +3.32% over E1)
+  * **Run 8 gradient isolation**: VERIFIED ✅ (Zero cross-task gradient leakage; pure task-private routing; all 3 tasks accumulate into shared trunk)
+  * **Run 8 adapter identity initialization**: VERIFIED ✅ (Zero-weight up-projection; step-0 begins on exact certified E1 representation manifold)
+  * **Run 8 readiness on Modal (`hasinishrak2015`)**: PASS ✅ (CPU-only, zero GPU cost, volumes verified, test sets strictly protected)
+  * **Run 8 GPU smoke & training**: STRICTLY STOPPED per user constraint (Awaiting user command)
+- **Immediate next action:** Stopped per user instruction. Ready for Run 8 GPU smoke test when commanded:
+  `modal run --profile hasinishrak2015 scripts/modal_train_mtl_e3_modular.py::smoke_test`
 - [x] **P3 Sample Reports Writing Audit & Freeze-Safe Boundary Strategy (`cattle_thesis_p3_latex/P3_SAMPLE_WRITING_AUDIT.md`) — COMPLETE & PUSHED TO REMOTE (`eb8795d`):**
   * Audited 12 faculty-evaluated BRAC University CSE400 final thesis reports.
   * Formulated the 5 Laws of Academic Thesis Writing, stripped engineering diary prose, and identified the 5 dedicated freeze-safe paraphrasing tabs.
@@ -45,14 +48,25 @@
   * Successfully authenticated via OAuth 2.0 Desktop flow (`credentials.json` -> `token.json`).
   * Injected **94,633 characters** across all 5 freeze-safe tabs directly into user's live Google Doc: `https://docs.google.com/document/d/1XrZgw-45ZhicfpWZ1NimfZV_mzDoBJiG440uYRjx8zI/edit`.
   * Added OAuth credentials/tokens to `.gitignore` for zero leakage.
-- [x] **Chapter 1 Paraphrasing Workbench Table Injection (Google Docs API) — COMPLETE & VERIFIED:**
+- [x] **Chapter 1 Paraphrasing Workbench Table Injection (Google Docs API) — COMPLETE, 100% LATEX-FREE & STANDARDIZED:**
   * Implemented and executed `scripts/complete_chapter1_tables.py` targeting tab `Chapter 1: Introduction` (`t.0`).
   * Structured all 9 sections (36 paragraphs total) into individual 1-column tables matching Hasin's exact visual template:
     - Row 1: `Original (Do Paraphrase)` with BOLD + RED HIGHLIGHT (RGB 1,0,0) and context warnings (e.g. never use "Phase 2", keep RQ definitions exact).
-    - Row 2: Clean original academic paragraph text with ALL citations and tildes stripped completely (pure natural English).
+    - Row 2: Clean original academic paragraph text with ALL citations, tildes, math syntax, quotes, and environments stripped completely (pure natural English; e.g. RQs converted from `\\begin{enumerate}` to clean `1. `, `2. `, `3. `).
     - Row 3: `Paraphrased:` with BOLD + GREEN HIGHLIGHT (RGB 0,1,0).
     - Row 4: Empty space (`\n\n\n\n\n`) reserved for teammate paraphrased typing.
-  * Verified live in Google Doc: `https://docs.google.com/document/d/1XrZgw-45ZhicfpWZ1NimfZV_mzDoBJiG440uYRjx8zI/edit?tab=t.0`.
+  * Verified with `scripts/scan_latex_issues.py`: **0 LaTeX artifacts, 0 font discrepancies (all body text standardized to 11pt unbolded)**.
+  * Live URL: `https://docs.google.com/document/d/1XrZgw-45ZhicfpWZ1NimfZV_mzDoBJiG440uYRjx8zI/edit?tab=t.0`.
+- [x] **Google Sheets Side-by-Side Paraphrasing Workbench (Google Sheets API v4) — CHAPTERS 1, 2, & 3 COMPLETE & LIVE:**
+  * Authorized Google Sheets API scope via desktop OAuth flow (`token.json` updated with `spreadsheets` and `drive.file`).
+  * Built [`scripts/upload_to_google_sheet.py`](file:///d:/cattle-health-monitoring-multi-task-model/scripts/upload_to_google_sheet.py).
+  * Automatically formatted and injected all freeze-safe chapters into user's live spreadsheet: `https://docs.google.com/spreadsheets/d/14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A/edit`:
+    - **Tab 1: `Chapter 1: Introduction`**: 9 sections, 36 paragraphs, 118 rows.
+    - **Tab 2: `Chapter 2: Literature Review`**: 18 sections, 78 paragraphs, 253 rows.
+    - **Tab 3: `Chapter 3: Requirements & Constraints`**: 8 sections, 25 paragraphs, 83 rows.
+  * Total rows injected: **454 rows across 139 academic paragraphs**.
+  * Side-by-side template enforced: Col A spacer (40px), Col B original academic text with RED header (`RGB(1,0,0)`, 560px, WRAP), Col C teammate typing area with GREEN header (`RGB(0,1,0)`, 560px, WRAP), clean spacer rows, zero citations, zero LaTeX artifacts. Ready for native range locking.
+  * Added idiot-proof granular instructions directly in RED headers: spelled out "CRITICAL - THE 3 MAIN RESEARCH QUESTIONS", named forbidden words ("Phase 2"), scope boundaries ("No lameness"), and labeled each specific objective individually.
 - [x] **Phase 3 Run 7 E1 Hard-Shared MTL Official Held-Out Evaluation (hasinishrak2015) — COMPLETE & CERTIFIED:**
   1. **Evaluated Checkpoint**: `/mtl-checkpoints/mtl_e1_hard_shared/mtl_e1_best.pth` (Epoch 3, `val_e1_objective = 0.40036`). Predefined validation objective selection strictly obeyed. Zero test-set peeking, tuning, or retraining.
   2. **BCS Test (N=7,549 ScienceDB images, exact Run 4 matched identities)**: Real MAE 0.1788 vs Run 4 0.1709 (+0.0079 degradation / +4.6% error); Acc@0 41.10% vs 43.57% (-2.47%); Acc@1 88.44% vs 89.40% (-0.96%); Bal Acc 35.70% vs 39.70% (-4.00%); Macro-F1 0.3605 vs 0.4039 (-0.0434); Test Loss 0.4175 vs 0.4403 (-0.0228). Verdict: Degradation.

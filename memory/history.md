@@ -1,3 +1,45 @@
+# Session Summary — 2026-09-25 (Google Sheets Chapters 1, 2, & 3 Multi-Tab Paraphrasing Workbench)
+
+- Convo ID: 2b4f60a9-f8ec-4122-8dd1-440b6924577c
+- Objective: Deploy side-by-side paraphrasing workbench across all freeze-safe thesis chapters in Google Sheets (`14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`), including new tabs for Chapter 2 (Literature Review) and Chapter 3 (Requirements & Constraints).
+- Accomplishments & Verification:
+  1. Extended `scripts/upload_to_google_sheet.py` with full parsers and section definitions for Chapter 2 (`get_chapter2_data`) and Chapter 3 (`get_chapter3_data`).
+  2. Injected and formatted 3 live tabs in Google Sheets:
+     - `Chapter 1: Introduction` (sheetId=0): 9 sections, 36 paragraphs, 118 rows.
+     - `Chapter 2: Literature Review` (sheetId=1111150292): 18 sections, 78 paragraphs, 253 rows.
+     - `Chapter 3: Requirements & Constraints` (sheetId=521635664): 8 sections, 25 paragraphs, 83 rows.
+  3. Enforced layout: Column A (40px spacer), Column B (560px, Original text, bold RED header), Column C (560px, Paraphrased text, bold GREEN header), permanent text wrapping (`wrapStrategy: WRAP`, `verticalAlignment: TOP`), clean spacer rows, zero ghost highlights.
+  4. Idiot-Proof Granular Notes: Replaced cryptic acronyms with explicit plain-English notes in red headers (e.g. "CRITICAL - THE 3 MAIN RESEARCH QUESTIONS", "FORBIDDEN PHRASE: NEVER write 'Phase 2'", "SCOPE BOUNDARY: No lameness").
+  5. Forensic Verification: Verified 0 LaTeX artifacts or citations across all 454 rows of Chapters 1, 2, and 3.
+  6. Live Spreadsheet: `https://docs.google.com/spreadsheets/d/14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A/edit`.
+
+# Session Summary — 2026-09-25 (Phase 3 Run 8 E3 Modular MTL Pipeline Implementation & Verification)
+
+- Convo ID: 98ed6120-2e4e-463a-9502-55deb02c72f7
+- Objective: Implement Phase 3 Run 8 E3 Modular Multi-Task Learning pipeline strictly as an architectural specification for direct, controlled comparison against Run 7 E1 Hard-Shared MTL control; enforce zero GPU training/smoke execution stop condition.
+- Accomplishments & Verification:
+  1. Built standalone training engine `scripts/train_mtl_e3_modular.py` with `ResNet18SharedBackbone` (11,179,648 params, 90.72%), 3 `TaskResidualAdapter` modules (Linear 512->128->LN->GELU->Dropout->Linear 128->512; 131,968 params each = 395,904 total), and 3 matched task heads (747,058 params total: BCS 2,052, Behavior TCN 723,973, Re-ID 21,033) for 12,322,610 total trainable params (+3.32% over E1).
+  2. Built Modal cloud wrapper `scripts/modal_train_mtl_e3_modular.py` mounting `mtl-data`, `mtl-checkpoints` (dedicated `/mtl-checkpoints/mtl_e3_modular/` output dir), and `sideview-data` on profile `hasinishrak2015`.
+  3. Built and executed comprehensive unit test suite `tests/test_mtl_e3_modular.py`: 8/8 tests passed in 3.53s, verifying parameter counts, identity initialization (`up_proj.weight == 0`, `up_proj.bias == 0`), conv1 4th mask-channel initialization, task forward shapes, strict gradient isolation across task adapters, and bit-identical checkpoint reload (`max_logit_diff == 0.00000000`).
+  4. Executed CPU readiness verification on Modal profile `hasinishrak2015` (zero GPU cost) verifying datasets, sequence counts, zero test leakage, and adapter identity initialization.
+  5. Documented architecture and controlled design in research log `docs/research_log/2026-09-25_phase3_run8_mtl_e3_modular_architecture_and_design.md` and updated `README.md`.
+  6. Enforced critical stop condition: strictly zero GPU compute launched (no T4 smoke, no L40S training, 0 test set evaluations).
+
+# Session Summary — 2026-09-25 (Google Docs Chapter 1 Table Formatting & LaTeX Cleanup)
+
+- Convo ID: 2b4f60a9-f8ec-4122-8dd1-440b6924577c
+- Objective: Populate Chapter 1 in Google Docs (`1XrZgw-45ZhicfpWZ1NimfZV_mzDoBJiG440uYRjx8zI`, Tab `t.0`) into 1-column tables with 4-row units, strip all citations, resolve LaTeX syntax (`\\begin{enumerate}`, `\\begin{quote}`, `--`), and enforce strict 11pt unbolded font.
+- Accomplishments & Verification:
+  1. Built and executed `scripts/complete_chapter1_tables.py` and upgraded `clean_latex()` in `scripts/export_paraphrase_docs.py`.
+  2. Populated all 9 sections (36 paragraphs total, 8 tables) in Tab `t.0` with exact 4-row units:
+     - Row 1: `Original (Do Paraphrase)` [Bold, Red Highlight RGB(1,0,0), 11pt] + context warnings.
+     - Row 2: Clean original academic text [11pt normal weight, 0 citations, 0 LaTeX tags].
+     - Row 3: `Paraphrased:` [Bold, Green Highlight RGB(0,1,0), 11pt].
+     - Row 4: Empty space (`\n\n\n\n\n`) reserved for teammate typing [11pt].
+  3. Cleaned environments: `\\begin{enumerate} \item ... \end{enumerate}` converted to numbered list `1. `, `2. `, `3. `; `\\begin{quote}` converted to quotes `"..."`; dashes `--` normalized to `-`.
+  4. Ran `scripts/scan_latex_issues.py` and style audits: verified **0 LaTeX artifacts and 0 font discrepancies** remaining in Tab `t.0`.
+  5. Live Google Doc: `https://docs.google.com/document/d/1XrZgw-45ZhicfpWZ1NimfZV_mzDoBJiG440uYRjx8zI/edit?tab=t.0`.
+
 # Session Summary — 2026-09-25 (P3 Sample Writing Audit Push to Remote Main)
 
 - Convo ID: 2b4f60a9-f8ec-4122-8dd1-440b6924577c
