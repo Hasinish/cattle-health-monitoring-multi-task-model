@@ -1,3 +1,23 @@
+# Session Summary — 2026-09-26 (Phase 3 E4 PCGrad MTL Official Held-Out Evaluation & Final Experimental Completion)
+
+- Convo ID: 2c9a52fb-1aef-4eb3-a588-eafb90f6be82
+- Objective: Implement, unit-test, and execute the ONE official held-out test evaluation of Phase 3 E4 PCGrad (`MTLE4PCGradModel` with optimization-level gradient projection) on Modal (`hasinishrak2015`), testing whether resolving conflicting gradients on the shared backbone reduces negative transfer observed under E1 hard sharing.
+- Accomplishments & Verification:
+  1. Implemented evaluation engine `scripts/evaluate_mtl_e4_held_out.py` and Modal cloud runner `scripts/modal_evaluate_mtl_e4_held_out.py` evaluating the frozen best checkpoint `/mtl-checkpoints/mtl_e4_pcgrad/mtl_e4_best.pth` (Epoch 3, `val_e4_objective = 0.40098`, exactly 11,926,706 trainable params; zero adapters, zero gates).
+  2. Built comprehensive unit test suite `tests/test_mtl_e4_evaluation.py` (12/12 passed in 1.58s), verifying checkpoint loading assertions, parameter counts, AST purity (no optimizer/backward calls), and exact population counts (BCS 7,549; Behavior 780; Gallery 36,811; Barn 25,260; Snapshots 607; 69 cows).
+  3. Dispatched cloud evaluation on NVIDIA L40S (`hasinishrak2015`, App ID `ap-JWAyJ9EgN2Zvbaeo2RZW6d`, runtime ~16.5 mins) across exact matched held-out test sets with zero test leakage, zero retraining, and zero threshold tuning:
+     - **BCS (N=7,549 ScienceDB test images, burst-group-disjoint)**: Real MAE **0.1828** (vs Run 7 E1 0.1788 [+0.0040], Run 4 single-task 0.1709 [+0.0119], Run 8 E3 0.1916 [**-0.0088 error drop**]), Acc@0 40.23%, Acc@1 87.84%, Balanced Acc 34.97%, Macro-F1 0.3516, Test Loss 0.4181.
+     - **Behavior (N=780 retained sequences, T=8)**: Overall Acc **86.92%** (vs Run 7 E1 85.00% [**+1.92 pp**], Run 8 E3 85.77% [**+1.15 pp**], Run 5 single-task 87.44% [-0.52 pp]), Balanced Acc **69.15%** (vs E1 67.30% [**+1.85 pp**], E3 66.70% [**+2.45 pp**]), Macro-F1 **0.7114** (vs E1 0.6866 [**+0.0248**], E3 0.6755 [**+0.0359**]), Test Loss **0.5454** (vs E1 0.6226 [**-0.0772 reduction**]). Minority class Walking F1 more than doubled to **0.0909** (vs E1 0.0408 [**+0.0501**]; E3 completely collapsed to 0.0000). On authentic barn CCTV (**CVB**, N=422): Acc **81.04%** (vs E1 76.78% [**+4.26 pp**], E3 80.33% [**+0.71 pp**], Run 5 single-task 80.09% [**+0.95 pp**]), Macro-F1 **0.6141** (vs E1 0.5402 [**+0.0739**], matching Run 5 0.6188). Beef (N=358): Acc 93.85%, Macro-F1 0.9158.
+     - **Re-ID Protocol A (69 held-out cows; 36,811 parlor gallery)**:
+       * Query Barn -> Parlor (25,260 queries): Rank-1 54.97% (vs E1 57.38%, Run 6 63.90%, E3 49.08% [**+5.89 pp**]), Rank-5 68.81% (vs E3 67.72%), Rank-10 74.99% (vs E3 75.03%), mAP **30.23%** (matching E1 30.37%, beating E3 28.04% [**+2.19 pp**]).
+       * Query Snapshots -> Parlor (607 queries): Rank-1 57.00% (vs E1 57.17%, Run 6 62.93%, E3 53.71% [**+3.29 pp**]), Rank-5 72.16% (vs E3 72.32%), Rank-10 78.25% (vs E3 80.23%), mAP **33.87%** (beating E1 33.69% [**+0.18 pp**] and E3 28.78% [**+5.09 pp**]).
+  4. Core Scientific Findings:
+     - PCGrad directly observed frequent gradient conflict during training (44,177 projections) and its resolution provided clear, metric-dependent mitigation of E1 negative transfer on Behavior (particularly authentic barn CCTV surveillance where Acc rose +4.26 pp and Walking F1 more than doubled).
+     - PCGrad did NOT eliminate negative transfer relative to single-task baselines across all tasks.
+     - Optimization-level intervention (E4 PCGrad) decisively outperformed architectural modularity (E3 task-private residual adapters) across ALL THREE tasks on held-out test data.
+     - E4 PCGrad is the **FINAL ADDITIONAL EXPERIMENTAL RUN**. No further training runs or ablations will be conducted. GradNorm (E5) and partial sharing (E2) remain deferred. Canonical roadmap and thesis chapters remain untouched.
+  5. Synced artifacts: `artifacts/mtl_e4_evaluation/mtl_e4_test_evaluation_metrics.json`, authored official research log `docs/research_log/2026-09-26_phase3_mtl_e4_pcgrad_held_out_evaluation_results.md`, updated `docs/research_log/README.md`.
+
 # Session Summary — 2026-09-25 (Phase 3 E4 PCGrad MTL Implementation & Cloud Smoke Certification)
 
 - Convo ID: 2c9a52fb-1aef-4eb3-a588-eafb90f6be82

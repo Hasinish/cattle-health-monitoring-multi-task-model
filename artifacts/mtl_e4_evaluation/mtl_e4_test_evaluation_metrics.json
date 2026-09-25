@@ -1,0 +1,427 @@
+{
+  "experiment": "Phase 3 E4 PCGrad MTL Official Held-Out Evaluation",
+  "evaluated_checkpoint": "/mtl-checkpoints/mtl_e4_pcgrad/mtl_e4_best.pth",
+  "checkpoint_selection_criterion": "Predefined Minimum Validation E4 Objective (Epoch 3, val_e4_objective = 0.40098)",
+  "evaluation_timestamp": "2026-09-25 18:43:50 UTC",
+  "populations": {
+    "bcs_test_images": 7549,
+    "behavior_test_sequences": 780,
+    "reid_protocol_a_gallery": 36811,
+    "reid_protocol_a_query_barn": 25260,
+    "reid_protocol_a_query_snapshots": 607,
+    "reid_protocol_a_cows": 69
+  },
+  "bcs": {
+    "e4_pcgrad_matched": {
+      "test_loss": 0.4181,
+      "total_test_samples": 7549,
+      "real_mae": 0.1828,
+      "acc_0": 0.4023,
+      "acc_1": 0.8784,
+      "balanced_accuracy": 0.3497,
+      "macro_f1": 0.3516,
+      "precision": 0.5334,
+      "recall": 0.3497,
+      "confusion_matrix": [
+        [
+          273,
+          619,
+          223,
+          27,
+          0
+        ],
+        [
+          114,
+          846,
+          740,
+          189,
+          0
+        ],
+        [
+          28,
+          463,
+          1102,
+          485,
+          0
+        ],
+        [
+          16,
+          167,
+          699,
+          760,
+          8
+        ],
+        [
+          0,
+          48,
+          220,
+          466,
+          56
+        ]
+      ]
+    },
+    "run4_baseline_matched": {
+      "population": 7549,
+      "real_mae": 0.1709,
+      "acc_0": 0.4357,
+      "acc_1": 0.894,
+      "balanced_accuracy": 0.397,
+      "macro_f1": 0.4039,
+      "test_loss": 0.4403
+    },
+    "run7_e1_baseline_matched": {
+      "real_mae": 0.1788,
+      "acc_0": 0.411,
+      "acc_1": 0.8844,
+      "balanced_accuracy": 0.357,
+      "macro_f1": 0.3605,
+      "test_loss": 0.4175
+    },
+    "run8_e3_baseline_matched": {
+      "real_mae": 0.1916,
+      "acc_0": 0.3847,
+      "acc_1": 0.8632,
+      "balanced_accuracy": 0.3313,
+      "macro_f1": 0.3291,
+      "test_loss": 0.4555
+    },
+    "deltas_vs_single_task": {
+      "real_mae_delta": 0.0119,
+      "acc_0_delta_pct": -3.34,
+      "acc_1_delta_pct": -1.56,
+      "balanced_acc_delta_pct": -4.73,
+      "macro_f1_delta": -0.0523,
+      "test_loss_delta": -0.0222
+    },
+    "deltas_vs_e1_hard_shared": {
+      "real_mae_delta": 0.004,
+      "acc_0_delta_pct": -0.87,
+      "acc_1_delta_pct": -0.6,
+      "balanced_acc_delta_pct": -0.73,
+      "macro_f1_delta": -0.0089,
+      "test_loss_delta": 0.0006
+    },
+    "deltas_vs_e3_modular": {
+      "real_mae_delta": -0.0088,
+      "acc_0_delta_pct": 1.76,
+      "acc_1_delta_pct": 1.52,
+      "balanced_acc_delta_pct": 1.84,
+      "macro_f1_delta": 0.0225,
+      "test_loss_delta": -0.0374
+    },
+    "verdict_vs_single": "Degradation",
+    "verdict_vs_e1": "Degradation",
+    "verdict_vs_e3": "Improvement"
+  },
+  "behavior": {
+    "e4_pcgrad_matched": {
+      "test_loss": 0.5454,
+      "total_test_samples": 780,
+      "overall_accuracy": 0.8692,
+      "balanced_accuracy": 0.6915,
+      "macro_f1": 0.7114,
+      "macro_precision": 0.7521,
+      "macro_recall": 0.6915,
+      "per_class": {
+        "Standing": {
+          "precision": 0.9412,
+          "recall": 0.5926,
+          "f1": 0.7273,
+          "support": 108
+        },
+        "Lying": {
+          "precision": 0.9722,
+          "recall": 0.8861,
+          "f1": 0.9272,
+          "support": 237
+        },
+        "Feeding": {
+          "precision": 0.8313,
+          "recall": 0.9971,
+          "f1": 0.9067,
+          "support": 346
+        },
+        "Drinking": {
+          "precision": 0.9048,
+          "recall": 0.9048,
+          "f1": 0.9048,
+          "support": 63
+        },
+        "Walking": {
+          "precision": 0.1111,
+          "recall": 0.0769,
+          "f1": 0.0909,
+          "support": 26
+        }
+      },
+      "per_class_f1": {
+        "Standing": 0.7273,
+        "Lying": 0.9272,
+        "Feeding": 0.9067,
+        "Drinking": 0.9048,
+        "Walking": 0.0909
+      },
+      "confusion_matrix": [
+        [
+          64,
+          5,
+          19,
+          6,
+          14
+        ],
+        [
+          0,
+          210,
+          25,
+          0,
+          2
+        ],
+        [
+          1,
+          0,
+          345,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          6,
+          57,
+          0
+        ],
+        [
+          3,
+          1,
+          20,
+          0,
+          2
+        ]
+      ],
+      "cvb_metrics": {
+        "support": 422,
+        "overall_accuracy": 0.8104,
+        "balanced_accuracy": 0.553,
+        "macro_f1": 0.6141
+      },
+      "beef_metrics": {
+        "support": 358,
+        "overall_accuracy": 0.9385,
+        "balanced_accuracy": 0.9205,
+        "macro_f1": 0.9158
+      },
+      "walking_is_cvb_only": true
+    },
+    "run5_baseline_matched": {
+      "population": 780,
+      "overall_accuracy": 0.8744,
+      "balanced_accuracy": 0.7443,
+      "macro_f1": 0.7397,
+      "test_loss": 0.443,
+      "per_class_f1": {
+        "Standing": 0.7215,
+        "Lying": 0.9169,
+        "Feeding": 0.9465,
+        "Drinking": 0.8682,
+        "Walking": 0.2456
+      },
+      "cvb_metrics": {
+        "overall_accuracy": 0.8009,
+        "balanced_accuracy": 0.6105,
+        "macro_f1": 0.6188
+      },
+      "beef_metrics": {
+        "overall_accuracy": 0.9609,
+        "balanced_accuracy": 0.9426,
+        "macro_f1": 0.9414
+      }
+    },
+    "run7_e1_baseline_matched": {
+      "overall_accuracy": 0.85,
+      "balanced_accuracy": 0.673,
+      "macro_f1": 0.6866,
+      "test_loss": 0.6226,
+      "per_class_f1": {
+        "Standing": 0.7263,
+        "Lying": 0.8924,
+        "Feeding": 0.9031,
+        "Drinking": 0.8702,
+        "Walking": 0.0408
+      },
+      "cvb_metrics": {
+        "support": 422,
+        "overall_accuracy": 0.7678,
+        "balanced_accuracy": 0.489,
+        "macro_f1": 0.5402
+      },
+      "beef_metrics": {
+        "support": 358,
+        "overall_accuracy": 0.9469,
+        "balanced_accuracy": 0.9311,
+        "macro_f1": 0.9236
+      }
+    },
+    "run8_e3_baseline_matched": {
+      "overall_accuracy": 0.8577,
+      "balanced_accuracy": 0.667,
+      "macro_f1": 0.6755,
+      "test_loss": 0.4193,
+      "per_class_f1": {
+        "Standing": 0.7417,
+        "Lying": 0.9306,
+        "Feeding": 0.9016,
+        "Drinking": 0.8039,
+        "Walking": 0.0
+      },
+      "cvb_metrics": {
+        "support": 422,
+        "overall_accuracy": 0.8033,
+        "balanced_accuracy": 0.6061,
+        "macro_f1": 0.6026
+      },
+      "beef_metrics": {
+        "support": 358,
+        "overall_accuracy": 0.9218,
+        "balanced_accuracy": 0.8729,
+        "macro_f1": 0.8849
+      }
+    },
+    "deltas_vs_single_task": {
+      "overall_accuracy_delta_pct": -0.52,
+      "balanced_accuracy_delta_pct": -5.28,
+      "macro_f1_delta": -0.0283,
+      "test_loss_delta": 0.1024,
+      "walking_f1_delta": -0.1547,
+      "cvb_macro_f1_delta": -0.0047,
+      "beef_macro_f1_delta": -0.0256
+    },
+    "deltas_vs_e1_hard_shared": {
+      "overall_accuracy_delta_pct": 1.92,
+      "balanced_accuracy_delta_pct": 1.85,
+      "macro_f1_delta": 0.0248,
+      "test_loss_delta": -0.0772,
+      "walking_f1_delta": 0.0501,
+      "cvb_macro_f1_delta": 0.0739,
+      "beef_macro_f1_delta": -0.0078
+    },
+    "deltas_vs_e3_modular": {
+      "overall_accuracy_delta_pct": 1.15,
+      "balanced_accuracy_delta_pct": 2.45,
+      "macro_f1_delta": 0.0359,
+      "test_loss_delta": 0.1261,
+      "walking_f1_delta": 0.0909,
+      "cvb_macro_f1_delta": 0.0115,
+      "beef_macro_f1_delta": 0.0309
+    },
+    "verdict_vs_single": "Degradation",
+    "verdict_vs_e1": "Improvement",
+    "verdict_vs_e3": "Improvement"
+  },
+  "reid": {
+    "e4_pcgrad_protocol_a": {
+      "query_barn": {
+        "num_queries": 25260,
+        "num_gallery": 36811,
+        "rank_1": 54.97,
+        "rank_5": 68.81,
+        "rank_10": 74.99,
+        "mAP": 30.23
+      },
+      "query_snapshots": {
+        "num_queries": 607,
+        "num_gallery": 36811,
+        "rank_1": 57.0,
+        "rank_5": 72.16,
+        "rank_10": 78.25,
+        "mAP": 33.87
+      }
+    },
+    "run6_baseline_protocol_a": {
+      "query_barn": {
+        "rank_1": 63.9,
+        "rank_5": 77.1,
+        "rank_10": 82.58,
+        "mAP": 40.68
+      },
+      "query_snapshots": {
+        "rank_1": 62.93,
+        "rank_5": 75.29,
+        "rank_10": 81.05,
+        "mAP": 40.42
+      }
+    },
+    "run7_e1_baseline_protocol_a": {
+      "query_barn": {
+        "rank_1": 57.38,
+        "rank_5": 73.33,
+        "rank_10": 79.79,
+        "mAP": 30.37
+      },
+      "query_snapshots": {
+        "rank_1": 57.17,
+        "rank_5": 75.45,
+        "rank_10": 82.7,
+        "mAP": 33.69
+      }
+    },
+    "run8_e3_baseline_protocol_a": {
+      "query_barn": {
+        "rank_1": 49.08,
+        "rank_5": 67.72,
+        "rank_10": 75.03,
+        "mAP": 28.04
+      },
+      "query_snapshots": {
+        "rank_1": 53.71,
+        "rank_5": 72.32,
+        "rank_10": 80.23,
+        "mAP": 28.78
+      }
+    },
+    "deltas_vs_single_task": {
+      "query_barn": {
+        "rank_1_delta": -8.93,
+        "rank_5_delta": -8.29,
+        "rank_10_delta": -7.59,
+        "mAP_delta": -10.45
+      },
+      "query_snapshots": {
+        "rank_1_delta": -5.93,
+        "rank_5_delta": -3.13,
+        "rank_10_delta": -2.8,
+        "mAP_delta": -6.55
+      }
+    },
+    "deltas_vs_e1_hard_shared": {
+      "query_barn": {
+        "rank_1_delta": -2.41,
+        "rank_5_delta": -4.52,
+        "rank_10_delta": -4.8,
+        "mAP_delta": -0.14
+      },
+      "query_snapshots": {
+        "rank_1_delta": -0.17,
+        "rank_5_delta": -3.29,
+        "rank_10_delta": -4.45,
+        "mAP_delta": 0.18
+      }
+    },
+    "deltas_vs_e3_modular": {
+      "query_barn": {
+        "rank_1_delta": 5.89,
+        "rank_5_delta": 1.09,
+        "rank_10_delta": -0.04,
+        "mAP_delta": 2.19
+      },
+      "query_snapshots": {
+        "rank_1_delta": 3.29,
+        "rank_5_delta": -0.16,
+        "rank_10_delta": -1.98,
+        "mAP_delta": 5.09
+      }
+    },
+    "verdict_vs_single": "Degradation",
+    "verdict_vs_e1": "Degradation",
+    "verdict_vs_e3": "Improvement"
+  }
+}
