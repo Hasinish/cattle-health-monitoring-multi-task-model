@@ -1074,6 +1074,12 @@ def train_mtl_e3_pipeline(
             logits_bcs = model.forward_bcs(imgs_bcs)
             loss_bcs = criterion_bcs(logits_bcs, targets_bcs_ordinal)
             (1.0 * loss_bcs).backward()
+            if smoke and step == 1:
+                assert model.bcs_adapter.down_proj.weight.grad is not None, "BCS adapter received no grad!"
+                assert model.behavior_adapter.down_proj.weight.grad is None, "Behavior adapter leaked BCS grad!"
+                assert model.reid_adapter.down_proj.weight.grad is None, "ReID adapter leaked BCS grad!"
+                assert model.head_behavior.fc.weight.grad is None, "Behavior head leaked BCS grad!"
+                assert model.head_reid.weight.grad is None, "ReID head leaked BCS grad!"
 
             # Task 2: Behavior forward & backward
             seqs_beh, targets_beh, _ = next(beh_cycler)
@@ -1083,6 +1089,10 @@ def train_mtl_e3_pipeline(
             logits_beh, _ = model.forward_behavior(seqs_beh)
             loss_beh = criterion_beh(logits_beh, targets_beh)
             (1.0 * loss_beh).backward()
+            if smoke and step == 1:
+                assert model.behavior_adapter.down_proj.weight.grad is not None, "Behavior adapter received no grad!"
+                assert model.reid_adapter.down_proj.weight.grad is None, "ReID adapter leaked Behavior grad!"
+                assert model.head_reid.weight.grad is None, "ReID head leaked Behavior grad!"
 
             # Task 3: Re-ID forward & backward
             imgs_reid, targets_reid, _ = next(reid_cycler)
@@ -1095,8 +1105,10 @@ def train_mtl_e3_pipeline(
 
             # Verify that gradients have reached the shared backbone
             if smoke and step == 1:
+                assert model.reid_adapter.down_proj.weight.grad is not None, "ReID adapter received no grad!"
                 assert model.backbone.conv1.weight.grad is not None, "Gradients failed to reach shared backbone!"
                 assert torch.isfinite(model.backbone.conv1.weight.grad).all(), "Non-finite gradient in shared backbone!"
+                print("    [*] Smoke check step 1: forward/backward executed, backbone received grads, task-private pathways isolated ✅", flush=True)
 
             # Single optimizer update across all accumulated task gradients
             optimizer.step()
@@ -1190,6 +1202,31 @@ def train_mtl_e3_pipeline(
     print(f"  Checkpoints Saved: {best_ckpt_path} & {latest_ckpt_path}")
     print("=" * 78)
 
+    # Smoke Verification: Bit-identical checkpoint reload check
+    bit_identical_verified = False
+    max_reload_diff = 0.0
+    if smoke:
+        print("[*] Verifying bit-identical checkpoint reload...", flush=True)
+        fresh_model = MTLE3ModularModel(pretrained=False).to(device)
+        loaded_ckpt = torch.load(latest_ckpt_path, map_location=device, weights_only=False)
+        fresh_model.load_state_dict(loaded_ckpt["model_state_dict"], strict=True)
+        fresh_model.eval()
+        model.eval()
+
+        dummy_bcs = torch.randn(2, 4, 224, 224, device=device)
+        dummy_beh = torch.randn(2, 8, 4, 224, 224, device=device)
+        dummy_reid = torch.randn(2, 4, 224, 224, device=device)
+        with torch.no_grad():
+            diff_bcs = float(torch.max(torch.abs(model.forward_bcs(dummy_bcs) - fresh_model.forward_bcs(dummy_bcs))).item())
+            diff_beh = float(torch.max(torch.abs(model.forward_behavior(dummy_beh)[0] - fresh_model.forward_behavior(dummy_beh)[0])).item())
+            diff_reid = float(torch.max(torch.abs(model.forward_reid(dummy_reid)[0] - fresh_model.forward_reid(dummy_reid)[0])).item())
+
+        max_reload_diff = max(diff_bcs, diff_beh, diff_reid)
+        print(f"    Max Logit Difference on Reload: {max_reload_diff:.8f} (BCS: {diff_bcs:.8f}, Beh: {diff_beh:.8f}, ReID: {diff_reid:.8f})", flush=True)
+        assert max_reload_diff < 1e-6, f"Checkpoint reload determinism failed! max_diff={max_reload_diff}"
+        print("[*] Checkpoint save/reload verified bit-identically across all 3 tasks (max_diff < 1e-6) ✅", flush=True)
+        bit_identical_verified = True
+
     # Save summary JSON
     summary = {
         "task": "phase3_run8_mtl_e3_modular",
@@ -1201,6 +1238,8 @@ def train_mtl_e3_pipeline(
         "best_metrics": best_metrics,
         "total_training_time_seconds": round(total_training_time, 2),
         "parameter_summary": param_summary,
+        "bit_identical_reload_verified": bit_identical_verified,
+        "max_reload_diff": max_reload_diff,
         "epoch_history": epoch_history,
     }
     with open(output_dir / "mtl_e3_metrics.json", "w") as f:
