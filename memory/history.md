@@ -24,6 +24,7 @@
   4. Populated all 35 flagged rows in Column D with detailed, witty explanations and roasts in Bangla with English technical terms preserved.
   5. Injected the 7 user-approved masterpiece campus-vibe roasts into Column D across Ch 1 Rows 3, 18, 24, 30, 79, 105 and Ch 3 Rows 39, 68 via `scratch/inject_exact_7_roasts.py`.
   6. Verified live via Google Sheets API: all 8 cells reflect the exact strings cleanly alongside intact teammate text in Column C.
+  7. Converted all 161 paragraphs across Chapters 1, 2, and 3 to Google Sheets native rich text (`textFormatRuns`) via `scripts/apply_native_rich_text_bold.py`: stripped 100% of raw markdown `**` asterisks, computed exact UTF-16 code unit offsets, natively bolded `📌 Words/phrases to keep intact:`, `🛠️ Required Fixes:`, `• Fix 1:`, `• Fix 2:`, and `✅ অর্থ ঠিক রাখা হইছে।`, verified all section titles in Column B are bolded (11pt bold) with Column D cleared for titles, and verified 0 cells with asterisks remaining in the live spreadsheet.
 
 # Session Summary — 2026-09-25 (Google Sheets Chapters 1, 2, & 3 Multi-Tab Paraphrasing Workbench)
 
