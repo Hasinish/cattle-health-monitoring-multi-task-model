@@ -15,7 +15,7 @@ We executed the official, frozen held-out evaluation of the Phase 3 E4 PCGrad (P
 
 Across the canonical held-out evaluation protocols:
 1. **BCS (ScienceDB, N=7,549 images, burst-group-disjoint)**: E4 achieved **Real MAE: 0.1828**, Acc@0: 40.23%, Acc@1: 87.84%, Balanced Acc: 34.97%, Macro-F1: 0.3516, and Test Loss: 0.4181. This represents a +0.0040 MAE increase over E1 (0.1788) and +0.0119 over single-task Run 4 (0.1709), while outperforming E3 Modular Adapters on MAE (0.1916; -0.0088 MAE improvement).
-2. **Behavior (CVB + Beef, N=780 retained sequences, T=8 frames)**: E4 achieved **Overall Accuracy: 86.92%** (+1.92 pp over E1 85.00%; +1.15 pp over E3 85.77%), **Balanced Accuracy: 69.15%** (+1.85 pp over E1 67.30%; +2.45 pp over E3 66.70%), **Macro-F1: 0.7114** (+0.0248 over E1 0.6866; +0.0359 over E3 0.6755), and **Test Loss: 0.5454** (-0.0772 reduction vs E1 0.6226). Minority class `Walking` F1 reached **0.0909** (more than doubled vs E1 0.0408; E3 completely collapsed Walking to 0.0000). On authentic barn surveillance (**CVB**, N=422), E4 achieved **81.04% Overall Accuracy** (+4.26 pp vs E1 76.78%; +0.95 pp vs single-task Run 5 80.09%) and **0.6141 Macro-F1** (+0.0739 vs E1 0.5402; essentially matching single-task Run 5 0.6188).
+2. **Behavior (CVB + Beef, N=780 retained sequences, T=8 frames)**: E4 achieved **Overall Accuracy: 86.92%** (+1.92 pp over E1 85.00%; +1.15 pp over E3 85.77%), **Balanced Accuracy: 69.15%** (+1.85 pp over E1 67.30%; +2.45 pp over E3 66.70%), **Macro-F1: 0.7114** (+0.0248 over E1 0.6866; +0.0359 over E3 0.6755), and **Test Loss: 0.5454** (-0.0772 reduction vs E1 0.6226). Minority class `Walking` F1 reached **0.0909** (more than doubled vs E1 0.0408; E3 obtained Walking F1 = 0.0000 on the matched held-out test set). On authentic barn surveillance (**CVB**, N=422), E4 achieved **81.04% Overall Accuracy** (+4.26 pp vs E1 76.78%; +0.95 pp vs single-task Run 5 80.09%) and **0.6141 Macro-F1** (+0.0739 vs E1 0.5402; essentially matching single-task Run 5 0.6188).
 3. **Re-ID (SideViewCows2026 Protocol A, 69 held-out cows; 36,811 parlor gallery)**: 
    - **Query Barn -> Parlor (25,260 queries)**: Rank-1: 54.97%, Rank-5: 68.81%, Rank-10: 74.99%, mAP: 30.23% (Barn Rank-1 lower by 2.41 pp vs E1, Barn mAP lower by 0.14 pp vs E1; Rank-1 higher by 5.89 pp vs E3, mAP higher by 2.19 pp vs E3).
    - **Query Snapshots -> Parlor (607 queries)**: Rank-1: 57.00%, Rank-5: 72.16%, Rank-10: 78.25%, mAP: 33.87% (Snapshot Rank-1 lower by 0.17 pp vs E1, Snapshot mAP higher by 0.18 pp vs E1; Rank-1 higher by 3.29 pp vs E3, mAP higher by 5.09 pp vs E3).
@@ -26,7 +26,7 @@ Across the canonical held-out evaluation protocols:
 
 ## 2. Context & Motivation
 
-In Run 7 (E1 Hard-Shared MTL), naive parameter sharing caused unambiguous held-out degradation across all three tasks relative to single-task baselines (BCS MAE degraded to 0.1788 vs 0.1709; Behavior Macro-F1 dropped to 0.6866 with Walking collapsing to 0.0408 vs 0.2456; Re-ID Barn mAP dropped to 30.37% vs 40.68%).
+In Run 7 (E1 Hard-Shared MTL), naive parameter sharing caused unambiguous held-out degradation across all three tasks relative to single-task baselines (BCS MAE degraded to 0.1788 vs 0.1709; Behavior Macro-F1 dropped to 0.6866 with Walking dropping to 0.0408 vs 0.2456; Re-ID Barn mAP dropped to 30.37% vs 40.68%).
 
 In Run 8 (E3 Modular MTL), task-private residual bottleneck adapters (`512 -> 128 -> 512`) were introduced at the output of the shared backbone. While E3 improved Behavior test loss (0.4193) and CVB surveillance accuracy (80.33%), it further degraded BCS MAE (0.1916) and Re-ID retrieval (Barn Rank-1 49.08%, mAP 28.04%).
 
@@ -142,21 +142,20 @@ We formally document the following super-step accounting correction for historic
 
 ### 5.1 Question 1: Does PCGrad reduce the held-out degradation observed under E1?
 **Answer: Mixed and task-selective.**
-- **Behavior**: YES. PCGrad significantly mitigated the degradation seen in E1. Overall accuracy gained +1.92 pp (86.92% vs 85.00%), Macro-F1 gained +0.0248 (0.7114 vs 0.6866), test loss dropped by -0.0772 (0.5454 vs 0.6226), CVB CCTV surveillance gained +4.26 pp accuracy (81.04% vs 76.78%) and +0.0739 Macro-F1 (0.6141 vs 0.5402), and minority class `Walking` F1 more than doubled (0.0909 vs 0.0408).
 - **BCS**: Slightly worse on MAE, Acc@0, Acc@1, and Macro-F1 (MAE increased by +0.0040 [0.1828 vs 0.1788]; Acc@0 decreased by -0.87 pp).
-- **Behavior**: Improved overall accuracy, balanced accuracy, Macro-F1, test loss, Walking F1, and CVB metrics (Overall Acc gained +1.92 pp [86.92% vs 85.00%]; Balanced Acc gained +1.85 pp [69.15% vs 67.30%]; Macro-F1 gained +0.0248 [0.7114 vs 0.6866]; test loss dropped by -0.0772 [0.5454 vs 0.6226]; Walking F1 rose from 0.0408 to 0.0909; CVB barn surveillance gained +4.26 pp Acc and +0.0739 F1).
+- **Behavior**: PCGrad reduced several Behavior degradations observed under E1 (Overall Acc +1.92 pp vs E1 [86.92% vs 85.00%], Balanced Acc +1.85 pp [69.15% vs 67.30%], Macro-F1 +0.0248 [0.7114 vs 0.6866], Test loss -0.0772 [0.5454 vs 0.6226], Walking F1 0.0909 vs 0.0408, CVB Acc +4.26 pp [81.04% vs 76.78%], and CVB Macro-F1 +0.0739 [0.6141 vs 0.5402]).
 - **Re-ID**: Mixed / near E1 on principal retrieval metrics: Barn Rank-1 was lower by 2.41 pp (54.97% vs 57.38%); Barn mAP was lower by 0.14 pp (30.23% vs 30.37%); Snapshot Rank-1 was lower by 0.17 pp (57.00% vs 57.17%); Snapshot mAP was higher by 0.18 pp (33.87% vs 33.69%). (Tiny deltas are reported directly without claiming a 'noise floor' since statistical uncertainty was not independently estimated).
 
 ### 5.2 Question 2: Does PCGrad improve all tasks or only selected tasks/metrics?
 **Answer: Selected tasks and metrics only.**
-- PCGrad is NOT a universal fix for negative transfer. It produced clear benefits on temporal sequence classification (Behavior) and stabilized CCTV cross-domain generalization, but did not elevate BCS or Re-ID back to their single-task levels.
+- PCGrad is NOT a universal fix for negative transfer. It produced clear benefits on temporal sequence classification (Behavior) and improved held-out CVB barn-surveillance performance, but did not elevate BCS or Re-ID back to their single-task levels.
 
 ### 5.3 Question 3: How does optimization-level intervention E4 compare with architectural intervention E3?
 **Answer: E4 provided broader held-out improvements than E3 on the principal BCS and Behavior metrics and on Re-ID Rank-1/mAP, while some deeper-rank retrieval metrics remained similar or lower.**
 - **BCS**: E4 improved Real MAE (0.1828 vs 0.1916; -0.0088 error drop), Acc@0 (+1.76 pp), Acc@1 (+1.52 pp), and Macro-F1 (+0.0225).
-- **Behavior**: E4 improved Overall Acc (86.92% vs 85.77%), Balanced Acc (69.15% vs 66.70%), Macro-F1 (0.7114 vs 0.6755), and Walking F1 (0.0909 vs 0.0000; E3 suffered complete representation collapse on Walking).
+- **Behavior**: E4 improved Overall Acc (86.92% vs 85.77%), Balanced Acc (69.15% vs 66.70%), Macro-F1 (0.7114 vs 0.6755), and Walking F1 (0.0909 vs 0.0000; E3 obtained Walking F1 = 0.0000 on the matched held-out test set).
 - **Re-ID**: E4 improved Rank-1 and mAP across both query settings: Barn Rank-1 was higher by 5.89 pp (54.97% vs 49.08%) and Barn mAP was higher by 2.19 pp (30.23% vs 28.04%); Snapshots Rank-1 was higher by 3.29 pp (57.00% vs 53.71%) and Snapshots mAP was higher by 5.09 pp (33.87% vs 28.78%). However, not all Re-ID metrics were higher under E4: Barn Rank-10 was slightly lower (74.99% vs 75.03%), Snapshot Rank-5 was slightly lower (72.16% vs 72.32%), and Snapshot Rank-10 was lower (78.25% vs 80.23%).
-- **Conclusion**: Optimization-level gradient projection (E4 PCGrad) mitigated task interference across the primary diagnostic metrics more effectively than the insertion of task-private residual bottleneck adapters (E3), which exhibited severe performance drops on BCS and Re-ID.
+- **Conclusion**: E4 produced broader improvements than E3 on the principal BCS and Behavior metrics and on Re-ID Rank-1/mAP, while several deeper-rank retrieval metrics remained similar or lower.
 
 ### 5.4 Mandatory Scientific Claim Boundaries
 - **Gradient Conflict Observation**: During E4 training, pairwise shared-backbone gradient conflicts were directly and frequently observed (44,177 conflict projections across 16,140 super-steps; 45%–54% pairwise frequency).
