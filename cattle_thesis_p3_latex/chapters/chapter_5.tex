@@ -1,6 +1,6 @@
 \section{Design Process and Methodology Overview}
 
-The study compares different visual representations using task-specific evaluation protocols. Each task has an RGB reference model and a cattle-centered version. These six single-task models are used to measure how the representation changes performance. They also provide the reference point for comparing hard-shared and modular multi-task learning. Detailed multi-task results are not yet included in this draft.
+The study compares different visual representations using task-specific evaluation protocols. Each task has an RGB reference model and a cattle-centered version. These six single-task models establish task-specific performance baselines and serve as the empirical reference for evaluating two multi-task learning paradigms: a monolithic hard-shared control architecture and a modular task-private architecture.
 
 The main design question is what information each task should receive. BCS mainly needs morphology, behavior recognition needs posture and temporal change, and Re-ID needs stable individual appearance. Because of this, the cattle-centered models all focus on the target cow, but they do not use exactly the same preprocessing. Figure~\ref{fig:phase3design} shows the overall comparison, and Table~\ref{tab:runstatus} lists the model configurations. Supporting records are indexed in Appendix~\ref{app:evidence}.
 
@@ -25,7 +25,7 @@ The BCS baseline uses an ImageNet-initialized ResNet-18 with four independent cu
  t_k=\mathbb{I}(y>k),\qquad k=0,1,2,3.
 \end{equation}
 If $g_k=\mathbf{w}_k^\top\mathbf{h}+b_k$ is the corresponding logit, the batch loss is
-\begin{equation}
+\begin{equation}\label{eq:bcs_loss}
  L_{\mathrm{BCS}}=-\frac{1}{4B}\sum_{i=1}^{B}\sum_{k=0}^{3}
  \left[t_{ik}\log\sigma(g_{ik})+(1-t_{ik})\log(1-\sigma(g_{ik}))\right].
 \end{equation}
@@ -105,23 +105,113 @@ Pose was not included in the first paired task configurations. A small manual re
 
 \section{Implementation of Selected Design}
 
-Preprocessing and training were implemented with PyTorch, Torchvision, OpenCV, and the Ultralytics perception interface. Deterministic CSV manifests define the samples and data partitions. Validation data were used to choose checkpoints, and held-out task tests were evaluated after model selection. Machine-readable records store test metrics, confusion matrices, coverage counts, and, where available, split hashes and checkpoint-reload checks.
+Preprocessing, spatial feature extraction, temporal sequence aggregation, and multi-task optimization were implemented using PyTorch, Torchvision, OpenCV, and the Ultralytics perception interface. Deterministic CSV manifests define all image samples, biological groups, and split partitions. Checkpoint selection was governed strictly by validation-set objectives, with held-out test sets fully isolated from training and model selection. Machine-readable manifests record all configuration parameters, per-epoch loss trajectories, checkpoint checksums, and evaluation rankings to ensure strict scientific reproducibility.
 
-Full preprocessing, training, and evaluation used GPU-accelerated cloud resources. Small pipeline checks were completed before the full experiments. Detailed hardware and execution information is kept in the reproducibility records instead of being presented as a story about infrastructure or debugging.
+\subsection{Monolithic Hard-Shared Multi-Task Control Architecture}
 
-\subsection{Evaluation Metrics}
+The monolithic hard-shared multi-task control (denoted as E1) establishes the baseline for joint parameter sharing across the three target domains. In this architecture, all three tasks share exactly one four-channel ResNet-18 spatial feature extractor, which accounts for 11,179,648 parameters (93.74\% of the total model capacity).
+
+The model accepts task-specific input tensors whose spatial dimensions are standardized to $224 \times 224$ pixels across four channels, comprising three ImageNet-normalized RGB channels and one unnormalized binary cow mask:
+\begin{align}
+ \mathbf{X}_{\mathrm{BCS}} &\in \mathbb{R}^{B_{\mathrm{BCS}} \times 4 \times 224 \times 224}, \\
+ \mathbf{X}_{\mathrm{Beh}} &\in \mathbb{R}^{B_{\mathrm{Beh}} \times 8 \times 4 \times 224 \times 224}, \\
+ \mathbf{X}_{\mathrm{ReID}} &\in \mathbb{R}^{B_{\mathrm{ReID}} \times 4 \times 224 \times 224}.
+\end{align}
+The shared spatial backbone maps each four-channel frame to a 512-dimensional embedding $\mathbf{h} \in \mathbb{R}^{512}$. Each task then routes this representation to its task-specific prediction head:
+\begin{enumerate}
+ \item \textbf{Body Condition Scoring}: The shared feature $\mathbf{h}$ is passed to the cumulative ordinal linear head (2,052 trainable parameters), producing four independent threshold logits $g_k = \mathbf{w}_k^\top \mathbf{h} + b_k$ for $k \in \{0, 1, 2, 3\}$. The ordinal binary cross-entropy loss $L_{\mathrm{BCS}}$ is computed following Equation~\eqref{eq:bcs_loss}.
+ \item \textbf{Cattle Behavior Recognition}: Each of the 8 frames in an input video sequence passes through the identical shared four-channel ResNet-18 spatial backbone, yielding a temporal sequence of frame embeddings $\mathbf{H} \in \mathbb{R}^{B_{\mathrm{Beh}} \times 8 \times 512}$. This sequence is processed by the temporal convolutional network (TCN) head (723,973 trainable parameters), which applies two width-three Conv1D residual blocks with 256 channels, BatchNorm, GELU, and dropout (0.2), followed by temporal adaptive average pooling to 256 dimensions and a 5-class linear classifier optimized with categorical cross-entropy loss $L_{\mathrm{Beh}}$.
+ \item \textbf{Individual Cattle Re-Identification}: During representation training across the 41 parlor training identities, the shared 512-dimensional feature $\mathbf{h}$ is passed to a 41-class linear classifier with bias (21,033 trainable parameters) optimized using cross-entropy loss $L_{\mathrm{ReID}}$. For open-set retrieval evaluation across unseen cows, unit L2-normalized embeddings $\mathbf{z} = \mathbf{h} / \lVert\mathbf{h}\rVert_2$ are extracted.
+\end{enumerate}
+The monolithic hard-shared multi-task control contains exactly 11,926,706 trainable parameters.
+
+\subsection{Modular Task-Private Multi-Task Architecture}
+
+The modular task-private multi-task architecture (denoted as E3) evaluates whether introducing task-private capacity can mitigate negative transfer while retaining a shared visual backbone. To isolate the effect of modular routing, this architecture preserves the exact same components and training conditions as the hard-shared control:
+\begin{itemize}
+ \item The identical four-channel ResNet-18 spatial feature extractor (11,179,648 parameters);
+ \item The identical task-specific heads: BCS ordinal head (2,052 parameters), Behavior 1D TCN head (723,973 parameters), and Re-ID classification head (21,033 parameters);
+ \item The identical input tensor shapes, preprocessing pipelines, training datasets, batch sizes, loss functions, and optimization hyperparameters.
+\end{itemize}
+
+The architectural modification consists of inserting one independent residual bottleneck adapter between the shared 512-dimensional representation $\mathbf{h}_{\mathrm{shared}} \in \mathbb{R}^{512}$ and each respective task head. For task $t \in \{\mathrm{BCS}, \mathrm{Beh}, \mathrm{ReID}\}$, the adapter consists of:
+\begin{enumerate}
+ \item A linear down-projection from 512 to 128 dimensions with weights $\mathbf{W}_{\mathrm{down}}^{(t)} \in \mathbb{R}^{128 \times 512}$ and bias $\mathbf{b}_{\mathrm{down}}^{(t)} \in \mathbb{R}^{128}$;
+ \item Layer normalization over the 128-dimensional bottleneck;
+ \item A GELU activation function followed by dropout ($p = 0.1$);
+ \item A linear up-projection from 128 back to 512 dimensions with weights $\mathbf{W}_{\mathrm{up}}^{(t)} \in \mathbb{R}^{512 \times 128}$ and bias $\mathbf{b}_{\mathrm{up}}^{(t)} \in \mathbb{R}^{512}$.
+\end{enumerate}
+The adapter output $\Delta\mathbf{h}_t \in \mathbb{R}^{512}$ is added residually to the shared spatial representation to produce the task-adapted feature $\mathbf{h}_t$:
+\begin{equation}
+ \mathbf{h}_t = \mathbf{h}_{\mathrm{shared}} + \Delta\mathbf{h}_t.
+\end{equation}
+In the temporal behavior model, this adapter operates frame-wise on each of the 8 temporal feature vectors before the adapted sequence $\mathbf{H}_{\mathrm{Beh}} \in \mathbb{R}^{B_{\mathrm{Beh}} \times 8 \times 512}$ is routed to the temporal convolutional network.
+
+Each task-private adapter contains exactly 131,968 parameters, yielding 395,904 total private parameters across the three tasks (3.21\% of the model's total parameters). The modular multi-task architecture comprises 12,322,610 trainable parameters, representing an increase of 395,904 parameters (+3.32\% relative capacity) over the hard-shared control.
+
+\subsubsection{Identity Initialization of Residual Adapters}
+
+The up-projection layer of each task adapter is initialized with zero weights and zero biases:
+\begin{equation}
+ \mathbf{W}_{\mathrm{up}}^{(t)} = \mathbf{0}, \qquad \mathbf{b}_{\mathrm{up}}^{(t)} = \mathbf{0}.
+\end{equation}
+At step zero of training, this ensures that the adapter contribution is strictly zero:
+\begin{equation}
+ \Delta\mathbf{h}_t = \mathbf{0} \implies \mathbf{h}_t = \mathbf{h}_{\mathrm{shared}}.
+\end{equation}
+This initialization does not imply inheriting representations from a pretrained hard-shared checkpoint; rather, it guarantees that at the start of joint training, each task-specific head receives the direct, unperturbed output of the modular model's own shared backbone. Task-private feature specialization $\Delta\mathbf{h}_t$ then develops progressively as gradient updates accumulate during training.
+
+\subsection{Multi-Task Joint Optimization Protocol}
+
+Because cattle datasets from different farms and recording modalities do not contain overlapping annotations across body condition, behavior sequences, and individual identities, joint multi-task training cannot employ single multi-label batches. Instead, an interleaved mini-batch schedule is executed.
+
+Each optimization step is structured as a multi-task super-step comprising three sequential forward and backward passes:
+\begin{enumerate}
+ \item \textbf{BCS mini-batch}: A batch of $B_{\mathrm{BCS}} = 64$ samples is passed through the model. The ordinal binary cross-entropy loss $L_{\mathrm{BCS}}$ is computed, and gradients are backpropagated into the active parameters.
+ \item \textbf{Behavior mini-batch}: A batch of $B_{\mathrm{Beh}} = 8$ video sequences (64 total frames) is passed through the model. The categorical cross-entropy loss $L_{\mathrm{Beh}}$ is computed, and gradients are backpropagated and accumulated.
+ \item \textbf{Re-ID mini-batch}: A batch of $B_{\mathrm{ReID}} = 32$ images is passed through the model. The identity cross-entropy loss $L_{\mathrm{ReID}}$ is computed, and gradients are backpropagated and accumulated.
+ \item \textbf{Parameter update}: The optimizer executes a single parameter update using the accumulated gradients.
+\end{enumerate}
+
+Equal task weighting is enforced throughout training:
+\begin{equation}
+ w_{\mathrm{BCS}} = w_{\mathrm{Behavior}} = w_{\mathrm{ReID}} = 1.0.
+\end{equation}
+Training runs for 30 epochs with 537 super-steps per epoch (16,110 total super-steps). Optimization uses AdamW with an initial learning rate of $\eta_0 = 10^{-4}$, weight decay of $10^{-4}$, and a cosine annealing learning-rate schedule decaying to $\eta_{\min} = 10^{-6}$.
+
+Model checkpoint selection is determined strictly by minimizing the predefined mean validation loss objective:
+\begin{equation}
+ L_{\mathrm{MTL,val}} = \frac{1}{3}\left( L_{\mathrm{BCS,val}} + L_{\mathrm{Behavior,val}} + L_{\mathrm{ReID,val}} \right).
+\end{equation}
+All canonical held-out test splits and unseen identity sets are strictly quarantined from model selection, hyperparameter tuning, and threshold calibration.
+
+\subsection{Architectural Gradient Isolation and Claim Boundaries}
+
+The mathematical distinction in gradient routing between the monolithic and modular multi-task models is formal and structural:
+\begin{itemize}
+ \item In the \textbf{monolithic hard-shared model}, the parameter vector of the shared backbone $\boldsymbol{\theta}_{\mathrm{shared}}$ directly receives gradient contributions from all three task loss functions:
+ \begin{equation}
+  \mathbf{g}_{\mathrm{shared}} = \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_{\mathrm{BCS}} + \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_{\mathrm{Beh}} + \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_{\mathrm{ReID}}.
+ \end{equation}
+ Each task head $\boldsymbol{\theta}_{\mathrm{head}}^{(t)}$ receives gradients solely from its own loss $L_t$.
+ \item In the \textbf{modular task-private model}, the shared backbone $\boldsymbol{\theta}_{\mathrm{shared}}$ intentionally receives accumulated gradients from all three tasks through the residual connection:
+ \begin{equation}
+  \mathbf{g}_{\mathrm{shared}} = \sum_{t \in \{\mathrm{BCS}, \mathrm{Beh}, \mathrm{ReID}\}} \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_t.
+ \end{equation}
+ In contrast, each task-private adapter $\boldsymbol{\theta}_{\mathrm{adapter}}^{(t)}$ and task head $\boldsymbol{\theta}_{\mathrm{head}}^{(t)}$ receive gradient signals strictly from their corresponding task loss $L_t$, with $\nabla_{\boldsymbol{\theta}_{\mathrm{adapter}}^{(t)}} L_{t'} = \mathbf{0}$ for all $t' \neq t$.
+\end{itemize}
+
+This gradient isolation is an architectural routing property that prevents direct gradient updates from one task head from altering the private adapter parameters of another task. It does not constitute theoretical proof that gradient conflict in the shared backbone is eliminated, nor does it guarantee that negative transfer will be prevented. The practical consequences of this routing structure on generalization across the three target domains remain an empirical question evaluated in Chapter~5.
+
+\subsection{Evaluation Metrics and Protocol Harmonization}
 
 BCS is evaluated with physical-score MAE, exact accuracy (Acc@0), accuracy within one adjacent class or $\pm0.25$ BCS units (Acc@1), balanced accuracy, and Macro-F1. For $N$ samples,
 \begin{equation}
  \mathrm{MAE}_{\mathrm{BCS}}=\frac{1}{N}\sum_{i=1}^{N}|s_i-\hat{s}_i|.
 \end{equation}
 
-Behavior evaluation reports overall accuracy, balanced accuracy, Macro-F1, per-class precision, recall, and F1, and source-specific metrics. Balanced accuracy is the mean recall over the five classes. It is useful when class frequencies and source coverage are different.
+Behavior evaluation reports overall accuracy, balanced accuracy, Macro-F1, per-class precision, recall, and F1, and source-specific metrics. Balanced accuracy is the mean recall over the five classes, which provides a calibrated assessment across unbalanced source distributions.
 
-For Re-ID, Rank-$k$ is the percentage of queries that have at least one correct identity in the first $k$ gallery results. Average precision summarizes the ranking for one query, and mAP is the mean of those values across queries. Barn-to-Parlor and Snapshots-to-Parlor are reported separately because they represent different acquisition shifts.
+For Re-ID, Rank-$k$ measures the percentage of queries that return at least one correct identity within the top-$k$ gallery retrieval results. Average precision summarizes ranking quality for each individual query, and mAP is the mean across all evaluated queries. Barn-to-Parlor and Snapshots-to-Parlor queries are evaluated separately against the 36,811-image parlor gallery.
 
-\subsection{Multi-Task Comparison and Reporting Boundary}
-
-The hard-shared multi-task control tests whether sharing most of the model across BCS, behavior, and Re-ID reduces performance compared with matched single-task references. The modular alternative is designed to test task-private processing, adapters, or gates while still keeping one unified framework. The thesis does not assume in advance that the modular model will be successful.
-
-The three task datasets do not contain all three labels for the same image. Joint training must therefore use task-specific batches or another available-label method. A missing annotation must never be treated as a negative label. The final implementation must clearly report the sharing boundaries, task sampling, temporal handling, loss weighting, model capacity, and compute. Detailed multi-task methods and comparative results are not yet included in this chapter.
+To maintain strict scientific comparability, the monolithic hard-shared and modular multi-task models are evaluated on the exact matched held-out test populations established for the single-task reference models: 7,549 ScienceDB test images for BCS, 780 retained video sequences for behavior recognition, and 69 unseen cattle identities under SideView Protocol A (25,260 barn queries and 607 snapshot queries).

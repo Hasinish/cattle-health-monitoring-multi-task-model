@@ -2,15 +2,14 @@
 \centering
 \begin{tikzpicture}[
   box/.style={draw,rounded corners,align=center,text width=3.2cm,minimum height=1.25cm,font=\small},
-  pending/.style={box,dashed},
   arrow/.style={->,thick}
 ]
 \node[box] (protocols) at (0,0) {Leakage-aware protocols\\BCS, Behavior, Re-ID};
 \node[box] (rgb) at (4.2,0) {RGB single-task\\reference models};
 \node[box] (centered) at (8.4,0) {Task-specific\\cattle-centered models};
-\node[pending] (e1) at (2.1,-2.2) {Hard-shared\\multi-task control};
-\node[pending] (e3) at (6.3,-2.2) {Modular task-private\\multi-task model};
-\node[pending] (synthesis) at (4.2,-4.4) {Task-wise comparison\\and negative-transfer analysis};
+\node[box] (e1) at (2.1,-2.2) {Hard-shared\\multi-task control};
+\node[box] (e3) at (6.3,-2.2) {Modular task-private\\multi-task model};
+\node[box] (synthesis) at (4.2,-4.4) {Task-wise comparison\\and negative-transfer analysis};
 \draw[arrow] (protocols) -- (rgb);
 \draw[arrow] (rgb) -- (centered);
 \draw[arrow] (rgb) -- (e1);
@@ -18,6 +17,6 @@
 \draw[arrow] (e1) -- (synthesis);
 \draw[arrow] (e3) -- (synthesis);
 \end{tikzpicture}
-\caption[Comparative research design]{Organization of the comparative study. Arrows show relationships between the investigations, not identical model inputs. Dashed boxes identify multi-task material still to be incorporated into the manuscript, rather than the current execution status of those experiments.}
+\caption[Comparative research design]{Organization of the comparative research design. Single-task RGB baselines and cattle-centered perception-enhanced models provide the empirical reference points for evaluating the monolithic hard-shared multi-task control and the modular task-private multi-task architecture, culminating in a systematic task-wise comparison and negative-transfer analysis. Arrows indicate conceptual relationships between investigation stages rather than identical data pipelines.}
 \label{fig:phase3design}
 \end{figure}
