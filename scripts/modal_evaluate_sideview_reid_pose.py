@@ -99,17 +99,18 @@ app = modal.App("sideview-reid-pose-evaluation", image=pose_image)
 @app.function(
     gpu="T4",
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
-    timeout=1800,
+    timeout=3600,
     cpu=4.0,
-    max_containers=6,  # Safe concurrency limit: max 6 T4 GPUs (~$0.06/min total)
+    max_containers=12,  # Upgraded concurrency limit: 12 T4 GPUs
 )
 def extract_pose_chunk_remote(
     chunk_rows: List[Dict[str, str]],
     chunk_idx: int,
     total_chunks: int,
     batch_size: int = 16,
-) -> Dict[str, List[float]]:
+) -> str:
     import numpy as np
+    import torch
     from PIL import Image
     from tqdm import tqdm
     from scripts.train_sideview_reid_perception import (
@@ -122,6 +123,19 @@ def extract_pose_chunk_remote(
     )
 
     data_root = Path("/data/sideviewcows2026")
+    chunk_dir = Path("/checkpoints/sideview_pose_cache/chunks")
+    chunk_file = chunk_dir / f"chunk_{chunk_idx:02d}.pt"
+
+    # Fast skip if already extracted and committed on volume
+    if chunk_file.exists() and chunk_file.stat().st_size > 1024:
+        try:
+            cached_res = torch.load(chunk_file, map_location="cpu", weights_only=False)
+            if len(cached_res) >= len(chunk_rows):
+                print(f"Chunk {chunk_idx + 1:02d}/{total_chunks:02d}: 100% (already cached on volume ✅)")
+                return f"chunk_{chunk_idx:02d}.pt"
+        except Exception:
+            pass
+
     extractor = SuperAnimalPoseFeatureExtractor(device="cuda")
     results: Dict[str, List[float]] = {}
 
@@ -174,7 +188,14 @@ def extract_pose_chunk_remote(
         pbar.update(len(batch))
 
     pbar.close()
-    return results
+
+    # Atomically persist this chunk to persistent volume immediately
+    chunk_dir.mkdir(parents=True, exist_ok=True)
+    torch.save(results, chunk_file)
+    checkpoint_vol.commit()
+    print(f"Chunk {chunk_idx + 1:02d}/{total_chunks:02d}: 100% [SAVED {len(results)} poses to volume]")
+
+    return f"chunk_{chunk_idx:02d}.pt"
 
 
 # ==============================================================================
@@ -183,7 +204,7 @@ def extract_pose_chunk_remote(
 @app.function(
     gpu="T4",
     volumes={"/data": data_vol, "/checkpoints": checkpoint_vol},
-    timeout=3600,
+    timeout=14400,  # 4-hour master timeout: zero timeout risk
     cpu=4.0,
     memory=16384,
 )
@@ -237,6 +258,9 @@ def evaluate_protocol_a_master(
     missing_df = proto_a_df[~proto_a_df["image_path"].isin(pose_dict.keys())].reset_index(drop=True)
     print(f"[*] Missing Protocol A Samples To Extract: {len(missing_df):,} / {len(proto_a_df):,}")
 
+    chunk_dir = Path("/checkpoints/sideview_pose_cache/chunks")
+    chunk_dir.mkdir(parents=True, exist_ok=True)
+
     if len(missing_df) > 0:
         missing_records = missing_df[["image_path", "mask_path"]].to_dict(orient="records")
         chunks = [
@@ -244,7 +268,7 @@ def evaluate_protocol_a_master(
             for i in range(0, len(missing_records), chunk_size)
         ]
         total_chunks = len(chunks)
-        print(f"[*] Distributing {len(missing_records):,} images across {total_chunks} parallel chunks (up to 6 workers)...")
+        print(f"[*] Distributing {len(missing_records):,} images across {total_chunks} parallel chunks (up to 12 T4 workers)...")
 
         chunk_args = [
             (chunk, c_idx, total_chunks)
@@ -257,19 +281,27 @@ def evaluate_protocol_a_master(
         elapsed = time.time() - t0
         print(f"\n[OK] Parallel pose extraction completed in {elapsed:.1f}s ({elapsed / 60:.1f} mins)!")
 
-        # Merge results into master pose_dict
+        # Assemble individual chunk files from volume into pose_dict
+        print(f"[*] Assembling all {total_chunks} chunk files from {chunk_dir} into master cache...")
         new_count = 0
-        for res in chunk_results:
-            for k, v in res.items():
-                if k not in pose_dict:
-                    pose_dict[k] = v
-                    new_count += 1
+        for c_idx in range(total_chunks):
+            c_file = chunk_dir / f"chunk_{c_idx:02d}.pt"
+            if c_file.exists():
+                try:
+                    c_dict = torch.load(c_file, map_location="cpu", weights_only=False)
+                    for k, v in c_dict.items():
+                        if k not in pose_dict:
+                            pose_dict[k] = v
+                            new_count += 1
+                except Exception as e:
+                    print(f"[ERROR] Failed reading {c_file}: {e}")
+            else:
+                print(f"[WARNING] Chunk file {c_file} not found on volume!")
 
         print(f"[OK] Added {new_count:,} new poses. Total pose cache size: {len(pose_dict):,}")
 
-        # Persist updated pose cache to volume
+        # Persist updated monolithic pose cache to volume
         cache_path.parent.mkdir(parents=True, exist_ok=True)
-        # Convert lists back to np.ndarray float32 for fast torch indexing
         dict_to_save = {k: np.asarray(v, dtype=np.float32) for k, v in pose_dict.items()}
         torch.save(dict_to_save, cache_path)
         checkpoint_vol.commit()

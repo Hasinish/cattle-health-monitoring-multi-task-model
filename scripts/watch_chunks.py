@@ -26,7 +26,7 @@ if sys.platform == "win32":
         pass
     os.system("")
 
-APP_ID = "ap-Zb0le0pHhi8z9ahux6fTJg"
+APP_ID = sys.argv[1] if len(sys.argv) > 1 else "ap-MY5FFpAQAqlZ3cVvy8LaAh"
 PROFILE = "dryousufmozumder"
 TOTAL_CHUNKS = 42
 TOTAL_IMAGES = 61678
