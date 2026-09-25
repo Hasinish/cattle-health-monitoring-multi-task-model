@@ -61,3 +61,6 @@ thesis_bibliography_links.txt
 memory/personal_info.md
 .env
 58916v001.txt
+credentials*.json
+token*.json
+client_secret*.json

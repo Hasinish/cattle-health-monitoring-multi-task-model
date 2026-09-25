@@ -1,0 +1,37 @@
+{
+  "task": "sideviewcows2026_reid_pose_ablation",
+  "condition": "SideViewCows2026 GT-Mask + SuperAnimal Pose (ResNet-50)",
+  "profile": "dryousufmozumder",
+  "best_epoch": 23,
+  "val_metrics_at_best": {
+    "val_loss": 0.0386,
+    "val_top1_acc": 99.18,
+    "val_bal_acc": 99.25,
+    "val_macro_f1": 0.9905
+  },
+  "parameter_counts": {
+    "visual_backbone_trainable_parameters": 11179648,
+    "pose_mlp_trainable_parameters": 28736,
+    "classifier_trainable_parameters": 23657,
+    "total_trainable_parameters": 11232041
+  },
+  "retrieval_results": {
+    "query_snapshots": {
+      "num_queries": 607,
+      "num_gallery": 36811,
+      "rank_1": 62.27,
+      "rank_5": 75.78,
+      "rank_10": 81.38,
+      "mAP": 40.58
+    },
+    "query_barn": {
+      "num_queries": 25260,
+      "num_gallery": 36811,
+      "rank_1": 60.86,
+      "rank_5": 74.42,
+      "rank_10": 79.72,
+      "mAP": 39.49
+    }
+  },
+  "held_out_protocol_a_images_loaded": 62678
+}

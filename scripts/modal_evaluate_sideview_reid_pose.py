@@ -242,6 +242,9 @@ def evaluate_protocol_a_master(
     print(f"[*] Snapshot Queries: {len(snapshots_df):,} images")
     print(f"[*] Total Protocol A: {len(gallery_df) + len(barn_df) + len(snapshots_df):,} images")
 
+    # Ensure master container volume mount is refreshed with latest worker commits
+    checkpoint_vol.reload()
+
     # Load existing pose cache
     cache_path = Path("/checkpoints/sideview_pose_cache/pose_features_v1.pt")
     pose_dict: Dict[str, Any] = {}
@@ -281,22 +284,23 @@ def evaluate_protocol_a_master(
         elapsed = time.time() - t0
         print(f"\n[OK] Parallel pose extraction completed in {elapsed:.1f}s ({elapsed / 60:.1f} mins)!")
 
+        # Crucial: reload volume so master sees all files committed by workers
+        checkpoint_vol.reload()
+
         # Assemble individual chunk files from volume into pose_dict
-        print(f"[*] Assembling all {total_chunks} chunk files from {chunk_dir} into master cache...")
+        print(f"[*] Assembling all chunk files from {chunk_dir} into master cache...")
         new_count = 0
-        for c_idx in range(total_chunks):
-            c_file = chunk_dir / f"chunk_{c_idx:02d}.pt"
-            if c_file.exists():
-                try:
-                    c_dict = torch.load(c_file, map_location="cpu", weights_only=False)
-                    for k, v in c_dict.items():
-                        if k not in pose_dict:
-                            pose_dict[k] = v
-                            new_count += 1
-                except Exception as e:
-                    print(f"[ERROR] Failed reading {c_file}: {e}")
-            else:
-                print(f"[WARNING] Chunk file {c_file} not found on volume!")
+        chunk_files = sorted(chunk_dir.glob("*.pt"))
+        print(f"[*] Found {len(chunk_files)} chunk files on volume.")
+        for c_file in chunk_files:
+            try:
+                c_dict = torch.load(c_file, map_location="cpu", weights_only=False)
+                for k, v in c_dict.items():
+                    if k not in pose_dict:
+                        pose_dict[k] = v
+                        new_count += 1
+            except Exception as e:
+                print(f"[ERROR] Failed reading {c_file}: {e}")
 
         print(f"[OK] Added {new_count:,} new poses. Total pose cache size: {len(pose_dict):,}")
 
@@ -359,10 +363,19 @@ def evaluate_protocol_a_master(
     snapshots_loader = DataLoader(snapshots_dataset, batch_size=eval_batch_size, shuffle=False, num_workers=8)
     barn_loader = DataLoader(barn_dataset, batch_size=eval_batch_size, shuffle=False, num_workers=8)
 
-    print("[*] Extracting Parlor Gallery 576-D Embeddings (36,811 images)...")
-    gallery_features, gallery_ids = extract_dataset_embeddings_pose(
-        model, gallery_loader, torch.device("cuda"), desc="Gallery Parlor Embeddings"
-    )
+    emb_cache_dir = Path("/checkpoints/sideview_pose_cache")
+    gallery_cache_p = emb_cache_dir / "gallery_embeddings.pt"
+    if gallery_cache_p.exists():
+        print(f"[*] Loading Parlor Gallery Embeddings from {gallery_cache_p}...")
+        g_data = torch.load(gallery_cache_p, map_location="cpu", weights_only=False)
+        gallery_features, gallery_ids = g_data["features"], g_data["ids"]
+    else:
+        print("[*] Extracting Parlor Gallery 576-D Embeddings (36,811 images)...")
+        gallery_features, gallery_ids = extract_dataset_embeddings_pose(
+            model, gallery_loader, torch.device("cuda"), desc="Gallery Parlor Embeddings"
+        )
+        torch.save({"features": gallery_features, "ids": gallery_ids}, gallery_cache_p)
+        checkpoint_vol.commit()
 
     print("[*] Extracting Snapshot Query 576-D Embeddings (607 images)...")
     snapshot_features, snapshot_ids = extract_dataset_embeddings_pose(
@@ -371,9 +384,9 @@ def evaluate_protocol_a_master(
 
     print("[*] Evaluating Protocol A Retrieval (Snapshots -> Parlor)...")
     snapshots_eval = evaluate_retrieval_chunked(
-        query_features=snapshot_features,
+        query_feats=snapshot_features,
         query_ids=snapshot_ids,
-        gallery_features=gallery_features,
+        gallery_feats=gallery_features,
         gallery_ids=gallery_ids,
         chunk_size=607,
     )
@@ -391,9 +404,9 @@ def evaluate_protocol_a_master(
 
     print("[*] Evaluating Protocol A Retrieval (Barn -> Parlor)...")
     barn_eval = evaluate_retrieval_chunked(
-        query_features=barn_features,
+        query_feats=barn_features,
         query_ids=barn_ids,
-        gallery_features=gallery_features,
+        gallery_feats=gallery_features,
         gallery_ids=gallery_ids,
     )
 
