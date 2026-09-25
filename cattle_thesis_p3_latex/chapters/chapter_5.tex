@@ -1,28 +1,26 @@
-\section{Design Process or Methodology Overview}
+\section{Design Process and Methodology Overview}
 
-Phase 3 was designed as a controlled comparison of visual representations rather than as a search for a single large architecture. The study first established defensible data partitions, then trained one RGB reference model for each task, and finally evaluated a cattle-centered counterpart under the same task protocol. This sequence produced six completed single-task experiments. The remaining two experiments will compare hard parameter sharing with a modular multi-task design; their results are intentionally excluded from the present manuscript.
+The study compares visual representations under task-specific evaluation protocols. Each task has an RGB reference model and a cattle-centered counterpart. These six single-task configurations provide the basis for assessing representation changes and for the subsequent comparison of hard-shared and modular multi-task learning. Detailed multi-task results remain to be incorporated into this draft.
 
-The central design variable is the information supplied to each task. BCS depends primarily on morphology, Behavior requires posture together with temporal change, and Re-ID depends on stable individual appearance. The cattle-centered models therefore share a general principle---focus the representation on the target animal---but do not use an identical preprocessing rule. Figure~\ref{fig:phase3design} shows the progression from protected task protocols to the completed task comparisons and the two pending MTL experiments.
+The central design choice is the information supplied to each task. BCS emphasizes morphology, behavior recognition uses posture and temporal change, and Re-ID requires stable individual appearance. The cattle-centered models therefore focus on the target animal without imposing identical preprocessing on every task. Figure~\ref{fig:phase3design} summarizes the comparative design, and Table~\ref{tab:runstatus} identifies its model configurations. Supporting records are indexed in Appendix~\ref{app:evidence}.
 
 \input{images/phase3_design}
 
-Table~\ref{tab:runstatus} summarizes the experimental sequence and its current boundary.
-
 \input{tables/run_status}
 
-Runs 4--6 are combined-configuration comparisons. Run 4 changes localization, cropping, and mask guidance together; Run 5 changes both the spatial representation and temporal aggregation; and Run 6 changes crop geometry and adds an oracle mask channel. Their results measure the complete executed configurations. They do not isolate a causal contribution for any one component.
+The perception-enhanced configurations change several components together. The BCS model changes localization, cropping, and mask guidance; the behavior model changes both the spatial representation and temporal aggregation; and the Re-ID model changes crop geometry and adds an oracle mask channel. Their comparisons measure the complete configurations, not the isolated causal effect of an individual component.
 
-\section{Preliminary Design or Design (Model) Specification}
+\section{Preliminary Designs and Model Specifications}
 
 \subsection{Representation Alternatives}
 
-The RGB references use ImageNet-pretrained ResNet-18 encoders because this backbone provides a common, computationally manageable starting point across the three tasks~\cite{he2016resnet}. Task-specific heads then reflect the output structure: cumulative ordinal logits for BCS, categorical logits for Behavior, and an identity classifier plus a retrieval embedding for Re-ID. This separation permits a fair question: when the task and evaluation protocol are held fixed, does a cattle-centered input representation provide a more useful feature space than the RGB reference?
+The RGB references use ImageNet-pretrained ResNet-18 encoders to provide a common, computationally manageable starting point~\cite{he2016resnet}. Their heads match the output structure of each task: cumulative ordinal logits for BCS, categorical logits for behavior, and an identity classifier with a retrieval embedding for Re-ID. Holding the task protocol fixed allows comparison of the RGB and cattle-centered representations.
 
-Localization and segmentation were selected after a feasibility study of pretrained perception models. The study compared detector return behavior and latency and, where SideView ground-truth masks were available, measured segmentation overlap. RT-DETR-L followed by SAM 2.1 provided a practical automatic pipeline for ScienceDB and Behavior, while SideView enabled a distinct oracle experiment using its released target-cow masks~\cite{zhao2024rtdetr,ravi2024sam2}. Pose outputs were not included in Runs 4--6 because their task relevance and cross-dataset reliability were insufficiently established. Viewpoint was likewise retained as a separate completed study rather than being inserted into downstream models without validated transfer.
+Localization and segmentation were selected through a feasibility study of pretrained perception models. The study examined detector return rates and latency, and measured mask overlap where SideView ground truth was available. RT-DETR-L followed by SAM 2.1 provided an automatic pipeline for ScienceDB and behavior data; SideView's released masks enabled a separate oracle-guided experiment~\cite{zhao2024rtdetr,ravi2024sam2}. Pose and viewpoint were not included in these initial paired configurations because their task relevance and transfer reliability had not been established at the time of selection. This design choice does not determine their value in separate downstream ablations.
 
-\subsection{Run 1: RGB Body Condition Scoring}
+\subsection{Baseline RGB Body Condition Scoring}
 
-The BCS reference uses an ImageNet-initialized ResNet-18 with four independent cumulative threshold logits for five ordered classes. For a class index $y\in\{0,1,2,3,4\}$, the target for threshold $k$ is
+The BCS baseline uses an ImageNet-initialized ResNet-18 with four independent cumulative threshold logits for five ordered classes. For a class index $y\in\{0,1,2,3,4\}$, the target for threshold $k$ is
 \begin{equation}
  t_k=\mathbb{I}(y>k),\qquad k=0,1,2,3.
 \end{equation}
@@ -36,94 +34,94 @@ The predicted class counts threshold probabilities above 0.5 and is mapped back 
  \hat y=\sum_{k=0}^{3}\mathbb{I}(\sigma(g_k)>0.5),\qquad
  \widehat{\mathrm{BCS}}=3.25+0.25\hat y.
 \end{equation}
-Although the targets are cumulative, the executed head uses independent ordinal binary cross-entropy. It is therefore described as \texttt{ordinal\_bce}, not as CORAL, whose rank-consistency mechanism is different~\cite{coral2020}. The model was trained for 30 epochs with batch size 64, AdamW, an initial learning rate of $10^{-4}$, weight decay $10^{-4}$, a cosine schedule, and seed 42. The checkpoint with the lowest validation MAE was retained.\evidence{E08,E10,E14}
+Although the targets are cumulative, the head uses independent ordinal binary cross-entropy. It is therefore described as \texttt{ordinal\_bce}, not CORAL, which uses a different rank-consistency mechanism~\cite{coral2020}. The model was trained for 30 epochs with batch size 64, AdamW, an initial learning rate of $10^{-4}$, weight decay $10^{-4}$, a cosine schedule, and seed 42. The checkpoint with the lowest validation MAE was retained.
 
-\subsection{Run 4: Cattle-Centered Body Condition Scoring}
+\subsection{Perception-Enhanced Body Condition Scoring}
 
-Run 4 applies an automatic cattle-centered pipeline to ScienceDB. RT-DETR-L detects COCO cattle at confidence 0.25 or above. When several cattle are returned, the largest bounding box is selected, with confidence used as a tie-breaker. The selected box is expanded by 5\% in each dimension, clipped to the image boundary, and used both as the RGB crop and as the prompt region for SAM 2.1. Images without a valid detection or segmentation are recorded as perception failures and excluded rather than replaced by fabricated inputs.\evidence{E24,E25}
+The perception-enhanced BCS model applies automatic cattle localization and segmentation to ScienceDB. RT-DETR-L detects cattle in the COCO label space at confidence 0.25 or above. When multiple cattle are detected, the largest bounding box is selected, with confidence used to resolve ties. The box is expanded by 5\% in each dimension, clipped to the image boundary, and used for the RGB crop and SAM 2.1 prompt. Images without valid detection or segmentation are recorded as perception failures and excluded; no replacement inputs are fabricated.
 
-The retained RGB crop and binary mask are resized synchronously to $224\times224$. RGB channels receive ImageNet normalization; the mask remains an unnormalized binary channel in $\{0,1\}$. The ResNet-18 first convolution is expanded from three to four channels. Its RGB weights are copied from the pretrained model, and the additional channel is initialized from the mean of the RGB filters. The ordinal head, target encoding, loss, training schedule, and augmentation policy otherwise follow Run 1. This adds 3,136 trainable parameters, from 11,178,564 to 11,181,700. The executed configuration is therefore a localized RGB crop with explicit binary mask guidance, not a calibrated soft-mask model.\evidence{E24,E25}
+The RGB crop and binary mask are resized together to $224\times224$. RGB channels receive ImageNet normalization, while the mask remains an unnormalized channel in $\{0,1\}$. The first ResNet-18 convolution is expanded from three to four channels. The pretrained RGB weights are retained, and the mask channel is initialized from their mean. The ordinal head, target encoding, loss, training schedule, and augmentation policy otherwise follow the RGB BCS baseline. This adds 3,136 trainable parameters, increasing the count from 11,178,564 to 11,181,700. The model uses binary mask guidance, not a calibrated soft mask.
 
-\subsection{Run 2: Single-Frame RGB Behavior Recognition}
+\subsection{Baseline Single-Frame RGB Behavior Recognition}
 
-The Behavior reference uses one representative midpoint frame for each canonical sample and an ImageNet-pretrained ResNet-18 with a five-class linear classifier. The output classes are Standing, Lying, Feeding, Drinking, and Walking, optimized with cross-entropy. CVB samples use the target tracklet information supplied by the dataset, while Kaggle Beef clips already contain one principal animal. The selected checkpoint is epoch 25 of the 30-epoch run, based on validation Macro-F1.\evidence{E05,E09,E12,E15}
+The behavior baseline uses the midpoint frame of each canonical sample and an ImageNet-pretrained ResNet-18 with a five-class linear classifier. The classes are Standing, Lying, Feeding, Drinking, and Walking, trained with cross-entropy. CVB samples use the supplied target-tracklet information, while Kaggle Beef clips contain one principal animal. Validation Macro-F1 selected the epoch-25 checkpoint from the 30-epoch training run.
 
-This reference deliberately omits temporal aggregation. Its purpose is not to represent the strongest possible video model, but to establish how far a single RGB observation can support the shared five-class taxonomy. The evaluation therefore reports balanced and class-specific measures in addition to pooled accuracy, particularly because Walking occurs only in CVB.
+This reference deliberately omits temporal aggregation. It establishes the performance available from a single RGB observation rather than representing the strongest possible video model. Evaluation includes balanced and class-specific measures because pooled accuracy can conceal class differences, particularly when Walking occurs only in CVB.
 
-\subsection{Run 5: Cattle-Centered Temporal Behavior Recognition}
+\subsection{Perception-Enhanced Temporal Behavior Recognition}
 
-Run 5 replaces the midpoint image with eight approximately evenly spaced observations from the labeled interval. Its input tensor has shape $[B,8,4,224,224]$. Each time step contains an RGB crop and a binary mask. For CVB, the exact target-tracklet bounding box at the sampled frame prompts SAM 2.1; the same coordinates crop RGB and mask. No nearest-animal or full-frame substitution is permitted. For the single-cow Beef clips, RT-DETR-L supplies the principal cow box when possible, followed by a positive center prompt to SAM 2.1; an image-center prompt is used when the detector returns no cow. A sequence is excluded if any required mask is empty or invalid.\evidence{E26,E28}
+The temporal behavior model uses eight approximately evenly spaced observations from each labeled interval instead of one midpoint frame. Its input shape is $[B,8,4,224,224]$, with an RGB crop and binary mask at each time step. For CVB, the target-tracklet box at the sampled frame prompts SAM 2.1 and defines the matching RGB and mask crops. Neither a nearby animal nor the full frame is substituted for the target. For single-cow Beef clips, RT-DETR-L supplies the principal cow box when available, followed by a positive center prompt to SAM 2.1. An image-center prompt is used when no cow is detected. A sequence is excluded if any required mask is empty or invalid.
 
-The completed Train/Validation cache retained 4,271 of 4,465 candidate sequences: 3,641 for training and 630 for validation. It contains 34,168 authentic RGB frames and 34,168 non-trivial binary masks. The 194 exclusions were recorded as empty-mask failures; all 145 Walking candidates across Train and Validation were retained. The held-out test comparison separately retained 780 of 809 samples, consisting of 422 CVB and 358 Beef sequences.\evidence{E26,E27}
+The training and validation cache retained 4,271 of 4,465 candidate sequences: 3,641 for training and 630 for validation. It contains 34,168 RGB frames and 34,168 non-trivial binary masks. Empty-mask failures account for 194 exclusions; all 145 Walking candidates across training and validation were retained. The held-out comparison separately retained 780 of 809 samples, comprising 422 CVB and 358 Beef sequences.
 
-Each frame is encoded by a four-channel ResNet-18 into a 512-dimensional feature. The resulting sequence $\mathbf{H}\in\mathbb{R}^{B\times8\times512}$ is transposed for temporal convolution. The first temporal block uses a width-three Conv1D projection from 512 to 256 channels, BatchNorm, GELU, dropout 0.2, and a width-one residual projection. A second width-three 256-channel block applies the same normalization, activation, and dropout with an identity residual. Adaptive average pooling over time produces one 256-dimensional vector, followed by the five-class linear head. This is a lightweight residual Conv1D aggregator over sparsely sampled features; it is not optical flow, a video transformer, or a deep dilated causal TCN. The complete model has 11,903,621 trainable parameters.\evidence{E28}
+Each frame is encoded by a four-channel ResNet-18 into a 512-dimensional feature. The sequence $\mathbf{H}\in\mathbb{R}^{B\times8\times512}$ is transposed for temporal convolution. The first block applies a width-three Conv1D projection from 512 to 256 channels, BatchNorm, GELU, dropout 0.2, and a width-one residual projection. A second width-three 256-channel block uses the same normalization, activation, and dropout with an identity residual. Adaptive average pooling over time produces a 256-dimensional vector for the five-class linear head. This lightweight residual Conv1D aggregator operates on sparsely sampled frame features; it is not optical flow, a video transformer, or a deep dilated causal TCN. The model has 11,903,621 trainable parameters.
 
-\subsection{Run 3: RGB Cattle Re-Identification}
+\subsection{Baseline RGB Cattle Re-Identification}
 
-The Re-ID reference follows SideView Protocol A. Representation learning uses 41 parlor-only cows, restricted to 12,753 training and 2,683 validation images. Evaluation uses 69 different cows: a 36,811-image parlor gallery, 25,260 barn queries for all 69 cows, and 607 snapshot queries for 63 of them. The representation-learning and evaluation identities are disjoint.\evidence{E06,E20,E22,E23}
+The RGB Re-ID baseline follows SideView Protocol A. Representation learning uses 41 parlor-only cows, with 12,753 training and 2,683 validation images. Evaluation uses 69 different cows: a 36,811-image parlor gallery, 25,260 barn queries for all 69 cows, and 607 snapshot queries for 63 of them. Learning and evaluation identities are disjoint.
 
-ResNet-18 produces a raw 512-dimensional feature $\mathbf{h}$. A 41-class linear classifier is trained on the raw feature using cross-entropy, while retrieval uses its L2-normalized form:
+ResNet-18 produces a raw 512-dimensional feature $\mathbf{h}$. A 41-class linear classifier is trained on this feature using cross-entropy; retrieval uses its L2-normalized form:
 \begin{equation}
  \mathbf{z}=\frac{\mathbf{h}}{\lVert\mathbf{h}\rVert_2},\qquad
  \boldsymbol{\ell}=W\mathbf{h}+\mathbf{b}.
 \end{equation}
-At evaluation, cosine similarity is computed as the dot product between normalized query and gallery embeddings. Gallery images are ranked for each query, and the evaluation reports Rank-$k$ retrieval and mean average precision (mAP). The full model was trained for 30 epochs; the validation-selected representation was then evaluated once on the held-out Protocol A conditions.\evidence{E20,E22,E23}
+At evaluation, cosine similarity is the dot product between normalized query and gallery embeddings. Gallery images are ranked for each query, and performance is measured using Rank-$k$ and mean average precision (mAP). The model was trained for 30 epochs. Its validation-selected representation was then evaluated once under the held-out Protocol A conditions.
 
-\subsection{Run 6: Oracle Segmentation-Guided Re-Identification}
+\subsection{Oracle Segmentation-Guided Re-Identification}
 
-Run 6 uses SideView's released target-cow masks and is therefore an oracle GT segmentation-guided experiment. The non-zero mask region defines a bounding box, which is expanded by approximately 5\%. Identical coordinates crop RGB and mask before both are resized to $224\times224$. RGB is ImageNet-normalized, the mask remains binary $\{0,1\}$, and RGB is not multiplied by the mask. The first ResNet convolution is expanded to four channels with the mask filters initialized from the mean RGB weights. All other representation-learning and retrieval procedures remain aligned with Run 3.\evidence{E29,E30}
+The segmentation-guided Re-ID model uses SideView's ground-truth target-cow masks and is therefore an oracle experiment. The non-zero mask region defines a bounding box, expanded by approximately 5\%. The same coordinates crop RGB and mask before resizing to $224\times224$. RGB receives ImageNet normalization, the mask remains binary $\{0,1\}$, and RGB is not multiplied by the mask. The first convolution is expanded to four channels, with mask-channel filters initialized from the mean RGB weights. The other learning and retrieval procedures remain aligned with the RGB Re-ID baseline.
 
-This design tests whether reliable target-centered geometry and explicit foreground guidance improve cross-setting retrieval. It does not validate an automatic segmentation pipeline, and it does not separate the effect of cropping from the effect of the fourth channel. The parameter change is limited to 3,136 weights, increasing the trainable count from 11,197,545 to 11,200,681.\evidence{E29,E30}
+The comparison tests reliable target-centered geometry and explicit foreground guidance under cross-setting retrieval. It does not validate automatic segmentation or isolate the effect of cropping from that of the fourth channel. The additional 3,136 weights increase the trainable parameter count from 11,197,545 to 11,200,681.
 
 \section{Data Collection and Preparation}
 
 \subsection{Data Sources and Scientific Roles}
 
-All experiments use existing datasets; no new farm data collection is claimed. ScienceDB is the primary BCS source, CVB plus Kaggle Beef forms the primary Behavior stack, and SideViewCows2026 is the primary Re-ID benchmark. External sources have predefined stress-test roles but are not reported as evaluated without result artifacts. Table~\ref{tab:datasets} separates these roles.
+All experiments use existing datasets; no new farm data collection is claimed. ScienceDB is the primary BCS source, CVB and Kaggle Beef form the primary behavior dataset, and SideViewCows2026 is the primary Re-ID benchmark. External datasets have separate stress-test roles and are not described as evaluated without supporting results. Table~\ref{tab:datasets} distinguishes these roles.
 
 \input{tables/dataset_summary}
 
-ScienceDB contains 53,566 RGB images over five scores from 3.25 to 4.25. The released metadata do not provide verified biological cow identities. Its 5,653 repaired connected burst groups are therefore the strongest defensible separation unit. ScienceDB results are described as burst-group-disjoint, passage-disjoint, or sequence-safe, never as unseen-cow evaluation.\evidence{E04}
+ScienceDB contains 53,566 RGB images across five scores from 3.25 to 4.25. Its released metadata do not provide verified biological cow identities. The 5,653 repaired connected burst groups therefore provide the strongest defensible separation unit. Evaluation is described as burst-group-disjoint, passage-disjoint, or sequence-safe, not unseen-cow evaluation.
 
-The Behavior manifest contains 2,481 CVB segments and 2,793 Beef clips. CVB is grouped by source video, and Beef by recording session/source-video provenance. The combined dataset has 267 protected groups and 5,274 samples. Because Walking is supplied only by CVB, the primary test is source/session-group-disjoint but not cow-disjoint, and pooled accuracy alone is insufficient.\evidence{E05,E13}
+The behavior manifest contains 2,481 CVB segments and 2,793 Beef clips, organized into 267 protected groups and 5,274 samples. CVB is grouped by source video, and Beef by recording-session or source-video provenance. Because Walking occurs only in CVB, evaluation is source/session-group-disjoint rather than cow-disjoint, and pooled accuracy alone is insufficient.
 
-SideView contains 80,260 RGB images, 80,260 paired binary masks, and 110 biological identities. Protocol A deliberately separates 41 representation-learning cows from 69 evaluation cows. It therefore supports an identity-disjoint statement for Runs 3 and 6, unlike the BCS and Behavior protocols.\evidence{E06}
+SideView contains 80,260 RGB images, 80,260 paired binary masks, and 110 biological identities. Protocol A separates 41 representation-learning cows from 69 evaluation cows. This supports an identity-disjoint interpretation of the Re-ID comparisons, unlike the BCS and behavior protocols.
 
 \subsection{Label Harmonization and Split Protection}
 
-ScienceDB labels retain their physical BCS values. CVB labels are mapped from resting-standing, resting-lying, grazing, drinking, and walking to the five canonical classes; Beef contributes stand, lie, eat, and drink, while rumination is excluded. The mapping is fixed before model evaluation. SideView identities are used only within their defined representation-learning or evaluation role.
+ScienceDB labels retain their physical BCS values. CVB resting-standing, resting-lying, grazing, drinking, and walking labels map to the five canonical behavior classes. Beef contributes stand, lie, eat, and drink, while rumination is excluded. The mapping is fixed before evaluation. SideView identities are used only in their assigned learning or evaluation role.
 
 \input{tables/split_summary}
 
-Split protection follows the strongest available provenance. ScienceDB keeps connected burst groups intact. CVB keeps every segment from a source video in one partition, and Beef keeps every derived clip from a recording session in one partition. SideView Protocol A separates cow identities between learning and evaluation and defines acquisition setting explicitly for the gallery and query sets. Under the implemented checks, no forbidden group or identity overlap was detected. This does not justify a universal claim that every possible form of leakage has been eliminated.
+Partitions preserve the strongest available provenance. ScienceDB keeps connected burst groups intact. Every CVB segment from one source video remains in one partition, as does every Beef clip from a recording session. SideView Protocol A separates learning and evaluation identities and specifies acquisition settings for the gallery and queries. The implemented checks detected no forbidden group or identity overlap. They do not establish that every possible form of leakage has been eliminated.
 
 \subsection{Perception Feasibility and Component Selection}
 
-The preliminary perception audit compared several off-the-shelf components before they were adopted. It distinguished an output-return rate from accuracy and used mask overlap only where ground truth existed. The results supported RT-DETR-L and SAM 2.1 as practical components, but they also showed that successful inference alone does not guarantee task-relevant anatomy.\evidence{E11}
+The preliminary perception assessment compared off-the-shelf components before selection. It distinguished output-return rate from accuracy and measured mask overlap only where ground truth was available. The findings supported RT-DETR-L and SAM 2.1 as practical components, while showing that a returned output does not necessarily provide task-relevant anatomy.
 
 \input{tables/perception_results}
 
-Pose was excluded from the deadline task models after restricted manual review found unreliable ScienceDB rear-view outputs and a landmark schema that did not directly capture the intended BCS anatomy. A separate real-cattle viewpoint classifier later achieved 86.26\% accuracy, 84.96\% balanced accuracy, and 0.8573 Macro-F1 on its own 131-image held-out test. It was not added to Runs 4--6 because transfer to those task datasets was not validated; camera identity was not used as a substitute for viewpoint.\evidence{E31}
+Pose was not included in the initial paired task configurations. Restricted manual review of ScienceDB found unreliable rear-view outputs and a landmark schema that did not directly capture the intended BCS anatomy. A separate real-cattle viewpoint classifier achieved 86.26\% accuracy, 84.96\% balanced accuracy, and 0.8573 Macro-F1 on its own 131-image held-out test. Viewpoint was not included in the initial paired configurations because downstream transfer had not been validated at selection time. Camera identity was not used as a substitute for viewpoint. These statements describe the original configurations, not a final rejection of either cue.
 
 \section{Implementation of Selected Design}
 
-Training and preprocessing were implemented in PyTorch, Torchvision, OpenCV, and the Ultralytics perception interface. Deterministic CSV manifests define task samples and partitions. Checkpoints were selected using validation data, and the held-out task tests were evaluated after model selection. Machine-readable artifacts preserve test metrics, confusion matrices, coverage counts, and, where available, split hashes and checkpoint-reload checks.
+Preprocessing and training were implemented using PyTorch, Torchvision, OpenCV, and the Ultralytics perception interface. Deterministic CSV manifests define samples and partitions. Validation data were used for checkpoint selection, followed by evaluation on held-out task tests. Machine-readable records preserve metrics, confusion matrices, coverage counts, and, where available, split hashes and checkpoint-reload checks.
 
-The local GTX 1050 Ti was restricted to path checks, tensor/loss/metric tests, very small runs, and checkpoint verification. Heavy cache generation, full training, and final task evaluation were executed on Modal cloud GPUs. The unusable RTX 5090 research PC was not used for Phase 3 training. These choices reflect the available compute constraints and separate low-cost validation from production-scale execution.
+Full preprocessing, training, and evaluation used GPU-accelerated cloud resources. Lightweight pipeline checks preceded full experiments. Hardware and execution details are retained in the reproducibility records rather than presented as a history of infrastructure troubleshooting.
 
 \subsection{Evaluation Metrics}
 
-BCS is evaluated with physical-score MAE, exact accuracy (Acc@0), accuracy within one adjacent class or $\pm0.25$ BCS units (Acc@1), balanced accuracy, and Macro-F1. For $N$ samples,
+BCS evaluation uses physical-score MAE, exact accuracy (Acc@0), accuracy within one adjacent class or $\pm0.25$ BCS units (Acc@1), balanced accuracy, and Macro-F1. For $N$ samples,
 \begin{equation}
  \mathrm{MAE}_{\mathrm{BCS}}=\frac{1}{N}\sum_{i=1}^{N}|s_i-\hat{s}_i|.
 \end{equation}
 
-Behavior evaluation reports overall accuracy, balanced accuracy, Macro-F1, per-class precision/recall/F1, and source-specific metrics. Balanced accuracy is the mean recall across the five classes and is especially important when class frequencies and source coverage differ.
+Behavior evaluation reports overall accuracy, balanced accuracy, Macro-F1, per-class precision/recall/F1, and source-specific metrics. Balanced accuracy is the mean recall across the five classes and is important when class frequencies and source coverage differ.
 
-For Re-ID, Rank-$k$ is the proportion of queries for which at least one correct identity occurs within the first $k$ ranked gallery images. Average precision summarizes the ranking for one query, and mAP averages this value over all queries. Barn-to-Parlor and Snapshots-to-Parlor are reported separately because they represent different acquisition shifts.
+For Re-ID, Rank-$k$ is the proportion of queries with at least one correct identity among the first $k$ ranked gallery images. Average precision summarizes the ranking for one query, and mAP averages it over all queries. Barn-to-Parlor and Snapshots-to-Parlor results are reported separately because they represent different acquisition shifts.
 
-\subsection{Planned Multi-Task Integration}
+\subsection{Multi-Task Comparison and Reporting Boundary}
 
-Run 7 will serve as the E1 hard-shared control. Its scientific role is to test whether extensive sharing across BCS, Behavior, and Re-ID creates negative transfer relative to matched single-task references. Run 8 will evaluate the E3 modular alternative, in which task-private processing or adapters/gates permit specialization while retaining a unified framework.
+The hard-shared multi-task control tests whether extensive sharing across BCS, behavior, and Re-ID reduces performance relative to matched single-task references. The modular alternative is intended to evaluate task-private processing, adapters, or gates while retaining a unified framework. No success of the modular alternative is assumed.
 
-The task datasets do not provide all three labels for the same image. The final implementation must therefore use task-specific batches or an equivalent available-label mechanism and must never interpret an absent annotation as a negative label. Exact sharing boundaries, task sampling, temporal handling, loss weighting, capacity, and compute will be documented from the executed code after Runs 7 and 8 are complete. No comparative MTL result is asserted in this chapter.
+The task datasets do not supply all three labels for the same image. Joint training must therefore use task-specific batches or another available-label mechanism; absent annotations must not be interpreted as negative labels. Exact sharing boundaries, task sampling, temporal handling, loss weighting, capacity, and compute must be documented from the executed implementations. Detailed multi-task methods and comparative results are not yet incorporated into this chapter.

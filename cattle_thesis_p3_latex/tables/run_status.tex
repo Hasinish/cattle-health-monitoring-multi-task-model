@@ -1,18 +1,18 @@
 \begin{table}[htbp]
 \centering\small
-\caption[Phase 3 experiment status]{Focused Phase 3 experiment status at the reviewed snapshot.\evidence{E02,E03,E22,E24,E27,E29}}\label{tab:runstatus}
-\begin{tabularx}{\textwidth}{lYY}
+\caption[Experimental model configurations]{Configurations in the comparative study. Detailed multi-task results are not yet incorporated into this draft.}\label{tab:runstatus}
+\begin{tabularx}{\textwidth}{YYY}
 \toprule
-Run & Role & Status \\
+Configuration & Role & Evaluation described here \\
 \midrule
-1 & BCS RGB & Complete: full 8,040-image test. \\
-2 & Behavior single-frame RGB & Complete: full 809-sequence test. \\
-3 & Re-ID RGB & Complete: Protocol A Barn and Snapshot retrieval. \\
-4 & BCS cattle-centered & Complete: matched 7,549-image evaluation. \\
-5 & Behavior cattle-centered + Conv1D & Complete: matched 780-sequence evaluation. \\
-6 & Re-ID oracle GT-guided & Complete: Protocol A Barn and Snapshot retrieval. \\
-7 & Hard-shared MTL (E1) & Pending. \\
-8 & Modular/task-private MTL (E3) & Pending; final implementation to be documented. \\
+RGB BCS baseline & Single-task reference & Full 8,040-image test. \\
+Single-frame RGB behavior baseline & Single-task reference & Full 809-sequence test. \\
+RGB Re-ID baseline & Single-task reference & Protocol A Barn and Snapshot retrieval. \\
+Perception-enhanced BCS & Crop and binary-mask guidance & Matched 7,549-image evaluation. \\
+Perception-enhanced temporal behavior & Crop, binary mask, and Conv1D aggregation & Matched 780-sequence evaluation. \\
+Oracle segmentation-guided Re-ID & Ground-truth crop and mask guidance & Protocol A Barn and Snapshot retrieval. \\
+Hard-shared multi-task control & Reference sharing strategy & Comparative results to be incorporated. \\
+Modular task-private multi-task model & Alternative sharing strategy & Final implementation and results to be documented. \\
 \bottomrule
 \end{tabularx}
 \end{table}

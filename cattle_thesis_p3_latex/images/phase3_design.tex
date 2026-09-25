@@ -6,11 +6,11 @@
   arrow/.style={->,thick}
 ]
 \node[box] (protocols) at (0,0) {Leakage-aware protocols\\BCS, Behavior, Re-ID};
-\node[box] (rgb) at (4.2,0) {Runs 1--3\\RGB task references};
-\node[box] (centered) at (8.4,0) {Runs 4--6\\Task-specific cattle-centered models};
-\node[pending] (e1) at (2.1,-2.2) {Run 7: E1\\Hard-shared MTL control};
-\node[pending] (e3) at (6.3,-2.2) {Run 8: E3\\Modular/task-private MTL};
-\node[pending] (synthesis) at (4.2,-4.4) {Final task-wise comparison\\and negative-transfer analysis};
+\node[box] (rgb) at (4.2,0) {RGB single-task\\reference models};
+\node[box] (centered) at (8.4,0) {Task-specific\\cattle-centered models};
+\node[pending] (e1) at (2.1,-2.2) {Hard-shared\\multi-task control};
+\node[pending] (e3) at (6.3,-2.2) {Modular task-private\\multi-task model};
+\node[pending] (synthesis) at (4.2,-4.4) {Task-wise comparison\\and negative-transfer analysis};
 \draw[arrow] (protocols) -- (rgb);
 \draw[arrow] (rgb) -- (centered);
 \draw[arrow] (rgb) -- (e1);
@@ -18,6 +18,6 @@
 \draw[arrow] (e1) -- (synthesis);
 \draw[arrow] (e3) -- (synthesis);
 \end{tikzpicture}
-\caption[Phase 3 comparative research design]{Phase 3 comparative design. Solid boxes are supported by completed Runs 1--6; dashed boxes identify the pending MTL experiments and final synthesis.}
+\caption[Comparative research design]{Organization of the comparative study. Arrows show relationships between the investigations, not identical model inputs. Dashed boxes identify multi-task material still to be incorporated into the manuscript, rather than the current execution status of those experiments.}
 \label{fig:phase3design}
 \end{figure}

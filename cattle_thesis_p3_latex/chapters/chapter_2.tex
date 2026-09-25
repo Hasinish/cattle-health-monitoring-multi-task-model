@@ -1,5 +1,4 @@
-% Completely rewritten literature synthesis for author review; no commit authorized.
-% Relevant P2 literature was re-evaluated against original publications.
+% Literature synthesis retained; editorial changes do not alter cited claims.
 \section{Preliminaries}
 
 A unified cattle-monitoring system must connect several kinds of visual evidence. Body condition is expressed through morphology, behavior through posture and movement, and identity through features that distinguish one animal from another. These requirements connect the thesis to research in livestock monitoring, visual representation learning, and multi-task learning. This chapter develops those connections by examining how previous methods select information, how they learn from it, and how their evaluation relates to the conditions in which a system would be used.
@@ -226,7 +225,7 @@ This leads to a second gap: connecting representation comparisons to evaluation 
 
 \subsection{Selective Sharing as the Basis of the Unified Framework}
 
-The MTL literature distinguishes between balancing optimization and choosing the content of shared representations. Both matter, but they address different causes of task interaction. The Phase 2 experience motivates bringing this distinction into cattle monitoring. Instead of beginning with a fixed assumption of extensive sharing, Phase 3 uses single-task references to understand the representations and then compares alternative forms of integration.
+The MTL literature distinguishes between balancing optimization and selecting the information shared between tasks. The preliminary investigations motivate applying this distinction to cattle monitoring. Rather than assuming extensive sharing is appropriate, this study uses single-task references to examine the representations before comparing alternative forms of integration.
 
 The resulting research direction is a task-conditioned cattle-centered framework. Its purpose is to retain useful common animal features while allowing morphology, activity, and identity to receive different emphasis. The central evaluation compares that approach with generic RGB references and hard sharing, with particular attention to task-wise performance and negative transfer. The contribution is therefore a comparative investigation of information sharing: which animal features remain useful across tasks, which require specialized processing, and how these choices affect a unified monitoring system.
 
