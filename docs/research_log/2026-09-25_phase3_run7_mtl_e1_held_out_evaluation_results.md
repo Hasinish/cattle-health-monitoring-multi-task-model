@@ -17,7 +17,7 @@ The model was evaluated against the exact frozen populations and protocols of th
 2. **Behavior**: Matched against Run 5 on the exact 780 retained sequences (T=8).
 3. **Re-ID**: Matched against Run 6 on the official SideViewCows2026 Protocol A (69 held-out cows; 36,811 parlor gallery, 25,260 barn queries, 607 snapshot queries).
 
-**Core Finding**: Run 7 exhibits **held-out degradation across all three tasks** relative to the dedicated single-task perception models (Run 4 BCS, Run 5 Behavior, Run 6 Re-ID). This empirical result provides textbook proof of negative transfer and gradient interference under naive hard parameter sharing, establishing the indispensable scientific rationale for Run 8 (E3 Modular Multi-Task Learning with task-private routing).
+**Core Finding**: Run 7 exhibits **held-out degradation across all three tasks** relative to the dedicated single-task perception models (Run 4 BCS, Run 5 Behavior, Run 6 Re-ID). This empirical result demonstrates held-out negative transfer under naive hard parameter sharing, establishing the indispensable scientific rationale for Run 8 (E3 Modular Multi-Task Learning with task-private routing).
 
 ---
 
@@ -132,8 +132,8 @@ Across all three evaluation axes, the hard-shared MTL architecture (Run 7 E1) sh
    - Behavior validation F1 was only 0.7175 at Epoch 3, whereas it later surged to **0.8012** at Epoch 8.
    - Re-ID validation accuracy was 94.19% at Epoch 3, whereas it later peaked at **96.65%** at Epoch 25.
    Because the checkpoint selection rule strictly forbade post-hoc test peeking or selecting different checkpoints per task, the official evaluation used the Epoch-3 model, capturing Behavior and Re-ID in an undertrained/unconverged state relative to their full 30-epoch trajectory.
-2. **Minority Class Gradient Starvation**:
-   The `Walking` class suffered severe gradient starvation under joint training. Without task-specific loss re-weighting or gradient surgery (e.g., PCGrad), the 96 walking samples were drowned out by 34,369 BCS samples and 12,753 Re-ID samples.
+2. **Minority Class Performance Drop**:
+   The `Walking` class dropped sharply under joint training (F1 0.0408 vs 0.2456). Without task-specific loss re-weighting or gradient balancing, the 96 walking samples may have experienced task imbalance against 34,369 BCS samples and 12,753 Re-ID samples, though the exact underlying optimization mechanism was not directly measured.
 3. **Representational Tension Between Local vs Global Invariance**:
    Re-ID requires distinguishing between individuals of the same breed/silhouette based on subtle coat patterns across radically different camera viewpoints (view-invariance + instance discrimination). In contrast, BCS requires invariant estimation of body volume/spine/hook bones regardless of coat pattern (instance-invariance + shape sensitivity). This fundamental representational conflict caused mutual interference under a single shared backbone.
 

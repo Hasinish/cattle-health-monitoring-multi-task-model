@@ -72,11 +72,11 @@
   3. Evaluated Checkpoint: Strictly evaluated the Epoch-3 checkpoint (`mtl_e1_best.pth`) selected by predefined validation objective. Did NOT use validation peaks (e.g. Behavior epoch 8 or Re-ID epoch 25).
   4. Task Comparisons & Deltas:
      - BCS (vs Run 4 matched 7,549 test images): Real MAE 0.1788 vs 0.1709 (+0.0079 degradation); Acc@0 41.10% vs 43.57% (-2.47%); Acc@1 88.44% vs 89.40% (-0.96%); Bal Acc 35.70% vs 39.70% (-4.00%); Macro-F1 0.3605 vs 0.4039 (-0.0434); Test Loss 0.4175 vs 0.4403 (-0.0228). Verdict: Degradation.
-     - Behavior (vs Run 5 matched 780 retained sequences): Overall Acc 85.00% vs 87.44% (-2.44%); Bal Acc 67.30% vs 74.43% (-7.13%); Macro-F1 0.6866 vs 0.7397 (-0.0531); Test Loss 0.6226 vs 0.4430 (+0.1796). Minority class Walking collapsed to F1 0.0408 vs 0.2456 (-0.2048) due to gradient starvation. CVB Acc 76.78% vs 80.09% (-3.31%), CVB Macro-F1 0.5402 vs 0.6188 (-0.0786); Beef Acc 94.69% vs 96.09% (-1.40%), Beef Macro-F1 0.9236 vs 0.9414 (-0.0178). Verdict: Degradation.
+     - Behavior (vs Run 5 matched 780 retained sequences): Overall Acc 85.00% vs 87.44% (-2.44%); Bal Acc 67.30% vs 74.43% (-7.13%); Macro-F1 0.6866 vs 0.7397 (-0.0531); Test Loss 0.6226 vs 0.4430 (+0.1796). Minority class Walking dropped to F1 0.0408 vs 0.2456 (-0.2048). CVB Acc 76.78% vs 80.09% (-3.31%), CVB Macro-F1 0.5402 vs 0.6188 (-0.0786); Beef Acc 94.69% vs 96.09% (-1.40%), Beef Macro-F1 0.9236 vs 0.9414 (-0.0178). Verdict: Degradation.
      - Re-ID (vs Run 6 Protocol A baseline on 69 held-out cows):
        - Query Barn -> Parlor (25,260 queries): Rank-1 57.38% vs 63.90% (-6.52%); Rank-5 73.33% vs 77.10% (-3.77%); Rank-10 79.79% vs 82.58% (-2.79%); mAP 30.37% vs 40.68% (-10.31%).
        - Query Snapshots -> Parlor (607 queries): Rank-1 57.17% vs 62.93% (-5.76%); Rank-5 75.45% vs 75.29% (+0.16%); Rank-10 82.70% vs 81.05% (+1.65%); mAP 33.69% vs 40.42% (-6.73%). Verdict: Degradation.
-  5. Scientific Takeaways: Demonstrates clear negative transfer across all three tasks under naive hard parameter sharing. Proves that sharing 93.74% of capacity causes severe task gradient interference, establishing the indispensable scientific rationale for Run 8 (E3 Modular Multi-Task Learning).
+  5. Scientific Takeaways: Demonstrates clear held-out negative transfer across all three tasks under naive hard parameter sharing. Gradient interference or task imbalance are possible explanations, establishing the empirical rationale for Run 8 (E3 Modular Multi-Task Learning).
   6. Artifacts: `artifacts/mtl_e1_evaluation/mtl_e1_test_evaluation_metrics.json`, `docs/research_log/2026-09-25_phase3_run7_mtl_e1_held_out_evaluation_results.md`.
 - Status: Stopped per user instruction. Run 8 not started.
 

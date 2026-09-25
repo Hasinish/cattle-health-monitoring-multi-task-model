@@ -14,12 +14,12 @@ We designed, implemented, and verified the complete architecture, training engin
 
 Run 8 directly addresses the empirical findings of Run 7 (E1 Hard-Shared MTL control), where forcing three biologically distinct tasks—Body Condition Scoring (morphology), Behavior Recognition (posture/motion over time), and Cow Re-Identification (individual coat patterns)—into a single hard-shared spatial representation caused across-the-board negative transfer on held-out test populations:
 - **BCS MAE**: degraded from 0.1709 (Run 4 single-task) to 0.1788 (Run 7 E1)
-- **Behavior Macro-F1**: degraded from 0.7397 (Run 5 single-task) to 0.6866 (Run 7 E1), with minority class `Walking` collapsing from 0.2456 to 0.0408 due to gradient starvation
+- **Behavior Macro-F1**: degraded from 0.7397 (Run 5 single-task) to 0.6866 (Run 7 E1), with minority class `Walking` dropping from 0.2456 to 0.0408
 - **Re-ID Barn mAP**: degraded from 40.68% (Run 6 single-task) to 30.37% (Run 7 E1)
 
-The E3 modular architecture preserves the exact single 4-channel ResNet-18 visual trunk (11,179,648 parameters; 90.72% shared capacity) and identical task heads from Runs 4–7 (747,058 parameters total), but inserts **three lightweight task-private residual bottleneck adapters** (Linear 512 -> 128 -> LayerNorm -> GELU -> Dropout(0.1) -> Linear 128 -> 512; 131,968 parameters each = 395,904 total private parameters, +3.32% over E1). Total trainable parameters are **12,322,610**. Crucially, the up-projection layer is initialized to zero (`up_proj.weight == 0`, `up_proj.bias == 0`), guaranteeing that at step 0, $f_{\text{task}}(x) = x$, ensuring the model initializes exactly on the certified E1 representation manifold.
+The E3 modular architecture preserves the exact single 4-channel ResNet-18 visual trunk (11,179,648 parameters; 90.72% shared capacity) and identical task heads from Runs 4–7 (747,058 parameters total), but inserts **three lightweight task-private residual bottleneck adapters** (Linear 512 -> 128 -> LayerNorm -> GELU -> Dropout(0.1) -> Linear 128 -> 512; 131,968 parameters each = 395,904 total private parameters, +3.32% over E1). Total trainable parameters are **12,322,610**. Crucially, the task-private adapters use zero-initialized up-projections (`up_proj.weight == 0`, `up_proj.bias == 0`), so each adapter initially acts as an identity mapping. At initialization, the adapted task feature therefore equals the output of E3's shared backbone before task-specific adaptation is learned (E3 and E1 use the same backbone architecture and initialization procedure, but E3 does not load the trained Run 7 E1 checkpoint).
 
-All 8 focused unit tests passed locally in 3.53s, verifying tensor shapes, adapter identity initialization, conv1 4th mask-channel initialization, strict gradient isolation, and bit-identical checkpoint reload (`max_logit_diff == 0.00000000`). Zero GPU compute was launched, zero test sets were touched, and the pipeline is certified ready for the future T4 smoke test.
+All 8 focused unit tests passed locally in 3.53s, verifying tensor shapes, adapter identity initialization, conv1 4th mask-channel initialization, task-private adapter isolation (with the shared backbone intentionally receiving gradients from all three tasks), and bit-identical checkpoint reload (`max_logit_diff == 0.00000000`). Zero GPU compute was launched, zero test sets were touched, and the pipeline is certified ready for the future T4 smoke test.
 
 ---
 
@@ -30,7 +30,7 @@ In multi-task deep learning, tasks with disparate visual semantics often exert c
 2. **Behavior** demands temporal frame-to-frame posture transitions (head dip for feeding/drinking, limb movements for walking, recumbency for lying) while ignoring specific body condition ratings and individual identification.
 3. **Re-ID** demands fine-grained, view-invariant coat pigmentation patterns, facial blazes, and individual markings across cameras, while marginalizing posture variation and temporary feeding/drinking stances.
 
-Under naive hard parameter sharing (Run 7 E1), backpropagating gradients from all three tasks directly into the shared convolutional kernels created destructive gradient cancellation, starving the minority Behavior class (`Walking` F1 collapsed by -20.48 pp) and diluting the metric distance metric for Re-ID (-10.31 pp mAP).
+Run 7 showed held-out negative transfer under hard sharing across all three tasks (`Walking` F1 dropped from 0.2456 to 0.0408, and Re-ID Barn mAP dropped from 40.68% to 30.37%). Gradient interference or task imbalance are possible explanations, but the underlying optimization mechanism was not directly measured.
 
 Run 8 tests the core thesis hypothesis:
 > *"Can lightweight task-private residual pathways decouple conflicting gradients and mitigate negative transfer while preserving the shared cattle visual manifold?"*
@@ -56,7 +56,7 @@ $$h_t = h_{\text{shared}} + \Delta h_t$$
 - **Bottleneck dimension**: $d_{\text{bottleneck}} = 128$ (compression ratio 4:1).
 - **Identity Initialization**:
   $$\text{UpProj}_t.W = \mathbf{0}, \quad \text{UpProj}_t.b = \mathbf{0} \implies \Delta h_t = \mathbf{0} \implies h_t \equiv h_{\text{shared}}$$
-  This design prevents step-0 disruption of the ImageNet representations and guarantees that any departure from hard sharing is learned strictly when task gradients demand specialization.
+  This design ensures that each adapter initially acts as an identity mapping, so the adapted task feature equals the shared backbone output before task-specific adaptation is learned.
 - **Parameters per adapter**:
   - Down projection: $512 \times 128 + 128 = 65,664$
   - LayerNorm: $128 \times 2 = 256$
@@ -101,7 +101,7 @@ $$h_t = h_{\text{shared}} + \Delta h_t$$
 
 ## 5. Controlled Experimental Comparison vs Run 7 (E1)
 
-To ensure that any performance difference between Run 7 (E1) and Run 8 (E3) is strictly attributable to the modular adapter pathways, all training and evaluation parameters are held 100% invariant:
+The comparison keeps the datasets, task heads, task weights, batch sizes, optimizer, training budget, and checkpoint-selection rule matched. E3 differs from E1 through the task-private adapters and their additional 395,904 trainable parameters (+3.32% capacity). Future performance differences can therefore be described as improvements from the E3 modular configuration, rather than isolated proof that routing alone caused them:
 
 | Experimental Parameter | Run 7 E1 (Hard Sharing) | Run 8 E3 (Modular MTL) | Controlled Fairness Status |
 | :--- | :--- | :--- | :--- |

@@ -30,8 +30,8 @@
   * **Run 8 architecture & scripts**: COMPLETE ✅ (`scripts/train_mtl_e3_modular.py`, `scripts/modal_train_mtl_e3_modular.py`)
   * **Run 8 unit test suite**: PASS ✅ (`tests/test_mtl_e3_modular.py`, 8/8 tests passed in 3.53s)
   * **Run 8 parameter verification**: CERTIFIED ✅ (11,179,648 shared backbone [90.72%], 395,904 task-private adapters [3.21%; 131,968 each], 747,058 task heads [6.06%]; total 12,322,610 trainable params, +3.32% over E1)
-  * **Run 8 gradient isolation**: VERIFIED ✅ (Zero cross-task gradient leakage; pure task-private routing; all 3 tasks accumulate into shared trunk)
-  * **Run 8 adapter identity initialization**: VERIFIED ✅ (Zero-weight up-projection; step-0 begins on exact certified E1 representation manifold)
+  * **Run 8 gradient isolation**: VERIFIED ✅ (Task-private adapters and task heads are isolated from the other tasks, while the shared backbone intentionally receives gradients from all three tasks)
+  * **Run 8 adapter identity initialization**: VERIFIED ✅ (Zero-weight up-projection ensures each adapter initially acts as an identity mapping; adapted task feature equals shared backbone output before adaptation is learned)
   * **Run 8 readiness on Modal (`hasinishrak2015`)**: PASS ✅ (CPU-only, zero GPU cost, volumes verified, test sets strictly protected)
   * **Run 8 GPU smoke & training**: STRICTLY STOPPED per user constraint (Awaiting user command)
 - **Immediate next action:** Stopped per user instruction. Ready for Run 8 GPU smoke test when commanded:
@@ -65,16 +65,17 @@
     - **Tab 2: `Chapter 2: Literature Review`**: 18 sections, 78 paragraphs, 253 rows.
     - **Tab 3: `Chapter 3: Requirements & Constraints`**: 8 sections, 25 paragraphs, 83 rows.
   * Total rows injected: **454 rows across 139 academic paragraphs**.
-  * Side-by-side template enforced: Col A spacer (40px), Col B original academic text with RED header (`RGB(1,0,0)`, 560px, WRAP), Col C teammate typing area with GREEN header (`RGB(0,1,0)`, 560px, WRAP), clean spacer rows, zero citations, zero LaTeX artifacts. Ready for native range locking.
+  * Side-by-side template enforced: Col A spacer (40px), Col B original academic text with RED header (`RGB(1,0,0)`, 560px, WRAP), Col C teammate typing area with GREEN header (`RGB(0,1,0)`, 560px, WRAP), clean spacer rows, zero citations, zero LaTeX artifacts. Protected ranges locked (`A:B` and `D:Z` locked to owner only).
   * Added idiot-proof granular instructions directly in RED headers: spelled out "CRITICAL - THE 3 MAIN RESEARCH QUESTIONS", named forbidden words ("Phase 2"), scope boundaries ("No lameness"), and labeled each specific objective individually.
+  * **CRITICAL TEAMMATE DATA PRESERVATION LAW (LOCKED IN MEMORY)**: Teammates are actively typing into Column C. NEVER run full wipes (`values.clear()`), bulk cell erasures, or overwrite Column C. Any future edits MUST be surgical, targeted, and preserve all teammate text in Column C at all costs.
 - [x] **Phase 3 Run 7 E1 Hard-Shared MTL Official Held-Out Evaluation (hasinishrak2015) — COMPLETE & CERTIFIED:**
   1. **Evaluated Checkpoint**: `/mtl-checkpoints/mtl_e1_hard_shared/mtl_e1_best.pth` (Epoch 3, `val_e1_objective = 0.40036`). Predefined validation objective selection strictly obeyed. Zero test-set peeking, tuning, or retraining.
   2. **BCS Test (N=7,549 ScienceDB images, exact Run 4 matched identities)**: Real MAE 0.1788 vs Run 4 0.1709 (+0.0079 degradation / +4.6% error); Acc@0 41.10% vs 43.57% (-2.47%); Acc@1 88.44% vs 89.40% (-0.96%); Bal Acc 35.70% vs 39.70% (-4.00%); Macro-F1 0.3605 vs 0.4039 (-0.0434); Test Loss 0.4175 vs 0.4403 (-0.0228). Verdict: Degradation.
-  3. **Behavior Test (N=780 retained sequences, T=8, exact Run 5 matched population)**: Overall Acc 85.00% vs Run 5 87.44% (-2.44%); Bal Acc 67.30% vs 74.43% (-7.13%); Macro-F1 0.6866 vs 0.7397 (-0.0531); Test Loss 0.6226 vs 0.4430 (+0.1796). Minority class Walking collapsed to F1 0.0408 vs 0.2456 (-0.2048) due to gradient starvation. CVB Macro-F1: 0.5402 (-0.0786); Beef Macro-F1: 0.9236 (-0.0178). Verdict: Degradation.
+  3. **Behavior Test (N=780 retained sequences, T=8, exact Run 5 matched population)**: Overall Acc 85.00% vs Run 5 87.44% (-2.44%); Bal Acc 67.30% vs 74.43% (-7.13%); Macro-F1 0.6866 vs 0.7397 (-0.0531); Test Loss 0.6226 vs 0.4430 (+0.1796). Minority class Walking dropped to F1 0.0408 vs 0.2456 (-0.2048). CVB Macro-F1: 0.5402 (-0.0786); Beef Macro-F1: 0.9236 (-0.0178). Verdict: Degradation.
   4. **Re-ID Test (SideViewCows2026 Protocol A, 69 held-out cows, 36,811 parlor gallery)**:
      - Query Barn -> Parlor (25,260 queries): Rank-1 57.38% vs Run 6 63.90% (-6.52%); Rank-5 73.33% vs 77.10% (-3.77%); Rank-10 79.79% vs 82.58% (-2.79%); mAP 30.37% vs 40.68% (-10.31%).
      - Query Snapshots -> Parlor (607 queries): Rank-1 57.17% vs Run 6 62.93% (-5.76%); Rank-5 75.45% vs 75.29% (+0.16%); Rank-10 82.70% vs 81.05% (+1.65%); mAP 33.69% vs 40.42% (-6.73%). Verdict: Degradation.
-  5. **Scientific Verdict & Findings**: Monolithic hard-sharing suffers from severe task gradient interference, proving negative transfer across all three tasks and establishing the essential empirical justification for Run 8 (E3 Modular MTL / task-private routing).
+  5. **Scientific Verdict & Findings**: Run 7 showed held-out negative transfer under hard sharing across all three tasks. Gradient interference or task imbalance are possible explanations (though the underlying optimization mechanism was not directly measured), establishing the empirical rationale for Run 8 (E3 Modular MTL / task-private routing).
   6. **Artifacts**: `artifacts/mtl_e1_evaluation/mtl_e1_test_evaluation_metrics.json`, `docs/research_log/2026-09-25_phase3_run7_mtl_e1_held_out_evaluation_results.md`.
 - [x] **CVB + Kaggle Beef Behavior Viewpoint Feasibility Audit & Cloud Smoke Certification (hasinishrak2015) — COMPLETED (Technically Usable, High Source Shortcut Risk, Full Ablation Deferred):**
   1. **Provenance & Checkpoint Integrity**: Transferred certified `viewpoint_resnet18_real_best.pth` from `tigerwood693` (`viewpoint-checkpoints`) to `hasinishrak2015` (`mtl-checkpoints/viewpoint_aux/`). Verified bit-identical SHA-256: `a93b9232e640388447f994cbffe93e6115d1af18e9188aa32cd117aeca454d1a` (134,275,929 bytes).

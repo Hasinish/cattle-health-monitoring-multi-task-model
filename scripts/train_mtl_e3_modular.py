@@ -23,7 +23,7 @@ Architecture:
   - Exactly ONE shared 4-channel ImageNet-pretrained ResNet-18 spatial feature extractor (11,179,648 params).
   - Exactly THREE lightweight task-private residual bottleneck adapters (395,904 params total; 131,968 each):
       * Adapter Structure: Linear(512, 128) -> LayerNorm(128) -> GELU -> Dropout(0.1) -> Linear(128, 512) + Residual Skip
-      * Identity Initialization: up_proj initialized to zero so the model starts in the exact E1 representation state.
+      * Identity Initialization: The task-private adapters use zero-initialized up-projections, so each adapter initially acts as an identity mapping. At initialization, the adapted task feature therefore equals the output of E3's shared backbone before task-specific adaptation is learned.
   - Exactly THREE task heads (100% matched to Runs 4-7):
       * BCS: Cumulative Frank & Hall (2001) Ordinal BCE head (Linear(512, 4), 2,052 params)
       * Behavior: Lightweight 1D Temporal Convolutional Network (TCN, 2 Conv1d blocks + Linear(256, 5), 723,973 params)
@@ -220,8 +220,8 @@ class TaskResidualAdapter(nn.Module):
 
         # Standard Adapter Identity Initialization (Houlsby et al., 2019):
         # Zero-initialize up_proj weights and bias so at initialization:
-        # out == x (exact E1 hard-shared representation state).
-        # This prevents perturbation of the pretrained shared representation at step 0.
+        # out == x (identity mapping).
+        # The adapted task feature initially equals the shared backbone output before task-specific adaptation is learned.
         nn.init.zeros_(self.up_proj.weight)
         nn.init.zeros_(self.up_proj.bias)
 

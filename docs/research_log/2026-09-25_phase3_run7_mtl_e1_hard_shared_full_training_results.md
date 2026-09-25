@@ -102,5 +102,5 @@ Run 7 unifies all three primary tasks onto **exactly ONE shared 4-channel ResNet
 ## 6. Strategic Takeaways for Thesis & Next Steps
 
 1. **Gate Milestone Cleared**: The fundamental requirement of the thesis — building and training an end-to-end multi-task deep learning model unifying BCS, Behavior, and Re-ID — is officially accomplished and certified.
-2. **Defensible Empirical Evidence**: The results prove both **positive transfer** (Behavior F1 rising to 0.8012) and **negative gradient interference** (BCS loss drift under hard sharing), providing the exact theoretical justification needed for **Run 8 (E3: Modular MTL / Task-Private Pathways)**.
+2. **Defensible Empirical Evidence**: The validation trajectory showed both **positive transfer** (Behavior validation F1 rising to 0.8012) and **representational tension** (BCS loss drift under hard sharing), providing the empirical rationale for exploring **Run 8 (E3: Modular MTL / Task-Private Pathways)**.
 3. **Immediate Next Step**: Evaluate Protocol A retrieval on held-out cows for the E1 model if required, or proceed directly to designing Run 8 (E3 Modular Multi-Task Learning).

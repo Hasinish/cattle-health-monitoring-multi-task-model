@@ -6,7 +6,7 @@ Verifies:
   1. Exact Parameter Counts & Structural Ownership (12,322,610 trainable parameters).
   2. Adapter Identity Initialization (Houlsby et al., 2019):
      - up_proj weight and bias == 0.0
-     - adapter(x) == x at step 0 (exact E1 representation manifold).
+     - adapter(x) == x at step 0 (identity mapping; adapted task feature equals shared backbone output).
   3. Conv1 4th mask-channel initialization (mean of ImageNet RGB weights).
   4. Forward Tensor Shapes across all 3 tasks:
      - BCS:      [B, 4, 224, 224]    -> [B, 4] ordinal logits
@@ -91,7 +91,8 @@ class TestMTLE3Modular(unittest.TestCase):
         """
         Verifies that adapters are identity-initialized:
         up_proj weights and bias are initialized to 0, so out == in.
-        This guarantees E3 begins training on the exact E1 representation manifold.
+        This guarantees each adapter initially acts as an identity mapping, so the
+        adapted task feature equals the shared backbone output before adaptation is learned.
         """
         model = MTLE3ModularModel(pretrained=False)
         for name, adapter in [
