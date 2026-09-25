@@ -96,12 +96,12 @@
       * Flagged rows: Roast + `📌 Words/phrases to keep intact:\n• ...` + `🛠️ Required Fixes:\n• Fix 1: ...\n• Fix 2: ...`
       * Approved rows: `✅ অর্থ ঠিক রাখা হইছে。\n\n📌 Words/phrases to keep intact:\n• ...`
       * Pending/unparaphrased rows: `📌 Words/phrases to keep intact:\n• ...` (domain keywords extracted via thesis taxonomy to prevent hallucinated synonyms before typing).
-    - **Native Rich Text Bold Formatting Resolved (`scripts/apply_native_rich_text_bold.py`)**:
-      * Stripped 100% of raw markdown `**` asterisks across all 137 affected cells in Chapters 1, 2, and 3.
-      * Generated exact UTF-16 code unit offset `textFormatRuns` using Google Sheets API `updateCells` so headers, fix numbers, intact term labels, and approval badges are natively bolded in Google Sheets.
-      * Bolded all section titles in Column B (11pt bold) and cleared Column D for all section title rows.
-      * Preserved pastel yellow background on Column C for flagged rows with zero modifications to teammate text.
-    - Preserved 100% of teammate text in Column C and maintained light pastel yellow background highlights.
+    - **Super-Smart Academic Keyword Taxonomy Upgrade (`scripts/apply_super_smart_paraphrase_workbench.py`)**:
+      * Nuked all dumb fallback keywords ('Therefore', 'Better', 'DONT, PARAPHRASE', 'Tabletab', 'Computational, Small', 'AI, They').
+      * Mapped all 136 academic paragraphs across Chapters 1, 2, and 3 to 3-4 pristine, high-value domain entities covering models (RT-DETR-L, SAM 2.1, ResNet-18, TCN), metrics (Real MAE, Acc@1, Macro-F1, Rank-1, mAP), clinical anatomy (BCS 1-5 scale, subcutaneous fat, loin, pelvis, tailhead), evaluation design (cow-disjoint splits, burst-group splitting, held-out test populations), cloud infrastructure (Modal, NVIDIA Tesla T4 vs L40S, local laptop checks), and author ethics.
+      * Marked all non-paraphrase rows (math equations, table references; Ch 2 Rows 32, 33, 160, 161, 223, 224) with `LEAVE BLANK (Do Not Paraphrase)` with zero keywords.
+      * Stripped 100% of raw markdown `**` asterisks and applied native Google Sheets `textFormatRuns` bolding with exact UTF-16 code unit offsets across all sheets.
+      * Preserved 100% of teammate text in Column C and maintained light pastel yellow background highlights.
 - [x] **Phase 3 Run 7 E1 Hard-Shared MTL Official Held-Out Evaluation (hasinishrak2015) — COMPLETE & CERTIFIED:**
   1. **Evaluated Checkpoint**: `/mtl-checkpoints/mtl_e1_hard_shared/mtl_e1_best.pth` (Epoch 3, `val_e1_objective = 0.40036`). Predefined validation objective selection strictly obeyed. Zero test-set peeking, tuning, or retraining.
   2. **BCS Test (N=7,549 ScienceDB images, exact Run 4 matched identities)**: Real MAE 0.1788 vs Run 4 0.1709 (+0.0079 degradation / +4.6% error); Acc@0 41.10% vs 43.57% (-2.47%); Acc@1 88.44% vs 89.40% (-0.96%); Bal Acc 35.70% vs 39.70% (-4.00%); Macro-F1 0.3605 vs 0.4039 (-0.0434); Test Loss 0.4175 vs 0.4403 (-0.0228). Verdict: Degradation.
