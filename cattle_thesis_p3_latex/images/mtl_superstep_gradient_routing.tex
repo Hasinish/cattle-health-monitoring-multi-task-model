@@ -2,17 +2,18 @@
 \centering
 \begin{tikzpicture}[
   title/.style={font=\bfseries\small, align=center},
-  stepbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=4.3cm, minimum height=1.3cm, fill=gray!5, inner sep=2.5pt},
-  branchbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, fill=gray!8, inner sep=3pt},
-  optbox/.style={draw, rectangle, rounded corners=3pt, align=center, font=\footnotesize\bfseries, text width=14.3cm, minimum height=0.9cm, fill=gray!20, inner sep=4pt},
-  backbonebox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=14.3cm, minimum height=1.2cm, fill=gray!10, inner sep=4pt},
-  privbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=4.3cm, minimum height=1.5cm, fill=gray!4, inner sep=3pt},
+  stepbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=4.3cm, minimum height=1.45cm, fill=gray!5, inner sep=2.5pt},
+  poolbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=14.3cm, minimum height=0.65cm, fill=gray!12, inner sep=2.5pt},
+  branchbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, minimum height=2.70cm, fill=gray!8, inner sep=3.5pt},
+  optbox/.style={draw, rectangle, rounded corners=3pt, align=center, font=\footnotesize\bfseries, text width=14.3cm, minimum height=0.95cm, fill=gray!20, inner sep=4pt},
+  backbonebox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=14.3cm, minimum height=1.30cm, fill=gray!10, inner sep=4pt},
+  privbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=4.3cm, minimum height=2.45cm, fill=gray!4, inner sep=3pt},
   arrow/.style={->, >=stealth, thick},
   line/.style={thick}
 ]
 
 % ==================== TOP: Multi-Task Super-Step Execution ====================
-\node[title] at (7.45, 1.1) {Execution Sequence of One Multi-Task Training Super-Step};
+\node[title] at (7.45, 1.05) {Execution Sequence of One Multi-Task Training Super-Step};
 
 \node[stepbox] (s1) at (2.40, 0.0) {\textbf{1. BCS} ($B=64$)\\[2pt]Forward: BCE $L_{\mathrm{BCS}}$\\[2pt]Backward: $\nabla_{\boldsymbol{\theta}} L_{\mathrm{BCS}}$};
 \node[stepbox] (s2) at (7.45, 0.0) {\textbf{2. Behavior} ($B=8$)\\[2pt]Forward: CE $L_{\mathrm{Beh}}$\\[2pt]Backward: $\nabla_{\boldsymbol{\theta}} L_{\mathrm{Beh}}$};
@@ -21,53 +22,49 @@
 \draw[arrow] (s1) -- (s2);
 \draw[arrow] (s2) -- (s3);
 
-% Task gradients computed label & routing
-\coordinate (c1) at (2.40, -1.05);
-\coordinate (c2) at (7.45, -1.05);
-\coordinate (c3) at (12.50, -1.05);
+% Collected Task Gradients Bar
+\node[poolbox] (pool) at (7.45, -1.70) {\textbf{Collected Super-Step Task Gradients:}\quad $\mathbf{g}_{\mathrm{BCS}},\,\mathbf{g}_{\mathrm{Beh}},\,\mathbf{g}_{\mathrm{ReID}}$};
 
-\draw[line] (s1.south) -- (c1);
-\draw[line] (s2.south) -- (c2);
-\draw[line] (s3.south) -- (c3);
-\draw[line] (c1) -- (c3);
-
-\node[draw, rectangle, rounded corners=1.5pt, font=\scriptsize, fill=white, inner sep=2.5pt] at (7.45, -1.05) {Task Gradients: $\mathbf{g}_{\mathrm{BCS}},\,\mathbf{g}_{\mathrm{Beh}},\,\mathbf{g}_{\mathrm{ReID}}$};
+\draw[arrow] (s1.south) -- (s1.south |- pool.north);
+\draw[arrow] (s2.south) -- (s2.south |- pool.north);
+\draw[arrow] (s3.south) -- (s3.south |- pool.north);
 
 % Two alternative gradient integration pathways
-\node[branchbox, text width=6.2cm, minimum height=2.0cm] (branch_std) at (3.55, -2.50) {%
-  \textbf{E1 \& E3: Standard Sum Accumulation}\\[2pt]
-  $\mathbf{g}_{\mathrm{shared}} = \mathbf{g}_{\mathrm{BCS}} + \mathbf{g}_{\mathrm{Beh}} + \mathbf{g}_{\mathrm{ReID}}$\\[3pt]
+\node[branchbox, text width=6.2cm] (branch_std) at (3.55, -4.10) {%
+  \textbf{E1 \& E3: Standard Sum Accumulation}\\[3pt]
+  $\mathbf{g}_{\mathrm{shared}} = \mathbf{g}_{\mathrm{BCS}} + \mathbf{g}_{\mathrm{Beh}} + \mathbf{g}_{\mathrm{ReID}}$\\[4pt]
   {\scriptsize Direct sum of unprojected task gradients}
 };
 
-\node[branchbox, text width=7.4cm, minimum height=2.0cm] (branch_pcgrad) at (11.05, -2.50) {%
+\node[branchbox, text width=7.4cm] (branch_pcgrad) at (11.05, -4.10) {%
   \textbf{E4: PCGrad Shared Gradient Projection}\\[2pt]
-  1. Pairwise conflict test: $\mathbf{g}_i^\top \mathbf{g}_j < 0$\\[1pt]
-  2. Project: $\mathbf{g}_i \leftarrow \mathbf{g}_i - \frac{\mathbf{g}_i^\top \mathbf{g}_j}{\lVert\mathbf{g}_j\rVert_2^2 + \epsilon}\mathbf{g}_j$\\[1pt]
-  3. Sum projected: $\mathbf{g}_{\mathrm{shared}} = \sum_t \mathbf{g}'_t$\\[2pt]
+  1. Pairwise conflict test: $\mathbf{g}_i^\top \mathbf{g}_j < 0$\\[2pt]
+  2. Project: $\mathbf{g}_i \leftarrow \mathbf{g}_i - \frac{\mathbf{g}_i^\top \mathbf{g}_j}{\lVert\mathbf{g}_j\rVert_2^2 + \epsilon}\mathbf{g}_j$\\[2pt]
+  3. Sum projected: $\mathbf{g}_{\mathrm{shared}} = \sum_t \mathbf{g}'_t$\\[3pt]
   {\scriptsize \textit{Task-head gradients remain unprojected}}
 };
 
-\draw[arrow] (3.55, -1.05) -- (branch_std.north);
-\draw[arrow] (11.05, -1.05) -- (branch_pcgrad.north);
+\draw[arrow] (branch_std.north |- pool.south) -- (branch_std.north);
+\draw[arrow] (branch_pcgrad.north |- pool.south) -- (branch_pcgrad.north);
 
-\node[optbox] (opt) at (7.45, -4.50) {Unified AdamW Parameter Update:\\[2pt]$\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta_t \cdot \operatorname{AdamW}(\mathbf{g},\, \lambda=10^{-4})$};
+\node[optbox] (opt) at (7.45, -6.65) {Unified AdamW Parameter Update:\\[2pt]$\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta_t \cdot \operatorname{AdamW}(\mathbf{g},\, \lambda=10^{-4})$};
+
 \draw[arrow] (branch_std.south) -- (branch_std.south |- opt.north);
 \draw[arrow] (branch_pcgrad.south) -- (branch_pcgrad.south |- opt.north);
 
 % ==================== DIVIDING LINE ====================
-\draw[dashed, gray!60] (0.2, -5.30) -- (14.7, -5.30);
+\draw[dashed, gray!60] (0.2, -7.60) -- (14.7, -7.60);
 
 % ==================== BOTTOM: Architectural Gradient Boundaries ====================
-\node[title] at (7.45, -5.85) {Architectural Parameter Gradient Isolation Boundaries};
+\node[title] at (7.45, -8.15) {Architectural Parameter Gradient Isolation Boundaries};
 
-\node[backbonebox] (bb) at (7.45, -7.05) {\textbf{Shared ResNet-18 Spatial Backbone Parameters ($\boldsymbol{\theta}_{\mathrm{shared}}$)}\\[2pt]Receives combined gradient signals from all three tasks:\\E1/E3: $\mathbf{g}_{\mathrm{shared}} = \sum_t \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_t$ \quad$\vert$\quad E4: $\mathbf{g}_{\mathrm{shared}} = \sum_t \mathbf{g}'_t$ (PCGrad projected)};
+\node[backbonebox] (bb) at (7.45, -9.40) {\textbf{Shared ResNet-18 Spatial Backbone Parameters ($\boldsymbol{\theta}_{\mathrm{shared}}$)}\\[2pt]Receives combined gradient signals from all three tasks:\\E1/E3: $\mathbf{g}_{\mathrm{shared}} = \sum_t \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_t$ \quad$\vert$\quad E4: $\mathbf{g}_{\mathrm{shared}} = \sum_t \mathbf{g}'_t$ (PCGrad projected)};
 
-\node[privbox] (p1) at (2.40, -9.65) {\textbf{BCS Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{BCS})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{BCS})}$)\\[2pt]$\nabla L_{\mathrm{BCS}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{Beh}} = \mathbf{0},\; \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
+\node[privbox] (p1) at (2.40, -12.15) {\textbf{BCS Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{BCS})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{BCS})}$)\\[2pt]$\nabla L_{\mathrm{BCS}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{Beh}} = \mathbf{0},\; \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
 
-\node[privbox] (p2) at (7.45, -9.65) {\textbf{Behavior Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{Beh})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{Beh})}$)\\[2pt]$\nabla L_{\mathrm{Beh}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{BCS}} = \mathbf{0},\; \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
+\node[privbox] (p2) at (7.45, -12.15) {\textbf{Behavior Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{Beh})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{Beh})}$)\\[2pt]$\nabla L_{\mathrm{Beh}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{BCS}} = \mathbf{0},\; \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
 
-\node[privbox] (p3) at (12.50, -9.65) {\textbf{Re-ID Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{ReID})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{ReID})}$)\\[2pt]$\nabla L_{\mathrm{ReID}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{BCS}} = \mathbf{0},\; \nabla L_{\mathrm{Beh}} = \mathbf{0}$)}};
+\node[privbox] (p3) at (12.50, -12.15) {\textbf{Re-ID Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{ReID})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{ReID})}$)\\[2pt]$\nabla L_{\mathrm{ReID}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{BCS}} = \mathbf{0},\; \nabla L_{\mathrm{Beh}} = \mathbf{0}$)}};
 
 \draw[arrow] (p1.north |- bb.south) -- (p1.north);
 \draw[arrow] (p2.north |- bb.south) -- (p2.north);
