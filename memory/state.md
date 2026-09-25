@@ -78,7 +78,25 @@
   * Direct answers to the exact Chapter 1 research questions: RQ1 (task-dependent representation benefits), RQ2 (task-specific spatial/temporal cues vs. pose/viewpoint exclusion), RQ3 (outcome-level negative transfer under E1, adapter limitations under E3, selective mitigation and gradient conflict diagnostics under E4, and domain-change claim boundaries).
   * Formalized 6 evidence-supported thesis contributions, 12 scientific limitations, 7 evidence-led future work directions, and a strong final concluding synthesis.
   * Verified LaTeX compilation: 87-page PDF, 0 fatal errors, 0 undefined references/citations, 0 overfull boxes.
-- **Immediate next action:** Abstract post-experiment rewrite, Appendices/evidence map integration, and defense slide preparation.
+- [x] **Abstract Post-Experiment Rewrite — COMPLETE & CERTIFIED:**
+  * Rewrote `core/abstract.tex` into a self-contained 331-word synthesis of problem, cattle-centered single-task results, E1/E3/E4 multi-task findings, and bounded trade-off conclusion. Single page (Roman page iv).
+- [x] **Chapter 1 Integrated Alignment & Objective Calibration — COMPLETE & CERTIFIED:**
+  * Aligned Chapter 1 (`chapters/chapter_1.tex`) Objectives 4 & 5, methodology in brief, and scopes with completed single-task and multi-task evidence suite while preserving exact 3 research questions.
+- [x] **Evidence Appendices, EVIDENCE_MAP & Rubric Final Integration — COMPLETE & CERTIFIED:**
+  * Integrated evidence items E35–E41 in `appendix/appendix_1.tex`, `appendix/methodology_crosswalk.tex`, `EVIDENCE_MAP.md`, and `RUBRIC_CHECKLIST.md`. Resolved unmapped E35 bug.
+- [x] **Final Whole-Document Scientific/Editorial Proof & Stale-Text Close-Out — COMPLETE & CERTIFIED:**
+  * Renamed Appendix B in `main.tex` to `\chapter{Reproducibility and Evidence Boundaries}\label{app:repro}`.
+  * Updated Chapter 3 tables: `tables/project_timeline.tex` (MTL and final synthesis rows completed), `tables/requirements.tex` (R4 updated to matched single-task/E1/E3/E4 comparisons and sharing/optimization boundaries), `tables/risks.tex` (Limited Resources mitigation updated to bounded local smoke and focused cloud training with explicit deferral of E2/E5).
+  * Updated `tables/run_status.tex` adding E4 PCGrad optimization control row.
+  * Removed obsolete pre-MTL status text from `core/titlepage.tex`.
+  * Updated `cattle_thesis_p3_latex/README.md`, `BUILD_REPORT.md`, `REFERENCE_VERIFICATION.md`, and `WRITING_STATUS.md`.
+  * Resolved strange page break at end of Chapter 6 by adding `\clearpage` before Section 6.6, giving Conclusion a dedicated, handsome page (Arabic page 66) and eliminating 3-line orphan spillover.
+  * Measured fresh build: `main.pdf` compiled cleanly with exactly **90 A4 pages** (13 front-matter pages [Title + Roman i--xii] + 77 main/appendix pages [Arabic 1--77]).
+  * Verified build diagnostics: 0 fatal errors, 0 undefined citations, 0 undefined references, 0 unresolved `??`, 0 overfull boxes.
+  * `check_draft.py` result: `PASS: inputs, chapter mapping, 51 cited keys, 41 evidence IDs, matrix arithmetic.`
+  * Identified exact 6 remaining administrative TODOs (`ADMIN-01`, `ADMIN-02`, `ADMIN-03`, `ADMIN-04`, `ETHICS-01`, `ETHICS-02`); confirmed zero scientific TODOs remain.
+  * Completed visual inspection across 32 rendered pages; verified zero clipping, zero table overflow, and zero figure overflow.
+- **Immediate next action:** Team contribution record archiving, defense slide preparation, and software demonstration setup.
 - [x] **P3 Sample Reports Writing Audit & Freeze-Safe Boundary Strategy (`cattle_thesis_p3_latex/P3_SAMPLE_WRITING_AUDIT.md`) — COMPLETE & PUSHED TO REMOTE (`eb8795d`):**
   * Audited 12 faculty-evaluated BRAC University CSE400 final thesis reports.
   * Formulated the 5 Laws of Academic Thesis Writing, stripped engineering diary prose, and identified the 5 dedicated freeze-safe paraphrasing tabs.

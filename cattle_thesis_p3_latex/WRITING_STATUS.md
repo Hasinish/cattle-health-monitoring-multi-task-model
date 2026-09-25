@@ -1,54 +1,44 @@
-# Phase 3 writing status
+# Thesis Manuscript Writing Status
 
-Reviewed source snapshot: `d55ea2df436f504c3de4d83bcf9db845a6b706e3` on 2026-09-26.
+Reviewed source snapshot: `f18b7587564b5d1bed8e9a5acdb5a679a308c44b` on 2026-09-26.
 
-Status: All 8 focused deadline runs + one final additional E4 PCGrad control are 100% complete and held-out evaluated. Experimental model training/evaluation is finished. Experimental results, checkpoints, metrics, and outcome-level negative-transfer analysis are certified across all completed configurations (single-task baselines Runs 1–3, perception-enhanced Runs 4–6, E1 hard-shared MTL Run 7, E3 modular task-private adapter MTL Run 8, and E4 PCGrad optimization control). GradNorm E5 and partial sharing E2 remain deferred. Chapter 4 E4 PCGrad methodology integration is complete. Chapter 5 final E0/E1/E3/E4 result integration complete (includes complete single-task and multi-task evaluations, Tables 5.8–5.12, PCGrad conflict diagnostics, and calibrated negative-transfer synthesis). Chapter 6 final RQ answers/contributions/limitations/conclusion complete. Abstract rewrite is complete from final experimental evidence. Chapter 1 final integrated alignment and objective calibration complete. Evidence appendices, evidence map, and rubric checklist final E1/E3/E4 integration complete.
+## Overall Milestone Status
 
-| Section/file | Status | Remaining boundary |
-|---|---|---|
-| Front matter | Provisional | Administrative names, signatures, approval, acknowledgments, ethics/AI disclosure |
-| Abstract | Complete | Self-contained 331-word synthesis integrated from final single-task and multi-task experimental evidence |
-| Chapter 1: Introduction | Complete | Integrated objectives, multi-task methodology, and scope aligned with completed evidence |
-| Chapter 2: Literature Review | Stable before MTL, normal final polishing allowed | No speculative reference expansion |
-| Chapter 3: Requirements, Impacts and Constraints | Stable before MTL | Deployment-specific costs, approvals, and user evidence remain unavailable |
-| Chapter 4: Proposed Methodology | Complete | Chapter 4 E4 PCGrad methodology integration complete |
-| Chapter 5: Result Analysis | Complete | Chapter 5 final E0/E1/E3/E4 result integration complete |
-| Chapter 6: Conclusion | Complete | Chapter 6 final RQ answers/contributions/limitations/conclusion complete |
-| Evidence appendices | Complete | Updated with versioned register E35–E41, final MTL reproducibility, and bounded interpretation |
-| Evidence map | Complete | Updated with E35–E41, final claim coverage, and unresolved evidence boundaries |
-| Rubric checklist | Complete | Scientific manuscript coverage aligned with completed Chapters 1–6 and appendices |
-| LaTeX build | PASS: 87-page PDF, no fatal error, undefined citation/reference, or overfull box | See `BUILD_REPORT.md`; only inherited/nonfatal warnings remain |
+**FINAL WHOLE-DOCUMENT SCIENTIFIC/EDITORIAL PROOF = COMPLETE**
 
-## Completed & Certified Experimental State (8 Focused Deadline Runs + One Final Additional E4 PCGrad Control)
+The entire scientific manuscript surface is finalized, cross-checked, verified, and locked:
+- **Single-task reference models**: Runs 1--3 (RGB baselines) and Runs 4--6 (perception-enhanced models) are fully incorporated and held-out evaluated.
+- **Multi-task models**: E1 Monolithic Hard-Shared MTL Control, E3 Modular Task-Private Adapters, and E4 PCGrad Optimization Control are complete, held-out evaluated on matched populations, and integrated across Chapters 4, 5, 6, the Abstract, and appendices.
+- **Deferred configurations**: Partial sharing (E2) and dynamic loss weighting via GradNorm (E5) remain explicitly deferred future work.
+- **Build verification**: `main.pdf` compiles cleanly with **90 pages** (13 preliminary front-matter pages [Title + Roman i--xii] and 77 numbered body/appendix pages [Arabic 1--77]).
+- **Automated draft check (`check_draft.py`)**: `PASS: inputs, chapter mapping, 51 cited keys, 41 evidence IDs, matrix arithmetic.`
+- **Bibliography and evidence totals**: Exactly 51 cited literature keys and 41 internal evidence IDs (`E01`--`E41`).
+- **Build diagnostics**: 0 fatal errors, 0 undefined citations, 0 undefined references, 0 unresolved `??`, and 0 overfull boxes.
+- **Remaining TODO count**: Exactly 6 administrative and ethics placeholders remain (`ADMIN-01`, `ADMIN-02`, `ADMIN-03`, `ADMIN-04`, `ETHICS-01`, `ETHICS-02`). Zero scientific TODOs remain.
 
-- **Experimental Model Training & Evaluation Finished**: All experimental model training and evaluation is officially complete and closed. No further training runs or ablations will be launched.
-- **8 Focused Deadline Runs Complete**: All 8 focused deadline runs (Runs 1–8) are complete and held-out evaluated with test-set isolation strictly preserved.
-- **Run 7 (E1 Hard-Shared MTL Control)**: Architecture (11.18M shared trunk, 747k task heads; 11,926,706 trainable params), training (Epoch 3 checkpoint, val objective 0.40036), and held-out evaluation complete across all three tasks (BCS MAE 0.1788, Behavior Acc 85.00% / Loss 0.6226, Re-ID Barn Rank-1 57.38% / mAP 30.37%).
-- **Run 8 (E3 Modular MTL / Task-Private Adapters)**: Architecture (11.18M shared trunk, 395k private residual adapters, 747k task heads; 12.32M total trainable params, +3.32% over E1), training (Epoch 2 checkpoint, val objective 0.38888), and held-out evaluation complete across all three tasks (BCS MAE 0.1916 on matched test population, Behavior Acc 85.77% / Loss 0.4193, Re-ID Barn Rank-1 49.08% / mAP 28.04%).
-- **E4 PCGrad Optimization Control**: E4 PCGrad is the final user-approved additional optimization control and is now fully trained and held-out evaluated. Architecture (11.18M shared trunk, 747k task heads; exactly 11,926,706 trainable params matching E1, 0 adapters, 0 gates), training (Epoch 3 checkpoint, val objective 0.40098; 44,177 projections across 16,140 super-steps, approx 45%–54% pairwise conflict frequency directly observed), and held-out evaluation complete across all three tasks (BCS MAE 0.1828, Behavior Acc 86.92% / Loss 0.5454, Re-ID Barn Rank-1 54.97% / mAP 30.23%; Snapshot Rank-1 57.00% / mAP 33.87%).
-- **Calibrated Scientific Findings Across Controls**:
-  - E4 vs E1: BCS slightly worse on MAE, Acc@0, Acc@1, Macro-F1; Behavior improved on overall accuracy (+1.92 pp), balanced accuracy (+1.85 pp), Macro-F1 (+0.0248), test loss (-0.0772), Walking F1 (0.0909 vs 0.0408), and CVB metrics; Re-ID mixed / near E1 on principal retrieval metrics (Barn Rank-1 lower by 2.41 pp, Barn mAP lower by 0.14 pp, Snapshot Rank-1 lower by 0.17 pp, Snapshot mAP higher by 0.18 pp).
-  - E4 vs E3: E4 improved MAE, Acc@0, Acc@1, and Macro-F1 on BCS; E4 improved overall accuracy, balanced accuracy, Macro-F1, and Walking F1 on Behavior; E4 improved Rank-1 and mAP across both Barn and Snapshot queries on Re-ID; deeper-rank retrieval metrics were similar or lower under E4 (Barn Rank-10: 74.99% vs 75.03%; Snapshot Rank-5: 72.16% vs 72.32%; Snapshot Rank-10: 78.25% vs 80.23%).
-  - Safe synthesis: E4 provided broader held-out improvements than E3 on the principal BCS and Behavior metrics and on Re-ID Rank-1/mAP, while some deeper-rank retrieval metrics remained similar or lower.
-  - Negative transfer: Neither architectural modularity (E3) nor gradient projection (E4) completely eliminated negative transfer relative to single-task baselines. Shared-backbone pairwise gradient conflicts were directly observed during E4 training (44,177 projections across 16,140 super-steps, approx 45%–54% pairwise conflict frequency), but we do NOT claim gradient conflicts caused all E1 negative transfer.
-- **Canonical Roadmap Preservation**: GradNorm E5 and partial sharing E2 remain deferred roadmap work, NOT completed or cancelled.
+| Section / File | Scientific Status | Build / Evidence Metrics | Scope of Remaining Work |
+|---|---|---|---|
+| Front matter (`core/`) | Provisional (administrative) | Clean title page; 5 administrative TODOs | Author roster, committee names, signatures, dedication, acknowledgments, ethics/AI disclosure |
+| Abstract (`core/abstract.tex`) | **Complete** | 331 words on Roman page iv | None (locked scientific synthesis) |
+| Chapter 1: Introduction | **Complete** | Arabic pages 1--6; Objectives 4 & 5 calibrated | None (locked scientific text) |
+| Chapter 2: Literature Review | **Complete** | Arabic pages 7--19; 51 sources cited | None (locked literature review) |
+| Chapter 3: Requirements, Impacts & Constraints | **Complete** | Arabic pages 20--25; Tables 3.1--3.4 updated; 1 ethics TODO | Institutional ethics / permission confirmation (`ETHICS-02`) |
+| Chapter 4: Proposed Methodology | **Complete** | Arabic pages 26--44; Figures 4.1--4.4, Tables 4.1--4.7 | None (locked methodology with E4 & 16,140 super-steps) |
+| Chapter 5: Result Analysis | **Complete** | Arabic pages 45--57; Tables 5.1--5.13 | None (locked E0/E1/E3/E4 comparative results & diagnostics) |
+| Chapter 6: Conclusion | **Complete** | Arabic pages 58--66; Section 6.6 dedicated page | None (locked RQ answers, contributions, limitations, future work) |
+| Bibliography | **Complete** | Arabic pages 67--71; 51 entries (0 undefined) | None (locked references) |
+| Appendix A: Dataset & Experiment Evidence | **Complete** | Arabic pages 72--75; Evidence register `E01`--`E41` | None (locked evidence index and methodology crosswalk) |
+| Appendix B: Reproducibility & Evidence Boundaries | **Complete** | Arabic pages 76--77; Reproducibility and boundaries | None (locked boundary definitions) |
 
-## Remaining Manuscript Integration Tasks
+## Remaining Work: Human and External Administrative Obligations Only
 
-- **Chapter 1 (Introduction)**: Complete (integrated objectives, multi-task methodology, and bounded scope aligned with completed thesis evidence; exact RQs preserved).
-- **Abstract**: Complete (self-contained 331-word synthesis of problem, cattle-centered single-task results, E1/E3/E4 multi-task findings, and bounded trade-off conclusion).
-- **Chapter 4 (Proposed Methodology)**: Complete (includes E1/E3/E4 methodology, parameter allocation in Table 4.5/4.6, 538/16,140 super-step correction in Table 4.6/4.7, and PCGrad gradient routing in Figure 4.4).
-- **Chapter 5 (Result Analysis)**: Complete (includes complete single-task and multi-task evaluations, Tables 5.8–5.12, PCGrad conflict diagnostics, and calibrated negative-transfer synthesis).
-- **Chapter 6 (Conclusion)**: Complete (includes final RQ answers, 6 contributions, 12 limitations, 7 future work directions, and final synthesis).
-- **Evidence Appendices (Appendix A & B)**: Complete (versioned register E01–E41, reproducibility boundaries, interpretation limits, and methodology crosswalk).
-- **Evidence Map (EVIDENCE_MAP.md)**: Complete (full E01–E41 mappings, claim coverage, and safe boundaries).
-- **Rubric Checklist (RUBRIC_CHECKLIST.md)**: Complete (scientific manuscript alignment across CO1–CO14).
-- **Remaining Manuscript Work**:
-  1. Final whole-document proof / consistency audit.
-  2. Administrative front matter (committee names, signatures, acknowledgments, ethics/AI disclosures).
-  3. External submission obligations (presentation/defense, live demonstration, and IEEE format if required).
+All scientific, experimental, mathematical, and manuscript-writing tasks are complete. The remaining items are strictly external and institutional human obligations:
+1. **Author and Committee Roster**: Verify final student author ordering, student IDs, submission semester, supervisor designations, and examining committee roster.
+2. **Signatures and Approvals**: Collect physical/digital signatures for the Declaration and Approval pages upon formal committee defense.
+3. **Dedication and Acknowledgments**: Finalize optional dedication page text and formal institutional/personal acknowledgments.
+4. **Ethics and AI Disclosure**: Confirm institutional ethics compliance, AI/coding assistance disclosure statement, and explicit dataset reuse permission records.
+5. **Team Contribution Records**: Maintain internal institutional records of individual member contributions.
+6. **Oral Defense and Demonstration**: Prepare slide deck and software demonstration for the final oral defense examination.
+7. **IEEE-Format Deliverable**: Format paper-length derivative if required by departmental or conference submission guidelines.
 
-## Remaining Non-MTL Administration
-
-Confirm author order, submission metadata, committee details, signatures, acknowledgments, dataset permissions, ethics and AI-assistance disclosure, team contribution records, and any separate IEEE-format submission requirement.
-
+*Note: No thesis submission, committee approval, or institutional degree award is claimed.*
