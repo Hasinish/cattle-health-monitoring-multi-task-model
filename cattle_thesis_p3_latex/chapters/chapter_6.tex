@@ -137,7 +137,7 @@ Table~\ref{tab:decisions} synthesizes the key design decisions and empirical dis
 
 \input{tables/design_decisions}
 
-These outcomes demonstrate that neither simple modular adapters nor gradient projection eliminated negative transfer across all evaluated cattle monitoring tasks. Dedicated single-task representations remained superior on several task-specific measures, reinforcing the thesis argument that disparate agricultural vision tasks require distinct visual representations rather than a universally shared spatial trunk.
+These outcomes demonstrate that neither simple modular adapters nor gradient projection eliminated negative transfer across all evaluated cattle monitoring tasks. Dedicated single-task representations remained superior on several task-specific measures, reinforcing the thesis conclusion that representation requirements are task-dependent and that multi-task integration involves metric-dependent trade-offs.
 
 \section{Statistical Analysis and Uncertainty Boundaries}
 
@@ -177,7 +177,7 @@ Third, the comparative evaluation of modularity (E3) versus gradient projection 
 \begin{itemize}
  \item Architectural modularity via task-private residual adapters (E3) improved Behavior test loss and CVB surveillance accuracy over E1, but degraded BCS and Re-ID further, and failed to improve balanced accuracy or Macro-F1. Adding private parameters alone did not resolve shared representation interference.
  \item Optimization-level gradient projection (E4) provided more effective, selective mitigation. E4 achieved the highest Behavior overall accuracy (86.92\%), balanced accuracy (69.15\%), and Macro-F1 (0.7114) among multi-task models, more than doubled Walking F1 relative to E1 (0.0909 vs. 0.0408), and recovered principal BCS and Re-ID metrics relative to E3 while preserving exact parameter equality with E1 (11,926,706 parameters).
- \item Direct optimization diagnostics recorded 44,177 gradient conflict projections during E4 training (averaging 2.737 projections per super-step), empirically verifying regular gradient opposition across task pairs.
+ \item Direct optimization diagnostics recorded 44,177 gradient conflict projections across 16,140 super-steps during E4 training (averaging 2.737 projections per super-step), showing that opposing shared-backbone gradient directions occurred regularly across task pairs during E4 training.
 \end{itemize}
 
-Nonetheless, dedicated single-task models remained superior on several task-specific metrics, including BCS MAE (0.1709 single-task vs. 0.1828 E4), Behavior balanced accuracy (74.43\% single-task vs. 69.15\% E4), Walking F1 (0.2456 single-task vs. 0.0909 E4), and Re-ID Barn Rank-1 (63.90\% single-task vs. 54.97\% E4). These results refute the assumption that multi-task learning universally benefits individual tasks through shared regularizing representations. Instead, they demonstrate that different cattle monitoring tasks require distinct spatial and temporal feature representations, and that multi-task deployment involves deliberate, metric-dependent engineering trade-offs.
+Nonetheless, dedicated single-task models remained superior on several task-specific metrics, including BCS MAE (0.1709 single-task vs. 0.1828 E4), Behavior balanced accuracy (74.43\% single-task vs. 69.15\% E4), Walking F1 (0.2456 single-task vs. 0.0909 E4), and Re-ID Barn Rank-1 (63.90\% single-task vs. 54.97\% E4). These results do not support a universal performance benefit from multi-task learning in this setting. Instead, they support the conclusion that representation requirements are task-dependent and that multi-task integration involves metric-dependent trade-offs.
