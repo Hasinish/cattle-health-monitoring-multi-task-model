@@ -133,6 +133,21 @@ Ran full test suite locally on CPU:
 
 **Result: 8/8 tests PASSED in 3.53s.**
 
+### 6.2 Cloud GPU Smoke Test on Tesla T4 (`hasinishrak2015`)
+Executed 2-epoch remote smoke test on Modal profile `hasinishrak2015` (Tesla T4 tier, App ID: `ap-53DDpGfdgkrLOIb0ykJz06`, Git SHA: `4a47666d52e17c1df43ccca6acc3a046287e4fe6`):
+- **Deterministic Subsets**: BCS: 16 train / 8 val, Behavior: 8 train / 4 val, Re-ID: 16 train / 8 val.
+- **Forward & Backward Execution**: All three tasks executed cleanly across 2 super-steps per epoch.
+- **Gradient Isolation & Accumulation**: Verified during live training (step 1) that BCS backward populated only BCS adapter and backbone (`grad is None` in Behavior/Re-ID adapters and heads); Behavior backward populated only Behavior adapter and backbone; Re-ID backward populated only Re-ID adapter and backbone; and shared ResNet-18 backbone successfully accumulated finite gradients from all three tasks.
+- **Loss Progression & Optimizer Update**: Finite loss drops verified (Epoch 1 total train loss: 1.7246 -> Epoch 2: 1.4145; best validation objective: 2.02141).
+- **Validation Evaluation**: Validation executed across all three tasks without errors.
+- **Checkpoint Save & Bit-Identical Reload**: Saved `/mtl-checkpoints/mtl_e3_smoke/mtl_e3_smoke_best.pth` and `mtl_e3_smoke_latest.pth`. Reloaded state dict into fresh model and evaluated dummy inputs:
+  $$\max |\Delta \text{logit}| = 0.00000000 \quad (\text{BCS: } 0.00000000, \text{ Beh: } 0.00000000, \text{ ReID: } 0.00000000)$$
+  Bit-identical reload verified ($\max \text{diff} < 10^{-6}$).
+- **Data Protection**: Canonical test sets (ScienceDB BCS 7,549 images, Behavior 780 sequences) and 69 held-out evaluation cows strictly untouched.
+- **Storage Isolation**: Outputs committed exclusively to `/mtl-checkpoints/mtl_e3_smoke/` without touching Run 7 checkpoints or full Run 8 output paths.
+
+**Result: PASS (App ID: `ap-53DDpGfdgkrLOIb0ykJz06`, Total duration: 3.58s training).**
+
 ---
 
 ## 7. Artifacts & File Registry
@@ -148,11 +163,7 @@ Ran full test suite locally on CPU:
 
 ## 8. Next Steps & Future Commands
 
-1. **Future 2-Epoch GPU Smoke Test (DO NOT EXECUTE YET)**:
-   ```bash
-   modal run --profile hasinishrak2015 scripts/modal_train_mtl_e3_modular.py::smoke_test
-   ```
-2. **Future Full 30-Epoch L40S Training (DO NOT EXECUTE YET)**:
+1. **Full 30-Epoch L40S Training (Awaiting User Command)**:
    ```bash
    modal run --detach --profile hasinishrak2015 scripts/modal_train_mtl_e3_modular.py::main --epochs 30
    ```

@@ -25,17 +25,18 @@
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | 8-RUN SEQUENCE | RUNS 1–6: COMPLETE & CERTIFIED | RUN 7 TRAINING & HELD-OUT EVALUATION: COMPLETE & CERTIFIED | RUN 8 IMPLEMENTATION & READINESS: COMPLETE & CERTIFIED | STOPPED BEFORE SMOKE/TRAINING)
+## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | 8-RUN SEQUENCE | RUNS 1–6: COMPLETE & CERTIFIED | RUN 7 TRAINING & HELD-OUT EVALUATION: COMPLETE & CERTIFIED | RUN 8 IMPLEMENTATION, READINESS & GPU SMOKE: COMPLETE & CERTIFIED | STOPPED BEFORE FULL TRAINING)
 - **Run 8 E3 Modular MTL Status Summary**:
   * **Run 8 architecture & scripts**: COMPLETE ✅ (`scripts/train_mtl_e3_modular.py`, `scripts/modal_train_mtl_e3_modular.py`)
   * **Run 8 unit test suite**: PASS ✅ (`tests/test_mtl_e3_modular.py`, 8/8 tests passed in 3.53s)
   * **Run 8 parameter verification**: CERTIFIED ✅ (11,179,648 shared backbone [90.72%], 395,904 task-private adapters [3.21%; 131,968 each], 747,058 task heads [6.06%]; total 12,322,610 trainable params, +3.32% over E1)
-  * **Run 8 gradient isolation**: VERIFIED ✅ (Task-private adapters and task heads are isolated from the other tasks, while the shared backbone intentionally receives gradients from all three tasks)
+  * **Run 8 gradient isolation**: VERIFIED ✅ (Task-private adapters and task heads are isolated from the other tasks, while the shared backbone intentionally receives gradients from all three tasks; asserted during live training step 1)
   * **Run 8 adapter identity initialization**: VERIFIED ✅ (Zero-weight up-projection ensures each adapter initially acts as an identity mapping; adapted task feature equals shared backbone output before adaptation is learned)
   * **Run 8 readiness on Modal (`hasinishrak2015`)**: PASS ✅ (CPU-only, zero GPU cost, volumes verified, test sets strictly protected)
-  * **Run 8 GPU smoke & training**: STRICTLY STOPPED per user constraint (Awaiting user command)
-- **Immediate next action:** Stopped per user instruction. Ready for Run 8 GPU smoke test when commanded:
-  `modal run --profile hasinishrak2015 scripts/modal_train_mtl_e3_modular.py::smoke_test`
+  * **Run 8 Cloud GPU Smoke Test on Tesla T4 (`hasinishrak2015`)**: PASS ✅ (App ID: `ap-53DDpGfdgkrLOIb0ykJz06`, 2 epochs, finite loss drop 1.7246 -> 1.4145, validation across all 3 tasks, bit-identical reload max diff 0.00000000, checkpoints in `/mtl-checkpoints/mtl_e3_smoke/`, held-out test data untouched)
+  * **Run 8 Full 30-Epoch Training**: STRICTLY STOPPED per user constraint (Awaiting user command)
+- **Immediate next action:** Stopped per user instruction. Ready for full Run 8 30-epoch training on L40S when commanded:
+  `modal run --detach --profile hasinishrak2015 scripts/modal_train_mtl_e3_modular.py::main --epochs 30`
 - [x] **P3 Sample Reports Writing Audit & Freeze-Safe Boundary Strategy (`cattle_thesis_p3_latex/P3_SAMPLE_WRITING_AUDIT.md`) — COMPLETE & PUSHED TO REMOTE (`eb8795d`):**
   * Audited 12 faculty-evaluated BRAC University CSE400 final thesis reports.
   * Formulated the 5 Laws of Academic Thesis Writing, stripped engineering diary prose, and identified the 5 dedicated freeze-safe paraphrasing tabs.
