@@ -73,7 +73,12 @@
   * Integrated empirical gradient conflict diagnostics: 16,140 super-steps, 44,177 projections (2.737/step), 45%–54% pairwise conflict frequency, under strict non-causal claim boundaries.
   * Synthesized calibrated negative-transfer findings: E1 hard sharing degraded all 3 tasks (outcome-level negative transfer); E3 modular adapters showed selective changes (+0.77 pp Behavior Acc, -0.2033 test loss) but degraded BCS and Re-ID and collapsed Walking; E4 PCGrad provided selective mitigation on Behavior (+1.92 pp Acc, +1.85 pp Bal Acc, +0.0248 Macro-F1, Walking F1 0.0909) and recovered principal metrics over E3, but dedicated single-task models remained superior on several task-specific measures.
   * Verified LaTeX compilation (81-page PDF, 0 errors, 0 undefined refs/citations, 0 overfull boxes in Chapter 5).
-- **Immediate next action:** Chapter 6 Conclusion drafting, Abstract post-experiment rewrite, Appendices/evidence map integration, and defense slide preparation.
+- [x] **Chapter 6 Final Conclusion, RQ Answers, Contributions, Limitations & Future Work — COMPLETE & VERIFIED:**
+  * Fully finalized Chapter 6 Conclusion (`cattle_thesis_p3_latex/chapters/chapter_9.tex`) with complete synthesis of single-task (Runs 1–6) and multi-task models (E1, E3, E4).
+  * Direct answers to the exact Chapter 1 research questions: RQ1 (task-dependent representation benefits), RQ2 (task-specific spatial/temporal cues vs. pose/viewpoint exclusion), RQ3 (outcome-level negative transfer under E1, adapter limitations under E3, selective mitigation and gradient conflict diagnostics under E4, and domain-change claim boundaries).
+  * Formalized 6 evidence-supported thesis contributions, 12 scientific limitations, 7 evidence-led future work directions, and a strong final concluding synthesis.
+  * Verified LaTeX compilation: 87-page PDF, 0 fatal errors, 0 undefined references/citations, 0 overfull boxes.
+- **Immediate next action:** Abstract post-experiment rewrite, Appendices/evidence map integration, and defense slide preparation.
 - [x] **P3 Sample Reports Writing Audit & Freeze-Safe Boundary Strategy (`cattle_thesis_p3_latex/P3_SAMPLE_WRITING_AUDIT.md`) — COMPLETE & PUSHED TO REMOTE (`eb8795d`):**
   * Audited 12 faculty-evaluated BRAC University CSE400 final thesis reports.
   * Formulated the 5 Laws of Academic Thesis Writing, stripped engineering diary prose, and identified the 5 dedicated freeze-safe paraphrasing tabs.
