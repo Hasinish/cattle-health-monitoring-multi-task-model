@@ -1,6 +1,6 @@
 \section{Design Process and Methodology Overview}
 
-The study compares different visual representations using task-specific evaluation protocols. Each task has an RGB reference model and a cattle-centered version. These six single-task models establish task-specific performance baselines and serve as the empirical reference for evaluating two multi-task learning paradigms: a monolithic hard-shared control architecture and a modular task-private architecture.
+The study compares different visual representations using task-specific evaluation protocols. Each task has an RGB reference model and a cattle-centered version. These six single-task models establish task-specific performance baselines and serve as the empirical reference for evaluating three multi-task learning configurations: a monolithic hard-shared control architecture (E1), a modular task-private architecture (E3), and a gradient-projected hard-shared optimization control (E4).
 
 The main design question is what information each task should receive. BCS mainly needs morphology, behavior recognition needs posture and temporal change, and Re-ID needs stable individual appearance. Because of this, the cattle-centered models all focus on the target cow, but they do not use exactly the same preprocessing. Figure~\ref{fig:phase3design} shows the overall comparison, and Table~\ref{tab:runstatus} lists the model configurations. Supporting records are indexed in Appendix~\ref{app:evidence}.
 
@@ -129,7 +129,7 @@ The monolithic hard-shared multi-task control contains exactly 11,926,706 traina
 
 \subsection{Modular Task-Private Multi-Task Architecture}
 
-The modular task-private multi-task architecture (denoted as E3) evaluates whether introducing task-private capacity can mitigate negative transfer while retaining a shared visual backbone. To provide a controlled comparison with the hard-shared architecture, the modular architecture preserves the same shared backbone, task heads, input representations, datasets, batch sizes, losses, optimizer, training budget, and checkpoint-selection rule. It differs through the addition of three task-private residual adapters comprising 395,904 trainable parameters (+3.32\% capacity). Therefore, observed differences characterize the modular configuration as a whole and cannot be attributed to routing alone. Figure~\ref{fig:mtl_architecture_comparison} illustrates the structural comparison between the monolithic hard-shared control and the modular task-private architecture, including the residual bottleneck adapter design.
+The modular task-private multi-task architecture (denoted as E3) evaluates whether introducing task-private capacity can mitigate negative transfer while retaining a shared visual backbone. To provide a controlled comparison with the hard-shared architecture, the modular architecture preserves the same shared backbone, task heads, input representations, datasets, batch sizes, losses, optimizer, training budget, and checkpoint-selection rule. It differs through the addition of three task-private residual adapters comprising 395,904 trainable parameters (+3.32\% capacity). Therefore, observed differences characterize the modular configuration as a whole and cannot be attributed to routing alone. Figure~\ref{fig:mtl_architecture_comparison} illustrates the structural comparison between the monolithic hard-shared control (which also forms the exact architectural substrate for the gradient-projected E4 model) and the modular task-private architecture (E3), including the residual bottleneck adapter design.
 
 \input{images/mtl_architecture_comparison}
 
@@ -146,9 +146,7 @@ The adapter output $\Delta\mathbf{h}_t \in \mathbb{R}^{512}$ is added residually
 \end{equation}
 In the temporal behavior model, this adapter operates frame-wise on each of the 8 temporal feature vectors before the adapted sequence $\mathbf{H}_{\mathrm{Beh}} \in \mathbb{R}^{B_{\mathrm{Beh}} \times 8 \times 512}$ is routed to the temporal convolutional network.
 
-Each task-private adapter contains exactly 131,968 parameters, yielding 395,904 total private parameters across the three tasks (3.21\% of the model's total parameters). The modular multi-task architecture comprises 12,322,610 trainable parameters, representing an increase of 395,904 parameters (+3.32\% relative capacity) over the hard-shared control. Table~\ref{tab:mtl_architecture_spec} summarizes the structural components and exact parameter counts of both multi-task configurations.
-
-\input{tables/mtl_architecture_specification}
+Each task-private adapter contains exactly 131,968 parameters, yielding 395,904 total private parameters across the three tasks (3.21\% of the model's total parameters). The modular multi-task architecture comprises 12,322,610 trainable parameters, representing an increase of 395,904 parameters (+3.32\% relative capacity) over the hard-shared control.
 
 \subsubsection{Identity Initialization of Residual Adapters}
 
@@ -162,6 +160,45 @@ At step zero of training, this ensures that the adapter contribution is strictly
 \end{equation}
 This initialization does not imply inheriting representations from a pretrained hard-shared checkpoint; rather, it guarantees that at the start of joint training, each task-specific head receives the direct, unperturbed output of the modular model's own shared backbone. Task-private feature specialization $\Delta\mathbf{h}_t$ then develops progressively as gradient updates accumulate during training.
 
+\subsection{Gradient-Projected Hard-Shared Multi-Task Optimization}
+
+The third executed multi-task model, denoted as E4, evaluates whether resolving gradient conflict at the optimization level can mitigate negative transfer without introducing architectural modifications. Rather than altering the model's structural capacity, the E4 configuration preserves the exact parameterization of the monolithic hard-shared control (E1): exactly one shared four-channel ResNet-18 spatial backbone (11,179,648 parameters) and the identical three task-specific prediction heads (747,058 parameters across the BCS ordinal head, the Behavior 1D TCN, and the Re-ID classification head), yielding exactly 11,926,706 trainable parameters with zero task-private adapters and zero routing gates. All training datasets, input tensor representations (four-channel RGB plus binary cow mask at $224 \times 224$), batch sizes ($B_{\mathrm{BCS}}=64$, $B_{\mathrm{Beh}}=8$, $B_{\mathrm{ReID}}=32$), task loss formulations, optimizer settings, learning-rate schedules, task loss weights ($w_{\mathrm{BCS}}=w_{\mathrm{Beh}}=w_{\mathrm{ReID}}=1.0$), and validation checkpoint-selection rules are held strictly identical to E1.
+
+The controlled experimental intervention in E4 resides exclusively in how task-specific gradients are combined on the shared backbone parameters $\boldsymbol{\theta}_{\mathrm{shared}}$ during each multi-task training super-step. When training multi-task networks with hard parameter sharing, backward passes from distinct task losses frequently produce gradient vectors that point in conflicting directions, such that the gradient update for one task increases the loss of another~\cite{yu2020pcgrad}. To address this, E4 applies Projecting Conflicting Gradients (PCGrad; Yu et al., 2020) to the shared backbone gradients.
+
+Within each super-step, three backward passes first compute task-specific gradients on the shared backbone:
+\begin{equation}
+ \mathbf{g}_{\mathrm{BCS}} = \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_{\mathrm{BCS}}, \qquad
+ \mathbf{g}_{\mathrm{Beh}} = \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_{\mathrm{Beh}}, \qquad
+ \mathbf{g}_{\mathrm{ReID}} = \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_{\mathrm{ReID}}.
+\end{equation}
+The task gradient vectors are evaluated pairwise in a randomized order deterministically shuffled at each step using random seed 2026. For task $i$ and comparison task $j$ ($i, j \in \{\mathrm{BCS}, \mathrm{Beh}, \mathrm{ReID}\}$, $i \neq j$), directional conflict is determined by the sign of their inner product. If
+\begin{equation}
+ \mathbf{g}_i^\top \mathbf{g}_j < 0,
+\end{equation}
+the two gradients point in opposing directions. The gradient vector $\mathbf{g}_i$ is then projected onto the normal plane of $\mathbf{g}_j$:
+\begin{equation}
+ \mathbf{g}_i \leftarrow \mathbf{g}_i - \frac{\mathbf{g}_i^\top \mathbf{g}_j}{\lVert\mathbf{g}_j\rVert_2^2 + \epsilon} \mathbf{g}_j,
+\end{equation}
+where $\epsilon = 10^{-8}$ is a small constant for numerical stability. In accordance with the PCGrad formulation, the comparison vector $\mathbf{g}_j$ is the original, unmodified task gradient to prevent order-dependent distortion of the reference direction. If $\mathbf{g}_i^\top \mathbf{g}_j \ge 0$, no projection is applied.
+
+Once all pairwise projections are complete, the resulting modified shared gradients $\mathbf{g}'_{\mathrm{BCS}}$, $\mathbf{g}'_{\mathrm{Beh}}$, and $\mathbf{g}'_{\mathrm{ReID}}$ are summed to form the unified update vector for the shared parameters:
+\begin{equation}
+ \mathbf{g}_{\mathrm{shared}} = \mathbf{g}'_{\mathrm{BCS}} + \mathbf{g}'_{\mathrm{Beh}} + \mathbf{g}'_{\mathrm{ReID}}.
+\end{equation}
+Summation---rather than averaging---is used to maintain exact equivalence with the unit-weight gradient accumulation employed in the baseline hard-shared control (E1), ensuring that any difference in optimization behavior reflects gradient projection rather than an effective reduction in learning rate.
+
+Importantly, task-specific prediction heads are structurally unshared and experience no inter-task gradient competition. Consequently, PCGrad operates exclusively on the shared ResNet-18 spatial backbone parameters. Gradients for the task-specific heads remain completely unprojected:
+\begin{align}
+ \mathbf{g}_{\mathrm{head}}^{(\mathrm{BCS})} &= \nabla_{\boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{BCS})}} L_{\mathrm{BCS}}, \\
+ \mathbf{g}_{\mathrm{head}}^{(\mathrm{Beh})} &= \nabla_{\boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{Beh})}} L_{\mathrm{Beh}}, \\
+ \mathbf{g}_{\mathrm{head}}^{(\mathrm{ReID})} &= \nabla_{\boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{ReID})}} L_{\mathrm{ReID}}.
+\end{align}
+
+To monitor optimization dynamics throughout training without biasing model selection, the E4 training loop computes diagnostic metrics before and after projection at every super-step. For each task pair $(i, j)$, these include the unprojected inner product $\mathbf{g}_i^\top \mathbf{g}_j$, the unprojected cosine similarity $\cos(\mathbf{g}_i, \mathbf{g}_j) = \frac{\mathbf{g}_i^\top \mathbf{g}_j}{\lVert\mathbf{g}_i\rVert_2 \lVert\mathbf{g}_j\rVert_2}$, the binary conflict indicator $\mathbb{I}(\mathbf{g}_i^\top \mathbf{g}_j < 0)$, the gradient norms before and after projection, the total number of conflict projections triggered per super-step, and the post-projection cosine similarities. These diagnostics permit direct measurement of shared-backbone gradient-direction conflict during E4 training. Table~\ref{tab:mtl_architecture_spec} summarizes the structural components and exact parameter counts across all three multi-task configurations.
+
+\input{tables/mtl_architecture_specification}
+
 \subsection{Multi-Task Joint Optimization Protocol}
 
 Because cattle datasets from different farms and recording modalities do not contain overlapping annotations across body condition, behavior sequences, and individual identities, joint multi-task training cannot employ single multi-label batches. Instead, an interleaved mini-batch schedule is executed.
@@ -169,16 +206,16 @@ Because cattle datasets from different farms and recording modalities do not con
 Each optimization step is structured as a multi-task super-step comprising three sequential forward and backward passes:
 \begin{enumerate}
  \item \textbf{BCS mini-batch}: A batch of $B_{\mathrm{BCS}} = 64$ samples is passed through the model. The ordinal binary cross-entropy loss $L_{\mathrm{BCS}}$ is computed, and gradients are backpropagated into the active parameters.
- \item \textbf{Behavior mini-batch}: A batch of $B_{\mathrm{Beh}} = 8$ video sequences (64 total frames) is passed through the model. The categorical cross-entropy loss $L_{\mathrm{Beh}}$ is computed, and gradients are backpropagated and accumulated.
- \item \textbf{Re-ID mini-batch}: A batch of $B_{\mathrm{ReID}} = 32$ images is passed through the model. The identity cross-entropy loss $L_{\mathrm{ReID}}$ is computed, and gradients are backpropagated and accumulated.
- \item \textbf{Parameter update}: The optimizer executes a single parameter update using the accumulated gradients.
+ \item \textbf{Behavior mini-batch}: A batch of $B_{\mathrm{Beh}} = 8$ video sequences (64 total frames) is passed through the model. The categorical cross-entropy loss $L_{\mathrm{Beh}}$ is computed, and gradients are backpropagated.
+ \item \textbf{Re-ID mini-batch}: A batch of $B_{\mathrm{ReID}} = 32$ images is passed through the model. The identity cross-entropy loss $L_{\mathrm{ReID}}$ is computed, and gradients are backpropagated.
+ \item \textbf{Parameter update}: In the monolithic control (E1) and modular architecture (E3), shared backbone gradients are accumulated directly by standard summation ($\mathbf{g}_{\mathrm{shared}} = \sum_t \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_t$) before a single AdamW parameter update. In the PCGrad optimization control (E4), task gradients on the shared backbone are captured independently, pairwise conflicts are projected via PCGrad, and the projected gradients are summed ($\mathbf{g}_{\mathrm{shared}} = \sum_t \mathbf{g}'_t$) before a single AdamW parameter update, with task-head gradients remaining unmodified.
 \end{enumerate}
 
 Equal task weighting is enforced throughout training:
 \begin{equation}
  w_{\mathrm{BCS}} = w_{\mathrm{Behavior}} = w_{\mathrm{ReID}} = 1.0.
 \end{equation}
-Training runs for 30 epochs with 537 super-steps per epoch (16,110 total super-steps). Optimization uses AdamW with an initial learning rate of $\eta_0 = 10^{-4}$, weight decay of $10^{-4}$, and a cosine annealing learning-rate schedule decaying to $\eta_{\min} = 10^{-6}$.
+Training runs for 30 epochs with 538 super-steps per epoch (16,140 total super-steps). This schedule is defined by the complete ScienceDB BCS training population ($N = 34{,}369$ images; batch size $B_{\mathrm{BCS}} = 64$), where $\lceil 34{,}369 / 64 \rceil = 538$ batches per epoch establish the super-step cadence across all three tasks. Optimization uses AdamW with an initial learning rate of $\eta_0 = 10^{-4}$, weight decay of $10^{-4}$, and a cosine annealing learning-rate schedule decaying to $\eta_{\min} = 10^{-6}$.
 
 Model checkpoint selection is determined strictly by minimizing the predefined mean validation loss objective:
 \begin{equation}
@@ -190,21 +227,26 @@ Held-out test sets were excluded from training, hyperparameter tuning, threshold
 
 \subsection{Architectural Gradient Isolation and Claim Boundaries}
 
-The mathematical distinction in gradient routing between the monolithic and modular multi-task models is formal and structural:
+The mathematical distinction in gradient routing across the three executed multi-task configurations is formal and structural:
 \begin{itemize}
- \item In the \textbf{monolithic hard-shared model}, the parameter vector of the shared backbone $\boldsymbol{\theta}_{\mathrm{shared}}$ directly receives gradient contributions from all three task loss functions:
+ \item In the \textbf{monolithic hard-shared control (E1)}, the parameter vector of the shared backbone $\boldsymbol{\theta}_{\mathrm{shared}}$ directly receives gradient contributions from all three task loss functions:
  \begin{equation}
   \mathbf{g}_{\mathrm{shared}} = \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_{\mathrm{BCS}} + \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_{\mathrm{Beh}} + \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_{\mathrm{ReID}}.
  \end{equation}
  Each task head $\boldsymbol{\theta}_{\mathrm{head}}^{(t)}$ receives gradients solely from its own loss $L_t$.
- \item In the \textbf{modular task-private model}, the shared backbone $\boldsymbol{\theta}_{\mathrm{shared}}$ intentionally receives accumulated gradients from all three tasks through the residual connection:
+ \item In the \textbf{modular task-private model (E3)}, the shared backbone $\boldsymbol{\theta}_{\mathrm{shared}}$ intentionally receives accumulated gradients from all three tasks through the residual connection:
  \begin{equation}
   \mathbf{g}_{\mathrm{shared}} = \sum_{t \in \{\mathrm{BCS}, \mathrm{Beh}, \mathrm{ReID}\}} \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_t.
  \end{equation}
  In contrast, each task-private adapter $\boldsymbol{\theta}_{\mathrm{adapter}}^{(t)}$ and task head $\boldsymbol{\theta}_{\mathrm{head}}^{(t)}$ receive gradient signals strictly from their corresponding task loss $L_t$, with $\nabla_{\boldsymbol{\theta}_{\mathrm{adapter}}^{(t)}} L_{t'} = \mathbf{0}$ for all $t' \neq t$.
+ \item In the \textbf{gradient-projected hard-shared control (E4)}, the architecture is identical to E1, but the shared backbone parameter vector $\boldsymbol{\theta}_{\mathrm{shared}}$ receives the sum of pairwise conflict-projected task gradients:
+ \begin{equation}
+  \mathbf{g}_{\mathrm{shared}} = \mathbf{g}'_{\mathrm{BCS}} + \mathbf{g}'_{\mathrm{Beh}} + \mathbf{g}'_{\mathrm{ReID}},
+ \end{equation}
+ while each task head $\boldsymbol{\theta}_{\mathrm{head}}^{(t)}$ receives its unmodified, unprojected task-specific gradient $\nabla_{\boldsymbol{\theta}_{\mathrm{head}}^{(t)}} L_t$.
 \end{itemize}
 
-This gradient isolation is an architectural routing property that prevents direct gradient updates from one task head from altering the private adapter parameters of another task. It does not constitute theoretical proof that gradient conflict in the shared backbone is eliminated, nor does it guarantee that negative transfer will be prevented. The practical consequences of this routing structure on generalization across the three target domains remain an empirical question evaluated in Chapter~5. Figure~\ref{fig:mtl_gradient_routing} illustrates the multi-task super-step execution sequence and the resulting architectural gradient isolation boundaries.
+This gradient isolation is an architectural routing and optimization property that prevents direct gradient updates from one task head from altering the private adapter parameters of another task, or projects conflicting shared-backbone components. It does not constitute theoretical proof that gradient conflict in the shared backbone is eliminated, nor does it guarantee that negative transfer will be prevented. The practical consequences of these routing and optimization structures on generalization across the three target domains remain an empirical question evaluated in Chapter~5. Figure~\ref{fig:mtl_gradient_routing} illustrates the multi-task super-step execution sequence and the resulting gradient integration pathways and isolation boundaries.
 
 \input{images/mtl_superstep_gradient_routing}
 
@@ -219,4 +261,4 @@ Behavior evaluation reports overall accuracy, balanced accuracy, Macro-F1, per-c
 
 For Re-ID, Rank-$k$ measures the percentage of queries that return at least one correct identity within the top-$k$ gallery retrieval results. Average precision summarizes ranking quality for each individual query, and mAP is the mean across all evaluated queries. Barn-to-Parlor and Snapshots-to-Parlor queries are evaluated separately against the 36,811-image parlor gallery.
 
-To maintain strict scientific comparability, the monolithic hard-shared and modular multi-task models are evaluated on the exact matched held-out test populations established for the single-task reference models: 7,549 ScienceDB test images for BCS, 780 retained video sequences for behavior recognition, and 69 unseen cattle identities under SideView Protocol A (25,260 barn queries and 607 snapshot queries).
+To maintain strict scientific comparability, all three multi-task models---the monolithic hard-shared control (E1), the modular task-private architecture (E3), and the PCGrad optimization control (E4)---are evaluated on the exact matched held-out test populations established for the single-task reference models: 7,549 ScienceDB test images for BCS, 780 retained video sequences for behavior recognition, and 69 unseen cattle identities under SideView Protocol A (25,260 barn queries and 607 snapshot queries).

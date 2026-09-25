@@ -16,11 +16,13 @@ Cattle Re-Identification & Single image & 32 & 41-class classifier & Categorical
 \toprule
 \multicolumn{2}{l}{\textbf{Shared Multi-Task Optimization Hyperparameters}} \\
 \midrule
-Training Budget & 30 epochs with 537 super-steps per epoch (16,110 total super-steps) \\
+Training Budget & 30 epochs with 538 super-steps per epoch (16,140 total super-steps; $\lceil 34{,}369 / 64 \rceil = 538$) \\
 Optimizer & AdamW ($\beta_1=0.9, \beta_2=0.999$, weight decay $\lambda = 10^{-4}$) \\
 Learning Rate Schedule & Initial $\eta_0 = 10^{-4}$, cosine annealing decaying to minimum $\eta_{\min} = 10^{-6}$ \\
 Task Loss Weighting & Equal weighting: $w_{\mathrm{BCS}} = 1.0, w_{\mathrm{Beh}} = 1.0, w_{\mathrm{ReID}} = 1.0$ \\
 Checkpoint Selection Rule & Minimum mean validation loss: $L_{\mathrm{MTL,val}} = \frac{1}{3}(L_{\mathrm{BCS,val}} + L_{\mathrm{Beh,val}} + L_{\mathrm{ReID,val}})$ \\
+Shared Gradient Integration & E1/E3: standard accumulated shared gradients; E4: pairwise PCGrad-projected shared gradients, then summed \\
 \bottomrule
 \end{tabularx}
 \end{table}
+

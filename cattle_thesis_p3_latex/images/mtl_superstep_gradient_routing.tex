@@ -3,9 +3,9 @@
 \begin{tikzpicture}[
   title/.style={font=\bfseries\small, align=center},
   stepbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=4.3cm, minimum height=1.3cm, fill=gray!5, inner sep=2.5pt},
-  accumbox/.style={draw, rectangle, rounded corners=3pt, align=center, font=\footnotesize\bfseries, text width=12.5cm, minimum height=0.9cm, fill=gray!12, inner sep=4pt},
-  optbox/.style={draw, rectangle, rounded corners=3pt, align=center, font=\footnotesize\bfseries, text width=12.5cm, minimum height=0.9cm, fill=gray!20, inner sep=4pt},
-  backbonebox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=14.3cm, minimum height=1.15cm, fill=gray!10, inner sep=4pt},
+  branchbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, fill=gray!8, inner sep=3pt},
+  optbox/.style={draw, rectangle, rounded corners=3pt, align=center, font=\footnotesize\bfseries, text width=14.3cm, minimum height=0.9cm, fill=gray!20, inner sep=4pt},
+  backbonebox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=14.3cm, minimum height=1.2cm, fill=gray!10, inner sep=4pt},
   privbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=4.3cm, minimum height=1.5cm, fill=gray!4, inner sep=3pt},
   arrow/.style={->, >=stealth, thick},
   line/.style={thick}
@@ -21,31 +21,59 @@
 \draw[arrow] (s1) -- (s2);
 \draw[arrow] (s2) -- (s3);
 
-\node[accumbox] (accum) at (7.45, -1.95) {Accumulated Super-Step Gradients:\\[2pt]$\mathbf{g} = \nabla_{\boldsymbol{\theta}} L_{\mathrm{BCS}} + \nabla_{\boldsymbol{\theta}} L_{\mathrm{Beh}} + \nabla_{\boldsymbol{\theta}} L_{\mathrm{ReID}}$};
-\draw[arrow] (s3.south) -- (s3.south |- accum.north);
+% Task gradients computed label & routing
+\coordinate (c1) at (2.40, -1.05);
+\coordinate (c2) at (7.45, -1.05);
+\coordinate (c3) at (12.50, -1.05);
 
-\node[optbox] (opt) at (7.45, -3.55) {AdamW Parameter Update:\\[2pt]$\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta_t \cdot \mathrm{AdamW}(\mathbf{g}, \lambda=10^{-4})$};
-\draw[arrow] (accum) -- (opt);
+\draw[line] (s1.south) -- (c1);
+\draw[line] (s2.south) -- (c2);
+\draw[line] (s3.south) -- (c3);
+\draw[line] (c1) -- (c3);
+
+\node[draw, rectangle, rounded corners=1.5pt, font=\scriptsize, fill=white, inner sep=2.5pt] at (7.45, -1.05) {Task Gradients: $\mathbf{g}_{\mathrm{BCS}},\,\mathbf{g}_{\mathrm{Beh}},\,\mathbf{g}_{\mathrm{ReID}}$};
+
+% Two alternative gradient integration pathways
+\node[branchbox, text width=6.2cm, minimum height=2.0cm] (branch_std) at (3.55, -2.50) {%
+  \textbf{E1 \& E3: Standard Sum Accumulation}\\[2pt]
+  $\mathbf{g}_{\mathrm{shared}} = \mathbf{g}_{\mathrm{BCS}} + \mathbf{g}_{\mathrm{Beh}} + \mathbf{g}_{\mathrm{ReID}}$\\[3pt]
+  {\scriptsize Direct sum of unprojected task gradients}
+};
+
+\node[branchbox, text width=7.4cm, minimum height=2.0cm] (branch_pcgrad) at (11.05, -2.50) {%
+  \textbf{E4: PCGrad Shared Gradient Projection}\\[2pt]
+  1. Pairwise conflict test: $\mathbf{g}_i^\top \mathbf{g}_j < 0$\\[1pt]
+  2. Project: $\mathbf{g}_i \leftarrow \mathbf{g}_i - \frac{\mathbf{g}_i^\top \mathbf{g}_j}{\lVert\mathbf{g}_j\rVert_2^2 + \epsilon}\mathbf{g}_j$\\[1pt]
+  3. Sum projected: $\mathbf{g}_{\mathrm{shared}} = \sum_t \mathbf{g}'_t$\\[2pt]
+  {\scriptsize \textit{Task-head gradients remain unprojected}}
+};
+
+\draw[arrow] (3.55, -1.05) -- (branch_std.north);
+\draw[arrow] (11.05, -1.05) -- (branch_pcgrad.north);
+
+\node[optbox] (opt) at (7.45, -4.50) {Unified AdamW Parameter Update:\\[2pt]$\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta_t \cdot \operatorname{AdamW}(\mathbf{g},\, \lambda=10^{-4})$};
+\draw[arrow] (branch_std.south) -- (branch_std.south |- opt.north);
+\draw[arrow] (branch_pcgrad.south) -- (branch_pcgrad.south |- opt.north);
 
 % ==================== DIVIDING LINE ====================
-\draw[dashed, gray!60] (0.2, -4.50) -- (14.7, -4.50);
+\draw[dashed, gray!60] (0.2, -5.30) -- (14.7, -5.30);
 
 % ==================== BOTTOM: Architectural Gradient Boundaries ====================
-\node[title] at (7.45, -5.15) {Architectural Parameter Gradient Isolation Boundaries};
+\node[title] at (7.45, -5.85) {Architectural Parameter Gradient Isolation Boundaries};
 
-\node[backbonebox] (bb) at (7.45, -6.40) {\textbf{Shared ResNet-18 Spatial Backbone Parameters ($\boldsymbol{\theta}_{\mathrm{shared}}$)}\\[2pt]Receives accumulated gradient signals from all three tasks:\\[2pt]$\mathbf{g}_{\mathrm{shared}} = \sum_{t \in \{\mathrm{BCS},\mathrm{Beh},\mathrm{ReID}\}} \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_t$};
+\node[backbonebox] (bb) at (7.45, -7.05) {\textbf{Shared ResNet-18 Spatial Backbone Parameters ($\boldsymbol{\theta}_{\mathrm{shared}}$)}\\[2pt]Receives combined gradient signals from all three tasks:\\E1/E3: $\mathbf{g}_{\mathrm{shared}} = \sum_t \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_t$ \quad$\vert$\quad E4: $\mathbf{g}_{\mathrm{shared}} = \sum_t \mathbf{g}'_t$ (PCGrad projected)};
 
-\node[privbox] (p1) at (2.40, -9.05) {\textbf{BCS Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{BCS})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{BCS})}$)\\[2pt]$\nabla L_{\mathrm{BCS}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{Beh}} = \mathbf{0},\; \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
+\node[privbox] (p1) at (2.40, -9.65) {\textbf{BCS Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{BCS})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{BCS})}$)\\[2pt]$\nabla L_{\mathrm{BCS}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{Beh}} = \mathbf{0},\; \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
 
-\node[privbox] (p2) at (7.45, -9.05) {\textbf{Behavior Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{Beh})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{Beh})}$)\\[2pt]$\nabla L_{\mathrm{Beh}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{BCS}} = \mathbf{0},\; \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
+\node[privbox] (p2) at (7.45, -9.65) {\textbf{Behavior Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{Beh})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{Beh})}$)\\[2pt]$\nabla L_{\mathrm{Beh}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{BCS}} = \mathbf{0},\; \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
 
-\node[privbox] (p3) at (12.50, -9.05) {\textbf{Re-ID Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{ReID})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{ReID})}$)\\[2pt]$\nabla L_{\mathrm{ReID}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{BCS}} = \mathbf{0},\; \nabla L_{\mathrm{Beh}} = \mathbf{0}$)}};
+\node[privbox] (p3) at (12.50, -9.65) {\textbf{Re-ID Adapter}\\[1pt]\textbf{\& Prediction Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{ReID})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{ReID})}$)\\[2pt]$\nabla L_{\mathrm{ReID}}$ updates only\\[1pt]{\scriptsize ($\nabla L_{\mathrm{BCS}} = \mathbf{0},\; \nabla L_{\mathrm{Beh}} = \mathbf{0}$)}};
 
 \draw[arrow] (p1.north |- bb.south) -- (p1.north);
 \draw[arrow] (p2.north |- bb.south) -- (p2.north);
 \draw[arrow] (p3.north |- bb.south) -- (p3.north);
 
 \end{tikzpicture}
-\caption[Multi-task training super-step protocol and gradient routing]{Multi-task training super-step protocol and architectural gradient routing. Top: within each super-step, task-specific mini-batches execute forward and backward passes sequentially, accumulating gradients prior to a single unified AdamW parameter update. Bottom: architectural gradient isolation boundaries. The shared spatial backbone intentionally receives accumulated gradient signals from all three task loss functions, whereas task-private adapters and prediction heads receive updates strictly from their respective task losses. This diagram illustrates the structural routing properties of the implemented models and does not constitute empirical proof of eliminated gradient conflict.}
-\label{fig:mtl_gradient_routing}
+\caption[Multi-task training super-step protocol and gradient routing]{Multi-task training super-step protocol and architectural gradient routing across the three executed configurations. Top: within each super-step, task-specific mini-batches execute forward and backward passes sequentially. In the monolithic control (E1) and modular architecture (E3), shared backbone gradients are integrated by direct accumulation; in the PCGrad optimization control (E4), pairwise gradient conflicts on the shared backbone ($\mathbf{g}_i^\top \mathbf{g}_j < 0$) are resolved via projection before summation. Task-head gradients remain unprojected across all models. Bottom: architectural gradient isolation boundaries. In E3, task-private adapters and prediction heads receive updates strictly from their respective task losses, while the shared backbone receives combined gradients through residual connections.}\label{fig:mtl_gradient_routing}
 \end{figure}
+
