@@ -96,9 +96,11 @@
       * Flagged rows: Roast + `📌 Words/phrases to keep intact:\n• ...` + `🛠️ Required Fixes:\n• Fix 1: ...\n• Fix 2: ...`
       * Approved rows: `✅ অর্থ ঠিক রাখা হইছে。\n\n📌 Words/phrases to keep intact:\n• ...`
       * Pending/unparaphrased rows: `📌 Words/phrases to keep intact:\n• ...` (domain keywords extracted via thesis taxonomy to prevent hallucinated synonyms before typing).
-    - **Super-Smart Academic Keyword Taxonomy Upgrade (`scripts/apply_super_smart_paraphrase_workbench.py`)**:
-      * Nuked all dumb fallback keywords ('Therefore', 'Better', 'DONT, PARAPHRASE', 'Tabletab', 'Computational, Small', 'AI, They').
-      * Mapped all 136 academic paragraphs across Chapters 1, 2, and 3 to 3-4 pristine, high-value domain entities covering models (RT-DETR-L, SAM 2.1, ResNet-18, TCN), metrics (Real MAE, Acc@1, Macro-F1, Rank-1, mAP), clinical anatomy (BCS 1-5 scale, subcutaneous fat, loin, pelvis, tailhead), evaluation design (cow-disjoint splits, burst-group splitting, held-out test populations), cloud infrastructure (Modal, NVIDIA Tesla T4 vs L40S, local laptop checks), and author ethics.
+    - **Super-Smart Academic Keyword Taxonomy Upgrade & Roast Removal (`scripts/apply_super_smart_paraphrase_workbench.py`)**:
+      * Stripped 100% of roasts across all 3 chapters: Column D now contains strictly objective, professional academic review notes.
+      * Enforced 100% verbatim substring extraction from Column B: every term in `📌 Words/phrases to keep intact:` actually exists in the original text (418 terms verified, 0 violations).
+      * Flagged rows now feature clean, actionable numbered fixes (`• Fix 1:`, `• Fix 2:`) and intact verbatim terms without roast commentary.
+      * Table header rows updated from `রিভিউ ও রোস্টিং` to `রিভিউ ও ফিডব্যাক 📝 (Review Notes)`.
       * Marked all non-paraphrase rows (math equations, table references; Ch 2 Rows 32, 33, 160, 161, 223, 224) with `LEAVE BLANK (Do Not Paraphrase)` with zero keywords.
       * Stripped 100% of raw markdown `**` asterisks and applied native Google Sheets `textFormatRuns` bolding with exact UTF-16 code unit offsets across all sheets.
       * Preserved 100% of teammate text in Column C and maintained light pastel yellow background highlights.

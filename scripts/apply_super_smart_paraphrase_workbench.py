@@ -437,7 +437,6 @@ def build_markdown_for_row(tab_name, row_num, col_b, col_c):
     # 1. Flagged Row
     if row_num in flagged_dict:
         item = flagged_dict[row_num]
-        roast = item["roast"]
         
         fixes_lines = []
         for idx, f in enumerate(item["fixes"], start=1):
@@ -446,7 +445,6 @@ def build_markdown_for_row(tab_name, row_num, col_b, col_c):
         fixes_str = "\n".join(fixes_lines)
         
         return (
-            f"{roast}\n\n"
             f"**📌 Words/phrases to keep intact:**\n• {intact_str}\n\n"
             f"**🛠️ Required Fixes:**\n{fixes_str}"
         )
@@ -584,7 +582,7 @@ def process_chapter(service, tab_name, sheet_id):
                         {
                             "values": [
                                 {
-                                    "userEnteredValue": {"stringValue": "রিভিউ ও রোস্টিং ☕ (Review Notes)"},
+                                    "userEnteredValue": {"stringValue": "রিভিউ ও ফিডব্যাক 📝 (Review Notes)"},
                                     "textFormatRuns": [
                                         {"startIndex": 0, "format": {"bold": True}}
                                     ],
