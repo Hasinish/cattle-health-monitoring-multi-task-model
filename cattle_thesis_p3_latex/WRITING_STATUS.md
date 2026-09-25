@@ -10,7 +10,7 @@ The entire scientific manuscript surface is finalized, cross-checked, verified, 
 - **Single-task reference models**: Runs 1--3 (RGB baselines) and Runs 4--6 (perception-enhanced models) are fully incorporated and held-out evaluated.
 - **Multi-task models**: E1 Monolithic Hard-Shared MTL Control, E3 Modular Task-Private Adapters, and E4 PCGrad Optimization Control are complete, held-out evaluated on matched populations, and integrated across Chapters 4, 5, 6, the Abstract, and appendices.
 - **Deferred configurations**: Partial sharing (E2) and dynamic loss weighting via GradNorm (E5) remain explicitly deferred future work.
-- **Build verification**: `main.pdf` compiles cleanly with **90 pages** (13 preliminary front-matter pages [Title + Roman i--xii] and 77 numbered body/appendix pages [Arabic 1--77]).
+- **Build verification**: `main.pdf` compiles cleanly with **88 pages** (13 preliminary front-matter pages [Title + Roman i--xii] and 75 numbered body/appendix pages [Arabic 1--75]).
 - **Automated draft check (`check_draft.py`)**: `PASS: inputs, chapter mapping, 51 cited keys, 41 evidence IDs, matrix arithmetic.`
 - **Bibliography and evidence totals**: Exactly 51 cited literature keys and 41 internal evidence IDs (`E01`--`E41`).
 - **Build diagnostics**: 0 fatal errors, 0 undefined citations, 0 undefined references, 0 unresolved `??`, and 0 overfull boxes.
@@ -24,11 +24,11 @@ The entire scientific manuscript surface is finalized, cross-checked, verified, 
 | Chapter 2: Literature Review | **Complete** | Arabic pages 7--19; 51 sources cited | None (locked literature review) |
 | Chapter 3: Requirements, Impacts & Constraints | **Complete** | Arabic pages 20--25; Tables 3.1--3.4 updated; 1 ethics TODO | Institutional ethics / permission confirmation (`ETHICS-02`) |
 | Chapter 4: Proposed Methodology | **Complete** | Arabic pages 26--44; Figures 4.1--4.4, Tables 4.1--4.7 | None (locked methodology with E4 & 16,140 super-steps) |
-| Chapter 5: Result Analysis | **Complete** | Arabic pages 45--57; Tables 5.1--5.13 | None (locked E0/E1/E3/E4 comparative results & diagnostics) |
-| Chapter 6: Conclusion | **Complete** | Arabic pages 58--66; Section 6.6 dedicated page | None (locked RQ answers, contributions, limitations, future work) |
-| Bibliography | **Complete** | Arabic pages 67--71; 51 entries (0 undefined) | None (locked references) |
-| Appendix A: Dataset & Experiment Evidence | **Complete** | Arabic pages 72--75; Evidence register `E01`--`E41` | None (locked evidence index and methodology crosswalk) |
-| Appendix B: Reproducibility & Evidence Boundaries | **Complete** | Arabic pages 76--77; Reproducibility and boundaries | None (locked boundary definitions) |
+| Chapter 5: Result Analysis | **Complete** | Arabic pages 45--55; Tables 5.1--5.13 | None (table-driven, interpretation-focused synthesis; 27.2% prose compression) |
+| Chapter 6: Conclusion | **Complete** | Arabic pages 56--64; Section 6.6 dedicated page | None (locked RQ answers, contributions, limitations, future work) |
+| Bibliography | **Complete** | Arabic pages 65--69; 51 entries (0 undefined) | None (locked references) |
+| Appendix A: Dataset & Experiment Evidence | **Complete** | Arabic pages 70--73; Evidence register `E01`--`E41` | None (locked evidence index and methodology crosswalk) |
+| Appendix B: Reproducibility & Evidence Boundaries | **Complete** | Arabic pages 74--75; Reproducibility and boundaries | None (locked boundary definitions) |
 
 ## Remaining Work: Human and External Administrative Obligations Only
 
