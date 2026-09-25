@@ -14,11 +14,11 @@ The entire scientific manuscript surface is finalized, cross-checked, verified, 
 - **Automated draft check (`check_draft.py`)**: `PASS: inputs, chapter mapping, 51 cited keys, 41 evidence IDs, matrix arithmetic.`
 - **Bibliography and evidence totals**: Exactly 51 cited literature keys and 41 internal evidence IDs (`E01`--`E41`).
 - **Build diagnostics**: 0 fatal errors, 0 undefined citations, 0 undefined references, 0 unresolved `??`, and 0 overfull boxes.
-- **Remaining TODO count**: Exactly 6 administrative and ethics placeholders remain (`ADMIN-01`, `ADMIN-02`, `ADMIN-03`, `ADMIN-04`, `ETHICS-01`, `ETHICS-02`). Zero scientific TODOs remain.
+- **Remaining TODO count**: Exactly 5 administrative and ethics placeholders remain (`ADMIN-02`, `ADMIN-03`, `ADMIN-04`, `ETHICS-01`, `ETHICS-02`). Declaration statements and author roster confirmed by authors; signatures still require actual human signing. Zero scientific TODOs remain.
 
 | Section / File | Scientific Status | Build / Evidence Metrics | Scope of Remaining Work |
 |---|---|---|---|
-| Front matter (`core/`) | Provisional (administrative) | Clean title page; 5 administrative TODOs | Author roster, committee names, signatures, dedication, acknowledgments, ethics/AI disclosure |
+| Front matter (`core/`) | Provisional (administrative) | Clean title page; declaration confirmed; 4 administrative TODOs | Committee names, signatures, dedication, acknowledgments, ethics/AI disclosure |
 | Abstract (`core/abstract.tex`) | **Complete** | 331 words on Roman page iv | None (locked scientific synthesis) |
 | Chapter 1: Introduction | **Complete** | Arabic pages 1--6; Objectives 4 & 5 calibrated | None (locked scientific text) |
 | Chapter 2: Literature Review | **Complete** | Arabic pages 7--19; 51 sources cited | None (locked literature review) |
@@ -33,8 +33,8 @@ The entire scientific manuscript surface is finalized, cross-checked, verified, 
 ## Remaining Work: Human and External Administrative Obligations Only
 
 All scientific, experimental, mathematical, and manuscript-writing tasks are complete. The remaining items are strictly external and institutional human obligations:
-1. **Author and Committee Roster**: Verify final student author ordering, student IDs, submission semester, supervisor designations, and examining committee roster.
-2. **Signatures and Approvals**: Collect physical/digital signatures for the Declaration and Approval pages upon formal committee defense.
+1. **Committee Roster**: Author roster and declaration statements confirmed by authors; verify submission semester, supervisor designations, and examining committee roster.
+2. **Signatures and Approvals**: Signatures still require actual human signing (physical/digital student and supervisor/committee signatures for the Declaration and Approval pages upon formal committee defense).
 3. **Dedication and Acknowledgments**: Finalize optional dedication page text and formal institutional/personal acknowledgments.
 4. **Ethics and AI Disclosure**: Confirm institutional ethics compliance, AI/coding assistance disclosure statement, and explicit dataset reuse permission records.
 5. **Team Contribution Records**: Maintain internal institutional records of individual member contributions.
