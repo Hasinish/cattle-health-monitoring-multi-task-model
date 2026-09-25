@@ -1,3 +1,16 @@
+# Session Summary — 2026-09-25 (Phase 3 E4 PCGrad MTL Implementation & Cloud Smoke Certification)
+
+- Convo ID: 2c9a52fb-1aef-4eb3-a588-eafb90f6be82
+- Objective: Implement, unit-test, and smoke-certify the final additional multi-task learning experiment: E4 PCGrad (Projecting Conflicting Gradients; Yu et al., 2020) on Modal (`hasinishrak2015`), testing whether an optimization-level intervention improves the hard-shared E1 baseline under matched conditions.
+- Accomplishments & Verification:
+  1. Implemented training pipeline `scripts/train_mtl_e4_pcgrad.py` and Modal cloud wrapper `scripts/modal_train_mtl_e4_pcgrad.py`. Model (`MTLE4PCGradModel`) retains the exact E1 hard-shared architecture: 11,926,706 trainable parameters (0 adapters, 0 gates).
+  2. Implemented deterministic `PCGradProjector` applying standard PCGrad projection exclusively to shared backbone parameters, leaving task heads unprojected with zero cross-talk. Recorded per super-step diagnostics: pairwise gradient cosines, conflict fractions, and projection counts.
+  3. Built exhaustive unit test suite `tests/test_mtl_e4_pcgrad.py` covering all 12 minimum test criteria: 12/12 passed in 3.311s. Re-verified E1 unit test suite with 6/6 passed in 2.420s.
+  4. Executed zero-GPU cloud readiness verification on Modal (`hasinishrak2015`, App `ap-Iy8ywTox8KxYyCI7kEc4hD`): verified volume mounts, dataset files, 0 held-out cow overlap, exact 11,926,706 param count, and writable checkpoint paths. Status: `CERTIFIED_READY_FOR_E4_SMOKE`.
+  5. Dispatched cloud GPU smoke test on Tesla T4 (`hasinishrak2015`, App `ap-xbVM5Th8GNiWyToOw8lMsx`): 2 epochs passed in 3.7s; loss dropped from 1.7787 to 1.4754; executed 8 PCGrad conflict projections (4/epoch; 2.0/step); bit-identical checkpoint reload verified (`max_logit_diff == 0.00000000`); held-out test sets untouched. Checkpoints committed to `/mtl-checkpoints/mtl_e4_pcgrad_smoke/`.
+  6. Synced local artifact: `artifacts/mtl_e4_pcgrad_smoke/mtl_e4_pcgrad_smoke_metrics.json`. Authored official research log `docs/research_log/2026-09-25_phase3_mtl_e4_pcgrad_implementation_and_smoke.md` and indexed in `docs/research_log/README.md`.
+  7. Scientific claim boundaries strictly observed. Full 30-epoch training on L40S was NOT launched and awaits manual user command.
+
 # Session Summary — 2026-09-25 (Phase 3 Run 8 E3 Modular MTL Official Held-Out Evaluation & Milestone Completion)
 
 - Convo ID: 98ed6120-2e4e-463a-9502-55deb02c72f7

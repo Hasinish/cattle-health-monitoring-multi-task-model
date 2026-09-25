@@ -26,6 +26,14 @@
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
 ## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | ALL 8 FOCUSED DEADLINE RUNS ARE COMPLETE AND HELD-OUT EVALUATED)
+- **E4 PCGrad Status Summary (Final Additional Optimization Run — USER-APPROVED EXCEPTION)**:
+  * **Scientific Role**: One controlled question: *Does PCGrad improve the hard-shared E1 multi-task model when architecture, data, heads, schedule, losses, and validation selection are otherwise kept matched?* (E1: ordinary hard sharing; E3: architectural adapter intervention; E4: PCGrad optimization intervention; GradNorm E5 and partial sharing E2 remain deferred).
+  * **Architecture & Scripts**: COMPLETE ✅ (`scripts/train_mtl_e4_pcgrad.py`, `scripts/modal_train_mtl_e4_pcgrad.py`). Exactly ONE shared 4-channel ResNet-18 backbone (11,179,648 params), 3 task heads (747,058 params), exactly 11,926,706 trainable params matching E1 (0 adapters, 0 gates).
+  * **Unit Test Suite**: PASS ✅ (`tests/test_mtl_e4_pcgrad.py`, 12/12 tests passed in 3.31s).
+  * **PCGrad Projector**: VERIFIED ✅ (Deterministic RNG seed 2026; applied exclusively to shared backbone gradients; heads unprojected; per-step diagnostics recorded).
+  * **Modal Readiness (`hasinishrak2015`)**: PASS ✅ (App ID `ap-Iy8ywTox8KxYyCI7kEc4hD`, CPU-only, zero GPU cost, volumes verified, held-out test data strictly protected).
+  * **Cloud GPU Smoke Test on Tesla T4 (`hasinishrak2015`)**: PASS ✅ (App ID `ap-xbVM5Th8GNiWyToOw8lMsx`, 2 epochs in 3.7s, loss drop 1.7787 -> 1.4754, 8 PCGrad projections executed, bit-identical reload `max_logit_diff == 0.00000000`, checkpoints committed to `/mtl-checkpoints/mtl_e4_pcgrad_smoke/`, local artifact `artifacts/mtl_e4_pcgrad_smoke/mtl_e4_pcgrad_smoke_metrics.json`, held-out tests untouched).
+  * **Full 30-Epoch Training on NVIDIA L40S**: NOT LAUNCHED (Awaiting manual user command).
 - **Run 8 E3 Modular MTL Status Summary**:
   * **Run 8 architecture & scripts**: COMPLETE ✅ (`scripts/train_mtl_e3_modular.py`, `scripts/modal_train_mtl_e3_modular.py`)
   * **Run 8 unit test suite**: PASS ✅ (`tests/test_mtl_e3_modular.py`, 8/8 tests passed in 3.53s)

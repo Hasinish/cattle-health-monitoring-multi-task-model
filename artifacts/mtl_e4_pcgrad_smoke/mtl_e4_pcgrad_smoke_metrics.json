@@ -1,0 +1,194 @@
+{
+  "git_commit_sha": "5a18f23e5073b48dd7b898cfc5a3892cf6b4158d",
+  "smoke": true,
+  "epochs": 2,
+  "total_duration_seconds": 3.7,
+  "best_val_objective": 1.77991,
+  "best_metrics": {
+    "val_e4_objective": 1.77991,
+    "bcs": {
+      "val_loss": 0.75661,
+      "real_mae": 0.4375,
+      "acc_0": 0.125,
+      "acc_1": 0.625,
+      "balanced_accuracy": 0.1667,
+      "macro_f1": 0.0571
+    },
+    "behavior": {
+      "val_loss": 1.63507,
+      "accuracy": 0.25,
+      "balanced_accuracy": 0.25,
+      "macro_f1": 0.2222,
+      "per_class_f1": {
+        "Standing": 0.0,
+        "Lying": 0.0,
+        "Feeding": 0.6667
+      }
+    },
+    "reid": {
+      "val_loss": 2.94805,
+      "top1_accuracy": 0.25,
+      "balanced_accuracy": 0.25,
+      "macro_f1": 0.1
+    }
+  },
+  "checkpoint_reload_max_logit_diff": 0.0,
+  "parameters": {
+    "shared_backbone_parameters": 11179648,
+    "bcs_head_parameters": 2052,
+    "behavior_tcn_parameters": 723973,
+    "reid_head_parameters": 21033,
+    "total_trainable_parameters": 11926706
+  },
+  "best_checkpoint_path": "/mtl-checkpoints/mtl_e4_pcgrad_smoke/mtl_e4_smoke_best.pth",
+  "latest_checkpoint_path": "/mtl-checkpoints/mtl_e4_pcgrad_smoke/mtl_e4_smoke_latest.pth",
+  "epoch_history": [
+    {
+      "epoch": 1,
+      "duration_seconds": 2.2,
+      "train_loss_total": 1.77871,
+      "train_loss_bcs": 0.73392,
+      "train_loss_beh": 1.55945,
+      "train_loss_reid": 3.04275,
+      "val_e4_objective": 1.77991,
+      "bcs": {
+        "val_loss": 0.75661,
+        "real_mae": 0.4375,
+        "acc_0": 0.125,
+        "acc_1": 0.625,
+        "balanced_accuracy": 0.1667,
+        "macro_f1": 0.0571
+      },
+      "behavior": {
+        "val_loss": 1.63507,
+        "accuracy": 0.25,
+        "balanced_accuracy": 0.25,
+        "macro_f1": 0.2222,
+        "per_class_f1": {
+          "Standing": 0.0,
+          "Lying": 0.0,
+          "Feeding": 0.6667
+        }
+      },
+      "reid": {
+        "val_loss": 2.94805,
+        "top1_accuracy": 0.25,
+        "balanced_accuracy": 0.25,
+        "macro_f1": 0.1
+      },
+      "is_best": true,
+      "pcgrad_diagnostics": {
+        "epoch": 1,
+        "mean_shared_grad_norm_bcs": 1.086188,
+        "mean_shared_grad_norm_beh": 6.123513,
+        "mean_shared_grad_norm_reid": 3.026124,
+        "mean_pre_cos_bcs_beh": 0.002773,
+        "mean_pre_cos_bcs_reid": 0.006986,
+        "mean_pre_cos_beh_reid": 0.000543,
+        "conflict_frac_bcs_beh": 0.5,
+        "conflict_frac_bcs_reid": 0.0,
+        "conflict_frac_beh_reid": 0.5,
+        "mean_projections_triggered_per_step": 2.0,
+        "total_projections_triggered": 4,
+        "mean_post_cos_bcs_beh": 0.003101,
+        "mean_post_cos_bcs_reid": 0.006985,
+        "mean_post_cos_beh_reid": 0.005188
+      }
+    },
+    {
+      "epoch": 2,
+      "duration_seconds": 0.5,
+      "train_loss_total": 1.47538,
+      "train_loss_bcs": 0.67937,
+      "train_loss_beh": 0.9835,
+      "train_loss_reid": 2.76326,
+      "val_e4_objective": 1.88253,
+      "bcs": {
+        "val_loss": 0.74469,
+        "real_mae": 0.4062,
+        "acc_0": 0.25,
+        "acc_1": 0.5,
+        "balanced_accuracy": 0.2778,
+        "macro_f1": 0.2286
+      },
+      "behavior": {
+        "val_loss": 1.8639,
+        "accuracy": 0.0,
+        "balanced_accuracy": 0.0,
+        "macro_f1": 0.0,
+        "per_class_f1": {
+          "Standing": 0.0,
+          "Lying": 0.0,
+          "Feeding": 0.0
+        }
+      },
+      "reid": {
+        "val_loss": 3.039,
+        "top1_accuracy": 0.0,
+        "balanced_accuracy": 0.0,
+        "macro_f1": 0.0
+      },
+      "is_best": false,
+      "pcgrad_diagnostics": {
+        "epoch": 2,
+        "mean_shared_grad_norm_bcs": 0.94011,
+        "mean_shared_grad_norm_beh": 4.926621,
+        "mean_shared_grad_norm_reid": 2.969493,
+        "mean_pre_cos_bcs_beh": 0.008722,
+        "mean_pre_cos_bcs_reid": 0.00547,
+        "mean_pre_cos_beh_reid": -0.002423,
+        "conflict_frac_bcs_beh": 0.0,
+        "conflict_frac_bcs_reid": 0.5,
+        "conflict_frac_beh_reid": 0.5,
+        "mean_projections_triggered_per_step": 2.0,
+        "total_projections_triggered": 4,
+        "mean_post_cos_bcs_beh": 0.008816,
+        "mean_post_cos_bcs_reid": 0.01227,
+        "mean_post_cos_beh_reid": 0.006621
+      }
+    }
+  ],
+  "pcgrad_diagnostics": {
+    "epoch_history": [
+      {
+        "epoch": 1,
+        "mean_shared_grad_norm_bcs": 1.086188,
+        "mean_shared_grad_norm_beh": 6.123513,
+        "mean_shared_grad_norm_reid": 3.026124,
+        "mean_pre_cos_bcs_beh": 0.002773,
+        "mean_pre_cos_bcs_reid": 0.006986,
+        "mean_pre_cos_beh_reid": 0.000543,
+        "conflict_frac_bcs_beh": 0.5,
+        "conflict_frac_bcs_reid": 0.0,
+        "conflict_frac_beh_reid": 0.5,
+        "mean_projections_triggered_per_step": 2.0,
+        "total_projections_triggered": 4,
+        "mean_post_cos_bcs_beh": 0.003101,
+        "mean_post_cos_bcs_reid": 0.006985,
+        "mean_post_cos_beh_reid": 0.005188
+      },
+      {
+        "epoch": 2,
+        "mean_shared_grad_norm_bcs": 0.94011,
+        "mean_shared_grad_norm_beh": 4.926621,
+        "mean_shared_grad_norm_reid": 2.969493,
+        "mean_pre_cos_bcs_beh": 0.008722,
+        "mean_pre_cos_bcs_reid": 0.00547,
+        "mean_pre_cos_beh_reid": -0.002423,
+        "conflict_frac_bcs_beh": 0.0,
+        "conflict_frac_bcs_reid": 0.5,
+        "conflict_frac_beh_reid": 0.5,
+        "mean_projections_triggered_per_step": 2.0,
+        "total_projections_triggered": 4,
+        "mean_post_cos_bcs_beh": 0.008816,
+        "mean_post_cos_bcs_reid": 0.01227,
+        "mean_post_cos_beh_reid": 0.006621
+      }
+    ],
+    "overall_summary": {
+      "total_super_steps": 4,
+      "total_projections_triggered": 8,
+      "overall_mean_projections_per_step": 2.0
+    }
+  }
+}
