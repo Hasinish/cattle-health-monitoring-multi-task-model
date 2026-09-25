@@ -30,7 +30,7 @@ On the matched evaluation (Table~\ref{tab:behaviorcomparison}), temporal foregro
 
 \input{tables/behavior_class_comparison}
 
-The class-wise results (Table~\ref{tab:behaviorclasscomparison}) clarify this trade-off: dynamic and minority categories improved—most critically lifting Walking F1 from 0.2174 to 0.2456—while dominant posture categories (Standing and Lying) experienced minor declines. Temporal feature aggregation thus selectively assisted transition-rich behaviors at the expense of slight precision loss on static postures.
+The class-wise results (Table~\ref{tab:behaviorclasscomparison}) clarify this trade-off: dynamic and minority categories improved—most critically lifting Walking F1 from 0.2174 to 0.2456—while dominant posture categories (Standing and Lying) experienced minor declines. The combined foreground-guided temporal configuration improved selected dynamic and minority-class outcomes, while some posture-dominated classes declined.
 
 \input{tables/behavior_source_comparison}
 
@@ -42,11 +42,11 @@ Open-set biometric retrieval was evaluated under SideView Protocol~A, querying t
 
 \input{tables/reid_barn_results}
 
-For Barn-to-Parlor surveillance queries, the Oracle Segmentation-Guided model (Run~6) improved primary retrieval quality (Table~\ref{tab:reidbarn}), raising Rank-1 accuracy from 58.64\% to 63.90\% and mean Average Precision (mAP) from 38.32\% to 40.68\%. Deeper-rank recall remained largely unchanged or slightly lower, showing that foreground guidance primarily sharpened top-rank discrimination under fixed surveillance angles.
+For Barn-to-Parlor surveillance queries, the Oracle Segmentation-Guided model (Run~6) improved primary retrieval quality (Table~\ref{tab:reidbarn}), raising Rank-1 accuracy from 58.64\% to 63.90\% and mean Average Precision (mAP) from 38.32\% to 40.68\%. The oracle target-centered configuration improved top-rank retrieval while deeper-rank measures remained similar or slightly lower.
 
 \input{tables/reid_snapshot_results}
 
-The handheld Snapshot-to-Parlor evaluation yielded a substantially larger effect (Table~\ref{tab:reidsnapshot}). Under unconstrained mobile queries, Rank-1 accuracy surged from 38.88\% to 62.93\% (+24.05 pp), alongside an mAP rise from 27.05\% to 40.42\%. Isolating cattle geometry and suppressing background clutter was especially decisive against extreme shifts in perspective, illumination, and pasture backgrounds.
+The handheld Snapshot-to-Parlor evaluation yielded a substantially larger effect (Table~\ref{tab:reidsnapshot}). Under unconstrained mobile queries, Rank-1 accuracy rose from 38.88\% to 62.93\% (+24.05 pp), alongside an mAP rise from 27.05\% to 40.42\%. The oracle target-centered configuration produced its largest improvement under the Snapshot-to-Parlor setting, where acquisition differences were greater.
 
 These outcomes must be interpreted strictly within an oracle evaluation context. Because Run~6 uses released ground-truth masks for cropping and channel fusion, these results do not establish that automated upstream segmentation would achieve identical gains in deployment. Furthermore, target framing and mask guidance were introduced jointly, precluding isolated attribution to either factor.
 
@@ -80,7 +80,7 @@ Neither modular adapters nor gradient projection overcame this performance defic
 
 \subsection{Behavior Recognition Multi-Task Outcomes}
 
-Joint training under naive hard sharing (E1) produced severe degradation across balanced evaluation measures (Table~\ref{tab:mtl_behavior_results}). Balanced accuracy plunged from 74.43\% in the single-task reference to 67.30\%, accompanied by sharp declines in overall accuracy and Macro-F1. The minority Walking class was disproportionately impacted, collapsing from an F1 of 0.2456 to 0.0408. Modular adapters (E3) offered only selective, loss-specific relief; while E3 improved test loss and overall accuracy, balanced accuracy eroded further (66.70\%) and Walking F1 collapsed entirely to 0.0000.
+Joint training under naive hard sharing (E1) produced severe degradation across balanced evaluation measures (Table~\ref{tab:mtl_behavior_results}). Balanced accuracy plunged from 74.43\% in the single-task reference to 67.30\%, accompanied by sharp declines in overall accuracy and Macro-F1. The minority Walking class was disproportionately impacted, decreasing from an F1 of 0.2456 to 0.0408. Modular adapters (E3) offered only selective, loss-specific relief; while E3 improved test loss and overall accuracy, balanced accuracy eroded further (66.70\%) and Walking F1 fell to 0.0000.
 
 \input{tables/mtl_behavior_results}
 
@@ -151,8 +151,8 @@ The empirical findings presented in this chapter synthesize into three overarchi
 
 First, cattle-centered visual representations provide tangible utility over generic RGB frames on matched single-task benchmarks, but the nature of this benefit is highly task-dependent. Localized cropping and binary mask guidance improved physical score proximity for BCS (Table~\ref{tab:bcscomparison}) and elevated open-set retrieval under unconstrained handheld camera angles for Re-ID (Table~\ref{tab:reidsnapshot}). For Behavior, temporal foreground modeling improved class-balanced discrimination and minority-class detection while redistributing accuracy across sources (Tables~\ref{tab:behaviorcomparison}--\ref{tab:behaviorsourcecomparison}). These gains demonstrate the value of isolating animal foregrounds, while underscoring that foreground guidance does not operate as an unconditional panacea across all sub-metrics.
 
-Second, monolithic hard parameter sharing produced consistent outcome-level negative transfer across all three domains. Relative to matched single-task baselines, joint training under a single shared backbone degraded BCS physical error (Table~\ref{tab:mtl_bcs_results}), depressed Behavior balanced accuracy and minority walking recognition (Table~\ref{tab:mtl_behavior_results}), and diminished primary Re-ID retrieval precision (Table~\ref{tab:mtl_reid_results}). This uniform degradation empirically refutes the assumption that heterogeneous livestock monitoring tasks naturally benefit from a shared spatial representation without specialized intervention.
+Second, monolithic hard parameter sharing produced consistent outcome-level negative transfer across all three domains. Relative to matched single-task baselines, joint training under a single shared backbone degraded BCS physical error (Table~\ref{tab:mtl_bcs_results}), depressed Behavior balanced accuracy and minority walking recognition (Table~\ref{tab:mtl_behavior_results}), and diminished primary Re-ID retrieval precision (Table~\ref{tab:mtl_reid_results}). These matched degradations do not support an assumption of automatic benefit from hard sharing across these heterogeneous tasks.
 
 Third, neither architectural capacity expansion nor gradient projection universally resolved this cross-task interference. Adding task-private residual bottleneck adapters (E3) yielded selective loss improvements for behavior surveillance but exacerbated degradations in body condition scoring and biometric retrieval. Optimization-level gradient projection (E4) provided more effective, selective mitigation—achieving the strongest multi-task behavior metrics and recovering ground on ordinal scoring and retrieval under exact parameter parity with the hard-shared baseline. Empirical training diagnostics (Table~\ref{tab:pcgrad_diagnostics}) confirm that opposing shared-backbone gradients occurred frequently throughout joint optimization.
 
-Nevertheless, dedicated single-task models preserved superior performance across the principal benchmarks of all three domains. Rather than demonstrating universal synergy from joint learning, the evidence indicates that coarse morphology, fine-grained biometric surface patterns, and temporal locomotion impose conflicting optimization demands on a shared convolutional backbone. Multi-task agricultural monitoring therefore demands careful metric-aware trade-off analysis rather than naive joint consolidation.
+Nevertheless, dedicated single-task models preserved superior performance across the principal benchmarks of all three domains. Rather than demonstrating universal synergy from joint learning, the findings are consistent with task-dependent representation and optimization requirements that are not fully served by a single shared backbone. Multi-task agricultural monitoring therefore demands careful metric-aware trade-off analysis rather than naive joint consolidation.
