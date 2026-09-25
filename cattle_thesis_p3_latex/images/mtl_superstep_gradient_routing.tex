@@ -1,50 +1,49 @@
 \begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
-  scale=0.88, every node/.style={transform shape},
   title/.style={font=\bfseries\small, align=center},
-  stepbox/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=3.7cm, minimum height=0.75cm, fill=gray!5},
-  accumbox/.style={draw, rectangle, rounded corners=3pt, align=center, font=\scriptsize\bfseries, text width=9.2cm, minimum height=0.6cm, fill=gray!12},
-  optbox/.style={draw, rectangle, rounded corners=3pt, align=center, font=\scriptsize\bfseries, text width=9.2cm, minimum height=0.6cm, fill=gray!20},
-  backbonebox/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=12.6cm, minimum height=0.75cm, fill=gray!10},
-  privbox/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=3.9cm, minimum height=0.95cm, fill=gray!4},
+  stepbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=4.65cm, minimum height=1.3cm, fill=gray!5, inner sep=2.5pt},
+  accumbox/.style={draw, rectangle, rounded corners=3pt, align=center, font=\footnotesize\bfseries, text width=12.2cm, minimum height=0.85cm, fill=gray!12, inner sep=4pt},
+  optbox/.style={draw, rectangle, rounded corners=3pt, align=center, font=\footnotesize\bfseries, text width=12.2cm, minimum height=0.85cm, fill=gray!20, inner sep=4pt},
+  backbonebox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=14.3cm, minimum height=1.15cm, fill=gray!10, inner sep=4pt},
+  privbox/.style={draw, rectangle, rounded corners=2.5pt, align=center, font=\footnotesize, text width=4.65cm, minimum height=1.45cm, fill=gray!4, inner sep=3pt},
   arrow/.style={->, >=stealth, thick},
   line/.style={thick}
 ]
 
 % ==================== TOP: Multi-Task Super-Step Execution ====================
-\node[title] at (6.5, 1.05) {Execution Sequence of One Multi-Task Training Super-Step};
+\node[title] at (7.45, 1.1) {Execution Sequence of One Multi-Task Training Super-Step};
 
-\node[stepbox] (s1) at (2.0, 0.0) {\textbf{1. BCS Batch ($B=64$)}\\Forward: BCE $L_{\mathrm{BCS}}$\\Backward: $\nabla L_{\mathrm{BCS}}$};
-\node[stepbox] (s2) at (6.5, 0.0) {\textbf{2. Behavior Batch ($B=8$)}\\Forward: CE $L_{\mathrm{Beh}}$\\Backward: $\nabla L_{\mathrm{Beh}}$};
-\node[stepbox] (s3) at (11.0, 0.0) {\textbf{3. Re-ID Batch ($B=32$)}\\Forward: CE $L_{\mathrm{ReID}}$\\Backward: $\nabla L_{\mathrm{ReID}}$};
+\node[stepbox] (s1) at (2.45, 0.0) {\textbf{1. BCS Batch} ($B=64$)\\[2pt]Forward: BCE $L_{\mathrm{BCS}}$\\[2pt]Backward: $\nabla_{\boldsymbol{\theta}} L_{\mathrm{BCS}}$};
+\node[stepbox] (s2) at (7.45, 0.0) {\textbf{2. Behavior Batch} ($B=8$)\\[2pt]Forward: CE $L_{\mathrm{Beh}}$\\[2pt]Backward: $\nabla_{\boldsymbol{\theta}} L_{\mathrm{Beh}}$};
+\node[stepbox] (s3) at (12.45, 0.0) {\textbf{3. Re-ID Batch} ($B=32$)\\[2pt]Forward: CE $L_{\mathrm{ReID}}$\\[2pt]Backward: $\nabla_{\boldsymbol{\theta}} L_{\mathrm{ReID}}$};
 
 \draw[arrow] (s1) -- (s2);
 \draw[arrow] (s2) -- (s3);
 
-\node[accumbox] (accum) at (6.5, -1.4) {Accumulated Super-Step Gradients: $\mathbf{g} = \nabla L_{\mathrm{BCS}} + \nabla L_{\mathrm{Beh}} + \nabla L_{\mathrm{ReID}}$};
-\draw[arrow] (s3.south) -- ++(0,-0.35) -| (accum.north);
+\node[accumbox] (accum) at (7.45, -1.8) {Accumulated Super-Step Gradients:\\[2pt]$\mathbf{g} = \nabla_{\boldsymbol{\theta}} L_{\mathrm{BCS}} + \nabla_{\boldsymbol{\theta}} L_{\mathrm{Beh}} + \nabla_{\boldsymbol{\theta}} L_{\mathrm{ReID}}$};
+\draw[arrow] (s3.south) -- (s3.south |- accum.north);
 
-\node[optbox] (opt) at (6.5, -2.4) {AdamW Parameter Update: $\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta_t \cdot \mathrm{AdamW}(\mathbf{g}, \lambda=10^{-4})$};
+\node[optbox] (opt) at (7.45, -3.0) {AdamW Parameter Update:\\[2pt]$\boldsymbol{\theta} \leftarrow \boldsymbol{\theta} - \eta_t \cdot \mathrm{AdamW}(\mathbf{g}, \lambda=10^{-4})$};
 \draw[arrow] (accum) -- (opt);
 
 % ==================== DIVIDING LINE ====================
-\draw[dashed, gray!60] (0.0, -3.15) -- (13.0, -3.15);
+\draw[dashed, gray!60] (0.2, -3.9) -- (14.7, -3.9);
 
 % ==================== BOTTOM: Architectural Gradient Boundaries ====================
-\node[title] at (6.5, -3.55) {Architectural Parameter Gradient Isolation Boundaries};
+\node[title] at (7.45, -4.55) {Architectural Parameter Gradient Isolation Boundaries};
 
-\node[backbonebox] (bb) at (6.5, -4.45) {\textbf{Shared ResNet-18 Spatial Backbone Parameters ($\boldsymbol{\theta}_{\mathrm{shared}}$)}\\Receives accumulated gradient signals from all three tasks: $\mathbf{g}_{\mathrm{shared}} = \sum_{t \in \{\mathrm{BCS},\mathrm{Beh},\mathrm{ReID}\}} \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_t$};
+\node[backbonebox] (bb) at (7.45, -5.7) {\textbf{Shared ResNet-18 Spatial Backbone Parameters ($\boldsymbol{\theta}_{\mathrm{shared}}$)}\\[2pt]Receives accumulated gradient signals from all three tasks:\\[2pt]$\mathbf{g}_{\mathrm{shared}} = \sum_{t \in \{\mathrm{BCS},\mathrm{Beh},\mathrm{ReID}\}} \nabla_{\boldsymbol{\theta}_{\mathrm{shared}}} L_t$};
 
-\node[privbox] (p1) at (2.1, -6.1) {\textbf{BCS Adapter \& Head}\\($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{BCS})}, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{BCS})}$)\\[2pt]$\nabla L_{\mathrm{BCS}}$ updates only\\{\tiny ($\nabla L_{\mathrm{Beh}} = \mathbf{0}, \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
+\node[privbox] (p1) at (2.45, -8.1) {\textbf{BCS Adapter \& Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{BCS})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{BCS})}$)\\[3pt]$\nabla L_{\mathrm{BCS}}$ updates only\\[2pt]{\scriptsize ($\nabla L_{\mathrm{Beh}} = \mathbf{0},\; \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
 
-\node[privbox] (p2) at (6.5, -6.1) {\textbf{Behavior Adapter \& Head}\\($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{Beh})}, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{Beh})}$)\\[2pt]$\nabla L_{\mathrm{Beh}}$ updates only\\{\tiny ($\nabla L_{\mathrm{BCS}} = \mathbf{0}, \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
+\node[privbox] (p2) at (7.45, -8.1) {\textbf{Behavior Adapter \& Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{Beh})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{Beh})}$)\\[3pt]$\nabla L_{\mathrm{Beh}}$ updates only\\[2pt]{\scriptsize ($\nabla L_{\mathrm{BCS}} = \mathbf{0},\; \nabla L_{\mathrm{ReID}} = \mathbf{0}$)}};
 
-\node[privbox] (p3) at (10.9, -6.1) {\textbf{Re-ID Adapter \& Head}\\($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{ReID})}, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{ReID})}$)\\[2pt]$\nabla L_{\mathrm{ReID}}$ updates only\\{\tiny ($\nabla L_{\mathrm{BCS}} = \mathbf{0}, \nabla L_{\mathrm{Beh}} = \mathbf{0}$)}};
+\node[privbox] (p3) at (12.45, -8.1) {\textbf{Re-ID Adapter \& Head}\\[2pt]($\boldsymbol{\theta}_{\mathrm{adapter}}^{(\mathrm{ReID})},\, \boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{ReID})}$)\\[3pt]$\nabla L_{\mathrm{ReID}}$ updates only\\[2pt]{\scriptsize ($\nabla L_{\mathrm{BCS}} = \mathbf{0},\; \nabla L_{\mathrm{Beh}} = \mathbf{0}$)}};
 
-\draw[arrow] (bb.south -| p1.north) -- (p1.north);
-\draw[arrow] (bb.south) -- (p2.north);
-\draw[arrow] (bb.south -| p3.north) -- (p3.north);
+\draw[arrow] (p1.north |- bb.south) -- (p1.north);
+\draw[arrow] (p2.north |- bb.south) -- (p2.north);
+\draw[arrow] (p3.north |- bb.south) -- (p3.north);
 
 \end{tikzpicture}
 \caption[Multi-task training super-step protocol and gradient routing]{Multi-task training super-step protocol and architectural gradient routing. Top: within each super-step, task-specific mini-batches execute forward and backward passes sequentially, accumulating gradients prior to a single unified AdamW parameter update. Bottom: architectural gradient isolation boundaries. The shared spatial backbone intentionally receives accumulated gradient signals from all three task loss functions, whereas task-private adapters and prediction heads receive updates strictly from their respective task losses. This diagram illustrates the structural routing properties of the implemented models and does not constitute empirical proof of eliminated gradient conflict.}
