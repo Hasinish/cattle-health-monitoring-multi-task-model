@@ -16,7 +16,9 @@ The perception-enhanced models change several things at the same time. The BCS m
 
 The RGB reference models use ImageNet-pretrained ResNet-18 encoders so that the three tasks start from the same practical backbone~\cite{he2016resnet}. The prediction head is different for each task: cumulative ordinal logits for BCS, categorical logits for behavior, and an identity classifier with a retrieval embedding for Re-ID. Keeping the task protocol fixed allows us to compare the RGB and cattle-centered inputs more fairly.
 
-Localization and segmentation were chosen after testing pretrained perception models. The study checked detector return rate and latency, and measured mask overlap where SideView ground-truth masks were available. RT-DETR-L followed by SAM 2.1 gave a practical automatic pipeline for ScienceDB and behavior data. SideView's released masks allowed a separate oracle-guided Re-ID experiment~\cite{zhao2024rtdetr,ravi2024sam2}. Pose and viewpoint were not included in these first paired models because their task usefulness and transfer reliability had not been established at the time. This does not mean that they are rejected as separate later ablations.
+Localization and segmentation were chosen after testing pretrained perception models. The study checked detector return rate and latency, and measured mask overlap where SideView ground-truth masks were available. RT-DETR-L followed by SAM 2.1 gave a practical automatic pipeline for ScienceDB and behavior data. SideView's released masks allowed a separate oracle-guided Re-ID experiment~\cite{zhao2024rtdetr,ravi2024sam2}. Figure~\ref{fig:task_representation_pipeline} illustrates the resulting task-specific perception and input preparation pipelines across the three monitoring domains. Pose and viewpoint were not included in these first paired models because their task usefulness and transfer reliability had not been established at the time. This does not mean that they are rejected as separate later ablations.
+
+\input{images/task_specific_representation_pipeline}
 
 \subsection{Baseline RGB Body Condition Scoring}
 
@@ -127,12 +129,9 @@ The monolithic hard-shared multi-task control contains exactly 11,926,706 traina
 
 \subsection{Modular Task-Private Multi-Task Architecture}
 
-The modular task-private multi-task architecture (denoted as E3) evaluates whether introducing task-private capacity can mitigate negative transfer while retaining a shared visual backbone. To isolate the effect of modular routing, this architecture preserves the exact same components and training conditions as the hard-shared control:
-\begin{itemize}
- \item The identical four-channel ResNet-18 spatial feature extractor (11,179,648 parameters);
- \item The identical task-specific heads: BCS ordinal head (2,052 parameters), Behavior 1D TCN head (723,973 parameters), and Re-ID classification head (21,033 parameters);
- \item The identical input tensor shapes, preprocessing pipelines, training datasets, batch sizes, loss functions, and optimization hyperparameters.
-\end{itemize}
+The modular task-private multi-task architecture (denoted as E3) evaluates whether introducing task-private capacity can mitigate negative transfer while retaining a shared visual backbone. To provide a controlled comparison with the hard-shared architecture, the modular architecture preserves the same shared backbone, task heads, input representations, datasets, batch sizes, losses, optimizer, training budget, and checkpoint-selection rule. It differs through the addition of three task-private residual adapters comprising 395,904 trainable parameters (+3.32\% capacity). Therefore, observed differences characterize the modular configuration as a whole and cannot be attributed to routing alone. Figure~\ref{fig:mtl_architecture_comparison} illustrates the structural comparison between the monolithic hard-shared control and the modular task-private architecture, including the residual bottleneck adapter design.
+
+\input{images/mtl_architecture_comparison}
 
 The architectural modification consists of inserting one independent residual bottleneck adapter between the shared 512-dimensional representation $\mathbf{h}_{\mathrm{shared}} \in \mathbb{R}^{512}$ and each respective task head. For task $t \in \{\mathrm{BCS}, \mathrm{Beh}, \mathrm{ReID}\}$, the adapter consists of:
 \begin{enumerate}
@@ -147,7 +146,9 @@ The adapter output $\Delta\mathbf{h}_t \in \mathbb{R}^{512}$ is added residually
 \end{equation}
 In the temporal behavior model, this adapter operates frame-wise on each of the 8 temporal feature vectors before the adapted sequence $\mathbf{H}_{\mathrm{Beh}} \in \mathbb{R}^{B_{\mathrm{Beh}} \times 8 \times 512}$ is routed to the temporal convolutional network.
 
-Each task-private adapter contains exactly 131,968 parameters, yielding 395,904 total private parameters across the three tasks (3.21\% of the model's total parameters). The modular multi-task architecture comprises 12,322,610 trainable parameters, representing an increase of 395,904 parameters (+3.32\% relative capacity) over the hard-shared control.
+Each task-private adapter contains exactly 131,968 parameters, yielding 395,904 total private parameters across the three tasks (3.21\% of the model's total parameters). The modular multi-task architecture comprises 12,322,610 trainable parameters, representing an increase of 395,904 parameters (+3.32\% relative capacity) over the hard-shared control. Table~\ref{tab:mtl_architecture_spec} summarizes the structural components and exact parameter counts of both multi-task configurations.
+
+\input{tables/mtl_architecture_specification}
 
 \subsubsection{Identity Initialization of Residual Adapters}
 
@@ -183,7 +184,9 @@ Model checkpoint selection is determined strictly by minimizing the predefined m
 \begin{equation}
  L_{\mathrm{MTL,val}} = \frac{1}{3}\left( L_{\mathrm{BCS,val}} + L_{\mathrm{Behavior,val}} + L_{\mathrm{ReID,val}} \right).
 \end{equation}
-All canonical held-out test splits and unseen identity sets are strictly quarantined from model selection, hyperparameter tuning, and threshold calibration.
+Held-out test sets were excluded from training, hyperparameter tuning, threshold calibration, and checkpoint selection according to the implemented evaluation protocol. Table~\ref{tab:mtl_training_protocol} outlines the per-task batch parameters and joint optimization hyperparameters.
+
+\input{tables/mtl_training_protocol}
 
 \subsection{Architectural Gradient Isolation and Claim Boundaries}
 
@@ -201,7 +204,9 @@ The mathematical distinction in gradient routing between the monolithic and modu
  In contrast, each task-private adapter $\boldsymbol{\theta}_{\mathrm{adapter}}^{(t)}$ and task head $\boldsymbol{\theta}_{\mathrm{head}}^{(t)}$ receive gradient signals strictly from their corresponding task loss $L_t$, with $\nabla_{\boldsymbol{\theta}_{\mathrm{adapter}}^{(t)}} L_{t'} = \mathbf{0}$ for all $t' \neq t$.
 \end{itemize}
 
-This gradient isolation is an architectural routing property that prevents direct gradient updates from one task head from altering the private adapter parameters of another task. It does not constitute theoretical proof that gradient conflict in the shared backbone is eliminated, nor does it guarantee that negative transfer will be prevented. The practical consequences of this routing structure on generalization across the three target domains remain an empirical question evaluated in Chapter~5.
+This gradient isolation is an architectural routing property that prevents direct gradient updates from one task head from altering the private adapter parameters of another task. It does not constitute theoretical proof that gradient conflict in the shared backbone is eliminated, nor does it guarantee that negative transfer will be prevented. The practical consequences of this routing structure on generalization across the three target domains remain an empirical question evaluated in Chapter~5. Figure~\ref{fig:mtl_gradient_routing} illustrates the multi-task super-step execution sequence and the resulting architectural gradient isolation boundaries.
+
+\input{images/mtl_superstep_gradient_routing}
 
 \subsection{Evaluation Metrics and Protocol Harmonization}
 
