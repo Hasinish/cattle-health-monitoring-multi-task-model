@@ -513,7 +513,13 @@ def evaluate_behavior_metrics(true_indices: np.ndarray, pred_indices: np.ndarray
     acc = float(accuracy_score(true_indices, pred_indices) * 100.0)
     bal_acc = float(balanced_accuracy_score(true_indices, pred_indices) * 100.0)
     macro_f1 = float(f1_score(true_indices, pred_indices, average="macro", zero_division=0))
-    per_class_f1 = f1_score(true_indices, pred_indices, average=None, zero_division=0)
+    per_class_f1 = f1_score(
+        true_indices,
+        pred_indices,
+        labels=list(range(len(BEHAVIOR_CLASSES))),
+        average=None,
+        zero_division=0,
+    )
 
     class_f1_dict = {
         BEHAVIOR_CLASSES[i]: round(float(per_class_f1[i]), 4)
