@@ -1,0 +1,1315 @@
+{
+  "task": "phase3_run8_mtl_e3_modular",
+  "experiment_name": "E3 Modular Multi-Task Learning (Task-Private Residual Adapters)",
+  "active_git_sha": "50c9b06797544602d482e5a5ac76df668067ec07",
+  "epochs_trained": 30,
+  "best_epoch": 2,
+  "best_val_objective": 0.38888,
+  "best_metrics": {
+    "val_e3_objective": 0.38888,
+    "bcs": {
+      "val_loss": 0.45501,
+      "real_mae": 0.1906,
+      "exact_accuracy": 37.33,
+      "acc_within_1_class": 87.8,
+      "balanced_accuracy": 34.09,
+      "macro_f1": 0.3277
+    },
+    "behavior": {
+      "val_loss": 0.4134,
+      "accuracy": 84.76,
+      "balanced_accuracy": 68.02,
+      "macro_f1": 0.6725,
+      "per_class_f1": {
+        "Standing": 0.6267,
+        "Lying": 0.951,
+        "Feeding": 0.9098,
+        "Drinking": 0.875,
+        "Walking": 0.0
+      }
+    },
+    "reid": {
+      "val_loss": 0.29822,
+      "top1_accuracy": 92.84,
+      "balanced_accuracy": 92.88,
+      "macro_f1": 0.9199
+    }
+  },
+  "total_training_time_seconds": 1634.37,
+  "parameter_summary": {
+    "shared_backbone_parameters": 11179648,
+    "bcs_adapter_parameters": 131968,
+    "behavior_adapter_parameters": 131968,
+    "reid_adapter_parameters": 131968,
+    "total_task_private_adapter_parameters": 395904,
+    "bcs_head_parameters": 2052,
+    "behavior_tcn_parameters": 723973,
+    "reid_head_parameters": 21033,
+    "total_task_head_parameters": 747058,
+    "total_trainable_parameters": 12322610
+  },
+  "bit_identical_reload_verified": false,
+  "max_reload_diff": 0.0,
+  "epoch_history": [
+    {
+      "epoch": 1,
+      "epoch_duration_seconds": 62.51,
+      "lr": 9.972883382072954e-05,
+      "train": {
+        "total_loss": 0.47234,
+        "bcs_loss": 0.42463,
+        "behavior_loss": 0.45313,
+        "reid_loss": 0.53928
+      },
+      "val": {
+        "val_e3_objective": 0.44,
+        "bcs": {
+          "val_loss": 0.48075,
+          "real_mae": 0.2076,
+          "exact_accuracy": 34.11,
+          "acc_within_1_class": 84.29,
+          "balanced_accuracy": 30.04,
+          "macro_f1": 0.274
+        },
+        "behavior": {
+          "val_loss": 0.47957,
+          "accuracy": 84.92,
+          "balanced_accuracy": 62.37,
+          "macro_f1": 0.6379,
+          "per_class_f1": {
+            "Standing": 0.663,
+            "Lying": 0.9441,
+            "Feeding": 0.8959,
+            "Drinking": 0.6866,
+            "Walking": 0.0
+          }
+        },
+        "reid": {
+          "val_loss": 0.35967,
+          "top1_accuracy": 92.32,
+          "balanced_accuracy": 92.33,
+          "macro_f1": 0.9154
+        }
+      },
+      "is_best": true
+    },
+    {
+      "epoch": 2,
+      "epoch_duration_seconds": 53.93,
+      "lr": 9.891830623632339e-05,
+      "train": {
+        "total_loss": 0.19314,
+        "bcs_loss": 0.30783,
+        "behavior_loss": 0.24325,
+        "reid_loss": 0.02833
+      },
+      "val": {
+        "val_e3_objective": 0.38888,
+        "bcs": {
+          "val_loss": 0.45501,
+          "real_mae": 0.1906,
+          "exact_accuracy": 37.33,
+          "acc_within_1_class": 87.8,
+          "balanced_accuracy": 34.09,
+          "macro_f1": 0.3277
+        },
+        "behavior": {
+          "val_loss": 0.4134,
+          "accuracy": 84.76,
+          "balanced_accuracy": 68.02,
+          "macro_f1": 0.6725,
+          "per_class_f1": {
+            "Standing": 0.6267,
+            "Lying": 0.951,
+            "Feeding": 0.9098,
+            "Drinking": 0.875,
+            "Walking": 0.0
+          }
+        },
+        "reid": {
+          "val_loss": 0.29822,
+          "top1_accuracy": 92.84,
+          "balanced_accuracy": 92.88,
+          "macro_f1": 0.9199
+        }
+      },
+      "is_best": true
+    },
+    {
+      "epoch": 3,
+      "epoch_duration_seconds": 54.23,
+      "lr": 9.757729755661011e-05,
+      "train": {
+        "total_loss": 0.14308,
+        "bcs_loss": 0.24223,
+        "behavior_loss": 0.17563,
+        "reid_loss": 0.01139
+      },
+      "val": {
+        "val_e3_objective": 0.42345,
+        "bcs": {
+          "val_loss": 0.53742,
+          "real_mae": 0.1977,
+          "exact_accuracy": 35.44,
+          "acc_within_1_class": 87.02,
+          "balanced_accuracy": 32.03,
+          "macro_f1": 0.3015
+        },
+        "behavior": {
+          "val_loss": 0.50012,
+          "accuracy": 84.29,
+          "balanced_accuracy": 71.24,
+          "macro_f1": 0.7105,
+          "per_class_f1": {
+            "Standing": 0.5699,
+            "Lying": 0.9697,
+            "Feeding": 0.8694,
+            "Drinking": 0.9213,
+            "Walking": 0.2222
+          }
+        },
+        "reid": {
+          "val_loss": 0.2328,
+          "top1_accuracy": 94.93,
+          "balanced_accuracy": 93.35,
+          "macro_f1": 0.9338
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 4,
+      "epoch_duration_seconds": 54.5,
+      "lr": 9.572050015330873e-05,
+      "train": {
+        "total_loss": 0.11631,
+        "bcs_loss": 0.19131,
+        "behavior_loss": 0.14991,
+        "reid_loss": 0.00773
+      },
+      "val": {
+        "val_e3_objective": 0.42317,
+        "bcs": {
+          "val_loss": 0.52271,
+          "real_mae": 0.1946,
+          "exact_accuracy": 36.79,
+          "acc_within_1_class": 86.81,
+          "balanced_accuracy": 33.32,
+          "macro_f1": 0.3186
+        },
+        "behavior": {
+          "val_loss": 0.54893,
+          "accuracy": 86.19,
+          "balanced_accuracy": 67.03,
+          "macro_f1": 0.6773,
+          "per_class_f1": {
+            "Standing": 0.5658,
+            "Lying": 0.962,
+            "Feeding": 0.9048,
+            "Drinking": 0.8916,
+            "Walking": 0.0625
+          }
+        },
+        "reid": {
+          "val_loss": 0.19788,
+          "top1_accuracy": 95.53,
+          "balanced_accuracy": 95.45,
+          "macro_f1": 0.9439
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 5,
+      "epoch_duration_seconds": 52.89,
+      "lr": 9.336825748732972e-05,
+      "train": {
+        "total_loss": 0.08784,
+        "bcs_loss": 0.15079,
+        "behavior_loss": 0.10736,
+        "reid_loss": 0.00538
+      },
+      "val": {
+        "val_e3_objective": 0.46649,
+        "bcs": {
+          "val_loss": 0.55711,
+          "real_mae": 0.1937,
+          "exact_accuracy": 38.81,
+          "acc_within_1_class": 85.85,
+          "balanced_accuracy": 36.6,
+          "macro_f1": 0.358
+        },
+        "behavior": {
+          "val_loss": 0.53058,
+          "accuracy": 87.94,
+          "balanced_accuracy": 68.55,
+          "macro_f1": 0.6881,
+          "per_class_f1": {
+            "Standing": 0.6813,
+            "Lying": 0.9862,
+            "Feeding": 0.9121,
+            "Drinking": 0.8608,
+            "Walking": 0.0
+          }
+        },
+        "reid": {
+          "val_loss": 0.31177,
+          "top1_accuracy": 91.76,
+          "balanced_accuracy": 91.6,
+          "macro_f1": 0.8994
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 6,
+      "epoch_duration_seconds": 54.1,
+      "lr": 9.05463412215599e-05,
+      "train": {
+        "total_loss": 0.07137,
+        "bcs_loss": 0.11906,
+        "behavior_loss": 0.09094,
+        "reid_loss": 0.00412
+      },
+      "val": {
+        "val_e3_objective": 0.43994,
+        "bcs": {
+          "val_loss": 0.69927,
+          "real_mae": 0.1963,
+          "exact_accuracy": 37.05,
+          "acc_within_1_class": 85.76,
+          "balanced_accuracy": 33.58,
+          "macro_f1": 0.3203
+        },
+        "behavior": {
+          "val_loss": 0.39054,
+          "accuracy": 87.14,
+          "balanced_accuracy": 71.08,
+          "macro_f1": 0.7009,
+          "per_class_f1": {
+            "Standing": 0.6344,
+            "Lying": 0.9644,
+            "Feeding": 0.9316,
+            "Drinking": 0.9213,
+            "Walking": 0.0526
+          }
+        },
+        "reid": {
+          "val_loss": 0.23,
+          "top1_accuracy": 94.48,
+          "balanced_accuracy": 93.49,
+          "macro_f1": 0.928
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 7,
+      "epoch_duration_seconds": 53.47,
+      "lr": 8.728566886113101e-05,
+      "train": {
+        "total_loss": 0.05866,
+        "bcs_loss": 0.09591,
+        "behavior_loss": 0.07673,
+        "reid_loss": 0.00334
+      },
+      "val": {
+        "val_e3_objective": 0.5469,
+        "bcs": {
+          "val_loss": 0.72055,
+          "real_mae": 0.1881,
+          "exact_accuracy": 38.53,
+          "acc_within_1_class": 87.36,
+          "balanced_accuracy": 35.11,
+          "macro_f1": 0.3358
+        },
+        "behavior": {
+          "val_loss": 0.64988,
+          "accuracy": 83.65,
+          "balanced_accuracy": 68.12,
+          "macro_f1": 0.6921,
+          "per_class_f1": {
+            "Standing": 0.5761,
+            "Lying": 0.9623,
+            "Feeding": 0.894,
+            "Drinking": 0.8462,
+            "Walking": 0.1818
+          }
+        },
+        "reid": {
+          "val_loss": 0.27028,
+          "top1_accuracy": 93.81,
+          "balanced_accuracy": 93.18,
+          "macro_f1": 0.9245
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 8,
+      "epoch_duration_seconds": 52.62,
+      "lr": 8.362196501476347e-05,
+      "train": {
+        "total_loss": 0.04137,
+        "bcs_loss": 0.07454,
+        "behavior_loss": 0.04797,
+        "reid_loss": 0.00161
+      },
+      "val": {
+        "val_e3_objective": 0.55601,
+        "bcs": {
+          "val_loss": 0.7903,
+          "real_mae": 0.1964,
+          "exact_accuracy": 36.06,
+          "acc_within_1_class": 86.72,
+          "balanced_accuracy": 32.57,
+          "macro_f1": 0.3109
+        },
+        "behavior": {
+          "val_loss": 0.68825,
+          "accuracy": 87.14,
+          "balanced_accuracy": 72.58,
+          "macro_f1": 0.7117,
+          "per_class_f1": {
+            "Standing": 0.6601,
+            "Lying": 0.9694,
+            "Feeding": 0.9246,
+            "Drinking": 0.9545,
+            "Walking": 0.05
+          }
+        },
+        "reid": {
+          "val_loss": 0.18947,
+          "top1_accuracy": 94.67,
+          "balanced_accuracy": 95.35,
+          "macro_f1": 0.9447
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 9,
+      "epoch_duration_seconds": 52.48,
+      "lr": 7.959536998847741e-05,
+      "train": {
+        "total_loss": 0.03803,
+        "bcs_loss": 0.06089,
+        "behavior_loss": 0.05108,
+        "reid_loss": 0.00213
+      },
+      "val": {
+        "val_e3_objective": 0.55588,
+        "bcs": {
+          "val_loss": 0.8058,
+          "real_mae": 0.1886,
+          "exact_accuracy": 38.07,
+          "acc_within_1_class": 87.81,
+          "balanced_accuracy": 34.74,
+          "macro_f1": 0.335
+        },
+        "behavior": {
+          "val_loss": 0.66263,
+          "accuracy": 86.98,
+          "balanced_accuracy": 69.0,
+          "macro_f1": 0.6857,
+          "per_class_f1": {
+            "Standing": 0.6632,
+            "Lying": 0.9488,
+            "Feeding": 0.9278,
+            "Drinking": 0.8889,
+            "Walking": 0.0
+          }
+        },
+        "reid": {
+          "val_loss": 0.19922,
+          "top1_accuracy": 94.56,
+          "balanced_accuracy": 94.63,
+          "macro_f1": 0.9334
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 10,
+      "epoch_duration_seconds": 54.14,
+      "lr": 7.524999999999999e-05,
+      "train": {
+        "total_loss": 0.03097,
+        "bcs_loss": 0.04968,
+        "behavior_loss": 0.04208,
+        "reid_loss": 0.00114
+      },
+      "val": {
+        "val_e3_objective": 0.58321,
+        "bcs": {
+          "val_loss": 0.89813,
+          "real_mae": 0.1947,
+          "exact_accuracy": 38.06,
+          "acc_within_1_class": 86.34,
+          "balanced_accuracy": 35.41,
+          "macro_f1": 0.3436
+        },
+        "behavior": {
+          "val_loss": 0.71042,
+          "accuracy": 88.25,
+          "balanced_accuracy": 71.71,
+          "macro_f1": 0.7077,
+          "per_class_f1": {
+            "Standing": 0.655,
+            "Lying": 0.9721,
+            "Feeding": 0.9219,
+            "Drinking": 0.9231,
+            "Walking": 0.0667
+          }
+        },
+        "reid": {
+          "val_loss": 0.14107,
+          "top1_accuracy": 96.2,
+          "balanced_accuracy": 96.1,
+          "macro_f1": 0.9527
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 11,
+      "epoch_duration_seconds": 53.3,
+      "lr": 7.06334638322521e-05,
+      "train": {
+        "total_loss": 0.03484,
+        "bcs_loss": 0.04452,
+        "behavior_loss": 0.05826,
+        "reid_loss": 0.00173
+      },
+      "val": {
+        "val_e3_objective": 0.58356,
+        "bcs": {
+          "val_loss": 0.9787,
+          "real_mae": 0.1944,
+          "exact_accuracy": 37.37,
+          "acc_within_1_class": 86.67,
+          "balanced_accuracy": 34.2,
+          "macro_f1": 0.3283
+        },
+        "behavior": {
+          "val_loss": 0.58941,
+          "accuracy": 89.21,
+          "balanced_accuracy": 72.24,
+          "macro_f1": 0.7189,
+          "per_class_f1": {
+            "Standing": 0.6743,
+            "Lying": 0.9861,
+            "Feeding": 0.9271,
+            "Drinking": 0.9425,
+            "Walking": 0.0645
+          }
+        },
+        "reid": {
+          "val_loss": 0.18257,
+          "top1_accuracy": 95.04,
+          "balanced_accuracy": 94.49,
+          "macro_f1": 0.9386
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 12,
+      "epoch_duration_seconds": 53.42,
+      "lr": 6.579634122155988e-05,
+      "train": {
+        "total_loss": 0.02065,
+        "bcs_loss": 0.03088,
+        "behavior_loss": 0.03045,
+        "reid_loss": 0.00063
+      },
+      "val": {
+        "val_e3_objective": 0.67588,
+        "bcs": {
+          "val_loss": 1.0524,
+          "real_mae": 0.2049,
+          "exact_accuracy": 37.25,
+          "acc_within_1_class": 83.56,
+          "balanced_accuracy": 35.61,
+          "macro_f1": 0.3484
+        },
+        "behavior": {
+          "val_loss": 0.81988,
+          "accuracy": 87.3,
+          "balanced_accuracy": 66.55,
+          "macro_f1": 0.6892,
+          "per_class_f1": {
+            "Standing": 0.6857,
+            "Lying": 0.9838,
+            "Feeding": 0.9035,
+            "Drinking": 0.7397,
+            "Walking": 0.1333
+          }
+        },
+        "reid": {
+          "val_loss": 0.15536,
+          "top1_accuracy": 95.71,
+          "balanced_accuracy": 95.43,
+          "macro_f1": 0.9518
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 13,
+      "epoch_duration_seconds": 52.77,
+      "lr": 6.079162869547907e-05,
+      "train": {
+        "total_loss": 0.01159,
+        "bcs_loss": 0.02296,
+        "behavior_loss": 0.0113,
+        "reid_loss": 0.00051
+      },
+      "val": {
+        "val_e3_objective": 0.65645,
+        "bcs": {
+          "val_loss": 1.08301,
+          "real_mae": 0.1984,
+          "exact_accuracy": 36.32,
+          "acc_within_1_class": 86.06,
+          "balanced_accuracy": 33.77,
+          "macro_f1": 0.3329
+        },
+        "behavior": {
+          "val_loss": 0.71433,
+          "accuracy": 88.41,
+          "balanced_accuracy": 71.18,
+          "macro_f1": 0.7123,
+          "per_class_f1": {
+            "Standing": 0.6667,
+            "Lying": 0.9861,
+            "Feeding": 0.926,
+            "Drinking": 0.9286,
+            "Walking": 0.0541
+          }
+        },
+        "reid": {
+          "val_loss": 0.172,
+          "top1_accuracy": 94.93,
+          "balanced_accuracy": 95.22,
+          "macro_f1": 0.9392
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 14,
+      "epoch_duration_seconds": 51.83,
+      "lr": 5.567415893174884e-05,
+      "train": {
+        "total_loss": 0.01136,
+        "bcs_loss": 0.01942,
+        "behavior_loss": 0.01355,
+        "reid_loss": 0.00111
+      },
+      "val": {
+        "val_e3_objective": 0.73685,
+        "bcs": {
+          "val_loss": 1.21475,
+          "real_mae": 0.1991,
+          "exact_accuracy": 37.58,
+          "acc_within_1_class": 84.64,
+          "balanced_accuracy": 35.03,
+          "macro_f1": 0.3401
+        },
+        "behavior": {
+          "val_loss": 0.8093,
+          "accuracy": 86.19,
+          "balanced_accuracy": 73.51,
+          "macro_f1": 0.731,
+          "per_class_f1": {
+            "Standing": 0.6631,
+            "Lying": 0.9773,
+            "Feeding": 0.9039,
+            "Drinking": 0.9412,
+            "Walking": 0.1695
+          }
+        },
+        "reid": {
+          "val_loss": 0.18652,
+          "top1_accuracy": 94.37,
+          "balanced_accuracy": 93.94,
+          "macro_f1": 0.931
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 15,
+      "epoch_duration_seconds": 53.43,
+      "lr": 5.05e-05,
+      "train": {
+        "total_loss": 0.01926,
+        "bcs_loss": 0.02087,
+        "behavior_loss": 0.03438,
+        "reid_loss": 0.00253
+      },
+      "val": {
+        "val_e3_objective": 0.60086,
+        "bcs": {
+          "val_loss": 1.10296,
+          "real_mae": 0.1946,
+          "exact_accuracy": 37.85,
+          "acc_within_1_class": 86.22,
+          "balanced_accuracy": 35.4,
+          "macro_f1": 0.3485
+        },
+        "behavior": {
+          "val_loss": 0.53509,
+          "accuracy": 88.41,
+          "balanced_accuracy": 70.89,
+          "macro_f1": 0.6971,
+          "per_class_f1": {
+            "Standing": 0.6667,
+            "Lying": 0.9704,
+            "Feeding": 0.9416,
+            "Drinking": 0.907,
+            "Walking": 0.0
+          }
+        },
+        "reid": {
+          "val_loss": 0.16454,
+          "top1_accuracy": 95.34,
+          "balanced_accuracy": 94.82,
+          "macro_f1": 0.9414
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 16,
+      "epoch_duration_seconds": 54.22,
+      "lr": 4.532584106825115e-05,
+      "train": {
+        "total_loss": 0.00896,
+        "bcs_loss": 0.01432,
+        "behavior_loss": 0.01189,
+        "reid_loss": 0.00067
+      },
+      "val": {
+        "val_e3_objective": 0.65573,
+        "bcs": {
+          "val_loss": 1.13697,
+          "real_mae": 0.2021,
+          "exact_accuracy": 36.74,
+          "acc_within_1_class": 84.71,
+          "balanced_accuracy": 34.87,
+          "macro_f1": 0.3413
+        },
+        "behavior": {
+          "val_loss": 0.64162,
+          "accuracy": 88.25,
+          "balanced_accuracy": 70.84,
+          "macro_f1": 0.7106,
+          "per_class_f1": {
+            "Standing": 0.6809,
+            "Lying": 0.9595,
+            "Feeding": 0.9451,
+            "Drinking": 0.9136,
+            "Walking": 0.0541
+          }
+        },
+        "reid": {
+          "val_loss": 0.18861,
+          "top1_accuracy": 94.37,
+          "balanced_accuracy": 94.27,
+          "macro_f1": 0.9285
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 17,
+      "epoch_duration_seconds": 53.71,
+      "lr": 4.0208371304520894e-05,
+      "train": {
+        "total_loss": 0.01077,
+        "bcs_loss": 0.01098,
+        "behavior_loss": 0.02096,
+        "reid_loss": 0.00037
+      },
+      "val": {
+        "val_e3_objective": 0.75272,
+        "bcs": {
+          "val_loss": 1.3122,
+          "real_mae": 0.2007,
+          "exact_accuracy": 35.19,
+          "acc_within_1_class": 86.06,
+          "balanced_accuracy": 32.09,
+          "macro_f1": 0.3081
+        },
+        "behavior": {
+          "val_loss": 0.74005,
+          "accuracy": 90.0,
+          "balanced_accuracy": 73.62,
+          "macro_f1": 0.7384,
+          "per_class_f1": {
+            "Standing": 0.6893,
+            "Lying": 0.9885,
+            "Feeding": 0.9358,
+            "Drinking": 0.9535,
+            "Walking": 0.125
+          }
+        },
+        "reid": {
+          "val_loss": 0.20592,
+          "top1_accuracy": 94.22,
+          "balanced_accuracy": 94.55,
+          "macro_f1": 0.9316
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 18,
+      "epoch_duration_seconds": 52.26,
+      "lr": 3.520365877844009e-05,
+      "train": {
+        "total_loss": 0.00826,
+        "bcs_loss": 0.01054,
+        "behavior_loss": 0.0139,
+        "reid_loss": 0.00035
+      },
+      "val": {
+        "val_e3_objective": 0.71924,
+        "bcs": {
+          "val_loss": 1.37226,
+          "real_mae": 0.2017,
+          "exact_accuracy": 35.58,
+          "acc_within_1_class": 85.57,
+          "balanced_accuracy": 32.96,
+          "macro_f1": 0.318
+        },
+        "behavior": {
+          "val_loss": 0.62821,
+          "accuracy": 88.25,
+          "balanced_accuracy": 75.85,
+          "macro_f1": 0.7577,
+          "per_class_f1": {
+            "Standing": 0.6592,
+            "Lying": 0.9766,
+            "Feeding": 0.9302,
+            "Drinking": 0.9425,
+            "Walking": 0.28
+          }
+        },
+        "reid": {
+          "val_loss": 0.15724,
+          "top1_accuracy": 95.08,
+          "balanced_accuracy": 95.23,
+          "macro_f1": 0.9398
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 19,
+      "epoch_duration_seconds": 52.27,
+      "lr": 3.036653616774789e-05,
+      "train": {
+        "total_loss": 0.00296,
+        "bcs_loss": 0.00724,
+        "behavior_loss": 0.00134,
+        "reid_loss": 0.00029
+      },
+      "val": {
+        "val_e3_objective": 0.71369,
+        "bcs": {
+          "val_loss": 1.3256,
+          "real_mae": 0.196,
+          "exact_accuracy": 36.23,
+          "acc_within_1_class": 86.61,
+          "balanced_accuracy": 32.75,
+          "macro_f1": 0.3162
+        },
+        "behavior": {
+          "val_loss": 0.66964,
+          "accuracy": 89.21,
+          "balanced_accuracy": 74.97,
+          "macro_f1": 0.748,
+          "per_class_f1": {
+            "Standing": 0.6778,
+            "Lying": 0.9682,
+            "Feeding": 0.949,
+            "Drinking": 0.9545,
+            "Walking": 0.1905
+          }
+        },
+        "reid": {
+          "val_loss": 0.14583,
+          "top1_accuracy": 95.97,
+          "balanced_accuracy": 95.88,
+          "macro_f1": 0.9509
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 20,
+      "epoch_duration_seconds": 57.75,
+      "lr": 2.5750000000000002e-05,
+      "train": {
+        "total_loss": 0.00255,
+        "bcs_loss": 0.00479,
+        "behavior_loss": 0.00273,
+        "reid_loss": 0.00014
+      },
+      "val": {
+        "val_e3_objective": 0.74092,
+        "bcs": {
+          "val_loss": 1.34908,
+          "real_mae": 0.1962,
+          "exact_accuracy": 36.98,
+          "acc_within_1_class": 86.24,
+          "balanced_accuracy": 34.55,
+          "macro_f1": 0.3337
+        },
+        "behavior": {
+          "val_loss": 0.72589,
+          "accuracy": 88.57,
+          "balanced_accuracy": 73.38,
+          "macro_f1": 0.7236,
+          "per_class_f1": {
+            "Standing": 0.6776,
+            "Lying": 0.9724,
+            "Feeding": 0.9341,
+            "Drinking": 0.9231,
+            "Walking": 0.1111
+          }
+        },
+        "reid": {
+          "val_loss": 0.14777,
+          "top1_accuracy": 95.38,
+          "balanced_accuracy": 95.35,
+          "macro_f1": 0.9444
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 21,
+      "epoch_duration_seconds": 52.84,
+      "lr": 2.140463001152258e-05,
+      "train": {
+        "total_loss": 0.00433,
+        "bcs_loss": 0.00368,
+        "behavior_loss": 0.00916,
+        "reid_loss": 0.00014
+      },
+      "val": {
+        "val_e3_objective": 0.72283,
+        "bcs": {
+          "val_loss": 1.33818,
+          "real_mae": 0.1947,
+          "exact_accuracy": 37.25,
+          "acc_within_1_class": 86.58,
+          "balanced_accuracy": 34.24,
+          "macro_f1": 0.3379
+        },
+        "behavior": {
+          "val_loss": 0.68721,
+          "accuracy": 88.1,
+          "balanced_accuracy": 71.99,
+          "macro_f1": 0.7266,
+          "per_class_f1": {
+            "Standing": 0.678,
+            "Lying": 0.9485,
+            "Feeding": 0.9398,
+            "Drinking": 0.9048,
+            "Walking": 0.1622
+          }
+        },
+        "reid": {
+          "val_loss": 0.1431,
+          "top1_accuracy": 95.86,
+          "balanced_accuracy": 96.1,
+          "macro_f1": 0.9523
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 22,
+      "epoch_duration_seconds": 53.38,
+      "lr": 1.737803498523653e-05,
+      "train": {
+        "total_loss": 0.00341,
+        "bcs_loss": 0.00343,
+        "behavior_loss": 0.00663,
+        "reid_loss": 0.00017
+      },
+      "val": {
+        "val_e3_objective": 0.7771,
+        "bcs": {
+          "val_loss": 1.42543,
+          "real_mae": 0.1919,
+          "exact_accuracy": 37.32,
+          "acc_within_1_class": 87.39,
+          "balanced_accuracy": 34.32,
+          "macro_f1": 0.3348
+        },
+        "behavior": {
+          "val_loss": 0.75831,
+          "accuracy": 88.73,
+          "balanced_accuracy": 73.74,
+          "macro_f1": 0.7319,
+          "per_class_f1": {
+            "Standing": 0.6882,
+            "Lying": 0.9658,
+            "Feeding": 0.9447,
+            "Drinking": 0.9655,
+            "Walking": 0.0952
+          }
+        },
+        "reid": {
+          "val_loss": 0.14755,
+          "top1_accuracy": 95.45,
+          "balanced_accuracy": 95.84,
+          "macro_f1": 0.9469
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 23,
+      "epoch_duration_seconds": 52.52,
+      "lr": 1.3714331138868993e-05,
+      "train": {
+        "total_loss": 0.00107,
+        "bcs_loss": 0.00205,
+        "behavior_loss": 0.001,
+        "reid_loss": 0.00016
+      },
+      "val": {
+        "val_e3_objective": 0.76926,
+        "bcs": {
+          "val_loss": 1.44261,
+          "real_mae": 0.1966,
+          "exact_accuracy": 37.03,
+          "acc_within_1_class": 86.24,
+          "balanced_accuracy": 34.04,
+          "macro_f1": 0.3317
+        },
+        "behavior": {
+          "val_loss": 0.71663,
+          "accuracy": 88.57,
+          "balanced_accuracy": 74.03,
+          "macro_f1": 0.7385,
+          "per_class_f1": {
+            "Standing": 0.6667,
+            "Lying": 0.972,
+            "Feeding": 0.9346,
+            "Drinking": 0.9655,
+            "Walking": 0.1538
+          }
+        },
+        "reid": {
+          "val_loss": 0.14853,
+          "top1_accuracy": 95.49,
+          "balanced_accuracy": 95.99,
+          "macro_f1": 0.9472
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 24,
+      "epoch_duration_seconds": 52.51,
+      "lr": 1.0453658778440105e-05,
+      "train": {
+        "total_loss": 0.00271,
+        "bcs_loss": 0.00149,
+        "behavior_loss": 0.00652,
+        "reid_loss": 0.00011
+      },
+      "val": {
+        "val_e3_objective": 0.78116,
+        "bcs": {
+          "val_loss": 1.51883,
+          "real_mae": 0.1983,
+          "exact_accuracy": 36.61,
+          "acc_within_1_class": 85.74,
+          "balanced_accuracy": 33.75,
+          "macro_f1": 0.3277
+        },
+        "behavior": {
+          "val_loss": 0.69084,
+          "accuracy": 87.46,
+          "balanced_accuracy": 71.72,
+          "macro_f1": 0.7175,
+          "per_class_f1": {
+            "Standing": 0.6667,
+            "Lying": 0.9718,
+            "Feeding": 0.9231,
+            "Drinking": 0.9286,
+            "Walking": 0.0976
+          }
+        },
+        "reid": {
+          "val_loss": 0.13382,
+          "top1_accuracy": 95.64,
+          "balanced_accuracy": 96.01,
+          "macro_f1": 0.9474
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 25,
+      "epoch_duration_seconds": 52.59,
+      "lr": 7.631742512670283e-06,
+      "train": {
+        "total_loss": 0.00106,
+        "bcs_loss": 0.00123,
+        "behavior_loss": 0.00182,
+        "reid_loss": 0.00012
+      },
+      "val": {
+        "val_e3_objective": 0.76751,
+        "bcs": {
+          "val_loss": 1.55339,
+          "real_mae": 0.1967,
+          "exact_accuracy": 36.23,
+          "acc_within_1_class": 86.67,
+          "balanced_accuracy": 33.23,
+          "macro_f1": 0.3212
+        },
+        "behavior": {
+          "val_loss": 0.60319,
+          "accuracy": 87.78,
+          "balanced_accuracy": 73.26,
+          "macro_f1": 0.7343,
+          "per_class_f1": {
+            "Standing": 0.6417,
+            "Lying": 0.9765,
+            "Feeding": 0.9305,
+            "Drinking": 0.9412,
+            "Walking": 0.1818
+          }
+        },
+        "reid": {
+          "val_loss": 0.14596,
+          "top1_accuracy": 95.34,
+          "balanced_accuracy": 95.4,
+          "macro_f1": 0.9432
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 26,
+      "epoch_duration_seconds": 59.29,
+      "lr": 5.2794998466912506e-06,
+      "train": {
+        "total_loss": 0.00196,
+        "bcs_loss": 0.00126,
+        "behavior_loss": 0.00454,
+        "reid_loss": 8e-05
+      },
+      "val": {
+        "val_e3_objective": 0.76453,
+        "bcs": {
+          "val_loss": 1.51354,
+          "real_mae": 0.1943,
+          "exact_accuracy": 36.83,
+          "acc_within_1_class": 87.27,
+          "balanced_accuracy": 33.89,
+          "macro_f1": 0.3291
+        },
+        "behavior": {
+          "val_loss": 0.63506,
+          "accuracy": 87.78,
+          "balanced_accuracy": 74.59,
+          "macro_f1": 0.741,
+          "per_class_f1": {
+            "Standing": 0.6458,
+            "Lying": 0.9604,
+            "Feeding": 0.9447,
+            "Drinking": 0.9318,
+            "Walking": 0.2222
+          }
+        },
+        "reid": {
+          "val_loss": 0.14499,
+          "top1_accuracy": 95.53,
+          "balanced_accuracy": 95.72,
+          "macro_f1": 0.9456
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 27,
+      "epoch_duration_seconds": 55.76,
+      "lr": 3.4227024433898994e-06,
+      "train": {
+        "total_loss": 0.00057,
+        "bcs_loss": 0.00087,
+        "behavior_loss": 0.00077,
+        "reid_loss": 8e-05
+      },
+      "val": {
+        "val_e3_objective": 0.78563,
+        "bcs": {
+          "val_loss": 1.52821,
+          "real_mae": 0.1934,
+          "exact_accuracy": 37.1,
+          "acc_within_1_class": 87.14,
+          "balanced_accuracy": 34.2,
+          "macro_f1": 0.3315
+        },
+        "behavior": {
+          "val_loss": 0.68067,
+          "accuracy": 88.25,
+          "balanced_accuracy": 74.99,
+          "macro_f1": 0.7484,
+          "per_class_f1": {
+            "Standing": 0.6562,
+            "Lying": 0.9674,
+            "Feeding": 0.9428,
+            "Drinking": 0.9535,
+            "Walking": 0.2222
+          }
+        },
+        "reid": {
+          "val_loss": 0.14802,
+          "top1_accuracy": 95.49,
+          "balanced_accuracy": 95.72,
+          "macro_f1": 0.946
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 28,
+      "epoch_duration_seconds": 56.55,
+      "lr": 2.0816937636766182e-06,
+      "train": {
+        "total_loss": 0.00053,
+        "bcs_loss": 0.00069,
+        "behavior_loss": 0.00083,
+        "reid_loss": 7e-05
+      },
+      "val": {
+        "val_e3_objective": 0.76233,
+        "bcs": {
+          "val_loss": 1.49925,
+          "real_mae": 0.1937,
+          "exact_accuracy": 37.44,
+          "acc_within_1_class": 86.99,
+          "balanced_accuracy": 34.84,
+          "macro_f1": 0.3411
+        },
+        "behavior": {
+          "val_loss": 0.64009,
+          "accuracy": 88.1,
+          "balanced_accuracy": 74.09,
+          "macro_f1": 0.7404,
+          "per_class_f1": {
+            "Standing": 0.6492,
+            "Lying": 0.9541,
+            "Feeding": 0.9524,
+            "Drinking": 0.9647,
+            "Walking": 0.1818
+          }
+        },
+        "reid": {
+          "val_loss": 0.14764,
+          "top1_accuracy": 95.49,
+          "balanced_accuracy": 95.96,
+          "macro_f1": 0.947
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 29,
+      "epoch_duration_seconds": 55.43,
+      "lr": 1.2711661792704665e-06,
+      "train": {
+        "total_loss": 0.00083,
+        "bcs_loss": 0.0006,
+        "behavior_loss": 0.00181,
+        "reid_loss": 7e-05
+      },
+      "val": {
+        "val_e3_objective": 0.78241,
+        "bcs": {
+          "val_loss": 1.54293,
+          "real_mae": 0.1958,
+          "exact_accuracy": 36.7,
+          "acc_within_1_class": 86.75,
+          "balanced_accuracy": 34.2,
+          "macro_f1": 0.3316
+        },
+        "behavior": {
+          "val_loss": 0.66929,
+          "accuracy": 87.78,
+          "balanced_accuracy": 73.49,
+          "macro_f1": 0.727,
+          "per_class_f1": {
+            "Standing": 0.6421,
+            "Lying": 0.965,
+            "Feeding": 0.9412,
+            "Drinking": 0.9438,
+            "Walking": 0.1429
+          }
+        },
+        "reid": {
+          "val_loss": 0.13501,
+          "top1_accuracy": 95.94,
+          "balanced_accuracy": 96.43,
+          "macro_f1": 0.9523
+        }
+      },
+      "is_best": false
+    },
+    {
+      "epoch": 30,
+      "epoch_duration_seconds": 54.13,
+      "lr": 1e-06,
+      "train": {
+        "total_loss": 0.00068,
+        "bcs_loss": 0.00057,
+        "behavior_loss": 0.0014,
+        "reid_loss": 6e-05
+      },
+      "val": {
+        "val_e3_objective": 0.78584,
+        "bcs": {
+          "val_loss": 1.54592,
+          "real_mae": 0.196,
+          "exact_accuracy": 36.64,
+          "acc_within_1_class": 86.81,
+          "balanced_accuracy": 34.15,
+          "macro_f1": 0.3326
+        },
+        "behavior": {
+          "val_loss": 0.67413,
+          "accuracy": 88.25,
+          "balanced_accuracy": 73.44,
+          "macro_f1": 0.7217,
+          "per_class_f1": {
+            "Standing": 0.6667,
+            "Lying": 0.9718,
+            "Feeding": 0.9359,
+            "Drinking": 0.9231,
+            "Walking": 0.1111
+          }
+        },
+        "reid": {
+          "val_loss": 0.13745,
+          "top1_accuracy": 95.83,
+          "balanced_accuracy": 96.27,
+          "macro_f1": 0.9511
+        }
+      },
+      "is_best": false
+    }
+  ]
+}
