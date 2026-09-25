@@ -96,6 +96,12 @@
   * `check_draft.py` result: `PASS: inputs, chapter mapping, 51 cited keys, 41 evidence IDs, matrix arithmetic.`
   * Identified exact 6 remaining administrative TODOs (`ADMIN-01`, `ADMIN-02`, `ADMIN-03`, `ADMIN-04`, `ETHICS-01`, `ETHICS-02`); confirmed zero scientific TODOs remain.
   * Completed visual inspection across 32 rendered pages; verified zero clipping, zero table overflow, and zero figure overflow.
+- [x] **Chapter 4: Proposed Methodology Google Sheet Paraphrasing Workbench Tab Added & Certified:**
+  * Added `Chapter 4: Proposed Methodology` (`chapter_5.tex`) to Google Sheet (`14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`, sheetId: `1557314490`).
+  * Injected 265 rows spanning 21 methodology sections (4.1 to 4.4.6), 62 academic paragraphs, and 29 formula / table reference rows.
+  * Preserved full mathematical formula rows and table references with `Original (DONT PARAPHRASE THIS)` neutral grey headers and `LEAVE BLANK (Do Not Paraphrase)` placeholders.
+  * Formatted with custom column widths: Col A (40px spacer), Col B (560px original text), Col C (560px teammate space), Col D (420px review notes).
+  * Upgraded Column D with native Google Sheets rich-text bolding (`textFormatRuns`, zero asterisks) and certified 218/218 verbatim intact terms with zero violations (639/639 verified across all 4 chapters).
 - **Immediate next action:** Team contribution record archiving, defense slide preparation, and software demonstration setup.
 - [x] **P3 Sample Reports Writing Audit & Freeze-Safe Boundary Strategy (`cattle_thesis_p3_latex/P3_SAMPLE_WRITING_AUDIT.md`) — COMPLETE & PUSHED TO REMOTE (`eb8795d`):**
   * Audited 12 faculty-evaluated BRAC University CSE400 final thesis reports.

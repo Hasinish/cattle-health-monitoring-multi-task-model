@@ -27,7 +27,8 @@ SPREADSHEET_ID = "14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A"
 SHEET_IDS = {
     "Chapter 1: Introduction": 0,
     "Chapter 2: Literature Review": 1111150292,
-    "Chapter 3: Requirements & Constraints": 521635664
+    "Chapter 3: Requirements & Constraints": 521635664,
+    "Chapter 4: Proposed Methodology": 1557314490
 }
 
 def robust_execute(request_callable, max_retries=3):

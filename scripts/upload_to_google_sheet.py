@@ -205,6 +205,93 @@ def get_chapter3_data():
     return sections
 
 
+def get_chapter4_data():
+    ch4_file = WORKSPACE_ROOT / "cattle_thesis_p3_latex" / "chapters" / "chapter_5.tex"
+    content = ch4_file.read_text(encoding="utf-8")
+    raw_sections = parse_latex_sections(content)
+
+    sec_meta = [
+        ("4.1 Design Process and Methodology Overview", "Methodology Overview: Task-specific evaluation protocols, paired RGB/perception models, and 3 MTL configurations (E1, E3, E4)"),
+        ("4.2 Preliminary Designs and Model Specifications", "System Architecture & Baselines"),
+        ("4.2.1 Representation Alternatives", "Representation Alternatives: ResNet-18 ImageNet pretraining, RT-DETR-L/SAM 2.1, and rationale for excluding pose/viewpoint"),
+        ("4.2.2 Baseline RGB Body Condition Scoring", "BCS Baseline: Ordinal binary cross-entropy, cumulative logits, and 30-epoch AdamW protocol"),
+        ("4.2.3 Perception-Enhanced Body Condition Scoring", "BCS Perception: RT-DETR-L detection, SAM 2.1 mask channel, and 4-channel ResNet-18 modification"),
+        ("4.2.4 Baseline Single-Frame RGB Behavior Recognition", "Behavior Baseline: Midpoint RGB frame, 5-class cross-entropy, and CVB/Beef tracklets"),
+        ("4.2.5 Perception-Enhanced Temporal Behavior Recognition", "Behavior Perception: 8-frame sequence, SAM 2.1 masks, and lightweight residual Conv1D TCN"),
+        ("4.2.6 Baseline RGB Cattle Re-Identification", "Re-ID Baseline: SideView Protocol A, 41-class classification, and L2-normalized cosine retrieval"),
+        ("4.2.7 Oracle Segmentation-Guided Re-Identification", "Re-ID Oracle: Ground-truth mask cropping and 4-channel input bounding box ablation"),
+        ("4.3 Data Collection and Preparation", "Dataset Provenance & Split Integrity"),
+        ("4.3.1 Data Sources and Scientific Roles", "Dataset Roles: ScienceDB (BCS), CVB/Beef (Behavior), and SideView (Re-ID) benchmark roles"),
+        ("4.3.2 Label Harmonization and Split Protection", "Split Protection: Burst-group disjoint BCS, video-group disjoint Behavior, and cow-disjoint Re-ID"),
+        ("4.3.3 Perception Feasibility and Component Selection", "Perception Feasibility: Component benchmark audits and rationale for excluding pose/viewpoint"),
+        ("4.4 Implementation of Selected Design", "Implementation Framework: PyTorch, deterministic manifests, and validation checkpoint selection"),
+        ("4.4.1 Monolithic Hard-Shared Multi-Task Control Architecture (E1)", "MTL Control (E1): Single 4-channel ResNet-18 backbone (11.93M params) with 3 task-specific heads"),
+        ("4.4.2 Modular Task-Private Multi-Task Architecture (E3)", "MTL Modular (E3): Residual bottleneck adapters (+3.32% params) between shared backbone and heads"),
+        ("4.4.2.1 Identity Initialization of Residual Adapters", "Adapter Initialization: Zero-weight/bias initialization ensuring unperturbed initial shared representation"),
+        ("4.4.3 Gradient-Projected Hard-Shared Multi-Task Optimization (E4)", "MTL PCGrad (E4): Conflict projection on shared backbone gradients with unmodified task heads"),
+        ("4.4.4 Multi-Task Joint Optimization Protocol", "Joint Training: Interleaved mini-batch super-steps (538 steps/epoch, 16,140 total) and equal weighting"),
+        ("4.4.5 Architectural Gradient Isolation and Claim Boundaries", "Gradient Isolation: Formal mathematical routing distinction across E1, E3, and E4"),
+        ("4.4.6 Evaluation Metrics and Protocol Harmonization", "Evaluation Protocol: Harmonized metrics across tasks on matched held-out test populations")
+    ]
+
+    sections = []
+    for i in range(len(raw_sections)):
+        lvl, title, body = raw_sections[i]
+        full_title, note = sec_meta[i]
+
+        # Special clean handling for Section 19 (Architectural Gradient Isolation) to keep bullet items unified
+        if "Architectural Gradient Isolation" in full_title:
+            intro_p = "The mathematical distinction in gradient routing across the three executed multi-task configurations is formal and structural:"
+            item_e1 = (
+                "• In the monolithic hard-shared control (E1), the parameter vector of the shared backbone \\boldsymbol\\theta_shared "
+                "directly receives gradient contributions from all three task loss functions:\n\n"
+                "[Formula: \\mathbfg_shared = \\nabla_\\boldsymbol\\theta_shared L_BCS + \\nabla_\\boldsymbol\\theta_shared L_Beh + \\nabla_\\boldsymbol\\theta_shared L_ReID.]\n\n"
+                "Each task head \\boldsymbol\\theta_head^(t) receives gradients solely from its own loss L_t."
+            )
+            item_e3 = (
+                "• In the modular task-private model (E3), the shared backbone \\boldsymbol\\theta_shared intentionally receives accumulated "
+                "gradients from all three tasks through the residual connection:\n\n"
+                "[Formula: \\mathbfg_shared = \\sum_{t \\in \\{\\mathrm{BCS}, \\mathrm{Beh}, \\mathrm{ReID}\\}} \\nabla_{\\boldsymbol{\\theta}_{\\mathrm{shared}}} L_t.]\n\n"
+                "In contrast, each task-private adapter \\boldsymbol\\theta_adapter^(t) and task head \\boldsymbol\\theta_head^(t) receive gradient "
+                "signals strictly from their corresponding task loss L_t, with \\nabla_\\boldsymbol\\theta_adapter^(t) L_t' = \\mathbf0 for all t' \\neq t."
+            )
+            item_e4 = (
+                "• In the gradient-projected hard-shared control (E4), the architecture is identical to E1, but the shared backbone parameter "
+                "vector \\boldsymbol\\theta_shared receives the sum of pairwise conflict-projected task gradients:\n\n"
+                "[Formula: \\mathbfg_shared = \\mathbfg'_BCS + \\mathbfg'_Beh + \\mathbfg'_ReID,]\n\n"
+                "while each task head \\boldsymbol\\theta_head^(t) receives its unmodified, unprojected task-specific gradient \\nabla_\\boldsymbol\\theta_head^(t) L_t."
+            )
+            closing_p = (
+                "This gradient isolation is an architectural routing and optimization property that prevents direct gradient updates from one "
+                "task head from altering the private adapter parameters of another task, or projects conflicting shared-backbone components. "
+                "It does not constitute theoretical proof that gradient conflict in the shared backbone is eliminated, nor does it guarantee "
+                "that negative transfer will be prevented. The practical consequences of these routing and optimization structures on generalization "
+                "across the three target domains remain an empirical question evaluated in Chapter 5."
+            )
+            raw_paras = [intro_p, item_e1, item_e3, item_e4, closing_p]
+        else:
+            raw_paras = [clean_latex(p.strip()) for p in body.split("\n\n") if clean_latex(p.strip())]
+
+        paras_with_notes = []
+        for p in raw_paras:
+            warn = note
+            if "[Formula:" in p and len(p.strip().splitlines()) <= 3 and p.strip().startswith("[Formula:"):
+                warn = "DONT PARAPHRASE THIS — Mathematical Formula (Keep As-Is)"
+            elif "[Table Reference:" in p:
+                warn = "DONT PARAPHRASE THIS — Table Reference (Omitted from prose)"
+            elif "Phase 2" in p:
+                warn = "FORBIDDEN PHRASE: NEVER write 'Phase 2'! Write 'prior monolithic multi-task baseline' instead"
+            paras_with_notes.append({"text": p, "warning": warn})
+
+        sections.append({
+            "title": full_title,
+            "paras": paras_with_notes,
+            "warning": None
+        })
+
+    return sections
+
+
 def get_or_create_sheet(sheets_service, spreadsheet_id, target_title):
     meta = sheets_service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
     for s in meta.get("sheets", []):
@@ -302,11 +389,22 @@ def populate_sheet_chapter(sheets_service, spreadsheet_id, sheet_id, sheet_title
                 p_warning = warning
 
             # 2. Header Row: Col B (Original - Red), Col C (Paraphrased - Green)
-            orig_header = f"Original (Do Paraphrase — {p_warning})" if p_warning else "Original (Do Paraphrase)"
-            rows_values.append(["", orig_header, "Paraphrased:"])
+            is_dont_paraphrase = p_warning and "DONT PARAPHRASE" in p_warning
+            if is_dont_paraphrase:
+                orig_header = f"Original ({p_warning})"
+                para_header = "LEAVE BLANK (Do Not Paraphrase):"
+                b_color = {"red": 0.9, "green": 0.9, "blue": 0.9}
+                c_color = {"red": 0.95, "green": 0.95, "blue": 0.95}
+            else:
+                orig_header = f"Original (Do Paraphrase — {p_warning})" if p_warning else "Original (Do Paraphrase)"
+                para_header = "Paraphrased:"
+                b_color = {"red": 1.0, "green": 0.0, "blue": 0.0}
+                c_color = {"red": 0.0, "green": 1.0, "blue": 0.0}
+
+            rows_values.append(["", orig_header, para_header])
 
             # Format Header Row
-            # Red on Col B
+            # Col B
             format_requests.append({
                 "repeatCell": {
                     "range": {
@@ -318,7 +416,7 @@ def populate_sheet_chapter(sheets_service, spreadsheet_id, sheet_id, sheet_title
                     },
                     "cell": {
                         "userEnteredFormat": {
-                            "backgroundColor": {"red": 1.0, "green": 0.0, "blue": 0.0},
+                            "backgroundColor": b_color,
                             "textFormat": {"bold": True, "fontSize": 10, "foregroundColor": {"red": 0.0, "green": 0.0, "blue": 0.0}},
                             "verticalAlignment": "MIDDLE"
                         }
@@ -326,7 +424,7 @@ def populate_sheet_chapter(sheets_service, spreadsheet_id, sheet_id, sheet_title
                     "fields": "userEnteredFormat(backgroundColor,textFormat,verticalAlignment)"
                 }
             })
-            # Green on Col C
+            # Col C
             format_requests.append({
                 "repeatCell": {
                     "range": {
@@ -338,7 +436,7 @@ def populate_sheet_chapter(sheets_service, spreadsheet_id, sheet_id, sheet_title
                     },
                     "cell": {
                         "userEnteredFormat": {
-                            "backgroundColor": {"red": 0.0, "green": 1.0, "blue": 0.0},
+                            "backgroundColor": c_color,
                             "textFormat": {"bold": True, "fontSize": 10, "foregroundColor": {"red": 0.0, "green": 0.0, "blue": 0.0}},
                             "verticalAlignment": "MIDDLE"
                         }
@@ -410,11 +508,18 @@ def populate_sheet_chapter(sheets_service, spreadsheet_id, sheet_id, sheet_title
             }
         },
         {
+            "updateDimensionProperties": {
+                "range": {"sheetId": sheet_id, "dimension": "COLUMNS", "startIndex": 3, "endIndex": 4},
+                "properties": {"pixelSize": 420},
+                "fields": "pixelSize"
+            }
+        },
+        {
             "repeatCell": {
                 "range": {
                     "sheetId": sheet_id,
                     "startColumnIndex": 1,
-                    "endColumnIndex": 3
+                    "endColumnIndex": 4
                 },
                 "cell": {
                     "userEnteredFormat": {
@@ -445,7 +550,7 @@ def main():
     parser = argparse.ArgumentParser(description="Upload thesis sections to Google Sheets")
     parser.add_argument("--url", type=str, help="Existing Google Sheet URL")
     parser.add_argument("--id", type=str, help="Existing Google Sheet ID")
-    parser.add_argument("--chapter", type=str, default="all", choices=["all", "1", "2", "3", "2,3"], help="Chapter(s) to populate")
+    parser.add_argument("--chapter", type=str, default="all", choices=["all", "1", "2", "3", "4", "2,3"], help="Chapter(s) to populate")
     args = parser.parse_args()
 
     creds = get_credentials()
@@ -465,7 +570,7 @@ def main():
 
     chapters_to_run = []
     if args.chapter == "all":
-        chapters_to_run = ["1", "2", "3"]
+        chapters_to_run = ["1", "2", "3", "4"]
     elif args.chapter == "2,3":
         chapters_to_run = ["2", "3"]
     else:
@@ -490,6 +595,12 @@ def main():
         ch3_id = get_or_create_sheet(sheets_service, spreadsheet_id, ch3_title)
         ch3_sections = get_chapter3_data()
         populate_sheet_chapter(sheets_service, spreadsheet_id, ch3_id, ch3_title, ch3_sections)
+
+    if "4" in chapters_to_run:
+        ch4_title = "Chapter 4: Proposed Methodology"
+        ch4_id = get_or_create_sheet(sheets_service, spreadsheet_id, ch4_title)
+        ch4_sections = get_chapter4_data()
+        populate_sheet_chapter(sheets_service, spreadsheet_id, ch4_id, ch4_title, ch4_sections)
 
     print("\n" + "=" * 60)
     print("🏆 ALL REQUESTED CHAPTERS POPULATED IN GOOGLE SHEETS!")

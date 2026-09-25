@@ -279,6 +279,83 @@ CANDIDATE_TERMS = [
     "decision support",
     "decision-making",
     "non-invasive",
+    
+    # Chapter 4 Methodology & Architecture Terms
+    "ImageNet-pretrained ResNet-18",
+    "ImageNet-initialized ResNet-18",
+    "cumulative threshold logits",
+    "cumulative ordinal logits",
+    "cumulative logits",
+    "ordinal binary cross-entropy",
+    "binary cross-entropy",
+    "cross-entropy loss",
+    "categorical cross-entropy",
+    "ordinal_bce",
+    "binary mask channel",
+    "oracle mask channel",
+    "binary mask",
+    "binary masks",
+    "four-channel ResNet-18",
+    "target-tracklet",
+    "Conv1D",
+    "residual Conv1D",
+    "width-three Conv1D",
+    "temporal convolution",
+    "Protocol A",
+    "SideView Protocol A",
+    "cosine similarity",
+    "retrieval embedding",
+    "gallery retrieval",
+    "Rank-k",
+    "mean average precision",
+    "mAP",
+    "target-centered cropping",
+    "biological cow IDs",
+    "connected burst groups",
+    "burst-group-disjoint",
+    "passage-disjoint",
+    "sequence-safe",
+    "unseen-cow evaluation",
+    "monolithic hard-shared control",
+    "monolithic control",
+    "hard-shared control",
+    "hard-shared",
+    "hard parameter sharing",
+    "modular task-private architecture",
+    "task-private residual adapters",
+    "residual bottleneck adapter",
+    "bottleneck adapter",
+    "residual adapters",
+    "task-private adapter",
+    "task-private adapters",
+    "task-private parameters",
+    "Identity Initialization",
+    "Projecting Conflicting Gradients",
+    "gradient conflict",
+    "pairwise conflict",
+    "pairwise projections",
+    "multi-task super-step",
+    "super-steps per epoch",
+    "super-steps",
+    "super-step",
+    "interleaved mini-batch",
+    "equal task weighting",
+    "gradient isolation",
+    "held-out test populations",
+    "validation checkpoint selection",
+    "checkpoint selection",
+    "validation loss",
+    "Behavior evaluation",
+    "overall accuracy",
+    "balanced accuracy",
+    "Macro-F1",
+    "gradient vector",
+    "opposing directions",
+    "task adapter",
+    "zero weights",
+    "adapter contribution",
+    "batch loss",
+    "logit",
     "non-functional requirements",
     "evaluation protocols",
     "evaluation design",
@@ -376,6 +453,16 @@ def extract_verbatim_intact_terms(col_b):
             if not any(acr.lower() in m.lower() for m in found_matches):
                 found_matches.append(acr)
                 
+    # Fallback if no candidate terms matched: extract significant words directly from col_b
+    if not found_matches:
+        words = re.findall(r'\b[A-Za-z]{6,}\b', col_b)
+        stopwords = {"because", "therefore", "instead", "between", "several", "another", "through", "without", "during", "before", "across", "should", "further"}
+        candidates = [w for w in words if w.lower() not in stopwords]
+        if candidates:
+            found_matches = candidates[:3]
+        else:
+            found_matches = re.findall(r'\b[A-Za-z]{4,}\b', col_b)[:2]
+
     # Sort matches by order of appearance in original text
     found_matches.sort(key=lambda m: col_b_lower.find(m.lower()))
     
@@ -466,7 +553,7 @@ def process_chapter(service, tab_name, sheet_id):
     
     res = robust_execute(lambda: service.values().get(
         spreadsheetId=SPREADSHEET_ID,
-        range=f"'{tab_name}'!A1:D265"
+        range=f"'{tab_name}'!A1:D350"
     ).execute())
     
     rows = res.get("values", [])
@@ -530,7 +617,7 @@ def process_chapter(service, tab_name, sheet_id):
             })
             
         # B. DONT PARAPHRASE / Non-Paragraph Content Rows (e.g. formulas, table references)
-        elif any(term in col_b for term in ["DONT PARAPHRASE", "Table Reference:", "[Table Reference"]):
+        elif any(term in col_b for term in ["DONT PARAPHRASE", "Table Reference:", "[Table Reference", "[Formula:"]):
             non_paras_count += 1
             is_header = col_b.startswith("Original (DONT")
             cell_val = "LEAVE BLANK (Do Not Paraphrase)" if is_header else "🚫 DO NOT PARAPHRASE — Raw formula / table reference (Keep As-Is)"
@@ -565,6 +652,26 @@ def process_chapter(service, tab_name, sheet_id):
                     "fields": "userEnteredValue,textFormatRuns,userEnteredFormat(textFormat,backgroundColor,verticalAlignment,wrapStrategy)"
                 }
             })
+            
+            # If formula content row, give Col C light grey background
+            if not is_header and "[Formula:" in col_b:
+                requests.append({
+                    "repeatCell": {
+                        "range": {
+                            "sheetId": sheet_id,
+                            "startRowIndex": row_idx,
+                            "endRowIndex": row_idx + 1,
+                            "startColumnIndex": 2,
+                            "endColumnIndex": 3
+                        },
+                        "cell": {
+                            "userEnteredFormat": {
+                                "backgroundColor": {"red": 0.95, "green": 0.95, "blue": 0.95}
+                            }
+                        },
+                        "fields": "userEnteredFormat.backgroundColor"
+                    }
+                })
             
         # C. Table Header Row ('Original (Do Paraphrase...')
         elif col_b.startswith("Original (Do Paraphrase"):
@@ -673,7 +780,7 @@ def main():
     for tab_name, sheet_id in SHEET_IDS.items():
         process_chapter(service, tab_name, sheet_id)
         
-    print(f"\n🎉 ALL 3 CHAPTERS SUCCESSFULLY UPGRADED WITH 100% VERBATIM COLUMN B KEYWORDS in {time.time() - total_start:.2f}s!")
+    print(f"\n🎉 ALL 4 CHAPTERS SUCCESSFULLY UPGRADED WITH 100% VERBATIM COLUMN B KEYWORDS in {time.time() - total_start:.2f}s!")
 
 if __name__ == "__main__":
     main()
