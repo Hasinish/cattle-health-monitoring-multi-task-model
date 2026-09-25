@@ -2,12 +2,12 @@
 \centering
 \begin{tikzpicture}[
   title/.style={font=\bfseries\small, align=center},
-  inbox/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=2.1cm, minimum height=0.7cm, fill=gray!5, inner sep=2pt},
+  inbox/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=2.15cm, minimum height=0.7cm, fill=gray!5, inner sep=2pt},
   trunk/.style={draw, rectangle, rounded corners=3pt, align=center, font=\footnotesize\bfseries, text width=7.0cm, minimum height=0.85cm, fill=gray!12, inner sep=3pt},
   feat/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=7.0cm, minimum height=0.65cm, fill=gray!6, inner sep=2pt},
-  head/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=2.1cm, minimum height=0.85cm, inner sep=2pt},
-  outbox/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=2.1cm, minimum height=0.85cm, fill=gray!10, inner sep=2pt},
-  adapter/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=2.1cm, minimum height=0.85cm, fill=gray!15, inner sep=2pt},
+  adapter/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=2.15cm, minimum height=0.9cm, fill=gray!15, inner sep=2pt},
+  head/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=2.15cm, minimum height=0.85cm, inner sep=2pt},
+  outbox/.style={draw, rectangle, rounded corners=2pt, align=center, font=\scriptsize, text width=2.15cm, minimum height=0.85cm, fill=gray!10, inner sep=2pt},
   arrow/.style={->, >=stealth, thick},
   line/.style={thick}
 ]
@@ -19,26 +19,26 @@
 \node[inbox] (e1_in2) at (3.75, 0.0) {\textbf{Beh Sequence}\\[1pt]$[B, 8, 4, 224^2]$};
 \node[inbox] (e1_in3) at (6.15, 0.0) {\textbf{Re-ID Input}\\[1pt]$[B, 4, 224^2]$};
 
-\node[trunk] (e1_trunk) at (3.75, -1.25) {Shared 4-Channel ResNet-18 Trunk\\{\scriptsize (11,179,648 parameters)}};
+\node[trunk] (e1_trunk) at (3.75, -1.45) {Shared 4-Channel ResNet-18 Trunk\\{\scriptsize (11,179,648 parameters)}};
 
 \draw[arrow] (e1_in1.south) -- (e1_in1 |- e1_trunk.north);
 \draw[arrow] (e1_in2.south) -- (e1_trunk.north);
 \draw[arrow] (e1_in3.south) -- (e1_in3 |- e1_trunk.north);
 
-\node[feat] (e1_feat) at (3.75, -2.35) {Shared Spatial Feature: $\mathbf{h} \in \mathbb{R}^{512}$ (Beh: $[B, 8, 512]$)};
+\node[feat] (e1_feat) at (3.75, -2.85) {Shared Spatial Feature: $\mathbf{h} \in \mathbb{R}^{512}$ (Beh: $[B, 8, 512]$)};
 \draw[arrow] (e1_trunk) -- (e1_feat);
 
-\node[head] (e1_h1) at (1.35, -4.6) {\textbf{BCS Ordinal}\\[1pt]Linear Head};
-\node[head] (e1_h2) at (3.75, -4.6) {\textbf{Behavior 1D}\\[1pt]TCN Head};
-\node[head] (e1_h3) at (6.15, -4.6) {\textbf{Re-ID Head \&}\\[1pt]$L_2$ Retrieval};
+\node[head] (e1_h1) at (1.35, -6.15) {\textbf{BCS Ordinal}\\[1pt]Linear Head};
+\node[head] (e1_h2) at (3.75, -6.15) {\textbf{Behavior 1D}\\[1pt]TCN Head};
+\node[head] (e1_h3) at (6.15, -6.15) {\textbf{Re-ID Head \&}\\[1pt]$L_2$ Retrieval};
 
 \draw[arrow] (e1_feat.south -| e1_h1.north) -- (e1_h1.north);
 \draw[arrow] (e1_feat.south) -- (e1_h2.north);
 \draw[arrow] (e1_feat.south -| e1_h3.north) -- (e1_h3.north);
 
-\node[outbox] (e1_o1) at (1.35, -5.8) {Physical BCS\\[1pt]Score $\widehat{\mathrm{BCS}}$};
-\node[outbox] (e1_o2) at (3.75, -5.8) {5-Class Beh\\[1pt]Prediction};
-\node[outbox] (e1_o3) at (6.15, -5.8) {Cosine Ranking\\[1pt]mAP / Rank-$k$};
+\node[outbox] (e1_o1) at (1.35, -7.75) {Physical BCS\\[1pt]Score $\widehat{\mathrm{BCS}}$};
+\node[outbox] (e1_o2) at (3.75, -7.75) {5-Class Beh\\[1pt]Prediction};
+\node[outbox] (e1_o3) at (6.15, -7.75) {Cosine Ranking\\[1pt]mAP / Rank-$k$};
 
 \draw[arrow] (e1_h1) -- (e1_o1);
 \draw[arrow] (e1_h2) -- (e1_o2);
@@ -51,55 +51,59 @@
 \node[inbox] (e3_in2) at (11.25, 0.0) {\textbf{Beh Sequence}\\[1pt]$[B, 8, 4, 224^2]$};
 \node[inbox] (e3_in3) at (13.65, 0.0) {\textbf{Re-ID Input}\\[1pt]$[B, 4, 224^2]$};
 
-\node[trunk] (e3_trunk) at (11.25, -1.25) {Shared 4-Channel ResNet-18 Trunk\\{\scriptsize (Identical Trunk: 11,179,648 parameters)}};
+\node[trunk] (e3_trunk) at (11.25, -1.45) {Shared 4-Channel ResNet-18 Trunk\\{\scriptsize (Identical Trunk: 11,179,648 parameters)}};
 
 \draw[arrow] (e3_in1.south) -- (e3_in1 |- e3_trunk.north);
 \draw[arrow] (e3_in2.south) -- (e3_trunk.north);
 \draw[arrow] (e3_in3.south) -- (e3_in3 |- e3_trunk.north);
 
-\node[feat] (e3_feat) at (11.25, -2.35) {Shared Spatial Feature: $\mathbf{h}_{\mathrm{shared}} \in \mathbb{R}^{512}$};
+\node[feat] (e3_feat) at (11.25, -2.85) {Shared Spatial Feature: $\mathbf{h}_{\mathrm{shared}} \in \mathbb{R}^{512}$};
 \draw[arrow] (e3_trunk) -- (e3_feat);
 
-\node[adapter] (e3_ad1) at (8.85, -3.45) {\textbf{BCS Adapter}\\[1pt]$\mathbf{h}_{\mathrm{sh}} + \Delta\mathbf{h}_{\mathrm{BCS}}$};
-\node[adapter] (e3_ad2) at (11.25, -3.45) {\textbf{Beh Adapter}\\[1pt](frame-wise)};
-\node[adapter] (e3_ad3) at (13.65, -3.45) {\textbf{Re-ID Adapter}\\[1pt]$\mathbf{h}_{\mathrm{sh}} + \Delta\mathbf{h}_{\mathrm{ReID}}$};
+\node[adapter] (e3_ad1) at (8.85, -4.50) {\textbf{BCS Adapter}\\[2pt]$\mathbf{h}_{\mathrm{sh}} + \Delta\mathbf{h}_{\mathrm{BCS}}$};
+\node[adapter] (e3_ad2) at (11.25, -4.50) {\textbf{Beh Adapter}\\[2pt](frame-wise)};
+\node[adapter] (e3_ad3) at (13.65, -4.50) {\textbf{Re-ID Adapter}\\[2pt]$\mathbf{h}_{\mathrm{sh}} + \Delta\mathbf{h}_{\mathrm{ReID}}$};
 
 \draw[arrow] (e3_feat.south -| e3_ad1.north) -- (e3_ad1.north);
 \draw[arrow] (e3_feat.south) -- (e3_ad2.north);
 \draw[arrow] (e3_feat.south -| e3_ad3.north) -- (e3_ad3.north);
 
-\node[head] (e3_h1) at (8.85, -4.6) {\textbf{BCS Ordinal}\\[1pt]Linear Head};
-\node[head] (e3_h2) at (11.25, -4.6) {\textbf{Behavior 1D}\\[1pt]TCN Head};
-\node[head] (e3_h3) at (13.65, -4.6) {\textbf{Re-ID Head \&}\\[1pt]$L_2$ Retrieval};
+\node[head] (e3_h1) at (8.85, -6.15) {\textbf{BCS Ordinal}\\[1pt]Linear Head};
+\node[head] (e3_h2) at (11.25, -6.15) {\textbf{Behavior 1D}\\[1pt]TCN Head};
+\node[head] (e3_h3) at (13.65, -6.15) {\textbf{Re-ID Head \&}\\[1pt]$L_2$ Retrieval};
 
 \draw[arrow] (e3_ad1) -- (e3_h1);
 \draw[arrow] (e3_ad2) -- (e3_h2);
 \draw[arrow] (e3_ad3) -- (e3_h3);
 
-\node[outbox] (e3_o1) at (8.85, -5.8) {Physical BCS\\[1pt]Score $\widehat{\mathrm{BCS}}$};
-\node[outbox] (e3_o2) at (11.25, -5.8) {5-Class Beh\\[1pt]Prediction};
-\node[outbox] (e3_o3) at (13.65, -5.8) {Cosine Ranking\\[1pt]mAP / Rank-$k$};
+\node[outbox] (e3_o1) at (8.85, -7.75) {Physical BCS\\[1pt]Score $\widehat{\mathrm{BCS}}$};
+\node[outbox] (e3_o2) at (11.25, -7.75) {5-Class Beh\\[1pt]Prediction};
+\node[outbox] (e3_o3) at (13.65, -7.75) {Cosine Ranking\\[1pt]mAP / Rank-$k$};
 
 \draw[arrow] (e3_h1) -- (e3_o1);
 \draw[arrow] (e3_h2) -- (e3_o2);
 \draw[arrow] (e3_h3) -- (e3_o3);
 
 % ==================== DIVIDING LINE ====================
-\draw[dashed, gray!60] (7.5, 1.4) -- (7.5, -6.3);
+\draw[dashed, gray!60] (7.5, 1.4) -- (7.5, -8.4);
 
 % ==================== BOTTOM INSET: Residual Adapter Detail ====================
-\draw[rounded corners=3pt, fill=gray!4, draw=gray!70] (0.2, -6.8) rectangle (14.8, -9.1);
-\node[font=\bfseries\footnotesize, anchor=west] at (0.4, -7.1) {Task-Private Residual Bottleneck Adapter Detail:};
+\draw[rounded corners=3pt, fill=gray!4, draw=gray!70] (0.2, -8.8) rectangle (14.8, -12.4);
+\node[font=\bfseries\footnotesize, anchor=west] at (0.4, -9.15) {Task-Private Residual Bottleneck Adapter Detail:};
 
-\node[font=\footnotesize] (ad_in) at (1.1, -8.3) {$\mathbf{h}_{\mathrm{shared}}$};
-\node[draw, rectangle, rounded corners=2pt, font=\scriptsize, align=center, fill=white, text width=2.3cm, minimum height=0.65cm] (ad_down) at (3.3, -8.3) {Linear Down\\[1pt]$512 \to 128$};
-\node[draw, rectangle, rounded corners=2pt, font=\scriptsize, align=center, fill=white, text width=2.4cm, minimum height=0.65cm] (ad_norm) at (6.1, -8.3) {LayerNorm\\[1pt]+ GELU + Drop};
-\node[draw, rectangle, rounded corners=2pt, font=\scriptsize, align=center, fill=white, text width=3.3cm, minimum height=0.65cm] (ad_up) at (9.4, -8.3) {Linear Up\\[1pt]$128 \to 512$ ($\mathbf{W}_{\mathrm{up}}=\mathbf{0}$)};
-\node[font=\footnotesize] (ad_dh) at (11.8, -8.3) {$\Delta\mathbf{h}_t$};
-\node[draw, circle, inner sep=1.5pt, font=\footnotesize, fill=white] (ad_sum) at (12.8, -8.3) {$+$};
-\node[font=\footnotesize] (ad_out) at (14.0, -8.3) {$\mathbf{h}_t$};
+\node[font=\footnotesize] (ad_in) at (1.0, -11.3) {$\mathbf{h}_{\mathrm{shared}}$};
+\coordinate (branch) at (2.05, -11.3);
 
-\draw[arrow] (ad_in) -- (ad_down);
+\node[draw, rectangle, rounded corners=2pt, font=\scriptsize, align=center, fill=white, text width=2.1cm, minimum height=0.7cm] (ad_down) at (3.55, -11.3) {Linear Down\\[1pt]$512 \to 128$};
+\node[draw, rectangle, rounded corners=2pt, font=\scriptsize, align=center, fill=white, text width=2.1cm, minimum height=0.7cm] (ad_norm) at (6.25, -11.3) {LayerNorm\\[1pt]+ GELU + Drop};
+\node[draw, rectangle, rounded corners=2pt, font=\scriptsize, align=center, fill=white, text width=2.7cm, minimum height=0.7cm] (ad_up) at (9.3, -11.3) {Linear Up\\[1pt]$128 \to 512$ ($\mathbf{W}_{\mathrm{up}}=\mathbf{0}$)};
+\node[font=\footnotesize] (ad_dh) at (11.6, -11.3) {$\Delta\mathbf{h}_t$};
+\node[draw, circle, inner sep=1.5pt, font=\small, fill=white] (ad_sum) at (12.7, -11.3) {$+$};
+\node[font=\footnotesize] (ad_out) at (14.0, -11.3) {$\mathbf{h}_t$};
+
+\draw[line] (ad_in) -- (branch);
+\fill (branch) circle (1.5pt);
+\draw[arrow] (branch) -- (ad_down);
 \draw[arrow] (ad_down) -- (ad_norm);
 \draw[arrow] (ad_norm) -- (ad_up);
 \draw[arrow] (ad_up) -- (ad_dh);
@@ -107,9 +111,9 @@
 \draw[arrow] (ad_sum) -- (ad_out);
 
 % Residual skip arrow
-\draw[line] (1.1, -7.95) -- (1.1, -7.6) -- (12.8, -7.6);
-\draw[arrow] (12.8, -7.6) -- (ad_sum.north);
-\node[font=\scriptsize, fill=gray!4] at (6.9, -7.6) {Residual Skip Connection (Identity Mapping at Step 0)};
+\draw[line] (branch) -- (2.05, -9.9) -- (12.7, -9.9);
+\draw[arrow] (12.7, -9.9) -- (ad_sum.north);
+\node[font=\scriptsize, fill=gray!4, inner sep=2pt] at (7.375, -9.9) {Residual Skip Connection (Identity Mapping at Step 0)};
 
 \end{tikzpicture}
 \caption[Multi-task architecture comparison: hard-shared vs. modular]{Architectural comparison between the monolithic hard-shared multi-task control (E1, left) and the modular task-private multi-task architecture (E3, right). Both architectures share an identical four-channel ResNet-18 spatial trunk and task prediction heads. E3 inserts an independent residual bottleneck adapter (bottom detail) between the shared 512-dimensional representation and each task-specific head, initialized as an identity mapping ($\mathbf{W}_{\mathrm{up}}=\mathbf{0}$).}
