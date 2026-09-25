@@ -1,6 +1,6 @@
 \section{Model Names and Repository Identifiers}
 
-Descriptive model names are used in the methodology. The identifiers below retain the connection to the existing results tables and archived experiment records; they do not imply that every configuration has been evaluated.
+Descriptive model names are used in the methodology. The identifiers below retain the connection to the results tables and archived experiment records across all completed single-task and multi-task configurations.
 
 \begin{longtable}{@{}p{2.5cm}p{11.4cm}@{}}
 \toprule
@@ -12,8 +12,9 @@ Run 3 & Baseline RGB Re-ID model.\\
 Run 4 & Perception-enhanced BCS model.\\
 Run 5 & Perception-enhanced temporal behavior model.\\
 Run 6 & Oracle segmentation-guided Re-ID model.\\
-Run 7 / E1 & Hard-shared multi-task control.\\
-Run 8 / E3 & Modular task-private multi-task alternative.\\
+Run 7 / E1 & Monolithic hard-shared multi-task control.\\
+Run 8 / E3 & Modular task-private multi-task model.\\
+E4 & PCGrad hard-shared multi-task optimization control.\\
 \bottomrule
 \end{longtable}
 
@@ -36,8 +37,11 @@ Baseline Single-Frame RGB Behavior Recognition & E05, E09, E12, E15.\\
 Perception-Enhanced Temporal Behavior Recognition & E26, E28, E27.\\
 Baseline RGB Cattle Re-Identification & E06, E20, E22, E23.\\
 Oracle Segmentation-Guided Re-Identification & E29, E30.\\
+Monolithic Hard-Shared Multi-Task Control & E36, E39.\\
+Modular Task-Private Multi-Task Model & E37, E40.\\
+PCGrad Hard-Shared Optimization Control & E35, E38, E41.\\
 Data Sources and Scientific Roles & E04, E05, E13, E06.\\
 Perception Feasibility and Component Selection & E11, E31.\\
-Experimental model summary & E02, E03, E22, E24, E27, E29.\\
+Experimental model summary & E02, E03, E22, E24, E27, E29, E35, E36, E37, E38.\\
 \bottomrule
 \end{longtable}

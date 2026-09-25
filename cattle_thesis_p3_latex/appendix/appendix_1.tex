@@ -1,7 +1,7 @@
 \section{Versioned Evidence Register}
 
 The manuscript was reviewed against repository commit
-\sourcepath{a695a92e7c3b52b165053e182f6d3e3331b0866f}.
+\sourcepath{d55ea2df436f504c3de4d83bcf9db845a6b706e3}.
 This is the latest Git commit inspected for writing; individual experiment artifacts may record an earlier or unknown execution revision. No model was rerun for the thesis rewrite.
 
 \footnotesize
@@ -48,6 +48,13 @@ E31 & \path{artifacts/viewpoint_real_finetune/test_evaluation_metrics.json} & He
 E32 & \path{docs/research_log/2026-09-24_sciencedb_bcs_perception_full_training_results.md} & Run 4 execution narrative.\\
 E33 & \path{docs/research_log/2026-09-24_run5_behavior_perception_test_evaluation_results.md} & Run 5 strict test-gate narrative.\\
 E34 & \path{docs/research_log/2026-09-24_sideviewcows2026_reid_perception_run6_full_training_results.md} & Run 6 full-run narrative.\\
+E35 & \path{artifacts/mtl_e4_training/mtl_e4_metrics.json} & E4 training diagnostics; 16,140 super-steps; 44,177 projections.\\
+E36 & \path{artifacts/mtl_e1_evaluation/mtl_e1_test_evaluation_metrics.json} & Official E1 held-out BCS, Behavior, and Re-ID results.\\
+E37 & \path{artifacts/mtl_e3_evaluation/mtl_e3_test_evaluation_metrics.json} & Official E3 held-out BCS, Behavior, and Re-ID metrics.\\
+E38 & \path{artifacts/mtl_e4_evaluation/mtl_e4_test_evaluation_metrics.json} & Official E4 held-out BCS, Behavior, and Re-ID metrics.\\
+E39 & \path{scripts/train_mtl_e1_hard_shared.py} & Monolithic hard-shared architecture and training procedure.\\
+E40 & \path{scripts/train_mtl_e3_modular.py} & Task-private residual adapter architecture (+3.32\% capacity).\\
+E41 & \path{scripts/train_mtl_e4_pcgrad.py} & PCGrad gradient projection surgery implementation.\\
 \bottomrule
 \end{longtable}
 \normalsize
@@ -58,6 +65,6 @@ ScienceDB contains 37,045 training, 8,481 validation, and 8,040 test images in 3
 
 Runs 4 and 5 use matched controls because their perception pipelines exclude some canonical samples. Run 4 and its Run 1 control share 7,549 test images. Run 5 and its Run 2 control share 780 test sequences. Run 6 uses all Protocol A inputs because SideView releases paired ground-truth masks, but its result is an oracle condition rather than automatic segmentation.\evidence{E24,E27,E29}
 
-\section{Evidence Still Pending}
+\section{Remaining Evidence Boundaries}
 
-Runs 7 and 8 require executed code, configurations, checkpoints, task-wise metrics, and matched single-task comparisons before the final negative-transfer analysis can be written. External-dataset results, repeated-seed uncertainty, and deployment validation are also absent unless later artifacts are added. These missing items are not inferred from plans or dataset availability.
+All reported single-task baselines and multi-task models were evaluated from single trained checkpoints; repeated-seed distributions, confidence intervals, and hypothesis tests were precluded by compute constraints. External cross-dataset stress tests on uncalibrated herds remain unexecuted roadmap items. Re-ID evaluations utilized released ground-truth masks rather than an automated upstream segmentation model. Downstream transfer of anatomical pose estimation and viewpoint priors remains unverified. Final administrative permissions, committee details, and ethics/AI disclosures require institutional confirmation.

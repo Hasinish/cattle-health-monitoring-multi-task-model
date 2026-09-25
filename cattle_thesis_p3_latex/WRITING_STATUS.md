@@ -1,8 +1,8 @@
 # Phase 3 writing status
 
-Reviewed source snapshot: `a8d700c96158c1daf012d4e86a3c7a1e95305b61` on 2026-09-26.
+Reviewed source snapshot: `d55ea2df436f504c3de4d83bcf9db845a6b706e3` on 2026-09-26.
 
-Status: All 8 focused deadline runs + one final additional E4 PCGrad control are 100% complete and held-out evaluated. Experimental model training/evaluation is finished. Experimental results, checkpoints, metrics, and outcome-level negative-transfer analysis are certified across all completed configurations (single-task baselines Runs 1–3, perception-enhanced Runs 4–6, E1 hard-shared MTL Run 7, E3 modular task-private adapter MTL Run 8, and E4 PCGrad optimization control). GradNorm E5 and partial sharing E2 remain deferred. Chapter 4 E4 PCGrad methodology integration is complete. Chapter 5 final E0/E1/E3/E4 result integration complete (includes complete single-task and multi-task evaluations, Tables 5.8–5.12, PCGrad conflict diagnostics, and calibrated negative-transfer synthesis). Chapter 6 final RQ answers/contributions/limitations/conclusion complete. Abstract rewrite is complete from final experimental evidence. Chapter 1 final integrated alignment and objective calibration complete. Appendices, evidence map, and rubric checklist need final E4 integration.
+Status: All 8 focused deadline runs + one final additional E4 PCGrad control are 100% complete and held-out evaluated. Experimental model training/evaluation is finished. Experimental results, checkpoints, metrics, and outcome-level negative-transfer analysis are certified across all completed configurations (single-task baselines Runs 1–3, perception-enhanced Runs 4–6, E1 hard-shared MTL Run 7, E3 modular task-private adapter MTL Run 8, and E4 PCGrad optimization control). GradNorm E5 and partial sharing E2 remain deferred. Chapter 4 E4 PCGrad methodology integration is complete. Chapter 5 final E0/E1/E3/E4 result integration complete (includes complete single-task and multi-task evaluations, Tables 5.8–5.12, PCGrad conflict diagnostics, and calibrated negative-transfer synthesis). Chapter 6 final RQ answers/contributions/limitations/conclusion complete. Abstract rewrite is complete from final experimental evidence. Chapter 1 final integrated alignment and objective calibration complete. Evidence appendices, evidence map, and rubric checklist final E1/E3/E4 integration complete.
 
 | Section/file | Status | Remaining boundary |
 |---|---|---|
@@ -14,9 +14,9 @@ Status: All 8 focused deadline runs + one final additional E4 PCGrad control are
 | Chapter 4: Proposed Methodology | Complete | Chapter 4 E4 PCGrad methodology integration complete |
 | Chapter 5: Result Analysis | Complete | Chapter 5 final E0/E1/E3/E4 result integration complete |
 | Chapter 6: Conclusion | Complete | Chapter 6 final RQ answers/contributions/limitations/conclusion complete |
-| Evidence appendices | Updated through Runs 1–6 | Needs final E4 integration (certified E1/E3/E4 checkpoints, evaluation logs, and artifact manifests) |
-| Evidence map | Updated through E34 | Needs final E4 integration while preserving claim boundaries |
-| Rubric checklist | Updated | Needs final E4 integration (complete final MTL-dependent CO5–CO7 and final CO14 deliverables) |
+| Evidence appendices | Complete | Updated with versioned register E35–E41, final MTL reproducibility, and bounded interpretation |
+| Evidence map | Complete | Updated with E35–E41, final claim coverage, and unresolved evidence boundaries |
+| Rubric checklist | Complete | Scientific manuscript coverage aligned with completed Chapters 1–6 and appendices |
 | LaTeX build | PASS: 87-page PDF, no fatal error, undefined citation/reference, or overfull box | See `BUILD_REPORT.md`; only inherited/nonfatal warnings remain |
 
 ## Completed & Certified Experimental State (8 Focused Deadline Runs + One Final Additional E4 PCGrad Control)
@@ -40,8 +40,13 @@ Status: All 8 focused deadline runs + one final additional E4 PCGrad control are
 - **Chapter 4 (Proposed Methodology)**: Complete (includes E1/E3/E4 methodology, parameter allocation in Table 4.5/4.6, 538/16,140 super-step correction in Table 4.6/4.7, and PCGrad gradient routing in Figure 4.4).
 - **Chapter 5 (Result Analysis)**: Complete (includes complete single-task and multi-task evaluations, Tables 5.8–5.12, PCGrad conflict diagnostics, and calibrated negative-transfer synthesis).
 - **Chapter 6 (Conclusion)**: Complete (includes final RQ answers, 6 contributions, 12 limitations, 7 future work directions, and final synthesis).
-- **Appendices, Evidence Map & Rubric Checklist**: Final E4 integration while preserving claim boundaries.
-- **Whole-Document Proof & Front Matter**: Final proofing and administrative front matter / submission requirements.
+- **Evidence Appendices (Appendix A & B)**: Complete (versioned register E01–E41, reproducibility boundaries, interpretation limits, and methodology crosswalk).
+- **Evidence Map (EVIDENCE_MAP.md)**: Complete (full E01–E41 mappings, claim coverage, and safe boundaries).
+- **Rubric Checklist (RUBRIC_CHECKLIST.md)**: Complete (scientific manuscript alignment across CO1–CO14).
+- **Remaining Manuscript Work**:
+  1. Final whole-document proof / consistency audit.
+  2. Administrative front matter (committee names, signatures, acknowledgments, ethics/AI disclosures).
+  3. External submission obligations (presentation/defense, live demonstration, and IEEE format if required).
 
 ## Remaining Non-MTL Administration
 

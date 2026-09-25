@@ -2,7 +2,7 @@
 
 The thesis records deterministic split files, executed implementations, machine-readable metrics, and task-specific coverage. Raw datasets, full checkpoints, and cloud volumes are not embedded in the manuscript. Reproducing the results therefore requires the repository revision, the referenced manifests, access to the corresponding data, and the saved model artifacts.
 
-Run 1 records seed 42 and split hashes. Run 5 records seed 2026, retained-sample hashes, and a bit-identical checkpoint reload. Run 6 also records a bit-identical reload and integrity checks for synchronized RGB/mask crops. Some historical artifacts record an unknown Git revision because Git metadata was unavailable in their execution container; the thesis review SHA is not substituted for those missing execution fields.\evidence{E08,E27,E29}
+Run 1 records seed 42 and split hashes. Run 5 records seed 2026, retained-sample hashes, and a bit-identical checkpoint reload. Run 6 also records a bit-identical reload and integrity checks for synchronized RGB/mask crops. Multi-task configurations E1, E3, and E4 used versioned implementations, validation-only checkpoint selection, and identical held-out test populations for direct comparison; E4 additionally records deterministic PCGrad RNG seeds and training diagnostics. Some historical artifacts record an unknown Git revision because Git metadata was unavailable in their execution container; the thesis review SHA is not substituted for those missing execution fields.\evidence{E08,E27,E29,E35,E36,E37,E38,E39,E40,E41}
 
 \section{Scientific Interpretation Boundaries}
 
@@ -14,10 +14,16 @@ Run 1 records seed 42 and split hashes. Run 5 records seed 2026, retained-sample
 
 \textbf{Oracle Re-ID condition.} Run 6 uses SideView ground-truth target masks. It does not demonstrate automatic SAM segmentation, and it does not prove that shortcut learning has been eliminated.\evidence{E29,E30}
 
-\textbf{Statistical scope.} Runs 1--6 are single-run point estimates. No confidence interval, repeated-seed standard deviation, p-value, or statistical-significance claim is supplied.
+\textbf{Capacity confounding in modular MTL.} The modular task-private adapter architecture (E3) added 395,904 trainable parameters (+3.32\% capacity over E1). Performance differences cannot be attributed purely to architectural routing in isolation from parameter scale.\evidence{E37,E40}
+
+\textbf{Gradient conflict diagnostics.} Direct gradient conflict measurements were recorded exclusively during E4 PCGrad training; opposing gradient directions were directly observed across task pairs, but conflict statistics cannot be retroactively assigned to E1 or E3.\evidence{E35,E41}
+
+\textbf{Selective mitigation.} PCGrad provided selective mitigation on some metrics (notably behavior recognition), but dedicated single-task models remained superior on several primary metrics; negative transfer was not universally eliminated.\evidence{E36,E38}
+
+\textbf{Statistical scope.} All reported single-task baselines and multi-task models are single-run point estimates. No confidence interval, repeated-seed standard deviation, p-value, or statistical-significance claim is supplied. External cross-dataset generalization to unseen herds remains unverified.
 
 \section{Open Deliverables}
 
-The E1 hard-shared and E3 modular MTL experiments remain open. Their completion is required for task-wise negative-transfer analysis, the final integrated architecture verdict, the final Abstract, the final research-question synthesis, and the final Conclusion. External stress tests and repeated-run uncertainty remain future work unless new verified artifacts are produced.
+Future experimental research includes executing external cross-herd stress tests (e.g., on Ruchay, Dryad, MmCows, CBVD-5, and BECA) and multi-seed training runs to quantify parameter variance and confidence intervals.
 
-Administrative review must confirm author order, semester, committee details, ethics and AI-assistance requirements, dataset permissions, acknowledgments, and any separate IEEE-format deliverable. No signature, approval, user study, or institutional exemption is invented.
+Administrative review must confirm author order, semester, committee details, ethics and AI-assistance requirements, dataset permissions, acknowledgments, and any separate IEEE-format deliverable or presentation/demonstration obligations. No signature, approval, user study, or institutional exemption is invented.
