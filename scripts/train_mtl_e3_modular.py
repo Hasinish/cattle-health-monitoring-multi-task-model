@@ -1078,8 +1078,8 @@ def train_mtl_e3_pipeline(
                 assert model.bcs_adapter.down_proj.weight.grad is not None, "BCS adapter received no grad!"
                 assert model.behavior_adapter.down_proj.weight.grad is None, "Behavior adapter leaked BCS grad!"
                 assert model.reid_adapter.down_proj.weight.grad is None, "ReID adapter leaked BCS grad!"
-                assert model.head_behavior.fc.weight.grad is None, "Behavior head leaked BCS grad!"
-                assert model.head_reid.weight.grad is None, "ReID head leaked BCS grad!"
+                assert model.behavior_tcn.classifier.weight.grad is None, "Behavior head leaked BCS grad!"
+                assert model.reid_head.classifier.weight.grad is None, "ReID head leaked BCS grad!"
 
             # Task 2: Behavior forward & backward
             seqs_beh, targets_beh, _ = next(beh_cycler)
@@ -1092,7 +1092,7 @@ def train_mtl_e3_pipeline(
             if smoke and step == 1:
                 assert model.behavior_adapter.down_proj.weight.grad is not None, "Behavior adapter received no grad!"
                 assert model.reid_adapter.down_proj.weight.grad is None, "ReID adapter leaked Behavior grad!"
-                assert model.head_reid.weight.grad is None, "ReID head leaked Behavior grad!"
+                assert model.reid_head.classifier.weight.grad is None, "ReID head leaked Behavior grad!"
 
             # Task 3: Re-ID forward & backward
             imgs_reid, targets_reid, _ = next(reid_cycler)
