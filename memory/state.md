@@ -25,7 +25,7 @@
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | 8-RUN SEQUENCE | RUNS 1–6: COMPLETE & CERTIFIED | RUN 7 TRAINING & HELD-OUT EVALUATION: COMPLETE & CERTIFIED | RUN 8 FULL 30-EPOCH TRAINING: COMPLETE & CERTIFIED | NEXT: RUN 8 HELD-OUT EVALUATION)
+## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | 8-RUN SEQUENCE | RUNS 1–6: COMPLETE & CERTIFIED | RUN 7 TRAINING & HELD-OUT EVALUATION: COMPLETE & CERTIFIED | RUN 8 TRAINING & EVALUATION RUNNER: COMPLETE & VERIFIED | NEXT: RUN 8 HELD-OUT EVALUATION EXECUTION)
 - **Run 8 E3 Modular MTL Status Summary**:
   * **Run 8 architecture & scripts**: COMPLETE ✅ (`scripts/train_mtl_e3_modular.py`, `scripts/modal_train_mtl_e3_modular.py`)
   * **Run 8 unit test suite**: PASS ✅ (`tests/test_mtl_e3_modular.py`, 8/8 tests passed in 3.53s)
@@ -35,7 +35,9 @@
   * **Run 8 readiness on Modal (`hasinishrak2015`)**: PASS ✅ (CPU-only, zero GPU cost, volumes verified, test sets strictly protected)
   * **Run 8 Cloud GPU Smoke Test on Tesla T4 (`hasinishrak2015`)**: PASS ✅ (App ID: `ap-53DDpGfdgkrLOIb0ykJz06`, 2 epochs, finite loss drop 1.7246 -> 1.4145, validation across all 3 tasks, bit-identical reload max diff 0.00000000, checkpoints in `/mtl-checkpoints/mtl_e3_smoke/`, held-out test data untouched)
   * **Run 8 Full 30-Epoch Training on NVIDIA L40S (`hasinishrak2015`)**: COMPLETE & CERTIFIED ✅ (App ID: `ap-H0BerVczDO938LjXBIhLy0`, 30 epochs, 1,634.37s / ~27.24 mins, cost ~$0.88; best val objective `0.38888` at Epoch 2 vs Run 7 `0.40036`; BCS Real MAE `0.1906` vs Run 7 `0.1968`; Behavior val loss `0.4134` vs `0.4597`, F1 reached `0.7577`; Re-ID val loss `0.2982` vs `0.3029`, Top-1 acc reached `96.20%`; checkpoints saved to `/mtl-checkpoints/mtl_e3_modular/mtl_e3_best.pth` and `mtl_e3_latest.pth`)
-- **Immediate next action:** Execute official held-out test evaluation of Run 8 E3 (`mtl_e3_best.pth`, Epoch 2) across ScienceDB BCS (7,549 images), Behavior (780 sequences), and SideViewCows2026 Protocol A (69 held-out cows) using exact matched Run 7 evaluation protocol.
+  * **Run 8 Held-Out Evaluator & Unit Tests**: COMPLETE & VERIFIED ✅ (`scripts/evaluate_mtl_e3_held_out.py`, `scripts/modal_evaluate_mtl_e3_held_out.py`, `tests/test_mtl_e3_evaluation.py`; 5/5 tests passed; zero test-set access yet; ready for cloud dispatch)
+- **Immediate next action:** When commanded by user, execute official held-out test evaluation of Run 8 E3 (`mtl_e3_best.pth`, Epoch 2) on Modal L40S:
+  `modal run --profile hasinishrak2015 scripts/modal_evaluate_mtl_e3_held_out.py::run_evaluation`
 - [x] **P3 Sample Reports Writing Audit & Freeze-Safe Boundary Strategy (`cattle_thesis_p3_latex/P3_SAMPLE_WRITING_AUDIT.md`) — COMPLETE & PUSHED TO REMOTE (`eb8795d`):**
   * Audited 12 faculty-evaluated BRAC University CSE400 final thesis reports.
   * Formulated the 5 Laws of Academic Thesis Writing, stripped engineering diary prose, and identified the 5 dedicated freeze-safe paraphrasing tabs.
