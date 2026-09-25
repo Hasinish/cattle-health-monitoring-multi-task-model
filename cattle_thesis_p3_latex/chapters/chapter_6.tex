@@ -1,6 +1,6 @@
 \section{Performance Evaluation}
 
-This chapter reports the six completed single-task experiments. The comparisons are organized by task so that each cattle-centered configuration is evaluated against its corresponding RGB reference. Runs 7 and 8 are not included because the multi-task experiments have not yet been executed. Consequently, the chapter supports task-specific conclusions but not a final claim about the integrated framework.
+This chapter reports the completed single-task and multi-task evaluations, including the monolithic hard-shared control, modular task-private architecture, and PCGrad optimization control. The single-task evaluations first assess whether task-specific cattle-centered representations provide empirical utility over generic RGB baselines on matched populations. The subsequent multi-task evaluations directly examine the central questions of joint training: whether a unified spatial representation induces negative transfer, whether architectural modularity mitigates cross-task degradation, whether gradient projection resolves shared-backbone conflicts, and what training diagnostics reveal about gradient interference during optimization.
 
 \subsection{Body Condition Scoring Results}
 
@@ -60,46 +60,124 @@ The BCS result applies directly to 93.89\% of the canonical test set. The Behavi
 
 The separate real-cattle viewpoint classifier achieved 86.26\% accuracy, 84.96\% balanced accuracy, and 0.8573 Macro-F1 on 131 held-out images. This establishes that the three-class front/side/rear task was feasible on its own dataset. It was not inserted into Runs 4--6 because cross-domain transfer to ScienceDB, CVB/Beef, and SideView was not validated. The result also cannot be attributed to MOO synthetic pretraining without a same-split ImageNet-initialized control.\evidence{E31}
 
-\section{Analysis of Design Solutions}
+\section{Multi-Task Learning Results}
 
-The six runs support three different conclusions about cattle-centered representation design. For BCS, the automatic pipeline improved the main ordinal measures on matched perception-successful images, but class-balanced measures were essentially unchanged or slightly worse. For Behavior, the combined four-channel temporal model improved balanced accuracy, loss, Walking, Feeding, Drinking, and Beef performance, while reducing overall accuracy and several CVB/posture measures. For Re-ID, the oracle representation produced a large improvement under the more severe Snapshot-to-Parlor shift and a smaller, mixed change for Barn-to-Parlor retrieval.
+To evaluate the empirical consequences of joint optimization across the three cattle monitoring domains, all multi-task configurations were evaluated on the exact matched held-out test populations established for the single-task reference models:
+\begin{itemize}
+ \item \textbf{Body Condition Scoring}: evaluated on $N = 7{,}549$ ScienceDB test images under the burst-group-disjoint protocol. As established in Chapter~4, this protocol prevents identical-passage sample leakage but does not represent biological cow-disjoint partitioning.
+ \item \textbf{Behavior Recognition}: evaluated on $N = 780$ sequence samples ($T = 8$ frames; $6{,}240$ total frames) across authentic barn surveillance (CVB, $N = 422$) and feedlot camera clips (Kaggle Beef, $N = 358$), with the minority Walking class present exclusively in CVB.
+ \item \textbf{Cattle Re-Identification}: evaluated under SideView Protocol A across 69 unseen cattle identities against the fixed $36{,}811$-image parlor gallery, reporting $25{,}260$ barn CCTV queries and $607$ handheld snapshot queries with released SideView target masks matching the oracle single-task reference (Run 6).
+\end{itemize}
+Across all multi-task experiments, model checkpoint selection was strictly governed by minimizing the predefined composite validation loss objective on the validation set, with held-out test populations remaining untouched until final one-time post-training evaluation.
+
+\subsection{Body Condition Scoring Multi-Task Outcomes}
+
+Table~\ref{tab:mtl_bcs_results} summarizes the performance of the three executed multi-task configurations alongside the matched single-task reference model.
+
+\input{tables/mtl_bcs_results}
+
+The monolithic hard-shared control (E1) degraded the principal held-out BCS metrics relative to the matched single-task reference (Run 4). Physical MAE increased from 0.1709 to 0.1788 (+0.0079 BCS units), Acc@1 decreased from 89.40\% to 88.44\% (-0.96 pp), exact accuracy (Acc@0) fell from 43.57\% to 41.10\% (-2.47 pp), balanced accuracy declined from 39.70\% to 35.70\% (-4.00 pp), and Macro-F1 fell from 0.4039 to 0.3605 (-0.0434). Although E1 test loss decreased from 0.4403 to 0.4175, this lower cross-entropy loss alone cannot be characterized as superior estimation quality given the simultaneous degradation across all physical error and class-balanced metrics.
+
+The modular task-private architecture (E3) worsened held-out BCS performance further across every evaluated metric: MAE increased to 0.1916 (+0.0207 over single-task; +0.0128 over E1), Acc@1 dropped to 86.32\%, Acc@0 dropped to 38.47\%, balanced accuracy dropped to 33.13\%, and Macro-F1 dropped to 0.3291, while test loss rose to 0.4555. Introducing task-private residual bottleneck adapters between the shared backbone and the BCS head failed to shield the ordinal scoring representation from cross-task interference.
+
+The PCGrad optimization control (E4) recovered substantial ground relative to E3: MAE improved from 0.1916 to 0.1828 (-0.0088 error reduction), Acc@1 rose from 86.32\% to 87.84\% (+1.52 pp), Acc@0 rose from 38.47\% to 40.23\% (+1.76 pp), balanced accuracy rose from 33.13\% to 34.97\% (+1.84 pp), Macro-F1 rose from 0.3291 to 0.3516 (+0.0225), and test loss fell from 0.4555 to 0.4181 (-0.0374). Relative to E1, E4 was slightly worse on primary physical and classification measures (MAE +0.0040, Acc@1 -0.60 pp, Macro-F1 -0.0089). Crucially, all three multi-task models remained below the matched single-task reference on primary physical error and class-balanced classification metrics, demonstrating consistent outcome-level degradation for BCS under multi-task sharing.
+
+\subsection{Behavior Recognition Multi-Task Outcomes}
+
+Table~\ref{tab:mtl_behavior_results} reports overall Behavior Recognition metrics on the 780 matched test sequences, and Table~\ref{tab:mtl_behavior_source} details the source-disjoint breakdown across authentic barn CCTV (CVB) and feedlot camera clips (Kaggle Beef).
+
+\input{tables/mtl_behavior_results}
+
+The monolithic hard-shared control (E1) exhibited pronounced degradation relative to the matched single-task reference (Run 5): overall accuracy fell from 87.44\% to 85.00\% (-2.44 pp), balanced accuracy dropped sharply from 74.43\% to 67.30\% (-7.13 pp), Macro-F1 fell from 0.7397 to 0.6866 (-0.0531), and test loss increased from 0.4430 to 0.6226 (+0.1796). The minority Walking class experienced severe degradation under hard sharing, dropping from F1 = 0.2456 in single-task to F1 = 0.0408 in E1.
+
+\input{tables/mtl_behavior_source_results}
+
+The modular task-private architecture (E3) showed selective, metric-dependent changes relative to E1: overall accuracy increased by +0.77 pp to 85.77\%, test loss improved from 0.6226 to 0.4193 (-0.2033 drop), and CVB barn CCTV accuracy rose from 76.78\% to 80.33\% (+3.55 pp) with CVB Macro-F1 rising from 0.5402 to 0.6026 (+0.0624). However, balanced accuracy declined further to 66.70\% (-0.60 pp vs. E1; -7.73 pp vs. single-task), Macro-F1 declined to 0.6755 (-0.0111 vs. E1), and Walking F1 dropped to 0.0000, with zero of the 26 test sequences correctly classified. Thus, E3 demonstrated selective, loss- and surveillance-specific improvements rather than general negative-transfer mitigation.
+
+The PCGrad optimization control (E4) reduced several Behavior degradations observed under E1: overall accuracy rose to 86.92\% (+1.92 pp vs. E1; +1.15 pp vs. E3), balanced accuracy improved to 69.15\% (+1.85 pp vs. E1; +2.45 pp vs. E3), Macro-F1 rose to 0.7114 (+0.0248 vs. E1; +0.0359 vs. E3), and test loss fell to 0.5454 (-0.0772 vs. E1). Minority class Walking F1 more than doubled from 0.0408 under E1 to 0.0909 under E4.
+
+Source-specific analysis provides critical nuance: on CVB barn surveillance, E4 achieved the highest overall accuracy across all models at 81.04\% (compared to 76.78\% for E1, 80.33\% for E3, and 80.09\% for single-task). However, this overall accuracy gain must not be misconstrued as general superiority over single-task learning: CVB balanced accuracy under E4 (55.30\%) and Macro-F1 (0.6141) remained below the single-task reference (61.05\% balanced accuracy, 0.6188 Macro-F1), while Walking F1 (0.0909) remained well below single-task (0.2456). On Kaggle Beef, single-task performance was highest (96.09\% accuracy, 0.9414 Macro-F1), followed by E1 (94.69\%, 0.9236), E4 (93.85\%, 0.9158), and E3 (92.18\%, 0.8849).
+
+\subsection{Cattle Re-Identification Multi-Task Outcomes}
+
+Table~\ref{tab:mtl_reid_results} presents multi-task retrieval performance under SideView Protocol A for both Barn-to-Parlor video queries and Snapshots-to-Parlor handheld queries.
+
+\input{tables/mtl_reid_results}
+
+The single-task oracle segmentation-guided reference (Run 6) remains the strongest across both query conditions on primary retrieval metrics: Barn Rank-1 of 63.90\% and mAP of 40.68\%; Snapshot Rank-1 of 62.93\% and mAP of 40.42\%.
+
+The monolithic hard-shared control (E1) exhibited substantial degradation on primary retrieval metrics: Barn Rank-1 dropped by -6.52 pp to 57.38\% and mAP fell by -10.31 pp to 30.37\%; Snapshot Rank-1 dropped by -5.76 pp to 57.17\% and mAP fell by -6.73 pp to 33.69\%. Although Snapshot Rank-5 and Rank-10 showed minor positive differences (+0.16 pp and +1.65 pp), first-match accuracy and overall ranking quality were degraded across both settings.
+
+The modular task-private architecture (E3) degraded Re-ID retrieval further across both conditions: Barn Rank-1 fell to 49.08\% (-8.30 pp vs. E1; -14.82 pp vs. single-task) with mAP of 28.04\%; Snapshot Rank-1 fell to 53.71\% (-3.46 pp vs. E1; -9.22 pp vs. single-task) with mAP of 28.78\%.
+
+The PCGrad optimization control (E4) recovered substantial ground relative to E3 on Rank-1 (+5.89 pp Barn, +3.29 pp Snapshots) and mAP (+2.19 pp Barn, +5.09 pp Snapshots). Relative to E1, E4 produced mixed, closely matched outcomes on primary retrieval metrics: Barn Rank-1 was 54.97\% (-2.41 pp vs. E1), Barn mAP was 30.23\% (-0.14 pp vs. E1), Snapshot Rank-1 was 57.00\% (-0.17 pp vs. E1), and Snapshot mAP was 33.87\% (+0.18 pp vs. E1). These differences cannot be characterized as statistically equivalent because no uncertainty estimation was performed. At deeper ranks, some E3 metrics remained similar to or higher than E4 (Barn Rank-10: E4 74.99\% vs. E3 75.03\%; Snapshot Rank-5: E4 72.16\% vs. E3 72.32\%; Snapshot Rank-10: E4 78.25\% vs. E3 80.23\%), demonstrating that retrieval performance redistribution is metric- and rank-dependent.
+
+\subsection{Observed Shared-Backbone Gradient Conflict}
+
+Table~\ref{tab:pcgrad_diagnostics} reports the gradient conflict diagnostics recorded during E4 PCGrad multi-task training across all 30 epochs ($16{,}140$ super-steps).
+
+\input{tables/pcgrad_gradient_diagnostics}
+
+Across the complete 30-epoch training schedule, the PCGrad diagnostics engine recorded 44,177 pairwise conflict projections, averaging 2.737 conflict projections per super-step (out of a theoretical maximum of 6 pairwise evaluations per step). Pairwise conflict frequencies were remarkably consistent across task pairs: BCS and Behavior gradients pointed in opposing directions in 47.8\% of super-steps, BCS and Re-ID in 46.5\%, and Behavior and Re-ID in 47.4\%.
+
+These diagnostics provide direct empirical evidence that opposing gradient directions on the shared four-channel ResNet-18 spatial backbone occurred regularly during multi-task training. In naive hard sharing (E1), these opposing components were directly accumulated, resulting in cancellation during updates. In E4, projecting conflicting components resolved opposing directions prior to parameter updates.
+
+However, strict scientific claim boundaries must be maintained: these measurements do not prove that gradient conflict caused all observed E1 degradation, that E1 experienced identical conflict frequencies, that PCGrad eliminated all conflict, or that the measured conflict proves causality for negative transfer. Rather, they provide descriptive optimization evidence of shared-parameter gradient tension during joint learning.
+
+\section{Analysis of Multi-Task Design Solutions}
+
+The empirical evaluations across single-task and multi-task configurations support distinct findings regarding the three multi-task design hypotheses:
+\begin{enumerate}
+ \item \textbf{Naive Hard Parameter Sharing (E1)}: Naively forcing three heterogeneous agricultural vision tasks into a single four-channel ResNet-18 spatial trunk produced held-out degradation across BCS, Behavior, and principal Re-ID retrieval metrics. This outcome-level negative transfer demonstrates that mutual synergy cannot be assumed when combining coarse body shape estimation (BCS), localized temporal motion (Behavior), and fine-grained biometric surface patterns (Re-ID). The specific internal feature corruption, however, cannot be isolated from E1 alone.
+ \item \textbf{Modular Task-Private Adapters (E3)}: Introducing task-private residual bottleneck adapters between the shared backbone and each prediction head failed to provide general negative-transfer mitigation. While Behavior test loss and CVB surveillance accuracy improved over E1, BCS and Re-ID degraded further, and Behavior balanced accuracy and Macro-F1 declined. Furthermore, because E3 added 395,904 trainable parameters (+3.32\% capacity), its performance differences cannot be attributed purely to architectural routing.
+ \item \textbf{Gradient-Projected Optimization (E4)}: By applying PCGrad projection exclusively to shared backbone gradients, E4 provided a controlled optimization comparison matching E1 parameter-for-parameter (11,926,706 trainable parameters; zero adapters). E4 provided selective, metric-dependent mitigation of E1 negative transfer, notably improving Behavior overall accuracy, balanced accuracy, Macro-F1, test loss, and CVB surveillance performance, while recovering principal Re-ID and BCS metrics relative to E3. However, E4 remained below dedicated single-task models on several primary metrics.
+\end{enumerate}
+
+Table~\ref{tab:decisions} synthesizes the key design decisions and empirical dispositions established across the single-task and multi-task investigations.
 
 \input{tables/design_decisions}
 
-These outcomes argue against treating all three tasks as if they require the same visual representation. BCS benefited mainly in ordered error and tolerance accuracy. Behavior required temporal aggregation but remained sensitive to source and class composition. Re-ID benefited most when the query differed strongly from the controlled gallery. A final shared system should therefore preserve common low-level cattle information while allowing task-specific processing where the evidence requirements diverge. This is a design implication for Runs 7 and 8, not a completed MTL result.
+These outcomes demonstrate that neither simple modular adapters nor gradient projection eliminated negative transfer across all evaluated cattle monitoring tasks. Dedicated single-task representations remained superior on several task-specific measures, reinforcing the thesis argument that disparate agricultural vision tasks require distinct visual representations rather than a universally shared spatial trunk.
 
-The comparisons also illustrate why perception quality and downstream utility must be separated. High mask overlap in the feasibility audit supported the use of SAM-derived foregrounds, but only the task experiments measured prediction consequences. Conversely, the Run 4 and Run 5 coverage gaps show that useful downstream performance does not remove the operational cost of perception failures.
+\section{Statistical Analysis and Uncertainty Boundaries}
 
-\section{Final Design Adjustments}
+All single-task baselines and multi-task configurations reported in this chapter are evaluated as single trained checkpoints (point estimates). Repeated-seed training distributions, confidence intervals, formal hypothesis tests, and p-values were not computed. Consequently, the reported differences are descriptive point comparisons and are not characterized as statistically significant.
 
-Several design decisions were fixed before the final MTL stage. ScienceDB uses repaired burst groups rather than unsupported biological identities. CVB plus Beef is the primary Behavior stack, with source/session isolation and explicit recognition that Walking is CVB-only. SideView replaces the inaccessible MultiCamCows2024 as the primary Re-ID benchmark and provides an identity-disjoint cross-setting protocol.
+The matched-sample design reduces sample-composition bias: Run 4, E1, E3, and E4 evaluate the exact same 7,549 ScienceDB images; Run 5, E1, E3, and E4 evaluate the exact same 780 Behavior sequences; and Run 6, E1, E3, and E4 evaluate the exact same SideView Protocol A query and gallery populations. This guarantees valid internal comparisons on the retained samples. However, it does not quantify seed variability or population variance, and correlated video frames or bursts must not be treated as independent biological samples.
 
-Pose was removed from the deadline downstream configurations because the available rear-view outputs and landmark schema were not sufficiently reliable for the intended BCS role. Viewpoint remains a separately validated capability rather than an untested conditioning signal. For the three enhanced task models, the accepted inputs are binary masks rather than continuous soft masks. These adjustments align the thesis with the executed methods rather than older roadmap wording.
+Similarly, the recorded PCGrad conflict frequencies (Table~\ref{tab:pcgrad_diagnostics}) represent descriptive training diagnostics from a single optimization trajectory, not hypothesis tests. Small metric differences (such as E4 vs. E1 on Re-ID snapshot mAP of $+0.18$ pp) cannot be claimed as statistically equivalent.
 
-The remaining design comparison is explicit. Run 7 will measure an E1 hard-shared control, and Run 8 will measure an E3 modular/task-private alternative. Until both are executed, the final sharing strategy, negative-transfer result, and integrated-system verdict remain open.
+\section{Cross-Task Relationships and Claim Boundaries}
 
-\section{Statistical Analysis}
+The three evaluation domains employ metrics with fundamentally different scales, units, and optimization directions:
+\begin{itemize}
+ \item BCS uses physical Mean Absolute Error in BCS units (where lower is better), Acc@1 within $\pm 0.25$ units, and exact ordinal accuracy.
+ \item Behavior uses overall accuracy, balanced accuracy, Macro-F1 across 5 classes, and per-class F1-scores (where higher is better).
+ \item Re-ID uses cumulative match characteristics (Rank-1, Rank-5, Rank-10) and mean Average Precision across open-set retrieval rankings (where higher is better).
+\end{itemize}
+Because these metrics are incommensurable, computing an aggregate multi-task score across all three tasks would be arbitrary and uninformative. Negative transfer must be evaluated within each task domain against its matched single-task reference.
 
-Runs 1--6 are reported primarily as single-run comparisons. Repeated-seed distributions, confidence intervals, p-values, and a preregistered significance test are not available for these final task comparisons. The reported differences are therefore descriptive point estimates and are not called statistically significant.
+The evaluation populations also define strict generalization boundaries:
+\begin{itemize}
+ \item ScienceDB evaluates unseen burst groups from automated passage sequences, not verified unseen biological cows.
+ \item Behavior evaluates protected video recordings and sessions, not cow-disjoint herds; Walking is evaluated solely within CVB barn surveillance.
+ \item SideView Protocol A evaluates 69 biologically distinct cows excluded from representation learning. However, Run 6 and all multi-task Re-ID evaluations use released dataset ground-truth masks rather than automatic segmentations, representing an oracle condition.
+\end{itemize}
+External datasets referenced in the broader roadmap (such as Ruchay, Dryad, MmCows, CBVD-5, and BECA) remain unexecuted stress tests; their documentation does not imply cross-domain generalization.
 
-The matched designs reduce one important source of confounding. Run 4 and its Run 1 control use exactly the same 7,549 images, while Run 5 and its Run 2 control use exactly the same 780 sequences. This makes the within-task metric differences directly comparable on the retained samples. It does not quantify training-seed variability or population uncertainty, and correlated images must not be treated as independent biological cows.
+\section{Discussion of Findings}
 
-For Re-ID, both models use the same identity-disjoint Protocol A gallery and query sets. The large Snapshot-to-Parlor differences are therefore observed under a common retrieval protocol, but they still arise from one trained model per configuration. Repeated training and group-aware uncertainty estimation remain desirable future additions after the final MTL experiments.
+The empirical findings presented in this chapter establish three main conclusions:
 
-\section{Comparisons and Relationships}
+First, cattle-centered visual representations provide clear, measurable benefits on matched single-task populations, but their effectiveness is strongly task-dependent. Localized cropping and binary mask guidance improved BCS physical error proximity (reducing MAE by 0.0220 units and improving Acc@1 by 4.45 pp) without improving class-balanced measures. For Behavior, combining cattle crops, masks, and temporal 1D convolution improved balanced accuracy (+3.13 pp), reduced loss (-19.5\%), and improved minority Walking F1 (+0.0282), while redistributing performance across classes and sources. For Re-ID, target-centered oracle segmentation produced a substantial gain under unconstrained handheld snapshot queries (+24.05 pp Rank-1; +13.37 pp mAP), where environmental and posture variations were greatest.
 
-The three tasks use metrics with different meanings and directions. Lower BCS MAE is better, whereas higher Behavior balanced accuracy and Re-ID retrieval scores are better. A single average across these raw metrics would be uninterpretable. The final negative-transfer analysis must compare each MTL task output with its matched single-task reference in that task's own units.
+Second, naively integrating these three tasks under monolithic hard parameter sharing (E1) resulted in consistent outcome-level negative transfer. On matched held-out test populations, E1 degraded BCS MAE (+0.0079), Behavior balanced accuracy (-7.13 pp), Walking F1 (-0.2048), and Re-ID Barn Rank-1 (-6.52 pp) and mAP (-10.31 pp). This confirms that sharing a single four-channel ResNet-18 spatial backbone across tasks with conflicting representational demands induces negative transfer.
 
-The data protocols also bound the generalization claims. ScienceDB evaluates new burst groups, not verified new cows. CVB plus Beef evaluates protected videos and sessions, not unseen biological identities. SideView Protocol A does evaluate identities excluded from representation learning. These distinctions explain why the Re-ID conclusions can refer to unseen cows while the BCS and primary Behavior conclusions cannot.
+Third, the comparative evaluation of modularity (E3) versus gradient projection (E4) demonstrates that resolving multi-task tension is subtle and metric-dependent:
+\begin{itemize}
+ \item Architectural modularity via task-private residual adapters (E3) improved Behavior test loss and CVB surveillance accuracy over E1, but degraded BCS and Re-ID further, and failed to improve balanced accuracy or Macro-F1. Adding private parameters alone did not resolve shared representation interference.
+ \item Optimization-level gradient projection (E4) provided more effective, selective mitigation. E4 achieved the highest Behavior overall accuracy (86.92\%), balanced accuracy (69.15\%), and Macro-F1 (0.7114) among multi-task models, more than doubled Walking F1 relative to E1 (0.0909 vs. 0.0408), and recovered principal BCS and Re-ID metrics relative to E3 while preserving exact parameter equality with E1 (11,926,706 parameters).
+ \item Direct optimization diagnostics recorded 44,177 gradient conflict projections during E4 training (averaging 2.737 projections per super-step), empirically verifying regular gradient opposition across task pairs.
+\end{itemize}
 
-External datasets remain planned stress tests rather than completed results. Ruchay and Dryad may extend BCS to different score supports or modalities; MmCows and CBVD-5 may test Behavior transfer; and BECA-L/BECA-D may test longitudinal or population-scale Re-ID. Their presence in the dataset plan is not treated as evidence that the final models generalize to those sources.
-
-\section{Discussions}
-
-The completed BCS comparison is consistent with the cattle-centered hypothesis, but only within a defined boundary. The localized RGB-plus-mask model reduced matched MAE by 0.0220 BCS units and improved Acc@1 by 4.45 percentage points. At the same time, balanced accuracy and Macro-F1 did not improve, and 491 test images lacked a complete perception input. The representation therefore improved proximity to the ordered target more clearly than it improved equal treatment of all five classes.
-
-The Behavior comparison provides a useful negative as well as positive result. Balanced accuracy and loss improved, and Walking, Feeding, Drinking, and Beef metrics moved in a favorable direction. Overall accuracy, CVB Macro-F1, Standing F1, and Lying F1 declined. One plausible interpretation is that the temporal foreground-guided representation reallocates capacity toward changing activities and the more controlled Beef clips, but the experiment does not isolate that mechanism. The result supports further task-specific refinement rather than a claim of universal superiority.
-
-The Re-ID comparison provides the strongest evidence that target-centered visual information can improve robustness under acquisition shift. The gain was much larger for unconstrained snapshots than for barn video, suggesting that the oracle crop-and-mask representation was most helpful when posture, framing, and environment changed together. Because the masks are ground truth, however, Run 6 is best understood as an upper-bound representation study. Deployment would still require an automatic method whose failures and domain transfer are evaluated separately.
-
-Taken together, Runs 1--6 show that cattle-centered representations can improve important outcomes, but the pattern of benefits differs by task and metric. This task dependence is precisely why the final multi-task comparison is necessary. The evidence does not yet establish whether hard sharing causes negative transfer in Phase 3, whether the modular E3 design mitigates it, or whether either MTL model is preferable to the single-task references. Those questions remain the sole major scientific gap before the final integrated discussion and conclusion.
+Nonetheless, dedicated single-task models remained superior on several task-specific metrics, including BCS MAE (0.1709 single-task vs. 0.1828 E4), Behavior balanced accuracy (74.43\% single-task vs. 69.15\% E4), Walking F1 (0.2456 single-task vs. 0.0909 E4), and Re-ID Barn Rank-1 (63.90\% single-task vs. 54.97\% E4). These results refute the assumption that multi-task learning universally benefits individual tasks through shared regularizing representations. Instead, they demonstrate that different cattle monitoring tasks require distinct spatial and temporal feature representations, and that multi-task deployment involves deliberate, metric-dependent engineering trade-offs.

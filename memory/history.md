@@ -1,3 +1,16 @@
+# Session Summary — 2026-09-26 (Chapter 5 Result Analysis Final Integration & Negative-Transfer Synthesis)
+
+- Convo ID: 2c9a52fb-1aef-4eb3-a588-eafb90f6be82
+- Objective: Finalize Chapter 5 Result Analysis (`cattle_thesis_p3_latex/chapters/chapter_6.tex`) incorporating completed held-out results across all executed single-task (Runs 1–6) and multi-task models (E1 Hard-Shared, E3 Modular, E4 PCGrad), empirical PCGrad gradient diagnostics, and calibrated negative-transfer analysis.
+- Accomplishments & Verification:
+  1. Purged 100% of stale pre-MTL prose ("six completed single-task experiments", "Runs 7 and 8 are not included", "will measure", "remaining design comparison", "major scientific gap") and replaced opening with completed multi-task evaluation framing.
+  2. Created 5 dedicated booktabs tables: Table 5.8 (`mtl_bcs_results.tex`), Table 5.9 (`mtl_behavior_results.tex`), Table 5.10 (`mtl_behavior_source_results.tex`), Table 5.11 (`mtl_reid_results.tex`), and Table 5.12 (`pcgrad_gradient_diagnostics.tex`), and updated Table 5.13 (`design_decisions.tex`).
+  3. Integrated section `\section{Multi-Task Learning Results}` detailing exact matched held-out evaluation protocol across ScienceDB BCS ($N=7{,}549$), Behavior ($N=780$, $T=8$), and SideView Protocol A ($69$ unseen cows).
+  4. Integrated empirical gradient conflict diagnostics: 16,140 super-steps, 44,177 conflict projections (2.737/step), 45%–54% pairwise conflict frequency, under strict non-causal claim boundaries.
+  5. Calibrated negative-transfer findings: E1 hard sharing degraded all three tasks (outcome-level negative transfer); E3 modular adapters showed selective changes (+0.77 pp Behavior Acc, -0.2033 test loss) but degraded BCS and Re-ID and collapsed Walking; E4 PCGrad provided selective mitigation on Behavior (+1.92 pp Acc, +1.85 pp Bal Acc, +0.0248 Macro-F1, Walking F1 0.0909) and recovered principal metrics over E3, but dedicated single-task models remained superior on several task-specific measures.
+  6. Verified LaTeX compilation: compiled twice with zero fatal errors, zero undefined citations/references, and zero overfull boxes in Chapter 5 (81-page PDF).
+  7. Confirmed Chapter 4, Chapter 6 conclusion, Abstract, and Roadmap were strictly untouched.
+
 # Session Summary — 2026-09-26 (Chapter 4 E4 PCGrad Methodology Integration & Super-Step Accounting Correction)
 
 - Convo ID: 2c9a52fb-1aef-4eb3-a588-eafb90f6be82

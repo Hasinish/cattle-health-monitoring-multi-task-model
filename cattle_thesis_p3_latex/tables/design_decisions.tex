@@ -1,19 +1,19 @@
 \begin{table}[htbp]
 \centering\small
-\caption[Evidence-led design decisions]{Design decisions established before the final MTL experiments.\evidence{E01,E04,E06,E11,E13,E24,E27,E29,E31}}\label{tab:decisions}
+\caption[Evidence-led design decisions across single-task and multi-task investigations]{Key design decisions established across single-task investigations and executed multi-task configurations.\evidence{E01,E04,E06,E11,E13,E24,E27,E29,E31,E32,E33,E34,E35}}\label{tab:decisions}
 \begin{tabularx}{\textwidth}{lYY}
 \toprule
-Question & Evidence & Disposition \\
+\textbf{Question / Domain} & \textbf{Empirical Evidence} & \textbf{Architecture / Method Disposition} \\
 \midrule
-ScienceDB grouping & Identity semantics and overlap audit & Repaired burst groups. \\
-Behavior source & Dense-video/provenance audit & CVB + Beef; MmCows external. \\
-Re-ID source & MultiCam access blocker & Approved SideView contingency. \\
-BCS representation & Matched Run 1/4 comparison & RT-DETR crop + binary SAM mask channel retained. \\
+ScienceDB grouping & Identity semantics and overlap audit & Repaired burst groups; sequence-safe evaluation. \\
+Behavior source & Dense-video/provenance audit & CVB + Beef primary; Walking CVB-only. \\
+Re-ID source & MultiCam access blocker & Approved SideView Protocol A benchmark. \\
+BCS representation & Matched Run 1/4 comparison & RT-DETR crop + binary mask channel retained. \\
 Behavior representation & Matched Run 2/5 comparison & Eight-frame RGB+mask + lightweight Conv1D retained. \\
 Re-ID representation & Protocol A Run 3/6 comparison & Oracle GT crop+mask used as upper-bound condition. \\
-Pose & Unreliable reviewed rear views & Excluded from Runs 4--6. \\
-Viewpoint & Separate held-out result; transfer unverified & Not fused into Runs 4--6. \\
-MTL sharing & Runs 7/8 not executed & Hard sharing vs modular design remains pending. \\
+Pose feature branch & Unreliable rear-view and lying poses & Excluded from primary pipeline. \\
+Viewpoint prior & Separate held-out test; transfer unverified & Maintained as standalone capability; not fused. \\
+MTL sharing strategy & Held-out E1, E3, E4 evaluations & Hard sharing causes negative transfer; PCGrad provides selective mitigation. \\
 \bottomrule
 \end{tabularx}
 \end{table}

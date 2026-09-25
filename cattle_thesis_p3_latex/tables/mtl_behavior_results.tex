@@ -1,0 +1,16 @@
+\begin{table}[htbp]
+\centering\small
+\caption[Multi-task Behavior Recognition results]{Multi-task Behavior Recognition results on the matched held-out test population ($N = 780$ sequences, $T = 8$ frames). Higher values are better ($\uparrow$) for accuracy and F1 metrics; lower values are better ($\downarrow$) for loss. The single-task reference is Run 5.\evidence{E27,E33}}
+\label{tab:mtl_behavior_results}
+\setlength{\tabcolsep}{2.2pt}
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Configuration} & \textbf{Accuracy} & \textbf{Bal.~Acc.} & \textbf{Macro-F1} & \textbf{Loss} & \textbf{Walking F1} \\
+\midrule
+Single-Task Reference (Run 5) & \textbf{87.44\%} & \textbf{74.43\%} & \textbf{0.7397} & 0.4430 & \textbf{0.2456} \\
+Monolithic Hard-Shared (E1) & 85.00\% & 67.30\% & 0.6866 & 0.6226 & 0.0408 \\
+Modular Task-Private (E3) & 85.77\% & 66.70\% & 0.6755 & \textbf{0.4193} & 0.0000 \\
+PCGrad Hard-Shared (E4) & 86.92\% & 69.15\% & 0.7114 & 0.5454 & 0.0909 \\
+\bottomrule
+\end{tabular}
+\end{table}

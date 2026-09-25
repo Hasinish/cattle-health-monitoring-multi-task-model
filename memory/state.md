@@ -66,7 +66,14 @@
   * Updated Table 4.5/4.6 (`mtl_architecture_specification.tex`) with third column for E4 (11,926,706 trainable params, 0% capacity difference, PCGrad shared gradient optimization distinction).
   * Updated Figure 4.4 (`mtl_superstep_gradient_routing.tex`) with dual-branch gradient routing (E1/E3 standard sum accumulation vs. E4 PCGrad projection) and architectural gradient boundaries.
   * Verified LaTeX compilation (76-page PDF, 0 errors, 0 undefined refs/citations, 0 overfull boxes in Ch 4) and pushed to remote main (`d7b1b83`).
-- **Immediate next action:** Final thesis chapter drafting (Chapter 5 Result Analysis, Chapter 6 Conclusion, Abstract), defense slide preparation, and ongoing Google Sheets teammate paraphrase audit review.
+- [x] **Chapter 5 Final E0/E1/E3/E4 Result Integration — COMPLETE & VERIFIED:**
+  * Fully finalized Chapter 5 Result Analysis (`cattle_thesis_p3_latex/chapters/chapter_6.tex`) replacing all stale pre-MTL text with completed single-task (Runs 1–6) and multi-task evaluations (E1 Hard-Shared, E3 Modular Adapters, E4 PCGrad Optimization Control).
+  * Created 5 new dedicated booktabs tables: Table 5.8 (`mtl_bcs_results.tex`), Table 5.9 (`mtl_behavior_results.tex`), Table 5.10 (`mtl_behavior_source_results.tex`), Table 5.11 (`mtl_reid_results.tex`), and Table 5.12 (`pcgrad_gradient_diagnostics.tex`).
+  * Updated Table 5.13 (`design_decisions.tex`) with completed multi-task disposition.
+  * Integrated empirical gradient conflict diagnostics: 16,140 super-steps, 44,177 projections (2.737/step), 45%–54% pairwise conflict frequency, under strict non-causal claim boundaries.
+  * Synthesized calibrated negative-transfer findings: E1 hard sharing degraded all 3 tasks (outcome-level negative transfer); E3 modular adapters showed selective changes (+0.77 pp Behavior Acc, -0.2033 test loss) but degraded BCS and Re-ID and collapsed Walking; E4 PCGrad provided selective mitigation on Behavior (+1.92 pp Acc, +1.85 pp Bal Acc, +0.0248 Macro-F1, Walking F1 0.0909) and recovered principal metrics over E3, but dedicated single-task models remained superior on several task-specific measures.
+  * Verified LaTeX compilation (81-page PDF, 0 errors, 0 undefined refs/citations, 0 overfull boxes in Chapter 5).
+- **Immediate next action:** Chapter 6 Conclusion drafting, Abstract post-experiment rewrite, Appendices/evidence map integration, and defense slide preparation.
 - [x] **P3 Sample Reports Writing Audit & Freeze-Safe Boundary Strategy (`cattle_thesis_p3_latex/P3_SAMPLE_WRITING_AUDIT.md`) — COMPLETE & PUSHED TO REMOTE (`eb8795d`):**
   * Audited 12 faculty-evaluated BRAC University CSE400 final thesis reports.
   * Formulated the 5 Laws of Academic Thesis Writing, stripped engineering diary prose, and identified the 5 dedicated freeze-safe paraphrasing tabs.

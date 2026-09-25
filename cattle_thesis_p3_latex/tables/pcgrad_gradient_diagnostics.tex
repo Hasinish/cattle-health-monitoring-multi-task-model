@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering\small
+\caption[PCGrad shared-backbone gradient conflict diagnostics]{Observed shared-backbone gradient conflict diagnostics recorded during E4 PCGrad multi-task training across all 30 epochs ($16{,}140$ super-steps). Conflicts were evaluated pairwise on the shared four-channel ResNet-18 parameter gradients prior to projection surgery.\evidence{E35}}
+\label{tab:pcgrad_diagnostics}
+\begin{tabularx}{\textwidth}{Xr}
+\toprule
+\textbf{Diagnostic Metric / Evaluated Task Pair} & \textbf{Observed Training Quantity} \\
+\midrule
+BCS vs. Behavior Gradient Conflict Frequency & 47.8\% of super-steps \\
+BCS vs. Re-ID Gradient Conflict Frequency & 46.5\% of super-steps \\
+Behavior vs. Re-ID Gradient Conflict Frequency & 47.4\% of super-steps \\
+\midrule
+Total Executed Multi-Task Super-Steps & 16,140 \\
+Total Triggered Pairwise Conflict Projections & 44,177 \\
+Mean Conflict Projections per Super-Step (out of 6 max) & 2.737 \\
+\bottomrule
+\end{tabularx}
+\end{table}

@@ -1,0 +1,16 @@
+\begin{table}[htbp]
+\centering\small
+\caption[Multi-task Body Condition Scoring results]{Multi-task Body Condition Scoring results on the matched held-out ScienceDB test population ($N = 7{,}549$ images). For MAE and Loss, lower values are better ($\downarrow$); for Acc@1, Acc@0, Balanced Accuracy, and Macro-F1, higher values are better ($\uparrow$). All models share the four-channel ResNet-18 spatial trunk.\evidence{E24,E32}}
+\label{tab:mtl_bcs_results}
+\setlength{\tabcolsep}{2pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+\textbf{Configuration} & \textbf{MAE} & \textbf{Acc@1} & \textbf{Acc@0} & \textbf{Bal.~Acc.} & \textbf{Macro-F1} & \textbf{Loss} \\
+\midrule
+Single-Task Reference (Run 4) & \textbf{0.1709} & \textbf{89.40\%} & \textbf{43.57\%} & \textbf{39.70\%} & \textbf{0.4039} & 0.4403 \\
+Monolithic Hard-Shared (E1) & 0.1788 & 88.44\% & 41.10\% & 35.70\% & 0.3605 & \textbf{0.4175} \\
+Modular Task-Private (E3) & 0.1916 & 86.32\% & 38.47\% & 33.13\% & 0.3291 & 0.4555 \\
+PCGrad Hard-Shared (E4) & 0.1828 & 87.84\% & 40.23\% & 34.97\% & 0.3516 & 0.4181 \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,18 @@
+\begin{table}[htbp]
+\centering\footnotesize
+\caption[Multi-task Behavior source-disjoint breakdown]{Multi-task Behavior Recognition performance breakdown across acquisition sources: authentic barn surveillance (CVB, $N = 422$) and feedlot camera clips (Kaggle Beef, $N = 358$). Note that the minority Walking class is exclusive to CVB.\evidence{E27,E33}}
+\label{tab:mtl_behavior_source}
+\setlength{\tabcolsep}{1.4pt}
+\begin{tabular}{lrrrrrr}
+\toprule
+& \multicolumn{3}{c}{\textbf{CVB Barn CCTV ($N = 422$)}} & \multicolumn{3}{c}{\textbf{Kaggle Beef Feedlot ($N = 358$)}} \\
+\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+\textbf{Configuration} & \textbf{Accuracy} & \textbf{Bal.~Acc.} & \textbf{Macro-F1} & \textbf{Accuracy} & \textbf{Bal.~Acc.} & \textbf{Macro-F1} \\
+\midrule
+Single-Task (Run 5) & 80.09\% & \textbf{61.05\%} & \textbf{0.6188} & \textbf{96.09\%} & \textbf{94.26\%} & \textbf{0.9414} \\
+Hard-Shared Control (E1) & 76.78\% & 48.90\% & 0.5402 & 94.69\% & 93.11\% & 0.9236 \\
+Modular Task-Private (E3) & 80.33\% & 60.61\% & 0.6026 & 92.18\% & 87.29\% & 0.8849 \\
+PCGrad Hard-Shared (E4) & \textbf{81.04\%} & 55.30\% & 0.6141 & 93.85\% & 92.05\% & 0.9158 \\
+\bottomrule
+\end{tabular}
+\end{table}
