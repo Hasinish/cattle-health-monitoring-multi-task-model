@@ -64,3 +64,8 @@ memory/personal_info.md
 credentials*.json
 token*.json
 client_secret*.json
+
+# Paraphrasing export artifacts (.docx)
+cattle_thesis_p3_latex/paraphrasing_docs/
+*.docx
+
