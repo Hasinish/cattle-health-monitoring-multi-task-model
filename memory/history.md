@@ -9,7 +9,9 @@
   4. Executed zero-GPU cloud readiness verification on Modal (`hasinishrak2015`, App `ap-Iy8ywTox8KxYyCI7kEc4hD`): verified volume mounts, dataset files, 0 held-out cow overlap, exact 11,926,706 param count, and writable checkpoint paths. Status: `CERTIFIED_READY_FOR_E4_SMOKE`.
   5. Dispatched cloud GPU smoke test on Tesla T4 (`hasinishrak2015`, App `ap-xbVM5Th8GNiWyToOw8lMsx`): 2 epochs passed in 3.7s; loss dropped from 1.7787 to 1.4754; executed 8 PCGrad conflict projections (4/epoch; 2.0/step); bit-identical checkpoint reload verified (`max_logit_diff == 0.00000000`); held-out test sets untouched. Checkpoints committed to `/mtl-checkpoints/mtl_e4_pcgrad_smoke/`.
   6. Synced local artifact: `artifacts/mtl_e4_pcgrad_smoke/mtl_e4_pcgrad_smoke_metrics.json`. Authored official research log `docs/research_log/2026-09-25_phase3_mtl_e4_pcgrad_implementation_and_smoke.md` and indexed in `docs/research_log/README.md`.
-  7. Scientific claim boundaries strictly observed. Full 30-epoch training on L40S was NOT launched and awaits manual user command.
+  7. User manually launched full 30-epoch training on Modal (`hasinishrak2015`, NVIDIA L40S, App `ap-JfKjvY9vbNUXBPaPXL4GCT`, runtime 2,213.1s / ~36.88 mins). Training completed cleanly with best validation objective `0.40098` at Epoch 3 (BCS Val Loss 0.4313, MAE 0.1968; Behavior Val Loss 0.4697, Macro-F1 0.7050; Re-ID Val Loss 0.3020, Top-1 Acc 93.59%). In later epochs, Re-ID validation accuracy reached 96.76% and Behavior Macro-F1 reached 0.7850.
+  8. Recorded first direct empirical proof of task gradient conflict: across 16,140 super-steps, 44,177 conflict projections were triggered (2.737/step) with 45%–54% pairwise conflict frequency.
+  9. Synced full metrics artifact `artifacts/mtl_e4_training/mtl_e4_metrics.json` via `scripts/sync_mtl_e4_artifacts.py`. Authored official research log `docs/research_log/2026-09-26_phase3_mtl_e4_pcgrad_full_training_results.md` and indexed in `docs/research_log/README.md`. Held-out test sets strictly untouched.
 
 # Session Summary — 2026-09-25 (Phase 3 Run 8 E3 Modular MTL Official Held-Out Evaluation & Milestone Completion)
 
