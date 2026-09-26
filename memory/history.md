@@ -1,3 +1,23 @@
+# Session Summary — 2026-09-26 (Column B LaTeX Artifact Purge & Canonical Table Number Replacement)
+
+- Convo ID: 43856bba-e307-42fd-9475-62aa9b04c2a0
+- Objective: Scan Column B (Original text) across all sheets for raw LaTeX syntax and unparsed tags (`Tabletab:timeline`, `Tabletab:risks`, `Tabletab:costs`, raw math), determine the exact intended plain text and canonical compiled table numbers from `cattle_thesis_p3_latex/main.aux`, and replace them live in Google Sheets while keeping all formatting and surrounding cells intact.
+- Accomplishments & Verification:
+  1. Ran regex scanner across all sheets: identified 3 broken LaTeX references in `Chapter 3: Requirements & Constraints` (B59, B72, B79) and raw formula syntax in `Chapter 2: Literature Review` (B33, B36).
+  2. Cross-referenced `cattle_thesis_p3_latex/main.aux` to determine ground-truth LaTeX compiled table numbers:
+     - `tab:requirements` -> Table 3.1
+     - `tab:timeline` -> Table 3.2
+     - `tab:risks` -> Table 3.3
+     - `tab:costs` -> Table 3.4
+  3. Implemented and executed `scripts/replace_latex_in_col_b.py`, replacing:
+     - Chapter 3 B59: `Tabletab:timeline` -> `Table 3.2`
+     - Chapter 3 B72: `Tabletab:risks` -> `Table 3.3`
+     - Chapter 3 B79: `Tabletab:costs` -> `Table 3.4`
+     - Chapter 3 D59 & D72: updated review note instructions to match the canonical Table 3.2 and Table 3.3 numbering.
+     - Chapter 2 B33: formatted formula cleanly to `[Formula:\n L_MTL = sum_{t=1}^T (lambda_t * L_t)\n]`.
+     - Chapter 2 B36: cleaned Greek letter representation to `lambda_t`.
+  4. Verified live on Google Sheets: all 7 targeted cells updated cleanly; zero formatting or cell integrity damage.
+
 # Session Summary — 2026-09-26 (Multi-Sheet Forensic Paraphrase Audit & Targeted Light Yellow Highlighting)
 
 - Convo ID: 43856bba-e307-42fd-9475-62aa9b04c2a0
