@@ -94,7 +94,7 @@ The dedicated single-task oracle model (Run~6) maintained the strongest performa
 
 \input{tables/mtl_reid_results}
 
-Architectural and optimization interventions yielded divergent retrieval outcomes. Modular adapters (E3) induced severe secondary degradation, driving Barn Rank-1 down to 49.08\%. While PCGrad (E4) recovered substantial ground relative to E3—lifting Barn Rank-1 back to 54.97\% and Snapshot mAP to 33.87\%—it remained mixed relative to E1 and well below the single-task reference. Isolated exceptions appeared at deeper retrieval ranks (such as E3 maintaining slightly higher Rank-10 in snapshots), confirming that multi-task feature sharing alters retrieval rank distributions without matching dedicated single-task biometric precision.
+Architectural and optimization interventions yielded divergent retrieval outcomes. Modular adapters (E3) produced secondary degradation, driving Barn Rank-1 down to 49.08\%. While PCGrad (E4) recovered substantial ground relative to E3—lifting Barn Rank-1 back to 54.97\% and Snapshot mAP to 33.87\%—it remained mixed relative to E1 and well below the single-task reference. Isolated exceptions appeared at deeper retrieval ranks (such as E3 maintaining slightly higher Rank-10 in snapshots), confirming that multi-task feature sharing alters retrieval rank distributions without matching dedicated single-task biometric precision.
 
 \subsection{Observed Shared-Backbone Gradient Conflict}
 
