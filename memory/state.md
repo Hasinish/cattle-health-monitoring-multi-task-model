@@ -35,10 +35,9 @@
   * Preserved Git SHA macro `\sourcepath{...}` and evidence tags (`\evidence{E04,E05,E06}`, `\evidence{E24,E27,E29}`).
   * Synchronized Google Sheets `Appendix A` tab: verified and approved Rows 2, 5, 8, 11, 14, 17 in Column D.
   * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes of `pdflatex` (90 pages, 0 errors).
-- [x] **Abstract Streamlined & Calibrated (~180 Words)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
-  * Replaced abstract in [`cattle_thesis_p3_latex/core/abstract.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/core/abstract.tex) with user's tightened, evidence-calibrated 3-paragraph version (~180 words).
-  * Enforced strict claim boundaries: changed "conflicting" to "different visual information", removed "significantly" (no significance testing), avoided causal attribution for PCGrad gradient interference, and eliminated "practical deployment" overclaiming.
-  * Formatted with clean typography and standard margins on Page v with zero overflow.
+- [x] **Abstract (Exact User Final Text Integrated)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
+  * Replaced abstract in [`cattle_thesis_p3_latex/core/abstract.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/core/abstract.tex) with user's exact final text (~175 words across 3 paragraphs + keywords).
+  * Formatted cleanly on Page v with standard margins, zero overflow onto Page vi, Dedication starting on Page vi.
   * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes of `pdflatex` (90 pages, 0 errors).
 - [x] **Ethics Statement (3 Paragraphs) Paraphrased & Integrated**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * Replaced all 3 paragraphs in [`cattle_thesis_p3_latex/core/ethics_statement.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/core/ethics_statement.tex) with user's paraphrased text (degree requirement, public dataset non-invasive nature, acknowledgement of support).
