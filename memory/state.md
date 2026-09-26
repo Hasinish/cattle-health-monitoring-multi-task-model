@@ -25,10 +25,10 @@
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-- [x] **Abstract (8 Parts) Paraphrased & Integrated**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
-  * Replaced all 7 narrative parts and keywords in [`cattle_thesis_p3_latex/core/abstract.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/core/abstract.tex) with user's paraphrased text.
-  * Formatted with `\enlargethispage{1\baselineskip}` and clean typography to ensure Page v contains the entire Abstract and Keywords with zero overflow to Page vi.
-  * Synchronized Google Sheets `Abstract (Break it down in parts)` tab: verified and approved Rows 2, 5, 8, 11, 14, 17, 20, 23 in Column D.
+- [x] **Abstract Streamlined & Calibrated (~180 Words)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
+  * Replaced abstract in [`cattle_thesis_p3_latex/core/abstract.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/core/abstract.tex) with user's tightened, evidence-calibrated 3-paragraph version (~180 words).
+  * Enforced strict claim boundaries: changed "conflicting" to "different visual information", removed "significantly" (no significance testing), avoided causal attribution for PCGrad gradient interference, and eliminated "practical deployment" overclaiming.
+  * Formatted with clean typography and standard margins on Page v with zero overflow.
   * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes of `pdflatex` (90 pages, 0 errors).
 - [x] **Ethics Statement (3 Paragraphs) Paraphrased & Integrated**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * Replaced all 3 paragraphs in [`cattle_thesis_p3_latex/core/ethics_statement.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/core/ethics_statement.tex) with user's paraphrased text (degree requirement, public dataset non-invasive nature, acknowledgement of support).
