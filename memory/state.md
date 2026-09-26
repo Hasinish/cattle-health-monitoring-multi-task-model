@@ -25,7 +25,10 @@
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
-## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | ALL 8 FOCUSED DEADLINE RUNS ARE COMPLETE AND HELD-OUT EVALUATED)
+- [x] **Chapters 4, 5, & 6 Paraphrase Audit & Review Column Verification**: COMPLETE & VERIFIED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
+  * Audited all 45 user paraphrased paragraphs in Column C across Chapters 4 (2 paras), 5 (14 paras), and 6 (29 paras).
+  * Confirmed 100% fidelity on scientific metrics, dataset counts, sample sizes, architecture names, parameter counts, and conflict stats.
+  * Preserved Columns A, B, and C completely untouched. Updated Column D with `✅ ঠিক আছে, কোনো সমস্যা নেই!` across 44 rows, and placed one minor mathematical wording heads-up on Chapter 6 Row 14 (`decreased` vs `increased` for error value 0.1709 -> 0.1788).
 - [x] **5 Additional Google Sheets Paraphrase Tabs Added & Populated**: COMPLETE & VERIFIED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * Created and populated 5 new workbench tabs in Google Spreadsheet `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`:
     - `Ethics Statement` (sheetId: 1101684298, 3 paragraphs, 9 rows).
