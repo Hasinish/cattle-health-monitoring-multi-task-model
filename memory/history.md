@@ -1,3 +1,13 @@
+# Session Summary — 2026-09-26 (Turnitin Diagnostic Split PDFs Generated on Desktop)
+
+- Convo ID: 60a2b4ef-bea7-4ac9-9b24-08761707adf5
+- Objective: Generate two isolated, non-destructive Turnitin diagnostic PDFs directly on Desktop with calibrated AI buffers.
+- Accomplishments & Verification:
+  1. Part 1 (`T25301094_Part1_Diagnostics.pdf`): Ethics, Abstract, Dedication, Ack, Ch 1–3 + Appendix C AI Buffer (37 pages, 11,289 real words, 3,177 buffer words, 14,466 total words, **21.96% AI**).
+  2. Part 2 (`T25301094_Part2_Diagnostics.pdf`): Ch 4–6, Appendix A & B + Appendix C AI Buffer (57 pages, 14,546 real words, 4,109 buffer words, 18,655 total words, **22.03% AI**).
+  3. Verified both files sit comfortably under Turnitin's 30,000-word ceiling and strictly > 20.00% to unlock highlight markers.
+  4. Preserved `cattle_thesis_p3_latex/main.tex` and all thesis source files 100% untouched.
+
 # Session Summary — 2026-09-26 (Chapter 3: Removed Residual Draft TODO Box)
 
 - Convo ID: 60a2b4ef-bea7-4ac9-9b24-08761707adf5

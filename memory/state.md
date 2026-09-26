@@ -24,6 +24,11 @@
 - **MTL Architecture Policy**: No final MTL architecture is predetermined. Hard sharing (E1), partial sharing (E2), task-private pathways / adapters / gates (E3), PCGrad (E4), and GradNorm (E5) remain empirical alternatives to compare against single-task controls (E0).
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
+- [x] **Turnitin Diagnostic Split PDFs Generated on Desktop**: COMPLETE & VERIFIED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
+  * Created non-destructive, isolated diagnostic PDFs on `C:\Users\Hasin\Desktop` without touching `cattle_thesis_p3_latex/main.tex`:
+    - `T25301094_Part1_Diagnostics.pdf`: Ethics Statement, Abstract, Dedication, Acknowledgement, Chapters 1–3 + Appendix C AI Buffer (37 pages, 11,289 real words, 3,177 buffer words, 14,466 total words, **21.96% AI**).
+    - `T25301094_Part2_Diagnostics.pdf`: Chapters 4–6, Appendix A & B + Appendix C AI Buffer (57 pages, 14,546 real words, 4,109 buffer words, 18,655 total words, **22.03% AI**).
+  * Both files sit comfortably under the 30,000-word ceiling and strictly > 20.00% AI ratio to unlock Turnitin's line-by-line highlight markers.
 - [x] **Residual Draft TODO Purged (0 TODO Calls Remain in Entire Repo)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * Removed residual `\drafttodo{ETHICS-02}` box from Section 3.4 in [`cattle_thesis_p3_latex/chapters/chapter_3.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/chapters/chapter_3.tex).
   * `check_draft.py` output certified: `0 TODO calls remain; no raw-data or model audit performed.`
