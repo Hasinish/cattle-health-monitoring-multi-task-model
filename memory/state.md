@@ -25,6 +25,11 @@
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
+- [x] **Appendix B (12 Paragraphs) Paraphrased & Integrated**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
+  * Replaced all 12 paragraphs across [`cattle_thesis_p3_latex/appendix/appendix_2.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/appendix/appendix_2.tex) with user's paraphrased text.
+  * Preserved bold topic headings, LaTeX percent escapes (`3.32\%`), and all evidence cross-references (`\evidence{E08...}`, `\evidence{E04...}`, `\evidence{E24...}`, `\evidence{E29...}`, `\evidence{E37...}`, `\evidence{E35...}`, `\evidence{E36...}`).
+  * Synchronized Google Sheets `Appendix B Paras` tab: verified and approved all 12 rows in Column D.
+  * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes of `pdflatex` (90 pages, 0 errors).
 - [x] **Appendix A (6 Paragraphs) Paraphrased & Integrated**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * Replaced all 6 paragraphs across [`cattle_thesis_p3_latex/appendix/appendix_1.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/appendix/appendix_1.tex) (paras 1-4) and [`cattle_thesis_p3_latex/appendix/methodology_crosswalk.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/appendix/methodology_crosswalk.tex) (paras 5-6) with user's paraphrased text.
   * Preserved Git SHA macro `\sourcepath{...}` and evidence tags (`\evidence{E04,E05,E06}`, `\evidence{E24,E27,E29}`).
