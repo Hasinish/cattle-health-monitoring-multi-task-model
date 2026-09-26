@@ -1,6 +1,6 @@
 \section{Design Process and Methodology Overview}
 
-The study compares different visual representations using task-specific evaluation protocols. Each task has an RGB reference model and a cattle-centered version. These six single-task models establish task-specific performance baselines and serve as the empirical reference for evaluating three multi-task learning configurations: a monolithic hard-shared control architecture (E1), a modular task-private architecture (E3), and a gradient-projected hard-shared optimization control (E4).
+The study tests different ways of showing the visual representation to the model and each task uses its own evaluation model. Each task has an RGB reference model and a cattle-centered version. These six single-task models establish task-specific performance baselines and serve as the empirical reference for evaluating three multi-task learning configurations: a monolithic hard-shared control architecture (E1), a modular task-private architecture (E3), and a gradient-projected hard-shared optimization control (E4).
 
 The main design question is what information each task should receive. BCS mainly needs morphology, behavior recognition needs posture and temporal change, and Re-ID needs stable individual appearance. Because of this, the cattle-centered models all focus on the target cow, but they do not use exactly the same preprocessing. Figure~\ref{fig:phase3design} shows the overall comparison, and Table~\ref{tab:runstatus} lists the model configurations. Supporting records are indexed in Appendix~\ref{app:evidence}.
 

@@ -1,3 +1,15 @@
+# Session Summary — 2026-09-26 (Chapters 4 & 6: 2 User Paraphrases Integrated in LaTeX)
+
+- Convo ID: 60a2b4ef-bea7-4ac9-9b24-08761707adf5
+- Objective: Replace representation testing sentence in Ch 4 (`chapter_5.tex`) and E4 PCGrad opening sentence in Ch 6 (`chapter_9.tex`).
+- Accomplishments & Verification:
+  1. Replaced Ch 4 line 3 in `cattle_thesis_p3_latex/chapters/chapter_5.tex`.
+  2. Replaced Ch 6 line 16 in `cattle_thesis_p3_latex/chapters/chapter_9.tex` (preserved citation `\cite{yu2020pcgrad}`).
+  3. Upgraded `build_turnitin_split_diagnostics.py` with dynamic section boundary detection.
+  4. Verified with `check_draft.py` (0 errors, 0 TODOs).
+  5. Recompiled `main.pdf` cleanly with 2 passes of `pdflatex` (89 pages, 0 errors).
+  6. Rebuilt `T25301094_Part1_Diagnostics.pdf` and `T25301094_Part2_Diagnostics.pdf` on Desktop.
+
 # Session Summary — 2026-09-26 (Tables: Simplified Risks, Costs, and Decisions Table Cells)
 
 - Convo ID: 60a2b4ef-bea7-4ac9-9b24-08761707adf5
