@@ -99,10 +99,10 @@
     - **Row 101**: Broken grammar (`In the chapter 4 it discuss about...`, `interpretetion`, `these experiments looks at`).
     - **Row 108**: Incorrect terminology (`assignments` instead of `tasks`).
     - **Row 117**: Direct copy-paste (79% verbatim 4-gram overlap).
-  * **Chapter 2: Literature Review (3 rows)**:
+  * **Chapter 2: Literature Review (2 rows)**:
     - **Row 13**: Direct copy-paste (100% verbatim copy-paste from original).
     - **Row 51**: Factual biological error (`fur patterns` on cattle; cattle have hair coats and markings, not fur).
-    - **Row 54**: Truncated sentence cut off mid-thought (`Therefore, the integration is not only about merging multiple predictions.`).
+    - *(Row 54 was resolved & approved on 2026-09-26: full sentence integrated, highlight cleared)*.
   * **Chapter 3: Requirements & Constraints (0 rows)**: CLEAN! 100% of rows are approved!
 - **E4 PCGrad Status Summary (Final Additional Optimization Run — OFFICIAL HELD-OUT EVALUATION COMPLETE & CERTIFIED ✅)**:
   * **Scientific Role**: One controlled question: *Does PCGrad improve the hard-shared E1 multi-task model when architecture, data, heads, schedule, losses, and validation selection are otherwise kept matched?* (E1: ordinary hard sharing; E3: architectural adapter intervention; E4: PCGrad optimization intervention; GradNorm E5 and partial sharing E2 remain deferred).
