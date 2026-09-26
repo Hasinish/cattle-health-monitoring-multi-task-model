@@ -29,6 +29,33 @@
 - [x] **Multi-Sheet Paraphrase Workbench Deep Audit & Targeted Light Yellow Highlighting**: COMPLETE & CERTIFIED ✅ (Convo `43856bba-e307-42fd-9475-62aa9b04c2a0`). Forensically audited all 142 paragraph rows across Chapters 1, 2, and 3 in Google Spreadsheet `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`. Detected 16 defective rows (direct copy-pastes, missing words, domain/terminology errors, truncated sentence, LaTeX tag leaks). Applied targeted LIGHT YELLOW (`#FFFACD`) highlight exclusively to Column C of the 16 defective cells, and recorded exact `🛠️ Required Fixes:` in Column D. Verified 100% of other cells remain intact.
 - [x] **Column B Raw LaTeX Tag Purge & Ground-Truth Table Number Replacement**: COMPLETE & CERTIFIED ✅ (Convo `43856bba-e307-42fd-9475-62aa9b04c2a0`). Scanned all Column B cells across Chapters 1, 2, and 3 for raw LaTeX syntax and unparsed tags. Identified 3 broken LaTeX references in Chapter 3 (`Tabletab:timeline`, `Tabletab:risks`, `Tabletab:costs`) and formula syntax in Chapter 2. Verified canonical table numbers from `cattle_thesis_p3_latex/main.aux` (`tab:timeline` = Table 3.2, `tab:risks` = Table 3.3, `tab:costs` = Table 3.4). Executed `scripts/replace_latex_in_col_b.py`, replacing all raw tags in Column B with clean plain English, synchronized Column D review notes, and verified live on Google Sheets with zero formatting damage.
 - [x] **Paraphrase Meaning Approval & Resolved Fixes Cleanup Across All Sheets**: COMPLETE & CERTIFIED ✅ (Convo `43856bba-e307-42fd-9475-62aa9b04c2a0`). Inspected all paragraph rows across Chapters 1, 2, and 3. Verified that teammate edits resolved previously flagged issues across 21 rows in Ch 1, 2 rows in Ch 2, and 5 rows in Ch 3, while 29 additional rows in Ch 2 were newly confirmed accurate. Built and executed `scripts/apply_approvals_and_clear_fixes.py`: applied `✅ অর্থ ঠিক রাখা হইছে。` to all 111 approved rows, stripped resolved `🛠️ Required Fixes:`, and un-highlighted (reset to white) Column C for approved rows. Confirmed only the 16 genuinely defective rows remain highlighted in yellow with actionable fixes.
+
+### Paraphrase Workbench Quality Registry (LOCKED IN MEMORY)
+- **Total Rows Audited**: 142 paragraph rows across Chapters 1, 2, and 3 in Google Spreadsheet `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`.
+- **111 Certified Good / Approved Rows (`✅ অর্থ ঠিক রাখা হইছে。`, Background: White `#FFFFFF`)**:
+  * **Chapter 1: Introduction (30 rows)**: Rows 3, 6, 9, 12, 15, 18, 24, 30, 33, 37, 40, 43, 47, 50, 53, 57, 60, 63, 66, 70, 73, 76, 79, 82, 85, 95, 98, 105, 111, 114.
+  * **Chapter 2: Literature Review (59 rows)**: Rows 3, 6, 10, 16, 20, 23, 26, 30, 36, 39, 45, 48, 58, 77, 80, 83, 86, 89, 92, 95, 99, 102, 105, 108, 111, 114, 117, 121, 127, 143, 146, 149, 152, 155, 158, 165, 168, 171, 174, 177, 181, 184, 187, 190, 193, 196, 200, 206, 209, 215, 221, 228, 232, 235, 239, 242, 246, 249, 252.
+  * **Chapter 3: Requirements & Constraints (22 rows)**: Rows 3, 6, 9, 12, 16, 19, 22, 25, 29, 32, 35, 39, 42, 45, 48, 52, 55, 62, 65, 68, 75, 82.
+- **The EXACT 16 Defective Rows (Needing Fix, Background: Light Yellow `#FFFACD`, Actionable `🛠️ Required Fixes:` in Col D)**:
+  * **Chapter 1: Introduction (6 rows)**:
+    - **Row 27**: Stray open quotation mark (`“Coat pattern...`) and near-verbatim quote.
+    - **Row 88**: Missing paraphrase (`No paraphase....`).
+    - **Row 92**: Rogue floating `1.` enumeration inside narrative paragraph (`...comparative experimental design. 1. The first stage...`).
+    - **Row 101**: Broken grammar (`In the chapter 4 it discuss about...`, `interpretetion`, `these experiments looks at`).
+    - **Row 108**: Incorrect terminology (`assignments` instead of `tasks`).
+    - **Row 117**: Direct copy-paste (79% verbatim 4-gram overlap).
+  * **Chapter 2: Literature Review (7 rows)**:
+    - **Row 13**: Direct copy-paste (100% verbatim copy-paste from original).
+    - **Row 51**: Factual biological error (`fur patterns` on cattle; cattle have hair coats and markings, not fur).
+    - **Row 54**: Truncated sentence cut off mid-thought (`Therefore, the integration is not only about merging multiple predictions.`).
+    - **Row 124**: Conceptual error (`modern sensors` for RT-DETR and Mask R-CNN; they are object detector models, not sensors).
+    - **Row 203**: Unparaphrased verbatim final sentence (`They control how strongly tasks update the network, but they do not decide which visual features should be shared.`).
+    - **Row 212**: Unparaphrased verbatim concluding sentences (`One grouping may help one task while hurting another. Strong single-task references are therefore necessary before judging a shared model.`).
+    - **Row 218**: Unparaphrased verbatim final sentence (`This is why the thesis compares hard sharing with task-conditioned or partly private processing.`).
+  * **Chapter 3: Requirements & Constraints (3 rows)**:
+    - **Row 59**: Raw LaTeX label remnant `Table 3.1:timeline` (needs to be `Table 3.2`).
+    - **Row 72**: Raw LaTeX label remnant `Table 3.2:risks` (needs to be `Table 3.3`).
+    - **Row 79**: Raw LaTeX label remnant `Table 3.4:costs` and broken grammar (`In Table 3.4, reports only information...`).
 - **E4 PCGrad Status Summary (Final Additional Optimization Run — OFFICIAL HELD-OUT EVALUATION COMPLETE & CERTIFIED ✅)**:
   * **Scientific Role**: One controlled question: *Does PCGrad improve the hard-shared E1 multi-task model when architecture, data, heads, schedule, losses, and validation selection are otherwise kept matched?* (E1: ordinary hard sharing; E3: architectural adapter intervention; E4: PCGrad optimization intervention; GradNorm E5 and partial sharing E2 remain deferred).
   * **Architecture & Scripts**: COMPLETE ✅ (`scripts/train_mtl_e4_pcgrad.py`, `scripts/modal_train_mtl_e4_pcgrad.py`, `scripts/evaluate_mtl_e4_held_out.py`, `scripts/modal_evaluate_mtl_e4_held_out.py`). Exactly ONE shared 4-channel ResNet-18 backbone (11,179,648 params), 3 task heads (747,058 params), exactly 11,926,706 trainable params matching E1 (0 adapters, 0 gates).
