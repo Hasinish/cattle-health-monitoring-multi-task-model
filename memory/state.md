@@ -24,7 +24,10 @@
 - **MTL Architecture Policy**: No final MTL architecture is predetermined. Hard sharing (E1), partial sharing (E2), task-private pathways / adapters / gates (E3), PCGrad (E4), and GradNorm (E5) remain empirical alternatives to compare against single-task controls (E0).
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
-
+- [x] **Residual Draft TODO Purged (0 TODO Calls Remain in Entire Repo)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
+  * Removed residual `\drafttodo{ETHICS-02}` box from Section 3.4 in [`cattle_thesis_p3_latex/chapters/chapter_3.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/chapters/chapter_3.tex).
+  * `check_draft.py` output certified: `0 TODO calls remain; no raw-data or model audit performed.`
+  * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes of `pdflatex` (90 pages, 0 errors, ZERO draft marks).
 - [x] **Appendix B (12 Paragraphs) Paraphrased & Integrated**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * Replaced all 12 paragraphs across [`cattle_thesis_p3_latex/appendix/appendix_2.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/appendix/appendix_2.tex) with user's paraphrased text.
   * Preserved bold topic headings, LaTeX percent escapes (`3.32\%`), and all evidence cross-references (`\evidence{E08...}`, `\evidence{E04...}`, `\evidence{E24...}`, `\evidence{E29...}`, `\evidence{E37...}`, `\evidence{E35...}`, `\evidence{E36...}`).
