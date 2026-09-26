@@ -33,11 +33,11 @@
 
 ### Paraphrase Workbench Quality Registry (LOCKED IN MEMORY)
 - **Total Rows Audited**: 142 paragraph rows across Chapters 1, 2, and 3 in Google Spreadsheet `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`.
-- **114 Certified Good / Approved Rows (`✅ অর্থ ঠিক রাখা হইছে。`, Background: White `#FFFFFF`)**:
+- **118 Certified Good / Approved Rows (`✅ অর্থ ঠিক রাখা হইছে。`, Background: White `#FFFFFF`)**:
   * **Chapter 1: Introduction (30 rows)**: Rows 3, 6, 9, 12, 15, 18, 24, 30, 33, 37, 40, 43, 47, 50, 53, 57, 60, 63, 66, 70, 73, 76, 79, 82, 85, 95, 98, 105, 111, 114.
-  * **Chapter 2: Literature Review (59 rows)**: Rows 3, 6, 10, 16, 20, 23, 26, 30, 36, 39, 45, 48, 58, 77, 80, 83, 86, 89, 92, 95, 99, 102, 105, 108, 111, 114, 117, 121, 127, 143, 146, 149, 152, 155, 158, 165, 168, 171, 174, 177, 181, 184, 187, 190, 193, 196, 200, 206, 209, 215, 221, 228, 232, 235, 239, 242, 246, 249, 252.
+  * **Chapter 2: Literature Review (63 rows)**: Rows 3, 6, 10, 16, 20, 23, 26, 30, 36, 39, 45, 48, 58, 77, 80, 83, 86, 89, 92, 95, 99, 102, 105, 108, 111, 114, 117, 121, 124, 127, 143, 146, 149, 152, 155, 158, 165, 168, 171, 174, 177, 181, 184, 187, 190, 193, 196, 200, 203, 206, 209, 212, 215, 218, 221, 228, 232, 235, 239, 242, 246, 249, 252. (Rows 124, 203, 212, 218 approved & unhighlighted).
   * **Chapter 3: Requirements & Constraints (25 rows — 100% COMPLETE & CERTIFIED ✅)**: Rows 3, 6, 9, 12, 16, 19, 22, 25, 29, 32, 35, 39, 42, 45, 48, 52, 55, 59, 62, 65, 68, 72, 75, 79, 82. (ZERO defective cells remain).
-- **The EXACT 13 Defective Rows (Needing Fix, Background: Light Yellow `#FFFACD`, Actionable `🛠️ Required Fixes:` in Col D)**:
+- **The EXACT 9 Defective Rows (Needing Fix, Background: Light Yellow `#FFFACD`, Actionable `🛠️ Required Fixes:` in Col D)**:
   * **Chapter 1: Introduction (6 rows)**:
     - **Row 27**: Stray open quotation mark (`“Coat pattern...`) and near-verbatim quote.
     - **Row 88**: Missing paraphrase (`No paraphase....`).
@@ -45,14 +45,10 @@
     - **Row 101**: Broken grammar (`In the chapter 4 it discuss about...`, `interpretetion`, `these experiments looks at`).
     - **Row 108**: Incorrect terminology (`assignments` instead of `tasks`).
     - **Row 117**: Direct copy-paste (79% verbatim 4-gram overlap).
-  * **Chapter 2: Literature Review (7 rows)**:
+  * **Chapter 2: Literature Review (3 rows)**:
     - **Row 13**: Direct copy-paste (100% verbatim copy-paste from original).
     - **Row 51**: Factual biological error (`fur patterns` on cattle; cattle have hair coats and markings, not fur).
     - **Row 54**: Truncated sentence cut off mid-thought (`Therefore, the integration is not only about merging multiple predictions.`).
-    - **Row 124**: Conceptual error (`modern sensors` for RT-DETR and Mask R-CNN; they are object detector models, not sensors).
-    - **Row 203**: Unparaphrased verbatim final sentence (`They control how strongly tasks update the network, but they do not decide which visual features should be shared.`).
-    - **Row 212**: Unparaphrased verbatim concluding sentences (`One grouping may help one task while hurting another. Strong single-task references are therefore necessary before judging a shared model.`).
-    - **Row 218**: Unparaphrased verbatim final sentence (`This is why the thesis compares hard sharing with task-conditioned or partly private processing.`).
   * **Chapter 3: Requirements & Constraints (0 rows)**: CLEAN! 100% of rows are approved!
 - **E4 PCGrad Status Summary (Final Additional Optimization Run — OFFICIAL HELD-OUT EVALUATION COMPLETE & CERTIFIED ✅)**:
   * **Scientific Role**: One controlled question: *Does PCGrad improve the hard-shared E1 multi-task model when architecture, data, heads, schedule, losses, and validation selection are otherwise kept matched?* (E1: ordinary hard sharing; E3: architectural adapter intervention; E4: PCGrad optimization intervention; GradNorm E5 and partial sharing E2 remain deferred).
