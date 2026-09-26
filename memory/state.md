@@ -29,10 +29,10 @@
 - [x] **Chapters 4, 5, & 6 Google Sheets Paraphrase Tabs Added & Populated**: COMPLETE & VERIFIED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * Created 3 new workbench tabs in Google Spreadsheet `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`:
     - `Chapter 4: Proposed Methodology` (sheetId: 1997649724, 2 paragraphs, 6 rows).
-    - `Chapter 5: Result Analysis` (sheetId: 1050456210, 11 paragraphs, 33 rows).
-    - `Chapter 6: Conclusion` (sheetId: 612786333, 8 paragraphs, 24 rows).
+    - `Chapter 5: Result Analysis` (sheetId: 1050456210, 14 paragraphs, 42 rows).
+    - `Chapter 6: Conclusion` (sheetId: 612786333, 29 paragraphs, 87 rows).
   * Formatted with standard workbench dimensions (Col A: 40px spacer, Col B: 560px red header `#EA4335`, Col C: 560px green header `#34A853`, Col D: 420px blue header `#4285F4`, top-aligned, text wrapping enabled).
-  * Converted all text to pure, clean natural English: completely stripped submission metadata, evidence markers (`[E08]`, `[E27]`, `[E22,E29]`), and repaired concatenated PDF ligature artifacts.
+  * Fully separated every bullet item, thesis contribution, limitation, future work item, and conclusion paragraph into its own discrete workbench block instead of glued-together blocks. Converted all text to pure, clean natural English: completely stripped submission metadata, evidence markers (`[E08]`, `[E27]`, `[E22,E29]`), and repaired concatenated PDF ligature artifacts.
 - [x] **Chapter 1 Paraphrase Updates (20 Paragraphs Total)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Replaced 20 total paragraphs in `cattle_thesis_p3_latex/chapters/chapter_1.tex`:
   * First 3 paragraphs of `\section{Background}` (citations `\cite{weary2009understanding}`, `\cite{edmonson1989bcs,ferguson1994bcs}`, `\cite{sani2026ab25}`, `\cite{lee2026ab26}` intact).
   * 4 paragraphs across `\subsection{Task-Appropriate Visual Representations}` and `\subsection{Preliminary Investigations and Their Limitations}` (shortcut learning, cattle-centred definition, multi-task baseline investigation, data review & leakage prevention; citations `\cite{geirhos2020shortcut}`, `\cite{xiao2021background}` intact).

@@ -3,12 +3,12 @@
 - Convo ID: 60a2b4ef-bea7-4ac9-9b24-08761707adf5
 - Objective: Create tabs for Chapters 4, 5, and 6 in Google Spreadsheet `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A` and populate them with user's selected paragraphs formatted as clean, normal text (zero LaTeX artifacts or equations) with standard workbench formatting.
 - Accomplishments & Verification:
-  1. Built and executed `scripts/populate_chapters_4_5_6.py` using Google Sheets API v4.
+  1. Built and executed `scripts/fix_separated_chapters_5_6.py` using Google Sheets API v4.
   2. Created 3 new tabs with customized workbench column widths (Col A: 40px spacer, Col B: 560px red header, Col C: 560px green header, Col D: 420px blue header) and permanent text wrap:
      - `Chapter 4: Proposed Methodology` (sheetId: 1997649724): 2 paragraphs (6 rows).
-     - `Chapter 5: Result Analysis` (sheetId: 1050456210): 11 paragraphs (33 rows).
-     - `Chapter 6: Conclusion` (sheetId: 612786333): 8 paragraphs (24 rows).
-  3. Sanitized all PDF ligature glitches, removed LaTeX tags, stripped submission headers and evidence tags, yielding pure, readable English text.
+     - `Chapter 5: Result Analysis` (sheetId: 1050456210): 14 discrete paragraphs (42 rows).
+     - `Chapter 6: Conclusion` (sheetId: 612786333): 29 discrete paragraphs (87 rows).
+  3. Fully unpacked all PDF copy-paste blocks into individual, discrete paragraphs/list items matched directly against the official LaTeX thesis source. Sanitized all PDF ligature glitches, removed LaTeX tags, stripped submission headers and evidence tags, yielding pure, readable English text.
 
 # Session Summary — 2026-09-26 (Chapters 1, 2, & 3 Paraphrases Integrated: 40 Paragraphs Total)
 
