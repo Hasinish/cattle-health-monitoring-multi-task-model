@@ -25,6 +25,10 @@
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
+- [x] **Ethics Statement (3 Paragraphs) Paraphrased & Integrated**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
+  * Replaced all 3 paragraphs in [`cattle_thesis_p3_latex/core/ethics_statement.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/core/ethics_statement.tex) with user's paraphrased text (degree requirement, public dataset non-invasive nature, acknowledgement of support).
+  * Synchronized Google Sheets `Ethics Statement` tab: verified Rows 2, 5, 8 with review approval in Column D.
+  * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes of `pdflatex` (90 pages, 0 errors).
 - [x] **Acknowledgement (5 Paragraphs) Paraphrased & Integrated**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * Replaced all 5 paragraphs in [`cattle_thesis_p3_latex/core/acknowledgement.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/core/acknowledgement.tex) with user's paraphrased text.
   * Preserved bold supervisor and co-supervisor names/titles: \textbf{Dr.~Md.~Khalilur Rahman} (Supervisor), \textbf{Mehedi Hasan Emo} (Co-Supervisor 1), and \textbf{Mollah MD Saif} (Co-Supervisor 2).
