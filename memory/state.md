@@ -26,6 +26,21 @@
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
 ## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | ALL 8 FOCUSED DEADLINE RUNS ARE COMPLETE AND HELD-OUT EVALUATED)
+- [x] **Chapter 1 Paraphrase Updates (20 Paragraphs Total)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Replaced 20 total paragraphs in `cattle_thesis_p3_latex/chapters/chapter_1.tex`:
+  * First 3 paragraphs of `\section{Background}` (citations `\cite{weary2009understanding}`, `\cite{edmonson1989bcs,ferguson1994bcs}`, `\cite{sani2026ab25}`, `\cite{lee2026ab26}` intact).
+  * 4 paragraphs across `\subsection{Task-Appropriate Visual Representations}` and `\subsection{Preliminary Investigations and Their Limitations}` (shortcut learning, cattle-centred definition, multi-task baseline investigation, data review & leakage prevention; citations `\cite{geirhos2020shortcut}`, `\cite{xiao2021background}` intact).
+  * 4 paragraphs under `\section{Problem Statement}` (representation sharing, per-task objectives for BCS/Behavior/Re-ID, prior work synthesis, and central Research Question blockquote `\begin{quote}\textit{...}\end{quote}`).
+  * 6 paragraphs under `\section{Objectives}` (primary objective + five enumerated goals covering dataset evaluation protocols, RGB baselines, cattle-centered visual cues, task-specific vs heavy sharing, and robustness to external acquisition).
+  * 3 paragraphs under `\section{Methodology in Brief}` & `\section{Scopes and Challenges}` (chapter transition overview, 3 visual tasks coverage without lameness, supervision discrepancies & burst-group-disjoint ScienceDB limitations).
+  * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes (89 pages, 0 errors, 0 undefined citations).
+- [x] **Chapter 2 Paraphrase Updates (6 Paragraphs Total)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Replaced 6 paragraphs in `cattle_thesis_p3_latex/chapters/chapter_2.tex` (`\section{Preliminaries}`):
+  * Transfer learning vs cattle-centered representation learning distinction.
+  * BCS formulation approaches (classification, ordinal, regression; CORAL citation `\cite{coral2020}` preserved).
+  * Behavior recognition activity requirements over time frames.
+  * Identification vs Re-ID open-set retrieval (`\cite{andrew2021opencows}` preserved).
+  * Multi-task learning weighted loss equation & variable definitions ($\mathcal{L}_{\mathrm{MTL}}$, $\mathcal{L}_t$, $\lambda_t$).
+  * Crawshaw MTL survey & negative transfer mechanisms (`\cite{crawshaw2020mtl}` preserved).
+  * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes (89 pages, 0 errors, 0 undefined citations).
 - [x] **Canonical Turnitin Submission Document Format (LOCKED SPECIFICATION IN MEMORY)**: COMPLETE & VERIFIED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * **Objective**: Bypass Turnitin's 20% detection suppression (forcing line-by-line highlight markers) while strictly staying under Turnitin's 30,000-word upload limit.
   * **The Exact Slicing Recipe (From 105-page `main.pdf`)**:
