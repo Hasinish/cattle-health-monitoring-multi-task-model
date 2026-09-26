@@ -26,7 +26,32 @@
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
 ## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | ALL 8 FOCUSED DEADLINE RUNS ARE COMPLETE AND HELD-OUT EVALUATED)
-- [x] **Chapter 5 Streamlined Result Analysis Micro-Calibration**: COMPLETE & VERIFIED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Executed final wording calibration in `cattle_thesis_p3_latex/chapters/chapter_6.tex`. Verified neutral phrasing for all flagged terms (refute, collapsed, decisive, caused, proved, induces, cancellation), neutralized causal assertion on line 97 (`induced` -> `produced`), preserved all tables, metrics, and conclusions, and verified 2-pass compilation with 0 errors, 0 undefined citations, and 0 overfull boxes.
+- [x] **Canonical Turnitin Submission Document Format (LOCKED SPECIFICATION IN MEMORY)**: COMPLETE & VERIFIED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
+  * **Objective**: Bypass Turnitin's 20% detection suppression (forcing line-by-line highlight markers) while strictly staying under Turnitin's 30,000-word upload limit.
+  * **The Exact Slicing Recipe (From 105-page `main.pdf`)**:
+    - **Excluded / Cut (26 pages total)**:
+      * Pages 1–15: Title page, Declaration, Approval, Coordinator, Ethics, Abstract, Dedication, Acknowledgement, TOC (4 pages), LOF, LOT, Nomenclature.
+      * Pages 80–88: Bibliography (80–84) + Appendix A (85–88).
+      * Pages 89–90: Appendix B (89–90).
+    - **Kept Content (79 pages total)**:
+      * **Pages 1 to 64**: Chapters 1 through 6 ONLY (Introduction, Literature Review, Requirements & Constraints, Proposed Methodology, Result Analysis, Conclusion — 100% of narrative prose + all 17 benchmark tables).
+      * **Pages 65 to 79**: Appendix C (AI Buffer — blatant GPT philosophical excursus, calibrated to ~5,937 words).
+  * **Turnitin Metrics (Locked & Audited)**:
+    - **Total Kept Pages**: **79 pages** (PDF) / **877 paragraphs** (DOCX).
+    - **Real Thesis Text**: **22,492 words** (Standard) / **22,553 words** (DOCX).
+    - **AI Buffer Text (Appendix C)**: **5,937 words** (Standard) / **5,751 words** (DOCX).
+    - **Total Word Count**: **28,429 words** (Standard) / **28,304 words** (DOCX) / **~29,488 words** (Turnitin counter with 512 words safety headroom under 30k).
+    - **Turnitin AI Ratio**: **20.88%** (PDF) / **20.32%** (DOCX) — strictly > 20.00% to guarantee colored line highlights.
+  * **Active Files on Desktop**:
+    - PDF: `C:\Users\Hasin\Desktop\T25301094_TEMP.pdf`
+    - DOCX: `C:\Users\Hasin\Desktop\T25301094_TEMP.docx`
+- [x] **Front Matter Finalization (Approval, Declaration, Ethics, Dedication, Acknowledgement)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Configured all front-matter pages to match official BRACU P3 thesis samples:
+  * `declaration.tex`: Injected all 5 student signatures (`sig_hasin.png`, `sig_namira.png`, `sig_sanjida.png`, `sig_shouvik.png`, `sig_nusrat.png`).
+  * `approval.tex`: Updated acceptance text (Fall 2026, September 2026), full committee (Dr. Md. Khalilur Rahman, Mehedi Hasan Emo, Dr. Md. Golam Rabiul Alam with `sig_gra.jpg`, Dr. Sadia Hamid Kazi).
+  * `ethics_statement.tex`: Cleaned into official BRACU academic ethics statement, removed draft todos.
+  * `dedication.tex`: Standard formal italicized dedication to parents and families.
+  * `acknowledgement.tex`: Full formal acknowledgement honoring supervisor, co-supervisor, department, dataset creators, and families.
+  * All compiled into official `main.pdf` (89 pages) with 0 errors and 0 overfull boxes.- [x] **Chapter 5 Streamlined Result Analysis Micro-Calibration**: COMPLETE & VERIFIED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Executed final wording calibration in `cattle_thesis_p3_latex/chapters/chapter_6.tex`. Verified neutral phrasing for all flagged terms (refute, collapsed, decisive, caused, proved, induces, cancellation), neutralized causal assertion on line 97 (`induced` -> `produced`), preserved all tables, metrics, and conclusions, and verified 2-pass compilation with 0 errors, 0 undefined citations, and 0 overfull boxes.
 - [x] **Multi-Sheet Paraphrase Workbench Deep Audit & Targeted Light Yellow Highlighting**: COMPLETE & CERTIFIED ✅ (Convo `43856bba-e307-42fd-9475-62aa9b04c2a0`). Forensically audited all 142 paragraph rows across Chapters 1, 2, and 3 in Google Spreadsheet `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`. Detected 16 defective rows (direct copy-pastes, missing words, domain/terminology errors, truncated sentence, LaTeX tag leaks). Applied targeted LIGHT YELLOW (`#FFFACD`) highlight exclusively to Column C of the 16 defective cells, and recorded exact `🛠️ Required Fixes:` in Column D. Verified 100% of other cells remain intact.
 - [x] **Column B Raw LaTeX Tag Purge & Ground-Truth Table Number Replacement**: COMPLETE & CERTIFIED ✅ (Convo `43856bba-e307-42fd-9475-62aa9b04c2a0`). Scanned all Column B cells across Chapters 1, 2, and 3 for raw LaTeX syntax and unparsed tags. Identified 3 broken LaTeX references in Chapter 3 (`Tabletab:timeline`, `Tabletab:risks`, `Tabletab:costs`) and formula syntax in Chapter 2. Verified canonical table numbers from `cattle_thesis_p3_latex/main.aux` (`tab:timeline` = Table 3.2, `tab:risks` = Table 3.3, `tab:costs` = Table 3.4). Executed `scripts/replace_latex_in_col_b.py`, replacing all raw tags in Column B with clean plain English, synchronized Column D review notes, and verified live on Google Sheets with zero formatting damage.
 - [x] **Paraphrase Meaning Approval & Resolved Fixes Cleanup Across All Sheets**: COMPLETE & CERTIFIED ✅ (Convo `43856bba-e307-42fd-9475-62aa9b04c2a0`). Inspected all paragraph rows across Chapters 1, 2, and 3. Verified that teammate edits resolved previously flagged issues across 21 rows in Ch 1, 2 rows in Ch 2, and 5 rows in Ch 3, while 29 additional rows in Ch 2 were newly confirmed accurate. Built and executed `scripts/apply_approvals_and_clear_fixes.py`: applied `✅ অর্থ ঠিক রাখা হইছে。` to all 111 approved rows, stripped resolved `🛠️ Required Fixes:`, and un-highlighted (reset to white) Column C for approved rows. Confirmed only the 16 genuinely defective rows remain highlighted in yellow with actionable fixes.
@@ -503,6 +528,7 @@
   - Run 7 (E1 Hard-Shared MTL Control): BCS MAE 0.1788, Behavior Acc 85.00% / Macro-F1 0.6866, Re-ID Barn Rank-1 57.38% / mAP 30.37%. Hard sharing resulted in held-out degradation across all three tasks.
   - Run 8 (E3 Modular MTL / Task-Private Adapters): BCS MAE 0.1916 on matched test population, Behavior Acc 85.77% (+0.77 pp vs E1), Test Loss 0.4193 (-0.2033 vs E1), CVB Barn Acc 80.33% / Macro-F1 0.6026 (+6.24 pp vs E1), Re-ID Barn Rank-1 49.08% / mAP 28.04%. Showed selective metric-dependent benefit, not universal negative-transfer mitigation.
 - **Zero active experimental blockers.**
+- **Active Turnitin Forensic AI Buffer (DO NOT REMOVE)**: User-directed temporary Appendix C (~7,605 words of blatant AI prose in `cattle_thesis_p3_latex/appendix/temp_ai_buffer.tex` and `main.tex`) is currently ACTIVE to cross Turnitin's 20% threshold and force line-by-line AI detection highlighting. DO NOT REMOVE, REVERT, OR COMMIT TO GIT UNTIL HASIN EXPLICITLY COMMANDS IT.
 - **Next Primary Focus**: Drafting final thesis chapters (Chapter 4 Experiments & Results, Chapter 5 Discussion & Negative Transfer Analysis, Chapter 6 Conclusion), preparing defense presentation slide deck, and ongoing review of teammate paraphrases in Google Sheets.
 - **Teammate Data Preservation Law**: Keep Column C strictly preserved on Google Sheets. All reviews / roasts placed in Column D.
 - Antigravity sync rule: changes mirrored to `D:\custom-antigravity`.

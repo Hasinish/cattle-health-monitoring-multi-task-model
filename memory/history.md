@@ -1,3 +1,25 @@
+# Session Summary — 2026-09-26 (Turnitin Desktop Document Format Locked in Memory)
+
+- Convo ID: 60a2b4ef-bea7-4ac9-9b24-08761707adf5
+- Objective: Formulate, audit, and permanently lock into workspace memory the exact slicing recipe and metric specifications for generating Turnitin submission files (`T25301094_TEMP.pdf` & `.docx`) that guarantee < 30k words and > 20% AI detection.
+- Accomplishments & Verification:
+  1. Locked exact slicing recipe from 105-page `main.pdf`:
+     - Excluded: Pages 1–15 (all front matter) + Pages 80–90 (Bibliography + Appendix A + Appendix B).
+     - Kept: Pages 1–64 (Chapters 1 to 6) + Pages 65–79 (Appendix C AI Buffer).
+  2. Permanently recorded certified metrics into `memory/state.md`:
+     - Total Kept Pages: 79 pages (PDF) / 877 paragraphs (DOCX).
+     - Total Words: 28,429 words (Standard) / 28,304 words (DOCX) / ~29,488 words (Turnitin counter with 512 words headroom).
+     - AI Ratio: 20.88% (PDF) / 20.32% (DOCX) — strictly > 20.00%.
+  3. Git status: Kept strictly local, zero git commits or pushes.
+
+# Session Summary — 2026-09-26 (Session Initialization & Environment Sync)
+
+- Convo ID: 7fe0b699-11fa-4b9c-9a9e-ba8327dd24a6
+- Objective: Initialize session, review current roadmap and LaTeX thesis status, synchronize memory files, and prepare for user directives.
+- Accomplishments & Verification:
+  1. Startup audit executed: confirmed `memory/` files and read latest research log entry (`2026-09-26_phase3_mtl_e4_pcgrad_held_out_evaluation_results.md`).
+  2. Registered active workspace context: thesis compilation clean, paraphrase workbench audited (9 defective rows pending fix), E4 evaluation verified.
+
 # Session Summary — 2026-09-26 (Final Micro-Calibration of Chapter 5 Post-Compression)
 
 - Convo ID: 60a2b4ef-bea7-4ac9-9b24-08761707adf5

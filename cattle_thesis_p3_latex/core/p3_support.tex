@@ -13,4 +13,11 @@
 \newcommand{\drafttodo}[2]{\par\smallskip\noindent\fbox{\begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}\small\textbf{Draft TODO -- #1.} #2\end{minipage}}\par\smallskip}
 \newcommand{\sourcepath}[1]{{\small\path{#1}}}
 \newcommand{\thesisauthors}{Hasin Ishrak (22201133); Namira Abrar Haque (22201191); Sanjida Akter Bithi (22201180); Shouvik Banik (23101295); Nusrat Lamya Faruk (24241182)}
-\newcommand*\wildcard[2][6cm]{\vspace{0.8cm}\parbox{#1}{\hrulefill\par#2}}
+\newcommand*\wildcard[3][6cm]{%
+    \parbox{#1}{%
+        \centering
+        \if\relax\detokenize{#2}\relax\vspace{1.2cm}\else\includegraphics[height=1.2cm, keepaspectratio]{#2}\\[-2pt]\fi
+        \hrulefill\par
+        {\small #3}%
+    }%
+}
