@@ -25,6 +25,9 @@
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
+- [x] **Chapter 4 Paraphrases (Summation & Unshared Heads) Integrated**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
+  * Replaced both Chapter 4 paragraphs in [`cattle_thesis_p3_latex/chapters/chapter_5.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/chapters/chapter_5.tex) (lines 189–191) with user's paraphrased text (summation vs averaging equivalence, unshared task heads gradient isolation).
+  * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 0 errors (89 pages).
 - [x] **Co-Supervisor 2 (Mollah MD Saif, Lecturer) Integrated**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * Updated Examining Committee in [`cattle_thesis_p3_latex/core/approval.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/core/approval.tex): structured Supervisor (Dr. Md. Khalilur Rahman), Co-Supervisor 1 (Mehedi Hasan Emo), and Co-Supervisor 2 (Mollah MD Saif, Lecturer) cleanly on Page 3 without overflowing.
   * Updated [`cattle_thesis_p3_latex/core/acknowledgement.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/core/acknowledgement.tex) to acknowledge both co-supervisors.

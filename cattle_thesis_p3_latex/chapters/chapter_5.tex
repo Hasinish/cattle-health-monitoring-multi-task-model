@@ -186,9 +186,9 @@ Once all pairwise projections are complete, the resulting modified shared gradie
 \begin{equation}
  \mathbf{g}_{\mathrm{shared}} = \mathbf{g}'_{\mathrm{BCS}} + \mathbf{g}'_{\mathrm{Beh}} + \mathbf{g}'_{\mathrm{ReID}}.
 \end{equation}
-Summation---rather than averaging---is used to maintain exact equivalence with the unit-weight gradient accumulation employed in the baseline hard-shared control (E1), ensuring that any difference in optimization behavior reflects gradient projection rather than an effective reduction in learning rate.
+Gradients are added together instead of being averaged in order for the experiment to remain consistent with the baseline model (E1). In the baseline model, the gradients are combined based on a weight of 1 for each task. Consequently, any deviations from the training regime can be attributed to the gradient projection method and not the learning rate.
 
-Importantly, task-specific prediction heads are structurally unshared and experience no inter-task gradient competition. Consequently, PCGrad operates exclusively on the shared ResNet-18 spatial backbone parameters. Gradients for the task-specific heads remain completely unprojected:
+Each task gets its unique prediction head, which is not shared between tasks. That is why, their gradients will not interfere with one another. For this reason, PCGrad is only applied to the shared ResNet-18 backbone, while the gradients of task heads remain untouched:
 \begin{align}
  \mathbf{g}_{\mathrm{head}}^{(\mathrm{BCS})} &= \nabla_{\boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{BCS})}} L_{\mathrm{BCS}}, \\
  \mathbf{g}_{\mathrm{head}}^{(\mathrm{Beh})} &= \nabla_{\boldsymbol{\theta}_{\mathrm{head}}^{(\mathrm{Beh})}} L_{\mathrm{Beh}}, \\
