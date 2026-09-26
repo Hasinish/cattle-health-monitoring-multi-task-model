@@ -47,7 +47,12 @@ def audit_sheets():
         "Chapter 3: Requirements & Constraints",
         "Chapter 4: Proposed Methodology",
         "Chapter 5: Result Analysis",
-        "Chapter 6: Conclusion"
+        "Chapter 6: Conclusion",
+        "Ethics Statement",
+        "Abstract",
+        "Acknowledgement",
+        "Appendix A",
+        "Appendix B"
     ]
 
     for title in expected_sheets:
