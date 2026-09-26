@@ -1,3 +1,15 @@
+# Session Summary — 2026-09-26 (Chapters 1–3: 8 Targeted Paraphrases Integrated in LaTeX)
+
+- Convo ID: 60a2b4ef-bea7-4ac9-9b24-08761707adf5
+- Objective: Replace 8 targeted paragraphs across Chapters 1, 2, and 3 with user's paraphrased text.
+- Accomplishments & Verification:
+  1. Replaced Target 1 in `chapter_1.tex` (line 72).
+  2. Replaced Target 2 in `chapter_2.tex` (line 112–114, preserved Ferguson et al. citation).
+  3. Replaced Targets 3–8 in `chapter_3.tex` (lines 19, 21, 25, 39, 43, 73).
+  4. Verified with `check_draft.py` (0 errors, 0 TODO calls remain).
+  5. Recompiled `cattle_thesis_p3_latex/main.pdf` (90 pages, 0 errors).
+  6. Rebuilt `T25301094_Part1_Diagnostics.pdf` and `T25301094_Part2_Diagnostics.pdf` on Desktop.
+
 # Session Summary — 2026-09-26 (Turnitin Diagnostic Split PDFs Generated on Desktop)
 
 - Convo ID: 60a2b4ef-bea7-4ac9-9b24-08761707adf5
