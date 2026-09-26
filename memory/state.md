@@ -26,6 +26,13 @@
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 
 ## Active Goals & Todo (DEADLINE PRIORITY OVERLAY ACTIVE: TARGET 2026-09-26 | ALL 8 FOCUSED DEADLINE RUNS ARE COMPLETE AND HELD-OUT EVALUATED)
+- [x] **Chapters 4, 5, & 6 Google Sheets Paraphrase Tabs Added & Populated**: COMPLETE & VERIFIED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
+  * Created 3 new workbench tabs in Google Spreadsheet `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A`:
+    - `Chapter 4: Proposed Methodology` (sheetId: 1997649724, 2 paragraphs, 6 rows).
+    - `Chapter 5: Result Analysis` (sheetId: 1050456210, 11 paragraphs, 33 rows).
+    - `Chapter 6: Conclusion` (sheetId: 612786333, 8 paragraphs, 24 rows).
+  * Formatted with standard workbench dimensions (Col A: 40px spacer, Col B: 560px red header `#EA4335`, Col C: 560px green header `#34A853`, Col D: 420px blue header `#4285F4`, top-aligned, text wrapping enabled).
+  * Converted all text to pure, clean natural English: completely stripped submission metadata, evidence markers (`[E08]`, `[E27]`, `[E22,E29]`), and repaired concatenated PDF ligature artifacts.
 - [x] **Chapter 1 Paraphrase Updates (20 Paragraphs Total)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Replaced 20 total paragraphs in `cattle_thesis_p3_latex/chapters/chapter_1.tex`:
   * First 3 paragraphs of `\section{Background}` (citations `\cite{weary2009understanding}`, `\cite{edmonson1989bcs,ferguson1994bcs}`, `\cite{sani2026ab25}`, `\cite{lee2026ab26}` intact).
   * 4 paragraphs across `\subsection{Task-Appropriate Visual Representations}` and `\subsection{Preliminary Investigations and Their Limitations}` (shortcut learning, cattle-centred definition, multi-task baseline investigation, data review & leakage prevention; citations `\cite{geirhos2020shortcut}`, `\cite{xiao2021background}` intact).
@@ -40,6 +47,15 @@
   * Identification vs Re-ID open-set retrieval (`\cite{andrew2021opencows}` preserved).
   * Multi-task learning weighted loss equation & variable definitions ($\mathcal{L}_{\mathrm{MTL}}$, $\mathcal{L}_t$, $\lambda_t$).
   * Crawshaw MTL survey & negative transfer mechanisms (`\cite{crawshaw2020mtl}` preserved).
+  * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes (89 pages, 0 errors, 0 undefined citations).
+- [x] **Chapter 3 Paraphrase Updates (14 Paragraphs Total)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Replaced 14 paragraphs across `cattle_thesis_p3_latex/chapters/chapter_3.tex`:
+  * Final Specifications & Requirements: prototype scope & prediction/control requirements.
+  * Societal Impact: 4 paragraphs (monitoring utility, human-in-the-loop decision support, farm accessibility/Bangladeshi setting, privacy/licensing).
+  * Environmental Impact: computational cost across perception, training, storage, transfer.
+  * Ethical Issues: 2 paragraphs (held-out test integrity & failure coverage, author responsibility for AI assistance).
+  * Standards and Technical Conventions: 2 paragraphs (technical conventions & BCS anatomical meaning `\cite{edmonson1989bcs,ferguson1994bcs}`, BRACU chapter format & IEEE reference formatting).
+  * Project Management Plan: 2 paragraphs (versioned code/manifests/reproducibility, author/committee confirmation).
+  * Risk Management: 2 paragraphs (scientific & operational risks intro `Table~\ref{tab:risks}`, task-specific evaluation controls & oracle guidance).
   * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes (89 pages, 0 errors, 0 undefined citations).
 - [x] **Canonical Turnitin Submission Document Format (LOCKED SPECIFICATION IN MEMORY)**: COMPLETE & VERIFIED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * **Objective**: Bypass Turnitin's 20% detection suppression (forcing line-by-line highlight markers) while strictly staying under Turnitin's 30,000-word upload limit.

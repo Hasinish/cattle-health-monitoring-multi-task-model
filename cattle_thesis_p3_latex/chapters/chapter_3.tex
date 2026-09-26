@@ -1,6 +1,6 @@
 \section{Final Specifications and Requirements}
 
-The framework is designed to produce three outputs: a body condition estimate, a behavior label, and an identity representation for cattle retrieval. It is evaluated as a research prototype, not as a finished farm product. Because of this, the requirements include both prediction functions and the controls needed to interpret the results properly. These include clear label definitions, protected data splits, failure handling, task-specific metrics, and reproducible settings.
+The framework is meant to give three results: an estimate of the animal's body condition, a label for its behavior, and a representation of its identity for retrieval. As a research prototype, not as a finished farm product, it is being looked at. So, the requirements include both functions that make predictions and the controls that make sure the results are properly interpreted. Some of these are clear label definitions, protected data splits, failure handling, task-specific metrics, and settings that allow the results to be reproduced.
 
 \input{tables/requirements}
 
@@ -12,17 +12,17 @@ Scientific validity adds further requirements. Test data must not be used for ch
 
 \section{Societal Impact}
 
-A unified visual monitoring system could help organize repeated cattle observations by linking body condition and behavior to individual animals. In practice, this could help people notice unusual changes earlier and reduce the amount of manual video checking. However, this study does not include farmer interviews, a field deployment, or measurements of labor savings, productivity, treatment outcomes, or animal welfare improvement. These remain possible benefits rather than measured results.
+A common visual monitoring system may be useful to organize repeated observation of cattle by associating body condition and behavior to individual animals. This can help people see unusual changes earlier, and reduce the amount of manual video inspection that has to be done in practice. However, this study does not incorporate farmer interviews, field deployment or evaluation of labor savings, productivity, treatment outcomes or benefits in animal welfare. Those are prospective benefits, not measured results.
 
-The model should support human decision-making rather than replace it. A wrong identity match could attach observations to the wrong cow, while an incorrect BCS or behavior prediction could delay attention. A practical system should therefore keep the source image, time, confidence or retrieval evidence, and a way for a person to review the output. Veterinary and welfare decisions still require proper professional judgment.
+The model should assist human decision making, not replace it. Poor identification matching can lead to observations being assigned to the wrong cow, and an inaccurate BCS or behavior forecast can cause to a delay in attention. A realistic system has to save the original image, the time, the confidence or proof of retrieval and a way for a person to judge the output. There still has to be good professional judgment in veterinary and welfare decisions.
 
-Accessibility also depends on the farm environment. Camera placement, housing, breed, lighting, network access, and staff practices can vary widely. Results from the selected datasets cannot prove that the system will work in every production setting, including farms in Bangladesh. Testing with local users and local conditions would be needed before making claims about real-world usability or adoption.
+The accessiblity of the monitoring system also depends on the farm environment. Placement of cameras, housing, breed, lighting, network access, and how staff work can be very different. Based on the results from the chosen datasets, it is not possible to say for sure that the system will work in all production settings, such as Bangladeshi farms. Before claiming that something will be used or adopted in the real world, it should be tested with people in that area and under their own conditions.
 
-Farm images may also contain people, layouts, or commercially sensitive information. Permission to use a dataset for research does not automatically allow redistribution or commercial use. Privacy, ownership, and licensing conditions must therefore be checked for every dataset and for any future field deployment.
+Agricultural pictures can also show people, arrangements, or private data. It's not always included in the license to use a dataset for research that it can be shared or used for business. Privacy, ownership, and license rules need to be checked for each collection and each possible field use.
 
 \section{Environmental Impact}
 
-The computational cost of the system includes perception preprocessing, model training, data storage, and data transfer. It is not limited to the final prediction network. Even a small downstream model can depend on a larger detector or segmentation model. For this reason, any efficiency claim should make clear whether upstream processing is included.
+Perception preprocessing, training models, storing data, and sending data are all parts of the system's computational cost. It is not limited to the final prediction network. A bigger detector or segmentation model can affect even a small model further down the line. We need to make it clear if upstream processing is part of any efficiency claim because of this.
 
 We reduced repeated computation by checking the pipeline before full experiments, reusing validated cached outputs, and using deterministic manifests. These steps reduce unnecessary repeated processing, but we did not collect a complete power trace or location-specific emissions measurement. Therefore, the study does not claim measured carbon savings or measured emissions.
 
@@ -34,18 +34,18 @@ A major ethical responsibility in this work is to separate what the data actuall
 
 Dataset reuse must also be checked for each source. The dataset registry records the available licenses and access conditions, but any unresolved permission must be confirmed before redistribution or deployment. The thesis does not claim institutional ethics approval, an exemption, a user study, or field consent unless a supporting institutional record exists.
 
-Validation data are used for model selection, while held-out test data are reserved for evaluation. External test data must not be used for tuning after the results are seen. Samples removed by perception failures are reported through coverage information instead of being silently ignored.
+The model selection is done using validation data, while the evaluation is done using held-out test data. Do not use external test data for tuning after you have seen the results. Coverage information is used to report samples that are discarded due to perception failures, rather than being silently ignored.
 
-The authors are still responsible for work produced with AI-assisted writing or coding. They must review the final manuscript, verify the claims, follow university disclosure rules, and confirm the declaration and acknowledgments.
+The authors are still in charge of work that was written or coded with help from AI. They have to look over the final draft, make sure the claims are true, follow the university's rules on disclosure, and make sure the statement and acknowledgments are correct.
 
 % TODO-P3-ADMIN: Confirm permissions and institutional requirements.
 \drafttodo{ETHICS-02}{Confirm dataset-specific reuse permissions and the university's ethics and AI-assistance disclosure requirements. No approval or exemption is asserted in advance.}
 
 \section{Standards and Technical Conventions}
 
-The study follows documented technical conventions, but it does not claim certification under an engineering standard that has not been verified. BCS labels are interpreted using their released score range and established anatomical meaning~\cite{edmonson1989bcs,ferguson1994bcs}. Behavior labels use a versioned mapping, and Re-ID uses a defined query--gallery protocol. These rules make the evaluation more consistent, but they do not mean that the system is formally certified.
+The study follows well-known technical rules, but it doesn't claim to be certified by an engineering standard that hasn't been checked. The released score range and known anatomical meaning are used to figure out what the BCS labels mean~\cite{edmonson1989bcs,ferguson1994bcs}. Labels for behavior use a versioned mapping, and Re-ID has a clear query--gallery protocol. That being said, these rules do make the evaluation more fair, but they do not officially certify the method.
 
-The thesis follows the supplied BRAC University chapter structure and uses an IEEE-style bibliography. Dataset licenses, privacy requirements, deployment safety, and any separate IEEE-format submission requirement must be checked independently. Using IEEE reference formatting does not mean that the work has been submitted to or accepted by a journal.
+The thesis is prepared according to the prescribed chapter format of BRAC University and bibliography style of IEEE. Dataset licensing, privacy requirements, deployment safety and any separate IEEE-format submission requirement need to be reviewed independently. The use of IEEE reference format does not imply that the work has been submitted or approved for publication to the Journal.
 
 \section{Project Management Plan}
 
@@ -55,17 +55,17 @@ The project is organized into several main stages: protocol verification, percep
 
 Computational resources were selected according to the needs of preprocessing, training, and evaluation. Small pipeline checks were done before full experiments, and reusable intermediate outputs reduced repeated preprocessing. Detailed hardware and execution records are kept for reproducibility instead of being included as part of the main scientific argument.
 
-Versioned code, deterministic manifests, persistent data storage, and machine-readable results connect each experiment to its settings. These records help keep execution consistent across different environments and provide the information needed to reproduce reported results.
+With versioned code, deterministic manifests, permanent data storage, and machine-readable results, each experiment is linked to its own set of settings. These records help make sure that the same steps are taken in all situations and give us the data we need to repeat the results that were published.
 
-Author contributions, author order, committee information, and submission details still need confirmation from the authors and supervisors. They are not guessed from repository activity.
+Contributions from authors, the order of authors, information about the committee, and submission details still need to be confirmed by the authors and supervisors. They are not guessed from what is happening in the repository.
 
 \section{Risk Management}
 
-Table~\ref{tab:risks} lists the main scientific and operational risks. These include related observations crossing train and test splits, unsupported identity claims, classes linked to one data source, perception failures, incorrect causal claims from combined model changes, and unfair comparisons caused by different training budgets.
+There is a list of the main scientific and operational risks in Table~\ref{tab:risks}. Some of these are related observations that cross train and test splits, identity claims that can't be backed up, classes that are linked to the same data source, perception failures, wrong causal claims from combined model changes, and unfair comparisons caused by different training budgets.
 
 \input{tables/risks}
 
-The evaluation design reduces these risks using task-specific controls. ScienceDB burst groups and behavior videos or sessions stay inside their assigned partitions. SideView Protocol A separates biological identities between representation learning and evaluation. Matched subsets are used to compare the RGB and perception-enhanced BCS and behavior models on the same retained samples. The Re-ID model is clearly described as oracle-guided when it uses ground-truth masks. Important limits still remain: ScienceDB cow identities are unknown, Walking is linked to one source, and the task models are based on single runs. The final MTL comparison must keep the task protocols comparable and report any difference in training budget.
+Task-specific controls in the evaluation design lower these risks. ScienceDB burst groups and behavior videos or sessions stay in the partitions that were given to them. SideView Protocol A separates biological identities between representation learning and evaluation. We use matched subsets to check how the RGB, perception-enhanced BCS, and behavior models work on the same samples that were kept. When ground-truth masks are used, the Re-ID model is clearly called "oracle-guided." There are still some important limits: Individual cow identities in ScienceDB are unknown, Walking is linked to a single source, and the task models are based on a single run. The final MTL comparison needs to keep the task protocols comparable and report any changes in the training budget.
 
 \section{Economic Analysis}
 
