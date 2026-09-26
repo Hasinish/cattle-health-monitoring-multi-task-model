@@ -40,13 +40,11 @@
   * 6 paragraphs under `\section{Objectives}` (primary objective + five enumerated goals covering dataset evaluation protocols, RGB baselines, cattle-centered visual cues, task-specific vs heavy sharing, and robustness to external acquisition).
   * 3 paragraphs under `\section{Methodology in Brief}` & `\section{Scopes and Challenges}` (chapter transition overview, 3 visual tasks coverage without lameness, supervision discrepancies & burst-group-disjoint ScienceDB limitations).
   * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes (89 pages, 0 errors, 0 undefined citations).
-- [x] **Chapter 2 Paraphrase Updates (6 Paragraphs Total)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Replaced 6 paragraphs in `cattle_thesis_p3_latex/chapters/chapter_2.tex` (`\section{Preliminaries}`):
-  * Transfer learning vs cattle-centered representation learning distinction.
-  * BCS formulation approaches (classification, ordinal, regression; CORAL citation `\cite{coral2020}` preserved).
-  * Behavior recognition activity requirements over time frames.
-  * Identification vs Re-ID open-set retrieval (`\cite{andrew2021opencows}` preserved).
-  * Multi-task learning weighted loss equation & variable definitions ($\mathcal{L}_{\mathrm{MTL}}$, $\mathcal{L}_t$, $\lambda_t$).
-  * Crawshaw MTL survey & negative transfer mechanisms (`\cite{crawshaw2020mtl}` preserved).
+- [x] **Chapter 2 Paraphrase Updates (37 Paragraphs Total)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Replaced 37 total paragraphs across `cattle_thesis_p3_latex/chapters/chapter_2.tex`:
+  * Preliminaries (6 paragraphs): Transfer learning distinction, BCS formulation, Behavior temporal requirement, Re-ID open-set retrieval, MTL loss equation, Crawshaw survey.
+  * Literature Review & Key Findings (31 paragraphs): Integrated 31 new paraphrased paragraphs across automated livestock monitoring, BCS anatomy/depth/RGB/viewpoint/geometry, behavior temporal/identity/context properties, Re-ID coat patterns/tracking/BECA/selective representation, localization/RT-DETR/SAM 2/masking, SlowFast/TCN/ST-GCN temporal models, shortcut learning/domain shift/evaluation design, MTL balancing/PCGrad/Cross-stitch/task-conditioned framework, and chapter summary.
+  * Preserved 100% of LaTeX citations: `\cite{edmonson1989bcs}`, `\cite{ferguson1994bcs}`, `\cite{rodriguez2018bcs}`, `\cite{liu2025vets}`, `\cite{yao2026jds2}`, `\cite{guzhva2026s415}`, `\cite{coral2020}`, `\cite{andrew2017cattle}`, `\cite{zhang2026beca}`, `\cite{zhao2024rtdetr}`, `\cite{he2017maskrcnn}`, `\cite{kirillov2023sam}`, `\cite{ravi2024sam2}`, `\cite{feichtenhofer2019slowfast}`, `\cite{zia2023cvb}`, `\cite{bai2018tcn}`, `\cite{yan2018stgcn}`, `\cite{geirhos2020shortcut}`, `\cite{crawshaw2020mtl}`, `\cite{kendall2018multi}`, `\cite{chen2018gradnorm}`, `\cite{yu2020pcgrad}`, `\cite{misra2016crossstitch}`, `\cite{liu2019mtan}`.
+  * Synchronized all 31 rows in Google Sheets `Chapter 2: Literature Review` in Column C; un-highlighted resolved Row 54 (reset to white).
   * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes (89 pages, 0 errors, 0 undefined citations).
 - [x] **Chapter 3 Paraphrase Updates (14 Paragraphs Total)**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`). Replaced 14 paragraphs across `cattle_thesis_p3_latex/chapters/chapter_3.tex`:
   * Final Specifications & Requirements: prototype scope & prediction/control requirements.
