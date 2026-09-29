@@ -384,6 +384,7 @@ Execution and training scripts for single-task perception models, data staging, 
 - `modal_evaluate_mtl_e1_held_out.py`: Modal cloud evaluation runner on profile `hasinishrak2015` (NVIDIA L40S), mounting `mtl-checkpoints`, `mtl-data`, and `sideview-data`, with automated metric export to `artifacts/mtl_e1_evaluation/mtl_e1_test_evaluation_metrics.json`.
 - `clean_sheets_latex_prose.py`: Automated Google Sheets prose sanitizer converting raw LaTeX math formatting, environments, broken references, and macros into natural, human-readable plain English across all chapters without touching teammate columns or dedicated formula rows.
 - `update_ch3_workbench_reviews.py`: Targeted Google Sheets updater for Chapter 3 injecting gentle, calibrated review notes (`✅ অর্থ ঠিক রাখা হইছে` or `🛠️ Required Fixes`), verbatim intact keywords, native rich-text bolding, and attention highlights.
+- `render_figures_for_check.py`: PyMuPDF rendering script extracting high-resolution (150 DPI) PNGs of figure-bearing pages from `cattle_thesis_p3_latex/main.pdf` to `scripts/fig_checks/` for visual inspection and defect verification.
 
 ### `tests/`
 Automated unit and integration test suites.
