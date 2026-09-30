@@ -57,7 +57,9 @@ image = (
 
 if modal.is_local():
     REPO_ROOT = Path(__file__).resolve().parent.parent
-    GZ_LOCAL = REPO_ROOT / "58916v001.txt.gz"
+    GZ_LOCAL = REPO_ROOT / "datasets" / "behavior" / "cvb" / "58916v001.txt.gz"
+    if not GZ_LOCAL.exists():
+        GZ_LOCAL = REPO_ROOT / "58916v001.txt.gz"
     if GZ_LOCAL.exists():
         image = image.add_local_file(str(GZ_LOCAL), remote_path="/root/58916v001.txt.gz")
 

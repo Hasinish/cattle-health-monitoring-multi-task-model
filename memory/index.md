@@ -133,7 +133,9 @@ Structured project documentation, defense resources, forensic audits, and offici
   - `2026-09-18_cattle_centered_anatomy_aware_direction.md`: Proposed research direction on segmentation-guided, anatomy-aware, and viewpoint-aware representation learning.
   - `2026-09-18_dataset_split_integrity_audit.md`: Forensic audit of ScienceDB, MmCows, and OpenCows2020 split integrity and leakage risks.
   - `2026-09-17_lameness_investigation.md`: Complete forensic audit log covering CattleLameness leakage discovery, 42-group resolution, and candidate dataset audit.
-- `defense (p2)/`: Oral examination preparation guides, presentation notes, and formatted crib sheets for Phase 2.
+- `defense (p2)/`: Oral examination preparation guides, hostile review audits, presentation notes, and formatted crib sheets for Phase 2.
+  - `P2_hostile_review.md`: Complete hostile review audit of the Phase 2 manuscript identifying data leakage risks, threshold tuning flaws, and defense survivability criteria.
+  - `p2_to_p3_summary.html`: Interactive summary in Bengali detailing transitions, architectural rationale, and corrections from P2 to P3.
   - `presentation_key_concepts.md` (and `.html`, `.docx`): Defense presentation key concepts, talking points, and Q&A crib sheet.
   - `qa_study_guide.md`: Comprehensive defense Q&A preparation guide covering deep learning theory, MTL tradeoffs, and thesis defense questions.
   - `style_template.html`: CSS formatting template for HTML export styling.
@@ -178,6 +180,7 @@ Canonical benchmark data and task registries.
     - `label_mapping.csv`: Complete 17-row mapping defining the canonical 5-class taxonomy (`Standing`, `Lying`, `Feeding`, `Drinking`, `Walking`) and documenting exclusions.
     - `split_report.md`: Forensic audit report and mathematical distribution proofs for the CVB + Kaggle Beef protocol.
   - `cvb/`:
+    - `58916v001.txt` & `58916v001.txt.gz`: Raw CSIRO Data Access Portal deposit URLs and compressed index for the CVB dataset (CSIRO Collection 58916v001, DOI: 10.25919/bmtp-5j95).
     - `cvb_cuts_manifest.csv`: 502-row cut-level forensic manifest mapping cuts to camera IDs, dates, start/end frames, and primary tags.
     - `cvb_tracks_manifest.csv`: 3,693-row annotation-level tracklet segment manifest extracted directly from 502 CVB COCO JSONs on Modal volume `cvb-data` (2,481 canonical, 1,212 excluded).
   - `beef_cattle_behavior/`:
@@ -231,6 +234,13 @@ Canonical benchmark data and task registries.
 Pre-trained object detection and feature extraction weight checkpoints.
 - `p2 archive/`: Archive folder for legacy Phase 2 model weights.
   - `yolov8n.pt`: Legacy YOLOv8-nano weights from Phase 2 cow detection / localization pipeline.
+
+### `weights/`
+Centralized local cache of pretrained detector, segmenter, and feature extraction weights (ignored by Git, auto-discovered by Ultralytics via `SETTINGS["weights_dir"]`):
+- `rtdetr-l.pt`: Pretrained RT-DETR-L real-time object detection weights (COCO cow class 19; used for cattle crop localization).
+- `sam2.1_s.pt` & `sam2_s.pt`: Segment Anything Model 2.1 / 2 Small promptable segmentation weights (used for cattle soft mask generation).
+- `yolo11s-seg.pt` & `yolo26s-seg.pt`: Pretrained YOLO segmentation checkpoints evaluated during feasibility audits.
+- `yolov8s.pt`: Pretrained YOLOv8 small detector checkpoint.
 
 ### `P2 Samples/`
 Reference materials, prior sample defense posters, and official CSE400 formatting templates from BRAC University.
