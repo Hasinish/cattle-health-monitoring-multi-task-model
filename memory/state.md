@@ -31,6 +31,11 @@
   * Restored missing student/faculty signature assets into `cattle_thesis_p3_latex/images/`.
   * Shortened 4 essay-length figure captions (Figure 4.1, 4.2, 4.3, 4.4) addressing committee feedback.
   * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes of `pdflatex` + `biber` + `makeindex` (90 pages, 0 errors, PASS on `check_draft.py`).
+- [x] **Unsigned Thesis Submission & Signature Clearance Spacing**: COMPLETE & VERIFIED ✅ (Convo `15287605-a4dc-447f-9ffb-2926b4c2b618`).
+  * Stripped all digital signatures for official unsigned submission requirements (`core/declaration.tex` & `core/approval.tex`).
+  * Fine-tuned signature clearance in `core/p3_support.tex` (`\rule{0pt}{1.4cm}`) providing 2.2cm to 2.5cm of clean, spacious blank vertical headroom above every signing line for manual pen signatures.
+  * Certified two-page Approval layout: Page ii cleanly holds all three supervisors (Dr. Md. Khalilur Rahman, Mehedi Hasan Emo, Mollah MD Saif) without overflow, Page iii holds Coordinator (Dr. Md. Golam Rabiul Alam) and HoD (Dr. Sadia Hamid Kazi).
+  * Generated and deployed `C:\Users\hasin\Desktop\T25301094_P3_Report_Unsigned.pdf`.
 - [x] **Workspace Organization & Root Clutter Cleanup**: COMPLETE & VERIFIED ✅ (Convo `85012ef9-13bb-4d7e-a2a4-e4b7df8cf305`).
   * Relocated 303 MB of pretrained model checkpoints (`rtdetr-l.pt`, `sam2.1_s.pt`, `sam2_s.pt`, `yolo11s-seg.pt`, `yolo26s-seg.pt`, `yolov8s.pt`) into dedicated `weights/` directory (auto-discovered by Ultralytics via `SETTINGS['weights_dir']`).
   * Relocated 133 MB raw CSIRO DAP dump (`58916v001.txt` and `58916v001.txt.gz`) into `datasets/behavior/cvb/` and updated `scripts/modal_cvb_pipeline.py`.
