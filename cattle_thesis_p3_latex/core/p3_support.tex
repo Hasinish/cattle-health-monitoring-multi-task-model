@@ -16,7 +16,7 @@
 \newcommand*\wildcard[3][6cm]{%
     \parbox{#1}{%
         \centering
-        \if\relax\detokenize{#2}\relax\rule{0pt}{1.4cm}\else\includegraphics[height=1.2cm, keepaspectratio]{#2}\\[-2pt]\fi
+        \if\relax\detokenize{#2}\relax\vspace{1.2cm}\else\includegraphics[height=1.2cm, keepaspectratio]{#2}\\[-2pt]\fi
         \hrulefill\par
         {\small #3}%
     }%

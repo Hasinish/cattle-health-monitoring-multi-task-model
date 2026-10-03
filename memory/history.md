@@ -9,7 +9,7 @@
   4. Installed MiKTeX 25.12 via winget directly on laptop (`DESKTOP-R6QPSH5`).
   5. Shortened 4 essay-length figure captions (Figs 4.1, 4.2, 4.3, 4.4) addressing defense committee feedback.
   6. Stripped all digital signatures from `core/declaration.tex` and `core/approval.tex` for official unsigned report submission.
-  7. Fine-tuned physical signature clearance (`\rule{0pt}{1.4cm}` in `core/p3_support.tex`) guaranteeing 2.2cm–2.5cm of uncrowded blank vertical space above every line without spilling the 3-supervisor Approval page.
+  7. Isolated blank signing clearance exclusively to `core/declaration.tex` (`\vspace{1.5cm}` before Row 1 and `\vspace{1.8cm}` between rows), restoring original approval committee spacing untouched.
   8. Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly (0 errors, PASS on `check_draft.py`) and copied deliverable to `C:\Users\hasin\Desktop\T25301094_P3_Report_Unsigned.pdf`.
 
 # Session Summary — 2026-09-30 (Workspace Organization & Root Clutter Cleanup)
