@@ -18,6 +18,7 @@
   13. Refined Table I and Table II typography and column alignments.
   14. Successfully compiled `cattle_paper_ieee/main.pdf` with `pdflatex` + `bibtex` (8 pages, 0 errors, 24 citations).
   15. Deployed paper copies to `C:\Users\hasin\Desktop\T25301094_IEEE_Paper.pdf` and `Cattle_Health_Monitoring_IEEE_Paper.pdf`.
+  16. Forensically audited all Table I and Table II cells against canonical thesis tables (`cattle_thesis_p3_latex/tables/`), synchronizing single-task reference baselines and multi-task models to 100% exact numerical agreement.
 
 # Session Summary — 2026-09-30 (Workspace Organization & Root Clutter Cleanup)
 
