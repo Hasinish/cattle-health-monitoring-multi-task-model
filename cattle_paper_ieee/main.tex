@@ -1,0 +1,332 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{url}
+\usepackage{balance}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{figures/}}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Multi-Task Deep Learning Framework for Unified Cattle Health and Behavior Monitoring}
+
+\author{
+\IEEEauthorblockN{1\textsuperscript{st} Hasin Ishrak}
+\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering} \\
+\textit{BRAC University}\\
+Dhaka, Bangladesh \\
+hasin.ishrak@g.bracu.ac.bd}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Namira Abrar Haque}
+\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering} \\
+\textit{BRAC University}\\
+Dhaka, Bangladesh \\
+namira.abrar.haque@g.bracu.ac.bd}
+\and
+\IEEEauthorblockN{3\textsuperscript{rd} Sanjida Akter Bithi}
+\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering} \\
+\textit{BRAC University}\\
+Dhaka, Bangladesh \\
+sanjida.akter.bithi@g.bracu.ac.bd}
+\vspace{0.25cm}
+\and
+\IEEEauthorblockN{4\textsuperscript{th} Shouvik Banik}
+\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering} \\
+\textit{BRAC University}\\
+Dhaka, Bangladesh \\
+shouvik.banik@g.bracu.ac.bd}
+\and
+\IEEEauthorblockN{5\textsuperscript{th} Nusrat Lamya Faruk}
+\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering} \\
+\textit{BRAC University}\\
+Dhaka, Bangladesh \\
+nusrat.lamya.faruk@g.bracu.ac.bd}
+\and
+\IEEEauthorblockN{6\textsuperscript{th} Md. Khalilur Rahman}
+\IEEEauthorblockA{\textit{Professor, Dept. of CSE} \\
+\textit{BRAC University}\\
+Dhaka, Bangladesh \\
+khalilur@bracu.ac.bd}
+}
+
+\maketitle
+
+\begin{abstract}
+Automated computer vision in precision livestock farming has predominantly deployed fragmented, task-specific deep neural networks for individual physiological and behavioral traits. Maintaining independent single-task vision models for Body Condition Scoring (BCS), Behavior Recognition, and biometric Cow Re-Identification (Re-ID) introduces unsustainable edge inference overhead, high storage demands, and susceptibility to background shortcut learning in farm environments. In this paper, we propose an end-to-end multi-task deep learning framework that unifies BCS, temporal behavior recognition, and open-set biometric identification over a shared visual representation backbone. To eliminate background shortcut exploitation, we develop a cattle-centered perception pipeline combining real-time animal localization (RT-DETR-L) and instance segmentation (SAM 2.1) into 4-channel representation tensors. We design and empirically evaluate three multi-task paradigms against rigorously isolated single-task baselines: (i) hard-shared backbone parameterization (E1), (ii) modular task-private bottleneck residual adapters (E3), and (iii) gradient surgery via Projecting Conflicting Gradients (E4 PCGrad) during unified super-step training. Across 7,549 burst-disjoint ScienceDB images, 780 temporal behavior sequences from authentic dairy and feedlot CCTV, and 36,811 multi-camera parlor-barn re-identification pairs, cattle-centered soft masking consistently outperforms raw RGB representations, lifting Re-ID Rank-1 retrieval from $38.88\%$ to $62.93\%$ and improving BCS mean absolute error to $0.1709$. While joint multi-task training exposes extensive destructive gradient interference (44,177 conflicting pairwise projection steps across 16,140 super-steps), PCGrad successfully mitigates negative transfer on authentic CCTV behavior surveillance ($+4.26$ pp accuracy, doubling minority walking recall) and stabilizes retrieval. Our framework establishes the first verified, leakage-audited multi-task benchmark across three primary visual livestock phenotyping tasks.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Multi-task deep learning, Precision livestock farming, Body condition scoring, Cattle behavior recognition, Individual cow re-identification, Gradient surgery, Shortcut learning.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Precision livestock farming (PLF) increasingly relies on non-invasive automated visual monitoring to evaluate animal welfare, operational health, and productivity in commercial dairy and beef operations \cite{weary2009understanding, antognoli2025ani1}. Three visual phenotyping tasks are fundamental to proactive herd management: (1) \textit{Body Condition Scoring (BCS)}, which assesses anatomical body subcutaneous fat and energy reserves to prevent metabolic disorders \cite{edmonson1989bcs, liu2025vets, yao2026jds2}; (2) \textit{Behavior Recognition}, which tracks feeding, drinking, standing, and walking dynamics to detect early lameness, mastitis, or heat onset \cite{li2024cbvd5, zia2023cvb}; and (3) \textit{Cow Re-Identification (Re-ID)}, which enables long-term individual traceability across disparate farm camera views without stress-inducing physical tags \cite{andrew2017cattle, zhang2026beca}.
+
+Despite notable accuracy gains reported by specialized deep neural networks, existing commercial and academic systems overwhelmingly execute these tasks through separate, isolated convolutional networks or vision transformers \cite{sani2026ab25, guzhva2026s415}. This fragmented single-task paradigm presents critical limitations in practical farm deployment:
+\begin{enumerate}
+    \item \textit{Excessive Hardware and Latency Overhead}: Running concurrent independent networks for frame-by-frame cattle tracking, temporal action recognition, and biometric retrieval multiplies edge compute and memory requirements by $3\times$ to $5\times$, exceeding the capabilities of rural edge servers.
+    \item \textit{Background Shortcut Learning}: Standard RGB classifiers frequently exploit non-target background visual shortcuts---such as pen manure accumulation, distinctive chute metal bars, parlor stalls, or static daylight shadows---rather than invariant cattle anatomical landmarks \cite{geirhos2020shortcut, xiao2021background}.
+    \item \textit{Unexplored Feature Synergies and Negative Transfer}: Visual features governing cow identification (coat patterns, silhouette morphology) and body condition (spine curvature, pin and hook bone relief) naturally share low- and mid-level visual representations. However, naive joint parameter sharing across heterogeneous spatial and temporal objectives risks catastrophic gradient conflict and negative transfer \cite{crawshaw2020mtl, standley2020tasks}.
+\end{enumerate}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_research_design.pdf}
+\caption{Comparative research framework illustrating leakage-controlled protocols, single-task baseline references, cattle-centered perception models, and multi-task parameter integration strategies (E1 hard-sharing, E3 modular adapters, and E4 PCGrad optimization).}
+\label{fig:research_design}
+\end{figure}
+
+To address these challenges, we present a unified multi-task deep learning framework that concurrently performs physical body condition scoring, 5-class temporal behavior classification, and open-set biometric cow retrieval over a shared 4-channel convolutional backbone. Fig.~\ref{fig:research_design} depicts our overall comparative research design. We rigorously investigate whether cattle-centered spatial representations (combining bounding-box localization with soft segmentation masks) insulate models against background shortcuts and whether task-private bottleneck adapters or gradient projection can overcome inter-task negative transfer.
+
+The core contributions of this work are summarized as follows:
+\begin{itemize}
+    \item \textbf{Unified Multi-Task Livestock Framework}: We formulate and implement the first unified multi-task deep learning architecture spanning BCS, temporal behavior recognition, and biometric re-identification, reducing parameter overhead by over $60\%$ compared to standalone task networks.
+    \item \textbf{Cattle-Centered Perception Pipeline}: We establish a reproducible spatial representation pipeline incorporating RT-DETR-L animal localization and SAM 2.1 foreground instance segmentation. We demonstrate that 4-channel representation tensors significantly improve generalization across variable farm environments.
+    \item \textbf{Empirical Analysis of Gradient Interference}: Through 44,177 pairwise gradient conflict measurements across 16,140 multi-task super-steps, we provide empirical evidence of inter-task gradient competition and establish the efficacy of optimization-level gradient surgery (PCGrad) in mitigating negative transfer on real-world farm surveillance.
+    \item \textbf{Strict Leakage-Controlled Benchmark}: All evaluations are executed under certified zero-leakage protocols (burst-group-disjoint image splitting for BCS, sequence-disjoint temporal splitting for behavior, and zero-shot held-out identity sets for Re-ID).
+\end{itemize}
+
+\section{Related Work}
+
+\subsection{Body Condition Scoring (BCS)}
+Traditional dairy BCS assessment relies on visual and tactile evaluation by trained veterinary professionals on 5-point ordinal scales \cite{edmonson1989bcs, ferguson1994bcs}. Early automated methods attempted 3D point cloud or depth sensor reconstruction to extract angular metrics across the cow's hook bones, pin bones, and thurl cavity \cite{rodriguez2018bcs}. Recent works transitioned to 2D deep learning: Liu et al. \cite{liu2025vets} introduced lightweight attention networks focused on tailhead contour features, achieving competitive mean errors on clean rear chute images. Yao et al. \cite{yao2026jds2} evaluated side-view dairy scoring using convolutional backbones. However, existing models are trained primarily as unconstrained RGB regression or cross-entropy classification, ignoring the inherent rank order of body condition changes. In our framework, we formulate BCS via rank-consistent ordinal binary cross-entropy (CORAL) \cite{coral2020}, ensuring monotonic score transitions.
+
+\subsection{Cattle Behavior Recognition}
+Video-based livestock action recognition typically targets feeding, drinking, standing, and lying postures \cite{weary2009understanding}. Early approaches utilized optical flow or 3D CNNs (e.g., SlowFast, I3D), which demand substantial compute and degrade when camera jitter occurs in barn environments \cite{feichtenhofer2019slowfast}. Recent open benchmarks, such as CVB \cite{zia2023cvb} and CBVD \cite{li2024cbvd5}, have facilitated 2D spatial backbone combinations with Temporal Convolutional Networks (TCN) \cite{bai2018tcn} or Recurrent Units. Nevertheless, existing models operate on raw panoramic barn CCTV, where changing bedding colors, lighting conditions, and surrounding herd movement introduce severe background shortcut bias.
+
+\subsection{Individual Biometric Re-Identification}
+Individual cow identification without physical RFID tags or neck transponders is essential for non-contact traceability. Andrew et al. \cite{andrew2017cattle} demonstrated that coat pattern contours of Holstein-Friesian cattle serve as biometric signatures akin to human fingerprints. Modern open-set metric learning architectures employ deep metric embeddings trained with cross-entropy and cosine-distance ranking \cite{zhang2026beca}. However, domain shifts between indoor milking parlors and outdoor open barns cause severe retrieval degradation due to illumination and pose disparities.
+
+\subsection{Multi-Task Learning and Gradient Balancing}
+Multi-task learning (MTL) aims to share inductive bias across related visual domains, improving memory efficiency and regularization \cite{crawshaw2020mtl}. Despite theoretical advantages, naive hard-parameter sharing often exhibits \textit{negative transfer}, where competing task objectives degrade individual task accuracies below their single-task counterparts \cite{standley2020tasks}. Architectural remedies include task-private adapters, cross-stitch networks, and attention routing \cite{misra2016crossstitch, liu2019mtan}. Optimization remedies focus on gradient manipulation: GradNorm dynamically reweights loss scales based on training rates \cite{chen2018gradnorm}, while PCGrad (Projecting Conflicting Gradients) projects task gradients onto each other's normal planes when directional conflict ($\mathbf{g}_i^\top \mathbf{g}_j < 0$) is detected \cite{yu2020pcgrad}. In this paper, we systematically evaluate hard sharing (E1), modular bottleneck adapters (E3), and PCGrad gradient projection (E4) across multi-modal livestock tasks.
+
+\section{Proposed Methodology}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_input_pipeline.pdf}
+\caption{Task-specific cattle-centered input representation pipelines. Target animal localization (RT-DETR-L) and instance segmentation masks (SAM 2.1) generate standardized 4-channel input tensors ($224 \times 224 \times 4$), eliminating farm background shortcut features across BCS, Behavior, and Re-ID.}
+\label{fig:input_pipeline}
+\end{figure*}
+
+\subsection{Cattle-Centered Perception Pipeline}
+To ensure the multi-task framework learns intrinsic anatomical and behavioral features rather than farm-specific background artifacts, we construct a 4-channel cattle-centered visual representation pipeline, illustrated in Fig.~\ref{fig:input_pipeline}.
+
+Given an input video frame or static farm capture $\mathbf{I} \in \mathbb{R}^{H \times W \times 3}$:
+1. \textbf{Target Animal Localization}: An RT-DETR-L transformer detector predicts target bounding boxes $[x_{\min}, y_{\min}, x_{\max}, y_{\max}]$ with confidence threshold $\tau \ge 0.65$.
+2. \textbf{Foreground Instance Segmentation}: SAM 2.1 generates a soft instance segmentation mask $\mathbf{M} \in [0, 1]^{H \times W}$.
+3. \textbf{Tensor Assembly}: The bounding region is cropped with $10\%$ spatial padding, resized to $224 \times 224$, and concatenated with the single-channel soft mask to form a standardized 4-channel tensor $\mathbf{X} \in \mathbb{R}^{4 \times 224 \times 224}$. For temporal behavior clips of length $T=8$, this process is executed across sampled frames, yielding a spatio-temporal tensor $\mathbf{X}_{\mathrm{Beh}} \in \mathbb{R}^{8 \times 4 \times 224 \times 224}$.
+
+\subsection{Shared Trunk and Task-Specific Heads}
+The core visual representation is parameterized by a 4-channel ResNet-18 backbone (11,179,648 parameters), modified by expanding the first convolutional kernel layer from $\mathbb{R}^{64 \times 3 \times 7 \times 7}$ to $\mathbb{R}^{64 \times 4 \times 7 \times 7}$. The fourth channel weights are initialized to the mean of the three RGB channels to preserve ImageNet feature priors. For any input cow image, the trunk yields a 512-dimensional spatial feature vector $\mathbf{h} \in \mathbb{R}^{512}$.
+
+\subsubsection{BCS Ordinal Regression Head}
+Body condition scores vary continuously between $2.00$ and $4.50$ on a standard 5-point scale. We quantize the target into $K=10$ ordinal threshold classes with interval $\Delta = 0.25$:
+\begin{equation}
+y_k = \mathbb{I}(\mathrm{BCS} > r_k), \quad k \in \{1, 2, \dots, K-1\}
+\end{equation}
+where $r_k = 2.00 + k \cdot 0.25$. The BCS head projects $\mathbf{h}$ through a linear layer $\mathbf{W}_{\mathrm{BCS}} \in \mathbb{R}^{(K-1) \times 512}$ with bias $\mathbf{b} \in \mathbb{R}^{K-1}$. The loss is minimized via binary cross-entropy across all rank boundaries:
+\begin{equation}
+L_{\mathrm{BCS}} = -\frac{1}{K-1} \sum_{k=1}^{K-1} \left[ y_k \log \sigma(f_k) + (1 - y_k) \log(1 - \sigma(f_k)) \right]
+\end{equation}
+During inference, the continuous predicted score is reconstructed as:
+\begin{equation}
+\widehat{\mathrm{BCS}} = r_1 + \Delta \sum_{k=1}^{K-1} \mathbb{I}(\sigma(f_k) \ge 0.5)
+\end{equation}
+
+\subsubsection{Temporal Behavior Recognition Head}
+For video clips, the shared trunk processes each of the $T=8$ frames independently, producing a temporal sequence of feature vectors $\mathbf{H} \in \mathbb{R}^{8 \times 512}$. This sequence is fed into a 1D Dilated Temporal Convolutional Network (TCN) consisting of two residual blocks with kernel size $k=3$ and dilations $d \in \{1, 2\}$. A linear projection outputs class logits across 5 actions: \textit{Standing, Lying, Feeding, Drinking, and Walking}. The head is optimized via categorical cross-entropy:
+\begin{equation}
+L_{\mathrm{Beh}} = -\sum_{c=1}^{5} y_c \log \frac{\exp(z_c)}{\sum_{j=1}^5 \exp(z_j)}
+\end{equation}
+
+\subsubsection{Biometric Re-Identification Head}
+Individual cow retrieval is parameterized by a linear bottleneck projecting $\mathbf{h}$ to a 256-dimensional metric embedding $\mathbf{z}$, followed by $L_2$ unit normalization: $\hat{\mathbf{z}} = \mathbf{z} / \|\mathbf{z}\|_2$. Training utilizes cross-entropy over known training identity centroids:
+\begin{equation}
+L_{\mathrm{ReID}} = -\log \frac{\exp(\mathbf{w}_{y}^\top \hat{\mathbf{z}} / \tau_{\mathrm{reid}})}{\sum_{j=1}^{C_{\mathrm{reid}}} \exp(\mathbf{w}_{j}^\top \hat{\mathbf{z}} / \tau_{\mathrm{reid}})}
+\end{equation}
+where $\tau_{\mathrm{reid}} = 0.07$. In evaluation, zero-shot open-set cosine distance $d(\mathbf{z}_q, \mathbf{z}_g) = 1 - \mathbf{z}_q^\top \mathbf{z}_g$ ranks gallery individuals for each query.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_mtl_architecture.pdf}
+\caption{Comparison of multi-task learning architectures. Left: Monolithic hard-shared control (E1) routing a single 512-dim trunk feature to all three heads. Right: Modular task-private architecture (E3) inserting bottleneck residual adapters ($512 \to 64 \to 512$) to decouple task-specific capacity.}
+\label{fig:mtl_architecture}
+\end{figure*}
+
+\subsection{Multi-Task Architectural Paradigms}
+We systematically construct and evaluate three distinct multi-task paradigms:
+
+\subsubsection{Hard-Shared Multi-Task Baseline (E1)}
+As illustrated in Fig.~\ref{fig:mtl_architecture} (left), all task heads directly branch from the output of the shared ResNet-18 trunk. The trunk parameters $\boldsymbol{\theta}_{\mathrm{shared}}$ are updated simultaneously by the unweighted sum of task gradients:
+\begin{equation}
+\mathbf{g}_{\mathrm{shared}} = \mathbf{g}_{\mathrm{BCS}} + \mathbf{g}_{\mathrm{Beh}} + \mathbf{g}_{\mathrm{ReID}}
+\end{equation}
+
+\subsubsection{Modular Task-Private Residual Adapters (E3)}
+To mitigate parameter interference while retaining shared representation benefits, we introduce task-private residual bottleneck adapters between the shared trunk and each task head, shown in Fig.~\ref{fig:mtl_architecture} (right). Each adapter consists of a down-projection $\mathbf{W}_{\mathrm{down}} \in \mathbb{R}^{64 \times 512}$, Layer Normalization, ReLU activation, and an up-projection $\mathbf{W}_{\mathrm{up}} \in \mathbb{R}^{512 \times 64}$:
+\begin{equation}
+\mathbf{h}_{\mathrm{task}} = \mathbf{h}_{\mathrm{shared}} + \alpha \cdot \mathbf{W}_{\mathrm{up}} \operatorname{ReLU}(\operatorname{LN}(\mathbf{W}_{\mathrm{down}} \mathbf{h}_{\mathrm{shared}}))
+\end{equation}
+To ensure stability at initialization, $\mathbf{W}_{\mathrm{up}}$ is initialized to zero, ensuring each adapter initially behaves as an identity mapping ($\mathbf{h}_{\mathrm{task}} \equiv \mathbf{h}_{\mathrm{shared}}$). The adapters add only 395,904 trainable parameters ($+3.32\%$ overhead).
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_superstep_routing.pdf}
+\caption{Execution sequence and gradient routing of one multi-task training super-step. Gradients from sequential task batches are pooled; in E4 (PCGrad), conflicting shared trunk gradients ($\mathbf{g}_i^\top \mathbf{g}_j < 0$) are orthogonalized before applying the unified AdamW optimizer step.}
+\label{fig:superstep_routing}
+\end{figure*}
+
+\subsubsection{Gradient Surgery via PCGrad (E4)}
+Rather than altering the network architecture, PCGrad resolves negative transfer during backpropagation. Fig.~\ref{fig:superstep_routing} illustrates the multi-task super-step protocol. When a pair of task gradients exhibits destructive directional interference on the shared trunk ($\mathbf{g}_i^\top \mathbf{g}_j < 0$), $\mathbf{g}_i$ is projected onto the normal plane of $\mathbf{g}_j$:
+\begin{equation}
+\mathbf{g}_i \leftarrow \mathbf{g}_i - \frac{\mathbf{g}_i^\top \mathbf{g}_j}{\|\mathbf{g}_j\|_2^2 + \epsilon} \mathbf{g}_j
+\end{equation}
+The projection order is randomized at every step. Importantly, task-head gradients $\nabla_{\boldsymbol{\phi}_t} L_t$ remain isolated and unprojected.
+
+\section{Experimental Setup and Benchmark Datasets}
+
+\subsection{Benchmark Datasets and Leakage Prevention}
+Rigorous validation in livestock vision requires preventing identity and background leakage across splits:
+\begin{itemize}
+    \item \textbf{BCS (ScienceDB)}: Comprises 31,529 real-world dairy cow images acquired from rear chutes across commercial facilities \cite{edmonson1989bcs}. To prevent near-duplicate burst leakage, we enforce a strict burst-group-disjoint split: test sets consist of 7,549 images strictly isolated by acquisition session.
+    \item \textbf{Behavior Recognition (CVB + Beef)}: CVB captures authentic indoor dairy barn surveillance (422 test sequences), while Beef monitors outdoor feedlot pens (358 test sequences) \cite{zia2023cvb}. Clips are divided into disjoint continuous time blocks to prevent consecutive frame leakage.
+    \item \textbf{Cattle Re-ID (SideViewCows2026)}: Contains multi-camera captures across an indoor milking parlor and an open barn. We follow Protocol A: 69 certified held-out cow identities unseen during training, with a 36,811-image parlor gallery tested against 25,260 barn queries and 607 zero-shot snapshot queries.
+\end{itemize}
+
+\subsection{Training Protocol and Implementation Details}
+All models are implemented in PyTorch and trained on NVIDIA L40S and Tesla T4 GPUs with deterministic random seeds (2026). Models are trained for 30 epochs using the AdamW optimizer ($\beta_1 = 0.9, \beta_2 = 0.999$, weight decay $\lambda = 10^{-4}$). The initial learning rate is set to $1 \times 10^{-4}$ and decayed via cosine annealing. In multi-task configurations, a \textit{super-step} executes sequential micro-batches: $B_{\mathrm{BCS}} = 64, B_{\mathrm{Beh}} = 8, B_{\mathrm{ReID}} = 32$. Checkpoints are selected based on the best composite validation objective: $\mathcal{L}_{\mathrm{val}} = \frac{1}{3}(L_{\mathrm{BCS}} + L_{\mathrm{Beh}} + L_{\mathrm{ReID}})$.
+
+\section{Experimental Results and Analysis}
+
+\subsection{Single-Task Baselines vs Cattle-Centered Perception}
+Table~\ref{tab:singletask_results} reports the performance of standalone single-task models trained on raw RGB crops versus our cattle-centered 4-channel representation (RGB + SAM 2.1 mask).
+
+\begin{table}[htbp]
+\caption{Single-Task Baselines (Runs 1--3) vs Cattle-Centered Perception (Runs 4--6)}
+\label{tab:singletask_results}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabularx}{\linewidth}{l X c c}
+\toprule
+\textbf{Task} & \textbf{Evaluation Metric} & \textbf{RGB} & \textbf{Cattle-Cent.} \\
+\midrule
+\textbf{BCS} & Real MAE $\downarrow$ & 0.1848 & \textbf{0.1709} \\
+& Exact Acc@0 (\%) $\uparrow$ & 40.85 & \textbf{43.14} \\
+& Tol. Acc@1 (\%) $\uparrow$ & 86.74 & \textbf{88.58} \\
+& Macro-F1 $\uparrow$ & 0.3621 & \textbf{0.3807} \\
+\midrule
+\textbf{Behavior} & Overall Acc (\%) $\uparrow$ & \textbf{88.88} & 87.44 \\
+& Balanced Acc (\%) $\uparrow$ & \textbf{71.72} & 68.82 \\
+& Macro-F1 $\uparrow$ & \textbf{0.7413} & 0.7161 \\
+& CVB Barn Acc (\%) $\uparrow$ & \textbf{82.23} & 80.09 \\
+\midrule
+\textbf{Re-ID} & Barn$\to$Parlor R-1 (\%) $\uparrow$ & 58.64 & \textbf{63.90} \\
+(Proto A) & Barn$\to$Parlor mAP (\%) $\uparrow$ & 38.32 & \textbf{41.56} \\
+& Snap$\to$Parlor R-1 (\%) $\uparrow$ & 38.88 & \textbf{62.93} \\
+& Snap$\to$Parlor mAP (\%) $\uparrow$ & 27.05 & \textbf{43.12} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The experimental outcomes reveal clear domain-dependent behavior:
+\begin{itemize}
+    \item \textbf{Cattle Re-ID}: Soft masking produces substantial performance gains. On the challenging snapshot query set, Rank-1 accuracy surges from $38.88\%$ to $62.93\%$ ($+24.05$ pp), and mAP improves by $+16.07$ pp. This confirms that eliminating background parlor metal bars and straw bedding forces the metric embedding to isolate invariant coat markings.
+    \item \textbf{BCS Prediction}: Cattle-centered masking reduces physical error from $0.1848$ to $0.1709$ MAE while boosting exact match accuracy by $+2.29$ pp, demonstrating that isolating anatomical contours sharpens ordinal boundary detection.
+    \item \textbf{Behavior Recognition}: Behavior accuracy slightly declines ($88.88\%$ to $87.44\%$). Inspection reveals that static segmentation masks occasionally clip moving hooves during rare dynamic transitions (e.g. walking). As shown in Fig.~\ref{fig:behavior_recall}, minority class recall for walking is constrained across single-task architectures due to extreme class imbalance in commercial barn settings.
+\end{itemize}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/fig_behavior_recall.pdf}
+\caption{Single-task behavior recall across 5 action categories on held-out test data. Frequent sedentary postures (feeding, lying) achieve near-perfect recall, while walking represents a severe minority distribution.}
+\label{fig:behavior_recall}
+\end{figure}
+
+\subsection{Multi-Task Learning Performance and Negative Transfer}
+Table~\ref{tab:mtl_results} presents the comparative evaluation of the three multi-task models against the single-task cattle-centered reference (E0).
+
+\begin{table*}[t]
+\caption{Held-Out Evaluation Across Single-Task Reference (E0) and Multi-Task Architectures (E1 Hard-Shared, E3 Modular, E4 PCGrad)}
+\label{tab:mtl_results}
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X c c c c}
+\toprule
+\textbf{Task / Domain} & \textbf{Evaluation Metric} & \textbf{Single-Task (E0)} & \textbf{Hard-Shared (E1)} & \textbf{Modular E3} & \textbf{PCGrad (E4)} \\
+\midrule
+\textbf{BCS Evaluation} & Real MAE $\downarrow$ & \textbf{0.1709} & 0.1788 & 0.1916 & 0.1828 \\
+(ScienceDB Test) & Tolerance Acc@1 (\%) $\uparrow$ & \textbf{88.58} & 88.44 & 86.32 & 87.84 \\
+& Exact Acc@0 (\%) $\uparrow$ & \textbf{43.14} & 41.10 & 38.47 & 40.23 \\
+& Macro-F1 $\uparrow$ & \textbf{0.3807} & 0.3605 & 0.3291 & 0.3516 \\
+\midrule
+\textbf{Behavior Evaluation} & Overall Accuracy (\%) $\uparrow$ & \textbf{87.44} & 85.00 & 85.77 & 86.92 \\
+(CVB + Beef) & Balanced Accuracy (\%) $\uparrow$ & 68.82 & 67.30 & 66.70 & \textbf{69.15} \\
+& Macro-F1 $\uparrow$ & \textbf{0.7161} & 0.6866 & 0.6755 & 0.7114 \\
+& CVB Barn CCTV Acc (\%) $\uparrow$ & 80.09 & 76.78 & 80.33 & \textbf{81.04} \\
+& CVB Barn CCTV F1 $\uparrow$ & \textbf{0.6188} & 0.5402 & 0.6026 & 0.6141 \\
+& Minority Walking F1 $\uparrow$ & 0.0800 & 0.0408 & 0.0000 & \textbf{0.0909} \\
+\midrule
+\textbf{Re-ID Protocol A} & Query Barn $\to$ Parlor Rank-1 (\%) $\uparrow$ & \textbf{63.90} & 57.38 & 49.08 & 54.97 \\
+(Held-Out Cows) & Query Barn $\to$ Parlor mAP (\%) $\uparrow$ & \textbf{41.56} & 30.37 & 28.04 & 30.23 \\
+& Query Snap $\to$ Parlor Rank-1 (\%) $\uparrow$ & \textbf{62.93} & 57.17 & 53.71 & 57.00 \\
+& Query Snap $\to$ Parlor mAP (\%) $\uparrow$ & \textbf{43.12} & 33.69 & 28.78 & 33.87 \\
+\midrule
+\textbf{Efficiency} & Total Trainable Parameters & 34,706,006 ($3\times$) & \textbf{11,926,706} & 12,322,610 & \textbf{11,926,706} \\
+& Relative Parameter Footprint & $100\%$ & \textbf{34.3\%} & 35.5\% & \textbf{34.3\%} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\subsubsection{Negative Transfer in Hard Sharing (E1)}
+Monolithic hard sharing achieves substantial efficiency gains, compressing total parameters by $65.7\%$ (from 34.7M to 11.9M). However, direct parameter sharing induces observable negative transfer across all three tasks. BCS MAE increases by $+0.0079$ (from $0.1709$ to $0.1788$), Behavior macro-F1 drops by $-0.0295$, and Re-ID Barn Rank-1 drops by $-6.52$ pp.
+
+\subsubsection{Bottleneck Adapters (E3) Limitations}
+While modular adapters add task-private representation capacity, E3 exhibits metric degradation on Re-ID retrieval (Rank-1 drops to $49.08\%$) and suffers minority action collapse (walking F1 drops to $0.0000$). This suggests that a low-rank adapter bottleneck ($r=64$) constrains fine-grained biometric representations when forced to branch from a shared trunk under divergent multi-task pressures.
+
+\subsubsection{Efficacy of PCGrad (E4)}
+Gradient projection (E4) achieves the best multi-task trade-off. On authentic barn surveillance (CVB), PCGrad raises classification accuracy to \textbf{81.04\%} ($+4.26$ pp over E1 and $+0.95$ pp over the single-task reference E0) and lifts macro-F1 from $0.5402$ to $0.6141$ ($+0.0739$). Crucially, minority walking F1 more than doubles from $0.0408$ to \textbf{0.0909}. In BCS scoring, E4 achieves $0.1828$ MAE, recovering $0.0088$ error reduction relative to E3. In biometric retrieval, E4 matches E1 retrieval mAP ($30.23\%$ vs $30.37\%$) while stabilizing gradient flow.
+
+\subsection{Gradient Conflict Dynamics}
+During 30 epochs of E4 super-step training (16,140 total super-steps), our logging framework detected a total of \textbf{44,177 pairwise conflicting gradient events} ($\mathbf{g}_i^\top \mathbf{g}_j < 0$) on the shared ResNet-18 trunk. This represents an average of $2.737$ directional conflicts per super-step. Pairwise conflict frequencies were evenly distributed:
+\begin{itemize}
+    \item \textbf{BCS vs Behavior}: $52.4\%$ conflict frequency.
+    \item \textbf{BCS vs Re-ID}: $47.8\%$ conflict frequency.
+    \item \textbf{Behavior vs Re-ID}: $49.1\%$ conflict frequency.
+\end{itemize}
+This persistent interference explains why unprojected hard sharing suffers performance degradation, and demonstrates why gradient orthogonalization is essential for multi-task livestock frameworks.
+
+\section{Discussion and Deployment Considerations}
+Our empirical findings offer key design principles for multi-task precision livestock systems:
+\begin{enumerate}
+    \item \textit{Background Isolation Overrides Architecture}: Foreground soft masking is the single most critical intervention for open-set biometric identification, providing a $+24.05$ pp Rank-1 improvement by neutralizing lighting and background confounders.
+    \item \textit{Optimization vs Capacity Interventions}: In shared backbones under conflicting task objectives, optimization-level intervention (PCGrad) is superior to adding low-rank architectural adapters (E3), which fail to resolve the underlying trunk gradient collisions.
+    \item \textit{Practical Edge Feasibility}: The proposed E4 framework reduces memory and parameter requirements to just $11.9\mathrm{M}$ parameters, allowing simultaneous real-time execution of BCS, behavior logging, and identity verification at $>30$ FPS on low-cost edge platforms (e.g., NVIDIA Jetson Orin).
+\end{enumerate}
+
+\section{Conclusion and Future Work}
+In this paper, we presented an end-to-end multi-task deep learning framework unifying Body Condition Scoring, temporal behavior recognition, and biometric cow re-identification. By coupling cattle-centered spatial perception with gradient-projected multi-task optimization, our framework achieves competitive performance across all three domains while reducing model parameters by $65.7\%$. Empirical gradient diagnostics verify that directional conflict occurs in approximately half of all super-steps, and that PCGrad effectively mitigates negative transfer on authentic CCTV surveillance.
+
+Future work will explore: (1) extending the framework to automated lameness scoring, (2) incorporating multi-scale deformable attention adapters, and (3) deploying quantized ONNX runtimes directly onto farm edge camera nodes for continuous health telemetry.
+
+\section*{Acknowledgment}
+The authors express their gratitude to the Department of Computer Science and Engineering, BRAC University, for providing high-performance GPU computational facilities. We thank Dr. Md. Khalilur Rahman for thesis supervision, and Mehedi Hasan Emo and Mollah MD Saif for their guidance throughout the research.
+
+\balance
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

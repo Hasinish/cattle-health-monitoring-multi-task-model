@@ -44,6 +44,14 @@ Phase 3 (P3) / Final CSE400 Undergraduate Thesis LaTeX sources, audit reports, a
 - `bibliography/`: BibTeX files covering literature citations.
 - `appendix/`: Supplementary appendices (evidence register, reproducibility protocols).
 
+### `cattle_paper_ieee/`
+Official IEEE 2-column conference paper package and compiled manuscript.
+- `main.tex`: Master IEEEtran conference manuscript (8 pages) authored for post-defense journal/conference submission.
+- `main.pdf`: Compiled 8-page IEEE conference paper with 24 peer-reviewed citations.
+- `IEEEtran.cls` & `IEEEtran.bst`: Official IEEE conference class and bibliography styling files.
+- `references.bib`: BibTeX bibliography database of 51+ cited literature references.
+- `figures/`: Pre-compiled standalone vector PDFs of research design, 4-channel input pipeline, multi-task architecture, super-step routing, and behavior recall.
+
 ### `context/`
 Dataset preprocessing routines, member work splits, and original problem context files.
 - `context1_master_plan.txt`: Research master plan and pipeline roadmap.
