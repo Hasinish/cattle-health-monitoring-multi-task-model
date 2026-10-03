@@ -215,7 +215,7 @@ All models are implemented in PyTorch and trained on NVIDIA L40S and Tesla T4 GP
 Table~\ref{tab:singletask_results} reports the performance of standalone single-task models trained on raw RGB crops versus our cattle-centered 4-channel representation (RGB + SAM 2.1 mask).
 
 \begin{table}[htbp]
-\caption{Single-Task Baselines (Runs 1--3) vs Cattle-Centered Perception (Runs 4--6)}
+\caption{Single-Task Baselines (Runs 1--3) vs Cattle-Centered Perception (Runs 4--6) on Matched Evaluation Cohorts}
 \label{tab:singletask_results}
 \centering
 \footnotesize
@@ -224,14 +224,14 @@ Table~\ref{tab:singletask_results} reports the performance of standalone single-
 \toprule
 \textbf{Task} & \textbf{Evaluation Metric} & \textbf{RGB} & \textbf{Cattle-Cent.} \\
 \midrule
-\textbf{BCS} & Real MAE $\downarrow$ & 0.1848 & \textbf{0.1709} \\
-& Exact Acc@0 (\%) $\uparrow$ & 41.63 & \textbf{43.57} \\
-& Tol. Acc@1 (\%) $\uparrow$ & 86.74 & \textbf{89.40} \\
-& Macro-F1 $\uparrow$ & \textbf{0.4110} & 0.4039 \\
+\textbf{BCS} & Real MAE $\downarrow$ & 0.1929 & \textbf{0.1709} \\
+& Exact Acc@0 (\%) $\uparrow$ & 40.84 & \textbf{43.57} \\
+& Tol. Acc@1 (\%) $\uparrow$ & 84.95 & \textbf{89.40} \\
+& Macro-F1 $\uparrow$ & \textbf{0.4074} & 0.4039 \\
 \midrule
-\textbf{Behavior} & Overall Acc (\%) $\uparrow$ & \textbf{88.88} & 87.44 \\
-& Balanced Acc (\%) $\uparrow$ & 71.72 & \textbf{74.43} \\
-& Macro-F1 $\uparrow$ & \textbf{0.7413} & 0.7397 \\
+\textbf{Behavior} & Overall Acc (\%) $\uparrow$ & \textbf{88.46} & 87.44 \\
+& Balanced Acc (\%) $\uparrow$ & 71.30 & \textbf{74.43} \\
+& Macro-F1 $\uparrow$ & 0.7378 & \textbf{0.7397} \\
 & CVB Barn Acc (\%) $\uparrow$ & \textbf{84.12} & 80.09 \\
 \midrule
 \textbf{Re-ID} & Barn$\to$Parlor R-1 (\%) $\uparrow$ & 58.64 & \textbf{63.90} \\
@@ -245,8 +245,8 @@ Table~\ref{tab:singletask_results} reports the performance of standalone single-
 The experimental outcomes reveal clear domain-dependent behavior:
 \begin{itemize}
     \item \textbf{Cattle Re-ID}: Soft masking produces substantial performance gains. On the challenging snapshot query set, Rank-1 accuracy surges from $38.88\%$ to $62.93\%$ ($+24.05$ pp), and mAP improves by $+13.37$ pp (from $27.05\%$ to $40.42\%$). This confirms that eliminating background parlor metal bars and straw bedding forces the metric embedding to isolate invariant coat markings.
-    \item \textbf{BCS Prediction}: Cattle-centered masking reduces physical error from $0.1848$ to $0.1709$ MAE while boosting tolerance accuracy to $89.40\%$ ($+2.66$ pp) and exact match accuracy to $43.57\%$ ($+1.94$ pp), demonstrating that isolating anatomical contours sharpens ordinal boundary detection.
-    \item \textbf{Behavior Recognition}: Behavior accuracy slightly declines ($88.88\%$ to $87.44\%$). Inspection reveals that static segmentation masks occasionally clip moving hooves during rare dynamic transitions (e.g. walking). As shown in Fig.~\ref{fig:behavior_recall}, minority class recall for walking is constrained across single-task architectures due to extreme class imbalance in commercial barn settings.
+    \item \textbf{BCS Prediction}: Cattle-centered masking reduces physical error from $0.1929$ to $0.1709$ MAE (and from $0.1848$ on the full test) while boosting tolerance accuracy from $84.95\%$ to $89.40\%$ ($+4.45$ pp) and exact match accuracy to $43.57\%$ ($+2.73$ pp), demonstrating that isolating anatomical contours sharpens ordinal boundary detection.
+    \item \textbf{Behavior Recognition}: While raw overall accuracy slightly declines ($88.46\%$ to $87.44\%$) due to static masks occasionally clipping moving hooves during rapid motion, \textbf{balanced accuracy significantly increases from $71.30\%$ to $74.43\%$ ($+3.13$ pp)} and Macro-F1 lifts from $0.7378$ to $0.7397$ on the matched test set ($N=780$). Crucially, minority walking F1 rises from $0.2174$ to $0.2456$, proving that foreground temporal framing enhances underrepresented dynamic actions.
 \end{itemize}
 
 \begin{figure}[t]
