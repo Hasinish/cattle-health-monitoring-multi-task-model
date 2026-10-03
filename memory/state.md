@@ -26,6 +26,11 @@
 - **MTL Architecture Policy**: No final MTL architecture is predetermined. Hard sharing (E1), partial sharing (E2), task-private pathways / adapters / gates (E3), PCGrad (E4), and GradNorm (E5) remain empirical alternatives to compare against single-task controls (E0).
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
+- [x] **Local LaTeX Environment & Post-Defense Figure Caption Trimming**: COMPLETE & COMPILED ✅ (Convo `15287605-a4dc-447f-9ffb-2926b4c2b618`).
+  * Installed MiKTeX 25.12 via winget on laptop (`DESKTOP-R6QPSH5`) with auto-install enabled.
+  * Restored missing student/faculty signature assets into `cattle_thesis_p3_latex/images/`.
+  * Shortened 4 essay-length figure captions (Figure 4.1, 4.2, 4.3, 4.4) addressing committee feedback.
+  * Recompiled `cattle_thesis_p3_latex/main.pdf` cleanly with 2 passes of `pdflatex` + `biber` + `makeindex` (90 pages, 0 errors, PASS on `check_draft.py`).
 - [x] **Workspace Organization & Root Clutter Cleanup**: COMPLETE & VERIFIED ✅ (Convo `85012ef9-13bb-4d7e-a2a4-e4b7df8cf305`).
   * Relocated 303 MB of pretrained model checkpoints (`rtdetr-l.pt`, `sam2.1_s.pt`, `sam2_s.pt`, `yolo11s-seg.pt`, `yolo26s-seg.pt`, `yolov8s.pt`) into dedicated `weights/` directory (auto-discovered by Ultralytics via `SETTINGS['weights_dir']`).
   * Relocated 133 MB raw CSIRO DAP dump (`58916v001.txt` and `58916v001.txt.gz`) into `datasets/behavior/cvb/` and updated `scripts/modal_cvb_pipeline.py`.

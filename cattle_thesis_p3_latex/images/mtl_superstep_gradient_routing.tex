@@ -71,6 +71,6 @@
 \draw[arrow] (p3.north |- bb.south) -- (p3.north);
 
 \end{tikzpicture}
-\caption[Multi-task training super-step protocol and gradient routing]{Multi-task training super-step protocol and architectural gradient routing across the three executed configurations. Top: within each super-step, task-specific mini-batches execute forward and backward passes sequentially. In the monolithic control (E1) and modular architecture (E3), shared backbone gradients are integrated by direct accumulation; in the PCGrad optimization control (E4), pairwise gradient conflicts on the shared backbone ($\mathbf{g}_i^\top \mathbf{g}_j < 0$) are resolved via projection before summation. Task-head gradients remain unprojected across all models. Bottom: architectural gradient isolation boundaries. In E3, task-private adapters and prediction heads receive updates strictly from their respective task losses, while the shared backbone receives combined gradients through residual connections.}\label{fig:mtl_gradient_routing}
+\caption[Multi-task training super-step protocol and gradient routing]{Multi-task training super-step protocol and architectural gradient routing. Tasks execute sequentially per super-step, with PCGrad (E4) projecting pairwise conflicting gradients on the shared backbone prior to parameter updates.}\label{fig:mtl_gradient_routing}
 \end{figure}
 

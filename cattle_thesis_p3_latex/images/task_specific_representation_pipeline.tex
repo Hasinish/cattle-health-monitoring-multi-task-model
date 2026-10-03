@@ -49,6 +49,6 @@
 
 \end{tikzpicture}%
 }
-\caption[Task-specific cattle-centered input pipelines]{Task-specific cattle-centered input pipelines for body condition scoring, behavior recognition, and individual re-identification. In BCS and behavior recognition, target cow localization and foreground segmentation are generated automatically via RT-DETR-L and SAM 2.1. In cattle re-identification, target bounding boxes and binary masks are obtained from released ground-truth annotations (oracle setting, dashed boxes), strictly avoiding automatic perception errors during cross-setting retrieval evaluation.}
+\caption[Task-specific cattle-centered input pipelines]{Task-specific cattle-centered input pipelines. Target cow localization and soft segmentation masks are generated automatically (RT-DETR-L and SAM 2.1) for BCS and behavior, and obtained from ground-truth annotations for re-identification.}
 \label{fig:task_representation_pipeline}
 \end{figure}

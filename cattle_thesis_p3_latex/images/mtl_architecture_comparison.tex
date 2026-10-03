@@ -116,6 +116,6 @@
 \node[font=\scriptsize, fill=gray!4, inner sep=2pt] at (7.375, -9.9) {Residual Skip Connection (Identity Mapping at Step 0)};
 
 \end{tikzpicture}
-\caption[Multi-task architecture comparison: hard-shared vs. modular]{Architectural comparison between the monolithic hard-shared multi-task control (E1, left) and the modular task-private multi-task architecture (E3, right). Both architectures share an identical four-channel ResNet-18 spatial trunk and task prediction heads. E3 inserts an independent residual bottleneck adapter (bottom detail) between the shared 512-dimensional representation and each task-specific head, initialized as an identity mapping ($\mathbf{W}_{\mathrm{up}}=\mathbf{0}$).}
+\caption[Multi-task architecture comparison: hard-shared vs. modular]{Architectural comparison between the monolithic hard-shared multi-task control (E1, left) and the modular task-private architecture (E3, right) with residual bottleneck adapters.}
 \label{fig:mtl_architecture_comparison}
 \end{figure}
