@@ -32,7 +32,7 @@
   * Authored publication-grade 8-page IEEE manuscript `cattle_paper_ieee/main.tex` with all 6 authors (Hasin Ishrak, Namira Abrar Haque, Sanjida Akter Bithi, Shouvik Banik, Nusrat Lamya Faruk, Prof. Dr. Md. Khalilur Rahman).
   * Equalized references column heights on Page 8 using `\balance`.
   * Refined Table I and Table II typography and column alignments with zero awkward wrapping.
-  * Forensically audited every single cell against canonical thesis tables (`cattle_thesis_p3_latex/tables/`), calibrating all single-task reference baselines and multi-task models to 100% exact numerical agreement.
+  * Forensically audited every single cell against canonical thesis tables (`cattle_thesis_p3_latex/tables/`), calibrating all single-task reference baselines (matched cohorts: Behavior balanced acc 71.30% -> 74.43%, BCS MAE 0.1929 -> 0.1709) and multi-task models to 100% exact numerical agreement.
   * Successfully compiled `cattle_paper_ieee/main.pdf` (8 pages, 0 errors, 24 citations).
   * Deployed copies to `C:\Users\hasin\Desktop\T25301094_IEEE_Paper.pdf` and `Cattle_Health_Monitoring_IEEE_Paper.pdf`.
 - [x] **Local LaTeX Environment & Post-Defense Figure Caption Trimming**: COMPLETE & COMPILED ✅ (Convo `15287605-a4dc-447f-9ffb-2926b4c2b618`).
