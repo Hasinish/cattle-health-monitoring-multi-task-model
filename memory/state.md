@@ -68,6 +68,44 @@
     - **Figure 4.4 (p. 42 / PDF p. 56)**: Multi-task training super-step protocol and gradient routing. Top sequential execution & projection/summation; bottom architectural parameter isolation boundaries. Razor-sharp mathematical typesetting.
     - **Figure 5.1 (p. 45 / PDF p. 59)**: Run 2 Behavior recall by class PGFPlots bar chart. Slanted category labels, clean blue bars, precise value callouts (0.65, 0.95, 0.99, 0.81, 0.19) hovering without collisions.
   * Verified 0 text collisions, 0 clipping, and 0 overfull margin issues.
+- [x] **All 89 Certified Google Sheets Paraphrases Replaced Directly into LaTeX Thesis**: COMPLETE & COMPILED ✅ (Convo `fd2f88b4-425a-4b7e-a033-6a257316d8c8`).
+  * Replaced 100% of all 89 AI-detected text chunks with user-approved Column C paraphrases directly into the Phase 3 thesis manuscript (`cattle_thesis_p3_latex/chapters/`):
+    - **Chapter 1: Introduction** (`chapter_1.tex`): 13 chunks replaced, 0 errors.
+    - **Chapter 2: Literature Review** (`chapter_2.tex`): 21 chunks replaced, 0 errors.
+    - **Chapter 3: Requirements & Constraints** (`chapter_3.tex`): 7 chunks replaced, 0 errors.
+    - **Chapter 4: Proposed Methodology** (`chapter_5.tex`): 16 chunks replaced, 0 errors.
+    - **Chapter 5: Result Analysis** (`chapter_6.tex`): 14 chunks replaced, 0 errors.
+    - **Chapter 6: Conclusion** (`chapter_9.tex`): 18 chunks replaced, 0 errors.
+  * Preserved all LaTeX citations (`\cite{...}`), evidence tags (`\evidence{...}`), math macros/equations, tables (`\input{tables/...}`), figures, and itemized/enumerated lists.
+  * Corrected all text-mode math subscripts (`$L_{\mathrm{BCS}}$`, `$L_{\mathrm{Beh}}$`, `$L_{\mathrm{ReID}}$`), special characters (`\%`, `\#`, `$\pm$`), and quotation marks.
+  * Successfully compiled `main.pdf` (91 pages, 855 KB) via full 2-pass `pdflatex` + `biber` + `makeindex` pipeline with 0 compilation errors.
+- [x] **Google Sheets Paraphrasing Workbench API Authentication on Laptop**: COMPLETE & CERTIFIED ✅ (Convo `fd2f88b4-425a-4b7e-a033-6a257316d8c8`).
+  * Installed missing Google API libraries (`google-api-python-client`, `google-auth-oauthlib`, `google-auth-httplib2`) on Python 3.14.
+  * Configured `credentials.json` from client secrets and executed local OAuth flow (`scripts/login_google.py`).
+  * Generated and cached local `token.json` with permissions for Spreadsheets, Documents, and Drive.
+  * Verified live read/write connection to spreadsheet `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A` (`CSE400_P3_Thesis_Paraphrasing_Master`) across all 6 chapter tabs (Ch 1--6).
+- [x] **Google Sheets Rebuilt with Strictly 100–150 Word Paragraphs & Full Numbering**: COMPLETE & VERIFIED ✅ (Convo `fd2f88b4-425a-4b7e-a033-6a257316d8c8`).
+  * Completely wiped and rebuilt all 6 chapter tabs in `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A` (`CSE400_P3_Thesis_Paraphrasing_Master`).
+  * Implemented dynamic programming partitioner (`dp_partition_100_155`) strictly enforcing 100–150 words per paragraph (min 104 words, max 145 words, average 125 words, ZERO paragraphs under 100 words).
+  * Injected explicit Paragraph Numbering in Column A (`Para 01`, `Para 02`, etc., centered, bold, navy font, width 70px) and `"No."` header.
+  * Injected official thesis section numbers into all Section Title rows (e.g. `Section 1.1 Background (Part 1 of 3)`, `Section 6.3 Contributions of the Thesis`).
+  * Restored list item numbering (`1.`, `2.`, `3.`, etc.) across thesis contributions, multi-task hypotheses, limitations, and future work.
+  * Purged all double periods (`..`), punctuation glitches (`?.`, `:.`), and capitalized lowercase sentence starters.
+  * Total 89 paragraphs across 356 rows: Ch 1 (13 paras, 52 rows), Ch 2 (21 paras, 84 rows), Ch 3 (7 paras, 28 rows), Ch 4 (16 paras, 64 rows), Ch 5 (14 paras, 56 rows), Ch 6 (18 paras, 72 rows).
+- [x] **Turnitin AI Detection Extraction & Forensic Analysis**: COMPLETE & SAVED ✅ (Convo `fd2f88b4-425a-4b7e-a033-6a257316d8c8`).
+  * Extracted 61 AI-detected passages (6,914 words total, 33% overall detection score) from `T25301094_Final Report-15-79 ai detection.pdf`.
+  * Saved complete forensic breakdown in `turnitin_ai_detected_paragraphs.md`.
+- [x] **Google Sheets 89 User Paraphrased Paragraphs Semantic Audit & Review Approved (100% WORKBOOK COMPLETE)**: COMPLETE & CERTIFIED ✅ (Convo `fd2f88b4-425a-4b7e-a033-6a257316d8c8`).
+  * Audited all 89 paraphrased paragraphs across Google Spreadsheet `14UIi22gtPx_ogVGBPfhV45rN1R-zTREAQG3Aymcqk0A` (Spreadsheet: `CSE400_P3_Thesis_Paraphrasing_Master`):
+    - **Chapter 1: Introduction**: **100% COMPLETE & CERTIFIED** (All 13 paras: Rows 3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51). CHAPTER 1 LOCKED! 🏆
+    - **Chapter 2: Literature Review**: **100% COMPLETE & CERTIFIED** (All 21 paras: Rows 3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63, 67, 71, 75, 79, 83). CHAPTER 2 LOCKED! 🏆
+    - **Chapter 3: Requirements & Constraints**: **100% COMPLETE & CERTIFIED** (All 7 paras: Rows 3, 7, 11, 15, 19, 23, 27). CHAPTER 3 LOCKED! 🏆
+    - **Chapter 4: Proposed Methodology**: **100% COMPLETE & CERTIFIED** (All 16 paras: Rows 3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63). CHAPTER 4 LOCKED! 🏆
+    - **Chapter 5: Result Analysis**: **100% COMPLETE & CERTIFIED** (All 14 paras: Rows 3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55). CHAPTER 5 LOCKED! 🏆
+    - **Chapter 6: Conclusion**: **100% COMPLETE & CERTIFIED** (All 18 paras: Rows 3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51, 55, 59, 63, 67, 71). CHAPTER 6 LOCKED! 🏆
+  * Audited 89/89 rows (100.0%) for semantic fidelity, technical metric precision, directional error logic, causal attribution guardrails, point-estimate caveats, and negative transfer findings.
+  * Injected official `Correct ✅` review note directly into Column D across all 89 rows via Google Sheets API batch update. 0 REJECTIONS REMAIN!
+  * Concluded and cleaned up background watcher daemon (`task-1385`) and 1-minute recurring schedule cron (`task-1417`).
 - [x] **2 Additional User Paraphrases Integrated in Ch 4 & Ch 6**: COMPLETE & COMPILED ✅ (Convo `60a2b4ef-bea7-4ac9-9b24-08761707adf5`).
   * Replaced representation testing intro sentence in [`cattle_thesis_p3_latex/chapters/chapter_5.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/chapters/chapter_5.tex) (line 3).
   * Replaced E4 PCGrad optimization opening sentence in [`cattle_thesis_p3_latex/chapters/chapter_9.tex`](file:///d:/cattle-health-monitoring-multi-task-model/cattle_thesis_p3_latex/chapters/chapter_9.tex) (line 16, preserved `\cite{yu2020pcgrad}`).

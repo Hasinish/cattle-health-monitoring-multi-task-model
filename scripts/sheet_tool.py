@@ -28,8 +28,11 @@ SHEET_IDS = {
     "Chapter 1: Introduction": 0,
     "Chapter 2: Literature Review": 1111150292,
     "Chapter 3: Requirements & Constraints": 521635664,
-    "Chapter 4: Proposed Methodology": 1557314490
+    "Chapter 4: Proposed Methodology": 1997649724,
+    "Chapter 5: Result Analysis": 1050456210,
+    "Chapter 6: Conclusion": 612786333
 }
+
 
 def robust_execute(request_callable, max_retries=3):
     for attempt in range(max_retries):

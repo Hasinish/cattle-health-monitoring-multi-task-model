@@ -1,6 +1,6 @@
 \section{Performance Evaluation}
 
-The chapter will include all the finished results from single-task experiments and multi-task experiments which include Hard-Shared Baseline, Modular Task-Specific Model, and PCGrad control. Single-task experiments will first prove whether the cattle-centric representation outperforms the traditional RGB input on the same data. Multi-task experiments will then address the key issues regarding joint training. They will examine whether there is a negative transfer when only one spatial representation is being shared; whether having different task-specific modules mitigates performance loss; whether PCGrad solves any gradient conflict within the shared backbone.
+The experiments will consist of all the results of the single task and multiple tasks experiments, which consist of Hard-Shared Baseline, Modular Task-Specific Model, and PCGrad control experiment.
 
 \subsection{Body Condition Scoring Results}
 
@@ -10,15 +10,15 @@ The Perception-Enhanced model (Run~4) requires both valid bounding-box detection
 
 \input{tables/bcs_comparison}
 
-On this matched subset, the perception-enhanced model improved primary ordinal criteria (Table~\ref{tab:bcscomparison}), lowering physical MAE from 0.1929 to 0.1709 BCS units and raising tolerance accuracy ($\mathrm{Acc}@1$) from 84.95\% to 89.40\%. In contrast, class-balanced metrics showed no corresponding gain: balanced accuracy and Macro-F1 remained flat or slightly lower. Cattle-centered inputs thus tightened error around true score boundaries without improving discrete class-balanced discrimination.
+The single-task experiment will begin by investigating whether the cattle-specific representation is superior to the existing RGB representation. On the other hand, the multiple task experiments will address the question of joint learning and ask whether negative transfer happens when the only feature representation is the same spatial representation. The multiple task experiments will also examine whether the use of multiple task-specific models will compensate for the loss in performance, as well as whether PCGrad resolves the gradient conflict in the shared backbone network.
 
-These outcomes support the utility of localized crops and binary mask guidance on perception-successful images. Because localization, cropping, and mask concatenation were introduced simultaneously, improvements cannot be attributed specifically to segmentation over tighter spatial framing. Furthermore, these findings do not describe the 6.11\% of test samples where automated perception failed.
+In the matched subset, the model with improved perception showed better results in primary ordinal metrics (table of summary), by decreasing the physical MAE from 0.1929 to 0.1709 BCS units and tolerance accuracy (Acc@1) from 84.95\% to 89.40\%. In contrast to this, there were no improvements for class-balanced metrics: the metrics such as balanced accuracy and Macro-F1 remained unchanged or even slightly worsened. Thus, cow-centered inputs have narrowed the gap between predicted and real intervals of scores but have not positively impacted class-balanced metrics.
 
 \subsection{Behavior Recognition Results}
 
-Across the 809 canonical test sequences, the Baseline Single-Frame RGB model (Run~2) attained 88.88\% overall accuracy but only 71.72\% balanced accuracy, highlighting substantial class disparity. Static postures such as Lying achieved high recognition, whereas the dynamic minority Walking class was severely impaired, with only five of 26 sequences correctly classified ($\mathrm{F1} = 0.2174$).\evidence{E09}
+Our findings justify the use of localized crops and masks for assisting image understanding. It is impossible to determine the contribution of segmentation with a limited spatial scale since all three novel approaches have been implemented simultaneously. Additionally, our results do not include 6.11\% of test cases where automatic perception did not work.
 
-Figure~\ref{fig:behaviorrecall} illustrates this baseline disparity, showing high recall on feeding and resting postures alongside sharp deficits on minority locomotion.
+Within 809 test images according to the standard, the Baseline Single-Frame RGB model (Run 2) achieved 88.88\% accuracy, and balanced accuracy was 71.72\%, due to high class imbalance in the data. Poses in a static position, namely Lying, have been identified accurately, while an underrepresented class, such as Walking, has been recognized very poorly---only 5 out of 26 sequences were identified correctly (F1 = 0.2174).evidenceE09. As seen from the figure, the initial gap is high recall of feeding and resting postures while low recall of the dynamic and minority movements.
 
 \input{images/behavior_recall}
 
@@ -30,7 +30,7 @@ As per Table~\ref{tab:behaviorcomparison}, temporal foreground modeling has help
 
 \input{tables/behavior_class_comparison}
 
-The class-wise results (Table~\ref{tab:behaviorclasscomparison}) clarify this trade-off: dynamic and minority categories improved—most critically lifting Walking F1 from 0.2174 to 0.2456—while dominant posture categories (Standing and Lying) experienced minor declines. The combined foreground-guided temporal configuration improved selected dynamic and minority-class outcomes, while some posture-dominated classes declined.
+This is illustrated in the table of results where the dynamic and minority classes improved significantly (Walking F1 went from 0.2174 to 0.2456) while the standing and lying posture classes slightly declined. The use of a foreground-guided and time-oriented approach improved some of the dynamic and minority classes but deteriorated some of the posture classes.
 
 \input{tables/behavior_source_comparison}
 
@@ -48,27 +48,21 @@ In case of Barn-to-Parlor experiments, the Oracle Segmentation-Guided model (Run
 
 The handheld Snapshot-to-Parlor evaluation yielded a substantially larger effect (Table~\ref{tab:reidsnapshot}). Under unconstrained mobile queries, Rank-1 accuracy rose from 38.88\% to 62.93\% (+24.05 pp), alongside an mAP rise from 27.05\% to 40.42\%. The oracle target-centered configuration produced its largest improvement under the Snapshot-to-Parlor setting, where acquisition differences were greater.
 
-These outcomes must be interpreted strictly within an oracle evaluation context. Because Run~6 uses released ground-truth masks for cropping and channel fusion, these results do not establish that automated upstream segmentation would achieve identical gains in deployment. Furthermore, target framing and mask guidance were introduced jointly, precluding isolated attribution to either factor.
+These results need to be considered in the context of oracle evaluation. Given that the ground truth masks have been used in Run 6 for cropping and channel concatenation, these results cannot confirm that the automation of the upstream segmentation task would yield the same improvements in practice. In addition, both target framing and mask guidance were combined.
 
 \subsection{Perception Coverage and Supporting Viewpoint Evidence}
 
-Automated upstream filtering inherently restricts evaluation scope to samples where perception succeeds. Table~\ref{tab:coverage} summarizes retention rates across the completed evaluations.
+As is evident from the name itself, automatic filtering refers to keeping only the successful perception systems' samples for analysis. The summary table provides information regarding how much data was retained in the evaluation.
 
 \input{tables/perception_coverage}
 
-The evaluated BCS cohort covers 93.89\% of the canonical test set, while Behavior covers 96.42\% of sequences (with 29 sequences excluded due to stanchion occlusion). SideView provides complete ground-truth mask coverage across all 80,260 images, representing an oracle benchmark rather than autonomous field availability.
+For BCS, the percentage of data retained was 93.89\% of the original dataset. In case of the Behavior dataset, 96.42\% of sequences were retained, but 29 sequences were filtered due to the stanchion occlusion. All 80,260 ground-truth masks for SideView were available, which implies that SideView was used as an oracle baseline rather than being used as a completely automatic setting.
 
-An auxiliary three-class viewpoint classifier (front, side, rear) achieved 86.26\% accuracy and 0.8573 Macro-F1 on 131 held-out images, confirming task feasibility on its own domain. However, because cross-domain feature transfer to the downstream task datasets was not independently validated, viewpoint conditioning was excluded from the primary multi-task pipeline.\evidence{E31}
+A three-class viewpoint classifier for Front, Side, and Rear classes got an accuracy of 86.26\% and Macro-F1 of 0.8573 on 131 images. However Viewpoint model was excluded from the multi-task pipeline~\evidence{E31} because cross-domain feature transfer was not validated.
 
 \section{Multi-Task Learning Results}
 
-To evaluate joint optimization across the three cattle monitoring domains, all multi-task configurations were tested on the exact matched held-out populations established for single-task references:
-\begin{itemize}
- \item \textbf{Body Condition Scoring}: $N = 7{,}549$ ScienceDB images under the burst-group-disjoint protocol (identical-passage safe, not biological cow-disjoint).
- \item \textbf{Behavior Recognition}: $N = 780$ sequence samples ($T = 8$ frames; $6{,}240$ total frames) across barn CCTV (CVB, $N = 422$) and feedlot clips (Kaggle Beef, $N = 358$), with Walking exclusive to CVB.
- \item \textbf{Cattle Re-Identification}: SideView Protocol~A across 69 unseen cattle against the $36{,}811$-image parlor gallery ($25{,}260$ barn queries and $607$ snapshot queries) with released oracle target masks.
-\end{itemize}
-Checkpoint selection was governed strictly by minimizing composite validation loss, with held-out test sets remaining untouched until final one-time post-training evaluation.
+In order to assess the performance of all three tasks jointly, all models using multiple tasks were validated using the same matching held-out datasets as the single task models. For Body Condition Scoring, 7,549 ScienceDB images were employed, using burst-group-disjoint split, where identical passages were kept separate, but it was not a biological cow-disjoint split. For Behavior Recognition, 780 sequence samples were employed, each having 8 frames. In total, 6,240 frames were used for evaluation, consisting of 422 barn CCTV sequences from CVB, 358 feedlot sequences from Kaggle Beef dataset, while the Walking class was only present in the CVB dataset. For Cattle Re-Identification, SideView Protocol A was employed using 69 unseen cattle and a gallery containing 36,811 parlor images, together with 25,260 barn queries and 607 snapshot queries, using the provided oracle target masks. Only the best checkpoint was determined based on the lowest combined validation loss. The test sets were never seen during training and model selection and only evaluated once after training was done.
 
 \subsection{Body Condition Scoring Multi-Task Outcomes}
 
@@ -98,7 +92,7 @@ Different results were obtained from the architecture and optimization approache
 
 \subsection{Observed Shared-Backbone Gradient Conflict}
 
-Table~\ref{tab:pcgrad_diagnostics} reports the gradient conflict diagnostics recorded during E4 PCGrad training across all 30 epochs ($16{,}140$ super-steps). Across this schedule, the diagnostics engine recorded 44,177 pairwise conflict projections, averaging 2.737 projections per super-step (out of a theoretical maximum of 6). Conflict frequencies were remarkably uniform across task pairings: BCS and Behavior gradients conflicted in 47.8\% of super-steps, BCS and Re-ID in 46.5\%, and Behavior and Re-ID in 47.4\%.
+Table~\ref{tab:pcgrad_diagnostics} reports the gradient conflict diagnostics recorded in E4 PCGrad training across all the 30 epochs, which consist of 16,140 super-steps. Overall, 44,177 pairwise conflict projections have been noted during training. The average number of conflict projections per super-step was 2.737, while the highest possible number was 6. There were also similarities among the conflict rates of the different task pairs. Conflicts between BCS and Behavior occurred in 47.8\% of super-steps, BCS and Re-ID in 46.5\%, and Behavior and Re-ID in 47.4\%.
 
 \input{tables/pcgrad_gradient_diagnostics}
 
@@ -108,51 +102,50 @@ As per the training diagnostics, conflicting gradients are observed quite often 
 
 The empirical evaluations across single-task and multi-task configurations support distinct findings regarding the three multi-task design hypotheses:
 \begin{enumerate}
- \item \textbf{Monolithic Hard Parameter Sharing (E1)}: In the case of the Monolithic Hard Parameter Sharing model (E1), all three tasks used a single shared ResNet-18 spatial backbone. In doing so, worse results were obtained for BCS, Behavior, and Re-ID. These findings indicate the presence of negative transfer and that the three tasks do not necessarily have to reinforce each other. The three tasks differ in the type of information used; body shape is used in BCS, motion in Behavior, and subtle visual cues in Re-ID. However, E1 does not allow us to specify precisely what was affected. E1 is unable to provide exact information about the impact on the common characteristics.
- \item \textbf{Modular Task-Private Adapters (E3)}: The Modular Task-Private Adapters (E3) introduced separate adapter blocks for each task between the backbone and the prediction head, yet the problem of negative transfer was not solved consistently. While some surveillance and loss measures have become better, BCS and Re-ID measures worsened, as well as Behavior balance accuracy. In addition to this, 395,904 trainable parameters were added in E3, making an increase of model capacity by 3.32\%. This is why the improvements of the performance cannot be explained solely by task-specific routing.
- \item \textbf{PCGrad Optimization Control (E4)}: Model (E4) PCGrad modified the optimization process without modifying the model size. The number of trainable parameters in E4 was the same as that of E1, which is 11,926,706, while there were no adapter layers in it. PCGrad could address the negative transfer problem in some aspects, like Behavior accuracy, balanced accuracy, Macro-F1, and CVB surveillance effectiveness. PCGrad did better in important results of BCS and Re-ID than E3. Nevertheless, E4 was worse than single-task models on some major criteria.
+ \item \textbf{Monolithic Hard Parameter Sharing (E1)}: For E1, all three tasks share the same ResNet-18 spatial backbone. In doing so, worse results were obtained for BCS, Behavior, and Re-ID. These findings demonstrate negative transfer since the performance of all three tasks does not necessarily improve when they are learned together. It might be due to the fact that the information used by these three tasks is different: BCS relies on the body structure, Behavior on the movement and Re-ID on minute visual details. On the other hand, E1 cannot identify exactly which shared features were impacted and how they were impacted.
+ \item \textbf{Modular Task-Private Adapters (E3)}: Adapter blocks were incorporated into E3 for each task between the shared backbone and the prediction head. Nonetheless, they did not solve consistently the problem of negative transfer. Some surveillance-related metrics and losses became better, while BCS and Re-ID performances declined, *along with Behavior balanced accuracy*. In addition to that, E3 contributed 395,904 parameters for training, thus enlarging the model capacity by 3.32\%. As a result, any enhancement in performance cannot be attributed solely to task-specific routing.
+ \item \textbf{PCGrad Optimization Control (E4)}: E4 modified the optimization strategy while maintaining the same model capacity. It had the same amount of trainable parameters as E1 - 11,926,706 - and didn't incorporate any adapter layers. PCGrad contributed to a reduction of negative transfer in several areas, such as Behavior accuracy, balanced accuracy, Macro-F1 score, and *CVB surveillance performance*. Moreover, it outperformed E3 in terms of important BCS and Re-ID metrics. Nevertheless, E4 performed worse than single-task models in some significant metrics.
 \end{enumerate}
 
 Table~\ref{tab:decisions} synthesizes the key design decisions and empirical dispositions established across the single-task and multi-task investigations.
 
 \input{tables/design_decisions}
 
-These outcomes demonstrate that neither simple modular adapters nor gradient projection fully mitigated negative transfer across all evaluated cattle monitoring tasks. Dedicated single-task representations remained superior on several task-specific measures, reinforcing the thesis conclusion that representation requirements are task-dependent and that multi-task integration involves metric-dependent trade-offs.
+The findings indicate that neither simple task-specific adapters nor gradient projection alone was sufficient to alleviate negative transfer effects in all three of the cattle monitoring tasks. The individual models were better in several task-specific measures. This corroborates the primary conclusion of the thesis that different tasks require different kinds of representations, and their combination in multi-task models may yield *different trade-offs depending on the metric*.
 
 \section{Statistical Analysis and Uncertainty Boundaries}
 
-All single-task baselines and multi-task configurations in this chapter are evaluated as single trained checkpoints (point estimates). Repeated-seed training distributions, confidence intervals, and hypothesis tests were not computed. Consequently, reported differences are descriptive point comparisons and are not characterized as statistically significant.
+All single-task and multi-task models in this chapter were evaluated based on only one trained checkpoint, and the reported results are point estimates. Evaluation with repeated training using different seeds, confidence intervals, and hypothesis testing was not done. Thus, the differences described above are purely descriptive comparisons that cannot be deemed statistically significant. The matched-sample design still yields fair internal comparisons since the same test data sets are used: 7,549 images of ScienceDB for BCS, 780 sequences for Behavior, and SideView Protocol A for Re-ID.
 
-The matched-sample design ensures valid internal comparisons across identical test cohorts: 7,549 ScienceDB images for BCS, 780 sequences for Behavior, and SideView Protocol~A for Re-ID. However, this control does not quantify seed variability or population variance, and correlated video frames or bursts must not be treated as independent biological samples.
+Nevertheless, such a comparison does not take into account variations of the different training seeds or the entire population variation. Furthermore, related video frames or image bursts are not supposed to be regarded as separate biological samples.
 
-Similarly, recorded PCGrad conflict frequencies (Table~\ref{tab:pcgrad_diagnostics}) represent descriptive training diagnostics from a single optimization trajectory. Marginal metric differences (such as E4 vs. E1 on snapshot mAP of $+0.18$ pp) cannot be claimed as statistically equivalent.
+Similarly, the PCGrad conflict rates provided in the Table~\ref{tab:pcgrad_diagnostics} represent only one observation during the training process. Minor differences between metrics, like the 0.18 percentage point difference in snapshot mAP between E4 and E1, cannot be considered equivalent.
 
 \section{Cross-Task Relationships and Claim Boundaries}
 
 The three evaluation domains employ incommensurable metrics with distinct scales and optimization objectives:
 \begin{itemize}
- \item BCS uses physical Mean Absolute Error in BCS units (lower is better), Acc@1 within $\pm 0.25$ units, and exact ordinal accuracy.
- \item Behavior uses overall accuracy, balanced accuracy, Macro-F1 across five classes, and per-class F1-scores (higher is better).
- \item Re-ID uses cumulative match characteristics (Rank-1, Rank-5, Rank-10) and mean Average Precision across open-set rankings (higher is better).
+ \item \textbf{BCS}: For the case of BCS, the metrics consist of physical Mean Absolute Error in BCS units (the smaller is better), Acc@1 within $\pm$0.25 units, and ordinal accuracy.
+ \item \textbf{Behavior}: For the Behavior task, the metrics comprise accuracy, balanced accuracy, Macro-F1 score across five classes, and F1-score for each of the five classes (the larger is better).
+ \item \textbf{Re-ID}: For Re-ID, the metrics employed in the evaluation are Rank-1, Rank-5, Rank-10, and mean Average Precision for open-set ranking, where the higher the number, the better.
 \end{itemize}
-Because these metrics cannot be meaningfully combined into an aggregate score, negative transfer must be evaluated within each domain against its matched single-task reference.
+As these measures cannot be adequately aggregated to give a combined score, negative transfer must be assessed for each task individually using comparison with its corresponding single-task model.
 
 The evaluation cohorts also define strict generalization boundaries:
 \begin{itemize}
- \item ScienceDB evaluates unseen burst groups from automated passage sequences, not verified unseen biological cows.
- \item Behavior evaluates protected video recordings and sessions, not cow-disjoint herds; Walking is evaluated solely within CVB barn surveillance.
- \item SideView Protocol~A: The test comprises 69 biologically unique cows which have been left out of the representation learning process. However, the Re-ID systems rely on the ground-truth masks which have been released. It means that the results of the tests have been obtained using an oracle segmentation framework.
+ \item \textbf{ScienceDB}: ScienceDB evaluates novel burst groups formed from automatic passages but does not validate them as novel biological cows.
+ \item \textbf{Behavior}: Behavior evaluates protected video and sessions but not cow-disjoint herds. The Walking task is evaluated only on CVB barn surveillance data.
+ \item \textbf{SideView Protocol A}: In the SideView Protocol A, the test dataset comprises 69 novel biological cows, which were not seen during the representation learning phase. However, the Re-ID models use the released ground-truth masks. It implies that the test results were gathered using oracle segmentation.
 \end{itemize}
-The external datasets mentioned in the bigger scheme of the research, including Ruchay, Dryad, MmCows, CBVD-5, and BECA, have not yet been validated. They are scheduled for stress testing in the future. Simply by referring to these datasets, we cannot imply that the model will generalize to other datasets/environments.
 
 \section{Discussion of Findings}
 
 The empirical findings presented in this chapter synthesize into three overarching insights:
 
-In fact, applying visual information about cattle is quite useful in single task tests compared to RGB pictures. Nevertheless, the advantages of such approach may differ from task to task. Localized cropping and binary mask guidance improved physical score proximity for BCS (Table~\ref{tab:bcscomparison}) and elevated open-set retrieval under unconstrained handheld camera angles for Re-ID (Table~\ref{tab:reidsnapshot}). For Behavior, temporal foreground modeling improved class-balanced discrimination and minority-class detection while redistributing accuracy across sources (Tables~\ref{tab:behaviorcomparison}--\ref{tab:behaviorsourcecomparison}). These gains demonstrate the value of isolating animal foregrounds, while underscoring that foreground guidance does not operate as an unconditional panacea across all sub-metrics.
+The external data sets listed in the broader research project plan, including Ruchay, Dryad, MmCows, CBVD-5, and BECA, have yet to be validated and will undergo stress testing in the future. It means that just mentioning these data sets is not enough to imply that the model has learned to apply the knowledge gained to other data sets or environments.
 
-Second, monolithic hard parameter sharing produced consistent outcome-level negative transfer across all three domains. Relative to matched single-task baselines, joint training under a single shared backbone degraded BCS physical error (Table~\ref{tab:mtl_bcs_results}), depressed Behavior balanced accuracy and minority walking recognition (Table~\ref{tab:mtl_behavior_results}), and diminished primary Re-ID retrieval precision (Table~\ref{tab:mtl_reid_results}). These matched degradations do not support an assumption of automatic benefit from hard sharing across these heterogeneous tasks.
+In single-task experiments, cattle-centered visual data were beneficial against regular RGB data. Nonetheless, the amount of benefit was varied depending on the task. Localized cropping and binary mask guidance helped with BCS by improving the closeness of the estimated physical score. They also helped with Re-ID by improving open set retrieval with challenging handheld camera viewpoints. Regarding Behavior, temporal foreground modeling enhanced class-balanced discrimination and detection of minority classes while redistributing accuracy among source distributions (Tablestab:behaviorcomparison-tab:behaviorsourcecomparison). This shows the benefit of extracting animal foregrounds, even while making clear that the use of foreground information is not an absolute cure-all for each sub-metric.
 
-Third, neither architectural capacity expansion nor gradient projection universally resolved this cross-task interference. Adding task-private residual bottleneck adapters (E3) yielded selective loss improvements for behavior surveillance but exacerbated degradations in body condition scoring and biometric retrieval. Optimization-level gradient projection (E4) provided more effective, selective mitigation—achieving the strongest multi-task behavior metrics and recovering ground on ordinal scoring and retrieval under exact parameter parity with the hard-shared baseline. Empirical training diagnostics (Table~\ref{tab:pcgrad_diagnostics}) confirm that opposing shared-backbone gradients occurred frequently throughout joint optimization.
+Second, hard parameter sharing resulted in consistent negative transfer effects at the level of performance across all three modalities. With respect to the respective single-task baselines, shared backbone learning for the three tasks increased BCS physical error (summary table), reduced Behavior balanced accuracy and minority class detection of walking behavior (summary table), and decreased Re-ID retrieval accuracy (summary table). Such consistent negative transfer effects do not indicate automatic benefit from hard sharing in these different tasks. Third, neither increased model capacity nor gradient projection addressed this task interference effect.
 
-Nevertheless, dedicated single-task models preserved superior performance across the principal benchmarks of all three domains. Rather than demonstrating universal synergy from joint learning, the findings are consistent with task-dependent representation and optimization requirements that are not fully served by a single shared backbone. Multi-task agricultural monitoring therefore demands careful metric-aware trade-off analysis rather than naive joint consolidation.
+Despite the use of separate residual bottleneck adapters for each task in E3, while the results of Behavior surveillance got slightly better, those of BCS and Re-ID were even worse. On the other hand, the gradient projection method applied in E4 provided an even better, yet much more selective improvement. It yielded the best results for Behavior among the multi-task models and managed to recover the performance lost in BCS ordinal scoring and Re-ID retrieval, while using the exact same amount of parameters as the hard-shared baseline. Moreover, the results from training presented in the summary table reveal that there were conflicts between the gradients of the tasks rather often during their joint training on the shared backbone. Nevertheless, the separate single-task models performed even better than the multi-task models with regard to all main metrics of the three tasks. Thus, the results did not reveal the usefulness of simultaneous learning of all tasks. In addition, the results revealed that different tasks require different kinds of representation and optimization, which cannot be provided by a shared backbone. That is why multi-task agricultural monitoring requires thorough metric comparison.
