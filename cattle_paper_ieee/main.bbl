@@ -57,7 +57,7 @@ K.~Li, D.~Fan, H.~Wu, and A.~Zhao, ``A new dataset for video-based cow behavior
 A.~Zia, R.~Sharma, R.~Arablouei, G.~Bishop-Hurley, J.~McNally, N.~Bagnall,
   V.~Rolland, B.~Kusy, L.~Petersson, and A.~Ingham, ``{CVB}: A video dataset of
   cattle visual behaviors,'' 2023. [Online]. Available:
-  \url{https://arxiv.org/abs/2305.16555}
+  \url{https://doi.org/10.25919/bmtp-5j95}
 \BIBentrySTDinterwordspacing
 
 \bibitem{andrew2017cattle}
@@ -103,14 +103,11 @@ M.~Crawshaw, ``Multi-task learning with deep neural networks: A survey,'' 2020.
 \BIBentrySTDinterwordspacing
 
 \bibitem{standley2020tasks}
-\BIBentryALTinterwordspacing
 T.~Standley, A.~Zamir, D.~Chen, L.~Guibas, J.~Malik, and S.~Savarese, ``Which
   tasks should be learned together in multi-task learning?'' in
   \emph{Proceedings of the 37th International Conference on Machine Learning},
   ser. Proceedings of Machine Learning Research, vol. 119, 2020, pp.
-  9120--9132. [Online]. Available:
-  \url{https://proceedings.mlr.press/v119/standley20a.html}
-\BIBentrySTDinterwordspacing
+  9120--9132.
 
 \bibitem{ferguson1994bcs}
 J.~D. Ferguson, D.~T. Galligan, and N.~Thomsen, ``Principal descriptors of body
@@ -130,12 +127,9 @@ W.~Cao, V.~Mirjalili, and S.~Raschka, ``Rank consistent ordinal regression for
   Recognition Letters}, vol. 140, pp. 325--331, 2020.
 
 \bibitem{feichtenhofer2019slowfast}
-\BIBentryALTinterwordspacing
 C.~Feichtenhofer, H.~Fan, J.~Malik, and K.~He, ``{SlowFast} networks for video
   recognition,'' in \emph{Proceedings of the IEEE/CVF International Conference
-  on Computer Vision}, 2019, pp. 6202--6211. [Online]. Available:
-  \url{https://openaccess.thecvf.com/content_ICCV_2019/html/Feichtenhofer_SlowFast_Networks_for_Video_Recognition_ICCV_2019_paper.html}
-\BIBentrySTDinterwordspacing
+  on Computer Vision}, 2019, pp. 6202--6211.
 
 \bibitem{bai2018tcn}
 \BIBentryALTinterwordspacing
@@ -144,39 +138,68 @@ S.~Bai, J.~Z. Kolter, and V.~Koltun, ``An empirical evaluation of generic
   Available: \url{https://arxiv.org/abs/1803.01271}
 \BIBentrySTDinterwordspacing
 
+\bibitem{andrew2021opencows}
+W.~Andrew, J.~Gao, S.~Mullan, N.~Campbell, A.~W. Dowsey, and T.~Burghardt,
+  ``Visual identification of individual {Holstein-Friesian} cattle via deep
+  metric learning,'' \emph{Computers and Electronics in Agriculture}, vol. 185,
+  2021.
+
 \bibitem{misra2016crossstitch}
-\BIBentryALTinterwordspacing
 I.~Misra, A.~Shrivastava, A.~Gupta, and M.~Hebert, ``Cross-stitch networks for
   multi-task learning,'' in \emph{Proceedings of the IEEE Conference on
-  Computer Vision and Pattern Recognition}, 2016, pp. 3994--4003. [Online].
-  Available:
-  \url{https://openaccess.thecvf.com/content_cvpr_2016/html/Misra_Cross-Stitch_Networks_for_CVPR_2016_paper.html}
-\BIBentrySTDinterwordspacing
+  Computer Vision and Pattern Recognition}, 2016, pp. 3994--4003.
 
 \bibitem{liu2019mtan}
-\BIBentryALTinterwordspacing
 S.~Liu, E.~Johns, and A.~J. Davison, ``End-to-end multi-task learning with
   attention,'' in \emph{Proceedings of the IEEE/CVF Conference on Computer
-  Vision and Pattern Recognition}, 2019, pp. 1871--1880. [Online]. Available:
-  \url{https://openaccess.thecvf.com/content_CVPR_2019/html/Liu_End-To-End_Multi-Task_Learning_With_Attention_CVPR_2019_paper.html}
-\BIBentrySTDinterwordspacing
+  Vision and Pattern Recognition}, 2019, pp. 1871--1880.
 
 \bibitem{chen2018gradnorm}
-\BIBentryALTinterwordspacing
 Z.~Chen, V.~Badrinarayanan, C.-Y. Lee, and A.~Rabinovich, ``{GradNorm}:
   Gradient normalization for adaptive loss balancing in deep multitask
   networks,'' in \emph{Proceedings of the 35th International Conference on
   Machine Learning}, ser. Proceedings of Machine Learning Research, vol.~80,
-  2018, pp. 794--803. [Online]. Available:
-  \url{https://proceedings.mlr.press/v80/chen18a.html}
-\BIBentrySTDinterwordspacing
+  2018, pp. 794--803.
 
 \bibitem{yu2020pcgrad}
-\BIBentryALTinterwordspacing
 T.~Yu, S.~Kumar, A.~Gupta, S.~Levine, K.~Hausman, and C.~Finn, ``Gradient
   surgery for multi-task learning,'' in \emph{Advances in Neural Information
-  Processing Systems}, vol.~33, 2020. [Online]. Available:
-  \url{https://proceedings.neurips.cc/paper/2020/hash/3fe78a8acf5fda99de95303940a2420c-Abstract.html}
+  Processing Systems}, vol.~33, 2020.
+
+\bibitem{zhao2024rtdetr}
+Y.~Zhao, W.~Lv, S.~Xu, J.~Wei, G.~Wang, Q.~Dang, Y.~Liu, and J.~Chen, ``{DETRs}
+  beat {YOLOs} on real-time object detection,'' in \emph{Proceedings of the
+  IEEE/CVF Conference on Computer Vision and Pattern Recognition}, 2024, pp.
+  16\,965--16\,974.
+
+\bibitem{ravi2024sam2}
+\BIBentryALTinterwordspacing
+N.~Ravi \emph{et~al.}, ``{SAM 2}: Segment anything in images and videos,''
+  2024. [Online]. Available: \url{https://arxiv.org/abs/2408.00714}
+\BIBentrySTDinterwordspacing
+
+\bibitem{he2016resnet}
+K.~He, X.~Zhang, S.~Ren, and J.~Sun, ``Deep residual learning for image
+  recognition,'' in \emph{Proceedings of the IEEE Conference on Computer Vision
+  and Pattern Recognition}, 2016, pp. 770--778.
+
+\bibitem{sciencedb2024bcs}
+\BIBentryALTinterwordspacing
+{Science Data Bank}, ``Dairy cow body condition score target detection
+  dataset,'' 2024. [Online]. Available:
+  \url{https://doi.org/10.57760/sciencedb.16704}
+\BIBentrySTDinterwordspacing
+
+\bibitem{lucyfirst2023beef}
+\BIBentryALTinterwordspacing
+{lucyfirst}, ``Beef cattle behavior data set,'' 2023. [Online]. Available:
+  \url{https://www.kaggle.com/datasets/lucyfirst/beef-cattle-behavior-data-set}
+\BIBentrySTDinterwordspacing
+
+\bibitem{moeller2026sideview}
+\BIBentryALTinterwordspacing
+S.~M{\"o}ller, ``{SideViewCows2026 -- Dairy Cow Re-Identification Dataset},''
+  2026. [Online]. Available: \url{https://doi.org/10.5281/zenodo.21605650}
 \BIBentrySTDinterwordspacing
 
 \end{thebibliography}

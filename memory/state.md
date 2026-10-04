@@ -27,14 +27,16 @@
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
 - [x] **Official IEEE Conference Paper Authored & Compiled (`cattle_paper_ieee/`)**: COMPLETE & COMPILED ✅ (Convo `15287605-a4dc-447f-9ffb-2926b4c2b618`).
-  * Created self-contained directory `cattle_paper_ieee/` with `IEEEtran.cls` and `IEEEtran.bst`.
-  * Pre-compiled all 5 thesis TikZ/PGFPlots diagrams into standalone vector PDFs (`figures/`).
-  * Authored publication-grade 8-page IEEE manuscript `cattle_paper_ieee/main.tex` with all 6 authors (Hasin Ishrak, Namira Abrar Haque, Sanjida Akter Bithi, Shouvik Banik, Nusrat Lamya Faruk, Prof. Dr. Md. Khalilur Rahman).
-  * Equalized references column heights on Page 8 using `\balance`.
-  * Refined Table I and Table II typography and column alignments with zero awkward wrapping.
-  * Forensically audited every single cell against canonical thesis tables (`cattle_thesis_p3_latex/tables/`), calibrating all single-task reference baselines (matched cohorts: Behavior balanced acc 71.30% -> 74.43%, BCS MAE 0.1929 -> 0.1709) and multi-task models to 100% exact numerical agreement.
-  * Successfully compiled `cattle_paper_ieee/main.pdf` (8 pages, 0 errors, 24 citations).
-  * Deployed copies to `C:\Users\hasin\Desktop\T25301094_IEEE_Paper.pdf` and `Cattle_Health_Monitoring_IEEE_Paper.pdf`.
+- [x] **IEEE Conference Paper Scientific-Fidelity Revision (`cattle_paper_ieee/`)**: COMPLETE & VERIFIED ✅ (Convo `fd2f88b4-425a-4b7e-a033-6a257316d8c8`).
+  * Harmonized methodology bit-for-bit with final submitted thesis: BCS ordinal BCE with 4 cumulative thresholds over discrete scores 3.25--4.25 (removed CORAL, K=10, 2.00--4.50); Behavior 8-frame ResNet-18 + 2-block Conv1D residual network (removed deep dilated causal TCN); Re-ID 512-dim raw feature with 41-class classifier and cosine similarity on 512-dim unit-normalized retrieval embedding (removed 256 bottleneck, $\tau_{\mathrm{reid}}$); E3 adapters $512 \to 128 \to 512$ residual bottleneck (131,968 params each, 395,904 total private params, $+3.32\%$ capacity, 12,322,610 total params; updated `fig_mtl_architecture.tex` & PDF).
+  * Harmonized task-specific perception: ScienceDB RT-DETR-L + SAM 2.1; Behavior tracklet/detector + SAM 2.1; Re-ID released ground-truth oracle masks. Standardized binary 4th channel in $\{0, 1\}$.
+  * Harmonized dataset counts: ScienceDB 53,566 images across 5,653 repaired burst groups (burst-group-disjoint, not cow-disjoint; 7,549 matched test cohort); Behavior 267 protected groups, 5,274 samples (780 matched test cohort, Walking CVB-only); Re-ID SideView 110 cows, 80,260 images/masks, 41 train cows, 69 held-out cows, 36,811 parlor gallery images (not pairs!), 25,260 barn queries, 607 snapshot queries.
+  * Corrected E4 PCGrad diagnostics: 44,177 conflict projections across 16,140 super-steps (2.737/step; BCS vs Beh: 47.8%, BCS vs Re-ID: 46.5%, Beh vs Re-ID: 47.4%). Corrected Walking metric to F1 (0.0408 -> 0.0909), not recall.
+  * Preserved Table I and Table II verified numbers line-for-line.
+  * Removed unsupported claims: "end-to-end", "eliminates background shortcut learning", "statistically significant" (added single-run point-estimate uncertainty statement), ">30 FPS on Jetson Orin" (reported 65.7% parameter footprint reduction), and isolated segmentation causality.
+  * Preserved thesis student writing style directly from Chapters 5, 6, and 9.
+  * Bibliography updated with DOIs for ScienceDB, SideViewCows2026, CVB, Kaggle Beef, and removed raw URLs from published conference papers.
+  * Exactly 8-page IEEE conference format maintained with 0 LaTeX errors, 0 undefined citations/references, and 0 overfull warnings.
 - [x] **Local LaTeX Environment & Post-Defense Figure Caption Trimming**: COMPLETE & COMPILED ✅ (Convo `15287605-a4dc-447f-9ffb-2926b4c2b618`).
   * Installed MiKTeX 25.12 via winget on laptop (`DESKTOP-R6QPSH5`) with auto-install enabled.
   * Restored missing student/faculty signature assets into `cattle_thesis_p3_latex/images/`.
