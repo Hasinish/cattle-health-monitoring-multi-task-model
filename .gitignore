@@ -70,4 +70,5 @@ client_secret*.json
 cattle_thesis_p3_latex/paraphrasing_docs/
 *.docx
 *.orig_backup
+scripts/turnitin_diagnostics/*.pdf
 
