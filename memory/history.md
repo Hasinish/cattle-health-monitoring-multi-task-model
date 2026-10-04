@@ -1,12 +1,12 @@
-# Session Summary — 2026-10-04 (Scientific-Fidelity Revision of IEEE Conference Paper)
+# Session Summary — 2026-10-04 (Scientific-Fidelity Revision & Final Minimal Scientific Cleanup of IEEE Paper)
 
 - Convo ID: fd2f88b4-425a-4b7e-a033-6a257316d8c8
-- Milestone: Complete scientific-fidelity revision of `cattle_paper_ieee/main.tex` and bibliography, harmonizing the IEEE conference paper bit-for-bit with the final submitted Phase 3 thesis (`chapter_5.tex`, `chapter_6.tex`, `chapter_9.tex`, and canonical tables).
+- Milestone: Complete scientific-fidelity revision and final minimal scientific cleanup of `cattle_paper_ieee/main.tex` and bibliography, harmonizing the IEEE conference paper bit-for-bit with the final submitted Phase 3 thesis (`chapter_5.tex`, `chapter_6.tex`, `chapter_9.tex`, and canonical tables).
 - Accomplishments & Status:
   1. Starting Git SHA: `2d8f1597dce89785687f2e9022b8d8e5b9e8a741`.
   2. Preserved verified Table I and Table II numbers exactly from canonical thesis tables.
   3. Replaced stale architecture descriptions with exact thesis implementations:
-     - BCS: Ordinal binary cross-entropy with 4 cumulative threshold logits over discrete scores 3.25--4.25 (5 classes, mapped via $3.25 + 0.25\hat{y}$); removed CORAL, $K=10$, 2.00--4.50.
+     - BCS: Ordinal binary cross-entropy with 4 cumulative threshold logits over discrete scores 3.25--4.25 (5 classes, mapped via $3.25 + 0.25\hat{y}$); removed CORAL, $K=10$, 2.00--4.50. Clarified CORAL is related ordinal work but our model is NOT CORAL.
      - Behavior: 8 frames, 4-channel ResNet-18 per frame (512-dim), lightweight 2-block Conv1D residual model (512->256 width-3 with residual, 256 width-3 with identity residual), temporal adaptive average pooling -> 256-dim feature -> 5-class linear classifier; removed deep dilated causal TCN.
      - Re-ID: 512-dim raw feature $h$, 41-class linear classifier with bias during representation training, 512-dim unit-normalized retrieval embedding $z = h / \|h\|_2$ with cosine similarity; removed 256 metric bottleneck and $\tau_{\mathrm{reid}} = 0.07$.
      - E3 Adapters: $512 \to 128 \to 512$ residual bottleneck (linear down-projection, LayerNorm, GELU, dropout 0.1, linear up-projection with zero-weight identity initialization), frame-wise for Behavior; exactly 131,968 parameters each (395,904 private parameters, $+3.32\%$ capacity, 12,322,610 total parameters). Updated `figures/fig_mtl_architecture.tex` and recompiled vector PDF.
@@ -14,10 +14,14 @@
   4. Task-Specific Perception Pipeline: Clarified task-specific flows (RT-DETR-L + SAM 2.1 for ScienceDB; dataset tracklets/detector + SAM 2.1 for Behavior; released ground-truth oracle masks for Re-ID). Standardized binary fourth mask channel in $\{0, 1\}$.
   5. Dataset & Evaluation Counts: ScienceDB = 53,566 images across 5,653 repaired burst groups (burst-group-disjoint, not cow-disjoint; 7,549 matched test cohort); Behavior = 267 protected session/source groups, 5,274 samples (780 matched test cohort; Walking CVB-only); Re-ID SideView = 110 cows, 80,260 images/masks, 41 train cows, 69 held-out cows, 36,811 parlor gallery images (not pairs!), 25,260 barn queries, 607 snapshot queries.
   6. Diagnostics & Metrics: Corrected E4 PCGrad diagnostics to 44,177 conflict projections across 16,140 super-steps (2.737/step; BCS vs Beh: 47.8%, BCS vs Re-ID: 46.5%, Beh vs Re-ID: 47.4%). Corrected minority Walking metric to F1 (0.0408 -> 0.0909), not recall.
-  7. Removed Unsupported Claims: Deleted Jetson Orin >30 FPS claim (reported 65.7% parameter footprint reduction); removed "end-to-end", "eliminates background shortcut learning", "statistically significant" (added single-checkpoint point-estimate boundary), and mask-only causal attribution.
-  8. Preserved Thesis Student Style: Reused and minimally compressed submitted thesis wording directly from Chapters 5, 6, and 9.
-  9. Bibliography: Added verified citations and DOIs for ScienceDB (`10.57760/sciencedb.16704`), SideViewCows2026 (`10.5281/zenodo.21605650`), CVB (`10.25919/bmtp-5j95`), and Kaggle Beef dataset; cleaned unneeded URLs on published conference papers.
-  10. Exact 8-Page IEEE Layout: Converted subsubsections and itemized lists to clean run-in paragraph headings (`\textit{k) ...:}`), pulled Section VI and VII into balanced columns, and compiled cleanly to EXACTLY 8 PAGES with 0 LaTeX errors, 0 undefined citations, and 0 overfull warnings.
+  7. Final Minimal Scientific Cleanup:
+     - CVB Wording: Replaced all occurrences of "CVB barn CCTV", "authentic CCTV", and "pasture/barn" with neutral designations ("CVB", "CVB surveillance", "CVB open-pasture surveillance video"). Preserved all CVB evaluation numbers intact.
+     - CORAL Framing: Explicitly clarified in Related Work that CORAL is related ordinal work, but our model is NOT CORAL (uses 4 independent cumulative threshold logits with ordinal BCE).
+     - Background-Bias Claim: Softened shortcut bias claim to cautious thesis framing (unsegmented models risk shortcut dependence, while environmental context can also provide informative scene cues).
+  8. Removed Unsupported Claims: Deleted Jetson Orin >30 FPS claim (reported 65.7% parameter footprint reduction); removed "end-to-end", "eliminates background shortcut learning", "statistically significant" (added single-checkpoint point-estimate boundary), and mask-only causal attribution.
+  9. Preserved Thesis Student Style: Reused and minimally compressed submitted thesis wording directly from Chapters 5, 6, and 9.
+  10. Bibliography: Added verified citations and DOIs for ScienceDB (`10.57760/sciencedb.16704`), SideViewCows2026 (`10.5281/zenodo.21605650`), CVB (`10.25919/bmtp-5j95`), and Kaggle Beef dataset; cleaned unneeded URLs on published conference papers.
+  11. Exact 8-Page IEEE Layout: Converted subsubsections and itemized lists to clean run-in paragraph headings (`\textit{k) ...:}`), pulled Section VI and VII into balanced columns, and compiled cleanly to EXACTLY 8 PAGES with 0 LaTeX errors, 0 undefined citations, and 0 overfull warnings. Visually checked and certified.
 
 # Session Summary — 2026-10-04 (THESIS DEFENSE PASSED & IEEE CONFERENCE PAPER DELIVERED! 🎓🔥👑)
 
