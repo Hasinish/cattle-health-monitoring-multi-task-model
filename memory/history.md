@@ -35,6 +35,10 @@
       - Statistical Wording: In `cattle_thesis_p3_latex/chapters/chapter_6.tex` (Line 33), replaced "improved significantly" with "improved" due to lack of significance testing.
       - PCGrad Wording: In `cattle_thesis_p3_latex/chapters/chapter_9.tex` (Line 55), replaced "PCGrad helped in reducing some of these conflicts during the process of optimization." with "PCGrad projected conflicting gradient components during optimization and provided selective performance mitigation."
       - Recompiled both documents: `cattle_thesis_p3_latex/main.pdf` (91 pages, 0 errors) and `cattle_paper_ieee/main.pdf` (EXACTLY 8 pages, 0 errors). All checks passed.
+  20. Chapters 1–6 PDF with 20% AI Buffer Generated for Desktop:
+      - Extracted Chapters 1 through 6 from the newly compiled thesis manuscript (PDF pages 15 to 80, 66 pages, 25,665 real words).
+      - Compiled academic Appendix C AI buffer (`scripts/turnitin_diagnostics/ch1_6_ai_buffer.tex`, 18 pages, 7,125 words, starting page 67).
+      - Merged into continuous 84-page deliverable (`T25301094_Final_Report_Ch1-6_AI_Buffer.pdf` and `T25301094_Final_Report_Ch1-6.pdf` on Desktop) with 32,790 total words and an exact AI buffer ratio of 21.73% (cleanly > 20.00% to guarantee Turnitin detailed highlight flags). Continuous page numbers 1 through 84 verified.
 
 # Session Summary — 2026-10-04 (THESIS DEFENSE PASSED & IEEE CONFERENCE PAPER DELIVERED! 🎓🔥👑)
 

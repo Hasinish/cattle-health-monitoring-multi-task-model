@@ -26,6 +26,10 @@
 - **MTL Architecture Policy**: No final MTL architecture is predetermined. Hard sharing (E1), partial sharing (E2), task-private pathways / adapters / gates (E3), PCGrad (E4), and GradNorm (E5) remain empirical alternatives to compare against single-task controls (E0).
 - **Core Scientific Question**: Can cattle-centered visual representations (localization, soft masks, anatomy/pose, viewpoint) reduce shortcut learning, improve robustness, and mitigate negative transfer across BCS, Behavior, and Re-ID compared with generic RGB representations?
 - **Single Source of Truth**: [phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/phase3_canonical_roadmap.md) (also mirrored at [docs/phase3_canonical_roadmap.md](file:///d:/cattle-health-monitoring-multi-task-model/docs/phase3_canonical_roadmap.md))
+- [x] **Chapters 1–6 PDF with ~20% AI Buffer Generated for Desktop**: COMPLETE & VERIFIED ✅ (Convo `fd2f88b4-425a-4b7e-a033-6a257316d8c8`).
+  * Extracted exact thesis Chapters 1 through 6 (Pages 15 to 80 of `cattle_thesis_p3_latex/main.pdf`, 66 pages, 25,665 real words).
+  * Generated and compiled academic AI Appendix C buffer (`ch1_6_ai_buffer.tex`, 18 pages, 7,125 words, starting page 67).
+  * Merged into continuous 84-page deliverable (`T25301094_Final_Report_Ch1-6_AI_Buffer.pdf` and `T25301094_Final_Report_Ch1-6.pdf` on Desktop) with 32,790 total words and an exact AI buffer ratio of 21.73% (cleanly > 20.00% to guarantee Turnitin detailed highlight flags).
 - [x] **Scientific Wording Corrections Across Thesis & IEEE Paper**: COMPLETE & COMPILED ✅ (Convo `fd2f88b4-425a-4b7e-a033-6a257316d8c8`).
   * CVB Wording: Replaced all occurrences of "CVB barn CCTV", "CVB barn surveillance", and "authentic barn surveillance (CVB)" with "CVB", "CVB surveillance", or "CVB open-pasture surveillance" across `cattle_thesis_p3_latex/` and `cattle_paper_ieee/main.tex`. Preserved all evaluation numbers and Re-ID Barn-to-Parlor designations intact.
   * Leakage Wording: In `chapter_9.tex`, replaced "no data leakage" with "leakage-aware evaluation protocols".
