@@ -30,7 +30,7 @@
   * Extracted exact thesis Chapters 1 through 6 (Pages 15 to 80 of `cattle_thesis_p3_latex/main.pdf`, 66 pages, 25,712 words, zero buffer).
   * Contains all humanized student paraphrases (Ch 1 opening, Ch 2 BECA Re-ID, Ch 3 deployment costs, Ch 5 E4 BCS & incommensurable metrics, Ch 6 conclusion).
   * Safely below Turnitin's 30,000-word ceiling (25,712 < 30,000 words).
-  * Saved to Desktop as `T25301094_Final_Report_Ch1-6.pdf` and `T25301094_Ch1-6_No_AI_Buffer.pdf`.
+  * Saved exclusively to Desktop as `T25301094_Final_Report_Ch1-6.pdf` (solitary file, all other buffers/splits removed).
 - [x] **Chapters 5 & 6 Paraphrases (E4 BCS, Metrics, & Conclusion) Updated & Recompiled**: COMPLETE & VERIFIED ✅ (Convo `fd2f88b4-425a-4b7e-a033-6a257316d8c8`).
   * Replaced E4 BCS recovery paragraph in `chapter_6.tex` (Line 73), incommensurable metrics list in `chapter_6.tex` (Line 126), and Section 6.6 concluding paragraphs in `chapter_9.tex` (Line 109) with user requested text.
   * Recompiled `cattle_thesis_p3_latex/main.pdf` (91 pages, 0 errors) and refreshed Turnitin deliverables on Desktop (`T25301094_Part1_Ch1-3_AI_Buffer.pdf`, `T25301094_Part2_Ch4-6_AI_Buffer.pdf`, `T25301094_Full_Report_Ch1-6_NoBuffer.pdf`).
