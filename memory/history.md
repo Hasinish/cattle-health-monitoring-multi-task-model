@@ -39,6 +39,10 @@
       - Extracted Chapters 1 through 6 from the newly compiled thesis manuscript (PDF pages 15 to 80, 66 pages, 25,665 real words).
       - Compiled academic Appendix C AI buffer (`scripts/turnitin_diagnostics/ch1_6_ai_buffer.tex`, 18 pages, 7,125 words, starting page 67).
       - Merged into continuous 84-page deliverable (`T25301094_Final_Report_Ch1-6_AI_Buffer.pdf` and `T25301094_Final_Report_Ch1-6.pdf` on Desktop) with 32,790 total words and an exact AI buffer ratio of 21.73% (cleanly > 20.00% to guarantee Turnitin detailed highlight flags). Continuous page numbers 1 through 84 verified.
+  21. Chapter 1 Opening Paragraph Paraphrased:
+      - Replaced Section 1.1 opening paragraph in `cattle_thesis_p3_latex/chapters/chapter_1.tex` with humanized student paraphrase requested by user, maintaining LaTeX citations `\cite{weary2009understanding}` and `\cite{edmonson1989bcs,ferguson1994bcs}`.
+      - Recompiled `cattle_thesis_p3_latex/main.pdf` (91 pages, 0 errors).
+      - Re-ran `scripts/turnitin_diagnostics/build_ch1_6_turnitin_splits.py` to refresh Desktop deliverables (`T25301094_Part1_Ch1-3_AI_Buffer.pdf`, `T25301094_Part2_Ch4-6_AI_Buffer.pdf`, `T25301094_Full_Report_Ch1-6_NoBuffer.pdf`).
 
 # Session Summary — 2026-10-04 (THESIS DEFENSE PASSED & IEEE CONFERENCE PAPER DELIVERED! 🎓🔥👑)
 
