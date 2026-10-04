@@ -70,7 +70,7 @@ The Table~\ref{tab:mtl_bcs_results} demonstrates that BCS performance deteriorat
 
 \input{tables/mtl_bcs_results}
 
-Neither modular adapters nor gradient projection overcame this performance deficit. Introducing task-private bottleneck adapters (E3) degraded performance further, resulting in the highest error across all models ($\mathrm{MAE} = 0.1916$). The PCGrad Hard-Shared Optimization Control (E4) partially mitigated this loss, lowering MAE to 0.1828 and recovering tolerance accuracy relative to E3. However, E4 still trailed the dedicated single-task reference ($\mathrm{MAE} = 0.1709$). Crucially, all three multi-task configurations underperformed the single-task model on primary physical and balanced metrics, confirming persistent negative transfer for body condition scoring under joint training.
+Neither modular adapters nor gradient projection overcame this performance deficit. Introducing task-private bottleneck adapters (E3) degraded performance further, resulting in the highest error across all models ($\mathrm{MAE} = 0.1916$). For E4, PCGrad with hard sharing managed to recoup some of the lost performance. In the process, the MAE was reduced to 0.1828 and the tolerance accuracy improved compared to E3. However, E4 was unable to match the performance of the single-task model where the MAE was 0.1709. All the three multitask models performed worse than the single-task model in the key physical and balanced metrics. This means that there was negative transfer for BCS in multitasking.
 
 \subsection{Behavior Recognition Multi-Task Outcomes}
 
@@ -123,11 +123,11 @@ Similarly, the PCGrad conflict rates provided in the Table~\ref{tab:pcgrad_diagn
 
 \section{Cross-Task Relationships and Claim Boundaries}
 
-The three evaluation domains employ incommensurable metrics with distinct scales and optimization objectives:
+Each of the three tasks is measured with various metrics. Such metrics are of various types and cannot be compared directly because of that.
 \begin{itemize}
- \item \textbf{BCS}: For the case of BCS, the metrics consist of physical Mean Absolute Error in BCS units (the smaller is better), Acc@1 within $\pm$0.25 units, and ordinal accuracy.
- \item \textbf{Behavior}: For the Behavior task, the metrics comprise accuracy, balanced accuracy, Macro-F1 score across five classes, and F1-score for each of the five classes (the larger is better).
- \item \textbf{Re-ID}: For Re-ID, the metrics employed in the evaluation are Rank-1, Rank-5, Rank-10, and mean Average Precision for open-set ranking, where the higher the number, the better.
+ \item Metrics for BCS include physical Mean Absolute Error measured in BCS units, which means that smaller values are better, Acc@1 in $\pm$0.25 BCS units, and the measure of ordinal accuracy.
+ \item Metrics for Behavior include accuracy, balanced accuracy, Macro-F1 across five classes, and F1 score for each of the classes separately. The higher the metric, the better.
+ \item Metrics for Re-ID include Rank-1, Rank-5, Rank-10, and mean Average Precision (mAP).
 \end{itemize}
 As these measures cannot be adequately aggregated to give a combined score, negative transfer must be assessed for each task individually using comparison with its corresponding single-task model.
 
