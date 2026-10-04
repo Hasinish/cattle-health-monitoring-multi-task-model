@@ -41,6 +41,7 @@
   * Preserved thesis student writing style directly from Chapters 5, 6, and 9.
   * Bibliography updated with DOIs for ScienceDB, SideViewCows2026, CVB, Kaggle Beef, and removed raw URLs from published conference papers.
   * Exactly 8-page IEEE conference format maintained with 0 LaTeX errors, 0 undefined citations/references, and 0 overfull warnings. Visually checked and certified.
+  * Authorship & Layout Update: Removed Dr. Md. Khalilur Rahman from author block (kept in Acknowledgment as thesis supervisor). Reformatted IEEE author block to 5 student authors in balanced 3-top / 2-bottom layout using standard `\and[\hfill\mbox{}\par\mbox{}\hfill]`, removing manual `\vspace{0.25cm}` hack. Recompiled to exactly 8 pages with 0 errors/warnings.
 - [x] **Local LaTeX Environment & Post-Defense Figure Caption Trimming**: COMPLETE & COMPILED ✅ (Convo `15287605-a4dc-447f-9ffb-2926b4c2b618`).
   * Installed MiKTeX 25.12 via winget on laptop (`DESKTOP-R6QPSH5`) with auto-install enabled.
   * Restored missing student/faculty signature assets into `cattle_thesis_p3_latex/images/`.

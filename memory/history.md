@@ -22,6 +22,7 @@
   9. Preserved Thesis Student Style: Reused and minimally compressed submitted thesis wording directly from Chapters 5, 6, and 9.
   10. Bibliography: Added verified citations and DOIs for ScienceDB (`10.57760/sciencedb.16704`), SideViewCows2026 (`10.5281/zenodo.21605650`), CVB (`10.25919/bmtp-5j95`), and Kaggle Beef dataset; cleaned unneeded URLs on published conference papers.
   11. Exact 8-Page IEEE Layout: Converted subsubsections and itemized lists to clean run-in paragraph headings (`\textit{k) ...:}`), pulled Section VI and VII into balanced columns, and compiled cleanly to EXACTLY 8 PAGES with 0 LaTeX errors, 0 undefined citations, and 0 overfull warnings. Visually checked and certified.
+  12. Authorship & Layout Update: Removed Dr. Md. Khalilur Rahman from author block (kept in Acknowledgment as thesis supervisor). Reformatted IEEE author block to 5 student authors in balanced 3-top / 2-bottom layout using standard `\and[\hfill\mbox{}\par\mbox{}\hfill]`, removing manual `\vspace{0.25cm}` hack. Recompiled cleanly to exactly 8 pages with 0 errors/warnings.
 
 # Session Summary — 2026-10-04 (THESIS DEFENSE PASSED & IEEE CONFERENCE PAPER DELIVERED! 🎓🔥👑)
 
