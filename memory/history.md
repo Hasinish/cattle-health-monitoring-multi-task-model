@@ -43,6 +43,10 @@
       - Replaced Section 1.1 opening paragraph in `cattle_thesis_p3_latex/chapters/chapter_1.tex` with humanized student paraphrase requested by user, maintaining LaTeX citations `\cite{weary2009understanding}` and `\cite{edmonson1989bcs,ferguson1994bcs}`.
       - Recompiled `cattle_thesis_p3_latex/main.pdf` (91 pages, 0 errors).
       - Re-ran `scripts/turnitin_diagnostics/build_ch1_6_turnitin_splits.py` to refresh Desktop deliverables (`T25301094_Part1_Ch1-3_AI_Buffer.pdf`, `T25301094_Part2_Ch4-6_AI_Buffer.pdf`, `T25301094_Full_Report_Ch1-6_NoBuffer.pdf`).
+  22. Chapters 2 & 3 Paraphrases Updated:
+      - Replaced BECA long-term identification paragraph in `cattle_thesis_p3_latex/chapters/chapter_2.tex` (Line 89) and practical deployment cost paragraph in `cattle_thesis_p3_latex/chapters/chapter_3.tex` (Line 69) with user requested text while preserving citations (`\cite{zhang2026beca}`).
+      - Recompiled `cattle_thesis_p3_latex/main.pdf` (91 pages, 0 errors).
+      - Re-ran `scripts/turnitin_diagnostics/build_ch1_6_turnitin_splits.py` to refresh Desktop deliverables. Continuous page numbers and word counts verified.
 
 # Session Summary — 2026-10-04 (THESIS DEFENSE PASSED & IEEE CONFERENCE PAPER DELIVERED! 🎓🔥👑)
 
