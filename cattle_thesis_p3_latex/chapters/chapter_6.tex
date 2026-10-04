@@ -30,11 +30,11 @@ As per Table~\ref{tab:behaviorcomparison}, temporal foreground modeling has help
 
 \input{tables/behavior_class_comparison}
 
-This is illustrated in the table of results where the dynamic and minority classes improved significantly (Walking F1 went from 0.2174 to 0.2456) while the standing and lying posture classes slightly declined. The use of a foreground-guided and time-oriented approach improved some of the dynamic and minority classes but deteriorated some of the posture classes.
+This is illustrated in the table of results where the dynamic and minority classes improved (Walking F1 went from 0.2174 to 0.2456) while the standing and lying posture classes slightly declined. The use of a foreground-guided and time-oriented approach improved some of the dynamic and minority classes but deteriorated some of the posture classes.
 
 \input{tables/behavior_source_comparison}
 
-Source-disjoint evaluation demonstrates pronounced domain dependence (Table~\ref{tab:behaviorsourcecomparison}). Performance on pasture cattle clips (Kaggle Beef) advanced to 96.09\% accuracy and 0.9414 Macro-F1. Conversely, authentic barn surveillance (CVB) saw overall accuracy decline from 84.12\% to 80.09\%. Because Run~5 simultaneously integrated foreground masks and 1D temporal convolution, these shifts cannot be attributed independently to mask guidance versus sequence modeling.
+Source-disjoint evaluation demonstrates pronounced domain dependence (Table~\ref{tab:behaviorsourcecomparison}). Performance on pasture cattle clips (Kaggle Beef) advanced to 96.09\% accuracy and 0.9414 Macro-F1. Conversely, CVB surveillance saw overall accuracy decline from 84.12\% to 80.09\%. Because Run~5 simultaneously integrated foreground masks and 1D temporal convolution, these shifts cannot be attributed independently to mask guidance versus sequence modeling.
 
 \subsection{Cattle Re-Identification Results}
 
@@ -62,7 +62,7 @@ A three-class viewpoint classifier for Front, Side, and Rear classes got an accu
 
 \section{Multi-Task Learning Results}
 
-In order to assess the performance of all three tasks jointly, all models using multiple tasks were validated using the same matching held-out datasets as the single task models. For Body Condition Scoring, 7,549 ScienceDB images were employed, using burst-group-disjoint split, where identical passages were kept separate, but it was not a biological cow-disjoint split. For Behavior Recognition, 780 sequence samples were employed, each having 8 frames. In total, 6,240 frames were used for evaluation, consisting of 422 barn CCTV sequences from CVB, 358 feedlot sequences from Kaggle Beef dataset, while the Walking class was only present in the CVB dataset. For Cattle Re-Identification, SideView Protocol A was employed using 69 unseen cattle and a gallery containing 36,811 parlor images, together with 25,260 barn queries and 607 snapshot queries, using the provided oracle target masks. Only the best checkpoint was determined based on the lowest combined validation loss. The test sets were never seen during training and model selection and only evaluated once after training was done.
+In order to assess the performance of all three tasks jointly, all models using multiple tasks were validated using the same matching held-out datasets as the single task models. For Body Condition Scoring, 7,549 ScienceDB images were employed, using burst-group-disjoint split, where identical passages were kept separate, but it was not a biological cow-disjoint split. For Behavior Recognition, 780 sequence samples were employed, each having 8 frames. In total, 6,240 frames were used for evaluation, consisting of 422 surveillance sequences from CVB, 358 feedlot sequences from Kaggle Beef dataset, while the Walking class was only present in the CVB dataset. For Cattle Re-Identification, SideView Protocol A was employed using 69 unseen cattle and a gallery containing 36,811 parlor images, together with 25,260 barn queries and 607 snapshot queries, using the provided oracle target masks. Only the best checkpoint was determined based on the lowest combined validation loss. The test sets were never seen during training and model selection and only evaluated once after training was done.
 
 \subsection{Body Condition Scoring Multi-Task Outcomes}
 
@@ -78,7 +78,7 @@ Joint training under naive hard sharing (E1) produced severe degradation across 
 
 \input{tables/mtl_behavior_results}
 
-The PCGrad optimization control (E4) was the most effective multi-task variant for Behavior, partially mitigating hard-sharing degradation. E4 raised balanced accuracy to 69.15\% and recovered Walking F1 to 0.0909 (more than doubling E1). Moreover, on authentic CVB barn surveillance (Table~\ref{tab:mtl_behavior_source}), E4 reached an overall accuracy of 81.04\%, marginally surpassing the single-task reference. However, source-disjoint results emphasize that overall accuracy and class-balanced fidelity diverge: CVB balanced accuracy (55.30\%) and Walking F1 under E4 remained far below the dedicated single-task reference (61.05\% and 0.2456, respectively). Thus, while PCGrad provided clear optimization-level mitigation, it did not fully restore single-task discriminative power on difficult minority states.
+The PCGrad optimization control (E4) was the most effective multi-task variant for Behavior, partially mitigating hard-sharing degradation. E4 raised balanced accuracy to 69.15\% and recovered Walking F1 to 0.0909 (more than doubling E1). Moreover, on CVB surveillance (Table~\ref{tab:mtl_behavior_source}), E4 reached an overall accuracy of 81.04\%, marginally surpassing the single-task reference. However, source-disjoint results emphasize that overall accuracy and class-balanced fidelity diverge: CVB balanced accuracy (55.30\%) and Walking F1 under E4 remained far below the dedicated single-task reference (61.05\% and 0.2456, respectively). Thus, while PCGrad provided clear optimization-level mitigation, it did not fully restore single-task discriminative power on difficult minority states.
 
 \input{tables/mtl_behavior_source_results}
 
@@ -134,7 +134,7 @@ As these measures cannot be adequately aggregated to give a combined score, nega
 The evaluation cohorts also define strict generalization boundaries:
 \begin{itemize}
  \item \textbf{ScienceDB}: ScienceDB evaluates novel burst groups formed from automatic passages but does not validate them as novel biological cows.
- \item \textbf{Behavior}: Behavior evaluates protected video and sessions but not cow-disjoint herds. The Walking task is evaluated only on CVB barn surveillance data.
+ \item \textbf{Behavior}: Behavior evaluates protected video and sessions but not cow-disjoint herds. The Walking task is evaluated only on CVB surveillance data.
  \item \textbf{SideView Protocol A}: In the SideView Protocol A, the test dataset comprises 69 novel biological cows, which were not seen during the representation learning phase. However, the Re-ID models use the released ground-truth masks. It implies that the test results were gathered using oracle segmentation.
 \end{itemize}
 
