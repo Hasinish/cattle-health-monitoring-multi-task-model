@@ -14,4 +14,4 @@
 *.run.xml
 *.toc
 *.synctex.gz
-main.pdf
+# main.pdf tracked for submission and review
